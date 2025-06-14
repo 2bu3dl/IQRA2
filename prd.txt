@@ -1,0 +1,127 @@
+**PRODUCT REQUIREMENTS DOCUMENT: IQRA2U**
+
+**1. Introduction**
+IQRA2U is a mobile application designed to make Quran memorization engaging, accessible, and rewarding. It employs gamification techniques, similar to popular language learning apps like Duolingo, to motivate users. The initial version (MVP) will focus on Surah Al-Fatihah, with a clear path for future expansion. The app aims to provide a structured and encouraging environment for users to connect with and memorize the Holy Quran.
+
+**2. Goals**
+*   To provide an intuitive and user-friendly platform for memorizing Surah Al-Fatihah.
+*   To make the memorization process enjoyable and motivating through gamification (Hasanat rewards, streaks).
+*   To help users track their progress effectively.
+*   To establish a foundation for a comprehensive Quran memorization app.
+*   To reinforce learning through repetition and recall (flashcard mechanism).
+
+**3. Target Audience**
+*   Muslims of all ages seeking to memorize the Quran.
+*   Beginners in Quran memorization.
+*   Individuals who prefer a structured, gamified, and self-paced learning approach.
+*   Users comfortable with mobile applications.
+
+**4. Product Features (MVP)**
+
+    **4.1. Home Screen**
+        *   **Display Total Hasanat:** Shows the cumulative "7asanat" (rewards) earned by the user.
+        *   **Today's Hasanat Increase:** A smaller text underneath the total Hasanat indicating how many were earned "today".
+        *   **Total Quran Progress:**
+            *   Initially: "0/7 Ayahs of Al-Fatihah Memorized" or "Al-Fatihah: X%".
+            *   As more Surahs are added: Could show "X/114 Surahs completed" or progress on current Surah.
+        *   **Daily Streak:** Displays the number of consecutive days the user has interacted with the app (e.g., viewed an Ayah).
+        *   **Navigation:** A clear button/entry point to "Start Memorizing" or "View Surahs" which leads to the Surah List screen.
+
+    **4.2. Surah List Screen**
+        *   **Initial Content:** Displays "Surah Al-Fatihah".
+        *   **Progress Indicator:** Shows progress for that Surah (e.g., "0/7 Ayahs Memorized").
+        *   **Interaction:** Tapping on "Surah Al-Fatihah" navigates to the Memorization Screen, starting with the first Ayah (Basmalah, then Ayah 1).
+
+    **4.3. Memorization Screen (Flashcard Format)**
+        *   **Ayah Display:**
+            *   Shows one Ayah of Surah Al-Fatihah at a time in clear Arabic script.
+            *   The Ayah text is presented as a "flashcard."
+        *   **Flashcard Interaction:**
+            *   Tapping on the Ayah text makes it disappear (to encourage recall).
+            *   Tapping the empty space (where the Ayah was) or a dedicated "Show Ayah" button makes the Ayah reappear.
+        *   **Navigation Controls (Bottom of Screen):**
+            *   "Back" Button: Moves to the previous Ayah. If on the first Ayah, it could be disabled or go back to the Surah List.
+            *   "Next" Button: Moves to the next Ayah.
+        *   **Marking Progress:** Viewing an Ayah and clicking "Next" implicitly marks it as "interacted with" or "studied" for the purpose of reward calculation. Explicit "Mark as Memorized" can be a future feature.
+
+    **4.4. Reward Indication Screen**
+        *   **Trigger:** Appears briefly after the user clicks "Next" on the Memorization Screen for an Ayah they are seeing or reviewing.
+        *   **Content:**
+            *   Message: "Masha'Allah! You've earned [X] Hasanat for this Ayah!"
+            *   Calculation: Each Arabic letter in the Ayah grants 10 Hasanat. (Note: A pre-defined letter count for each Ayah will be used for consistency).
+                *   Example: If an Ayah has 19 letters, reward is 190 Hasanat.
+        *   **Action:** Automatically proceeds to the next Ayah after a short delay (e.g., 2-3 seconds), or user can tap "Continue" to proceed immediately.
+
+    **4.5. Hasanat Tally & Progress Saving**
+        *   **Accumulation:** Hasanat earned from the Reward Indication Screen are immediately added to a temporary session counter.
+        *   **Updating Totals:** When the user navigates back to the Home Screen (e.g., by completing a Surah or manually going back), the session's Hasanat are added to the "Total Hasanat" and "Today's Hasanat Increase."
+        *   **Local Storage:** All progress data (Hasanat earned, Ayahs memorized/interacted with per Surah, daily streak) will be saved on the device's local storage.
+            *   The daily streak increments if the user opens the app and interacts with at least one Ayah on a new day.
+
+    **4.6. Initial Content: Surah Al-Fatihah**
+        The app will launch with Surah Al-Fatihah, including the Basmalah as the first item to memorize before Ayah 1.
+        بِسْمِ اللّٰهِ الرَّحْمٰنِ الرَّحِیْمِ
+        اَلْحَمْدُ لِلّٰهِ رَبِّ الْعٰلَمِیْنَ (1)
+        الرَّحْمٰنِ الرَّحِیْمِ (2)
+        مٰلِكِ یَوْمِ الدِّیْنِ (3)
+        اِیَّاكَ نَعْبُدُ وَ اِیَّاكَ نَسْتَعِیْنُ (4)
+        اِهْدِنَا الصِّرَاطَ الْمُسْتَقِیْمَ (5)
+        صِرَاطَ الَّذِیْنَ اَنْعَمْتَ عَلَیْهِمْ غَیْرِ الْمَغْضُوْبِ عَلَیْهِمْ وَ لَا الضَّآلِّیْنَ (6-7) 
+        *(Note: Ayah numbering conventions can vary; for the app, Basmalah can be Ayah 0, followed by Ayah 1 to 7. The provided text combines Ayah 6 and 7, which is a common way to recite/write it. For simplicity in the app, we can treat the final long verse as one "memorization unit" or split it if preferred during development. For MVP, let's treat it as one unit following the provided text, making it effectively 7 memorization units including Basmalah).*
+
+        *Pre-defined Letter Counts for Hasanat (Illustrative - actual counts to be verified):*
+        *   Basmalah: ~19 letters -> 190 Hasanat
+        *   Ayah 1: ~17 letters -> 170 Hasanat
+        *   Ayah 2: ~12 letters -> 120 Hasanat
+        *   Ayah 3: ~11 letters -> 110 Hasanat
+        *   Ayah 4: ~19 letters -> 190 Hasanat
+        *   Ayah 5: ~18 letters -> 180 Hasanat
+        *   Ayah 6-7 (combined): ~43 letters (18+25) -> 430 Hasanat
+
+**5. Design and UX Considerations**
+*   **Theme:** Green and earth tones. Calming, spiritual, and focused.
+    *   Primary Colors: Shades of green (e.g., forest green, olive green, sage).
+    *   Accent Colors: Earthy browns, beige, muted gold/yellow.
+    *   Text: High contrast for readability (e.g., white or light cream on darker backgrounds).
+*   **User Interface (UI):**
+    *   Clean, simple, and uncluttered.
+    *   Intuitive navigation.
+    *   Visually appealing Islamic geometric patterns or subtle natural motifs as background elements (optional, if not distracting).
+*   **User Experience (UX):**
+    *   Smooth transitions between screens.
+    *   Clear feedback for user actions (e.g., button presses, reward animations).
+    *   Progress indicators should be easily understandable.
+*   **Typography:**
+    *   A clear, legible, and beautiful Arabic font for Quranic text (e.g., Uthmanic script style).
+    *   A clean sans-serif font for English/interface text.
+
+**6. Technical Considerations**
+*   **Platform:** Mobile (Specify if iOS, Android, or cross-platform like React Native/Flutter).
+*   **Local Storage:** Utilize device's local storage (e.g., AsyncStorage for React Native, SharedPreferences for Android, UserDefaults for iOS) for all user data in MVP.
+*   **Arabic Text Handling:** Ensure correct rendering of Arabic text, including ligatures and diacritics.
+*   **Letter Counting Logic:** For Hasanat, use a pre-defined count of letters for each Ayah to ensure consistency and avoid complexities of real-time character analysis in MVP.
+
+**7. Success Metrics (MVP)**
+*   Number of users completing memorization of Surah Al-Fatihah.
+*   Average daily streak length.
+*   User retention rate (e.g., Day 1, Day 7 retention).
+*   Positive feedback regarding ease of use and motivation.
+
+**8. Future Considerations (Out of Scope for MVP)**
+*   Adding more Surahs.
+*   Audio recitation of Ayahs.
+*   Different memorization modes (e.g., fill-in-the-blanks, type the Ayah, reorder words).
+*   Translations of Ayahs.
+*   Tafsir (commentary) snippets.
+*   User accounts and cloud synchronization of progress.
+*   Leaderboards (Hasanat-based).
+*   Pronunciation guides/feedback (advanced).
+*   Customizable review schedules (Spaced Repetition System).
+
+**9. Release Criteria (MVP)**
+*   All features listed in section 4 are implemented and functional.
+*   The app is stable and relatively bug-free on target devices.
+*   UI/UX aligns with the design considerations.
+*   Local data storage and retrieval works reliably.
+*   Surah Al-Fatihah content is accurate.
+

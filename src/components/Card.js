@@ -1,0 +1,53 @@
+import React from 'react';
+import { View, StyleSheet, TouchableOpacity } from 'react-native';
+import { COLORS, SIZES, SHADOWS } from '../utils/theme';
+
+const Card = ({ children, style, variant = 'default', padding = 'medium', onPress }) => {
+  const getCardStyle = () => {
+    const baseStyle = {
+      backgroundColor: COLORS.background,
+      borderRadius: SIZES.base,
+    };
+
+    const variantStyles = {
+      default: {},
+      elevated: {
+        ...SHADOWS.medium,
+      },
+      outline: {
+        borderWidth: 1,
+        borderColor: COLORS.border,
+      },
+    };
+
+    const paddingStyles = {
+      small: {
+        padding: SIZES.small,
+      },
+      medium: {
+        padding: SIZES.medium,
+      },
+      large: {
+        padding: SIZES.large,
+      },
+    };
+
+    return {
+      ...baseStyle,
+      ...variantStyles[variant],
+      ...paddingStyles[padding],
+    };
+  };
+
+  if (onPress) {
+    return (
+      <TouchableOpacity onPress={onPress} activeOpacity={0.8} style={style}>
+        <View style={getCardStyle()}>{children}</View>
+      </TouchableOpacity>
+    );
+  }
+
+  return <View style={[getCardStyle(), style]}>{children}</View>;
+};
+
+export default Card; 
