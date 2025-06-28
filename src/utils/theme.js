@@ -78,4 +78,11 @@ export const SHADOWS = {
     shadowRadius: 9.11,
     elevation: 14,
   },
+};
+
+export const theme = {
+  colors: COLORS,
+  sizes: SIZES,
+  fonts: FONTS,
+  shadows: SHADOWS,
 }; 

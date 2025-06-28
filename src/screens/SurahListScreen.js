@@ -3,7 +3,9 @@ import { View, StyleSheet, SafeAreaView, FlatList, Image, TouchableOpacity } fro
 import { COLORS, SIZES, FONTS } from '../utils/theme';
 import Text from '../components/Text';
 import Card from '../components/Card';
+import ProgressBar from '../components/ProgressBar';
 import { loadData } from '../utils/store';
+import { getAllSurahs } from '../utils/quranData';
 
 const SurahListScreen = ({ navigation }) => {
   const [data, setData] = useState({
@@ -28,17 +30,13 @@ const SurahListScreen = ({ navigation }) => {
     return unsubscribe;
   }, [navigation]);
 
-  const surahs = [
-    {
-      id: 1,
-      name: 'Al-Fatihah',
-      totalAyahs: data.memorizedAyahs['Al-Fatihah']?.total || 7,
-      memorizedAyahs: data.memorizedAyahs['Al-Fatihah']?.memorized || 0,
-    },
-    { id: 2, name: 'Al-Baqarah', totalAyahs: 286, memorizedAyahs: 0 },
-    { id: 3, name: 'Ali Imran', totalAyahs: 200, memorizedAyahs: 0 },
-    // Add more surahs as needed
-  ];
+  // Use offline Quran data for surah list
+  const surahs = getAllSurahs().map(({ surah, name, ayaat }) => ({
+    id: surah,
+    name: name,
+    totalAyahs: surah === 1 ? 7 : ayaat.length,
+    memorizedAyahs: Math.min(data.memorizedAyahs[name]?.memorized || 0, surah === 1 ? 7 : ayaat.length),
+  }));
 
   const renderSurahItem = ({ item }) => (
     <Card
@@ -47,9 +45,17 @@ const SurahListScreen = ({ navigation }) => {
       onPress={() => navigation.navigate('Memorization', { surah: item })}>
       <View style={styles.surahInfo}>
         <Text variant="h3">{item.name}</Text>
-        <Text variant="body2" color="textSecondary">
+        <Text variant="body2" color="textSecondary" style={styles.progressText}>
           {item.memorizedAyahs}/{item.totalAyahs} Ayaat memorized
         </Text>
+        <View style={styles.progressContainer}>
+          <ProgressBar 
+            progress={item.memorizedAyahs} 
+            total={item.totalAyahs} 
+            height={10}
+            animated={true}
+          />
+        </View>
       </View>
     </Card>
   );
@@ -63,7 +69,10 @@ const SurahListScreen = ({ navigation }) => {
         >
           <Image source={require('../assets/logo.png')} style={styles.homeIcon} resizeMode="contain" />
         </TouchableOpacity>
-        <Text variant="h1" color="primary">Surahs</Text>
+        <View style={styles.headerTextContainer}>
+          <Text variant="h1" color="primary">Suwarr</Text>
+          <Text variant="body1" color="white">(Surahs)</Text>
+        </View>
       </View>
       
       <FlatList
@@ -89,6 +98,10 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: SIZES.extraLarge,
     borderBottomRightRadius: SIZES.extraLarge,
   },
+  headerTextContainer: {
+    flex: 1,
+    alignItems: 'center',
+  },
   list: {
     padding: SIZES.medium,
   },
@@ -100,6 +113,12 @@ const styles = StyleSheet.create({
   },
   surahInfo: {
     flex: 1,
+  },
+  progressContainer: {
+    marginTop: SIZES.small,
+  },
+  progressText: {
+    marginBottom: SIZES.small,
   },
   homeButton: {
     marginRight: SIZES.medium,

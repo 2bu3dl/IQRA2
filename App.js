@@ -7,6 +7,7 @@ import { COLORS } from './src/utils/theme';
 import HomeScreen from './src/screens/HomeScreen';
 import SurahListScreen from './src/screens/SurahListScreen';
 import MemorizationScreen from './src/screens/MemorizationScreen';
+import RecordingsScreen from './src/screens/RecordingsScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -28,6 +29,7 @@ function App() {
         <Stack.Screen name="Home" component={HomeScreen} />
         <Stack.Screen name="SurahList" component={SurahListScreen} />
         <Stack.Screen name="Memorization" component={MemorizationScreen} />
+        <Stack.Screen name="Recordings" component={RecordingsScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );
