@@ -1,16 +1,14 @@
 import React, { useState, useRef, useCallback, memo, useMemo } from 'react';
-import { View, StyleSheet, SafeAreaView, TouchableOpacity, Modal, Animated, Image, ScrollView, TextInput } from 'react-native';
+import { View, StyleSheet, SafeAreaView, TouchableOpacity, Modal, Animated, Image, ScrollView, TextInput, ImageBackground } from 'react-native';
 import { COLORS, SIZES, FONTS } from '../utils/theme';
 import Text from '../components/Text';
 import Button from '../components/Button';
 import CardOrig from '../components/Card';
 import ProgressBarOrig from '../components/ProgressBar';
-import AudioRecorder from '../components/AudioRecorder';
 import TranslationModal from '../components/TranslationModal';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { addHasanat, updateMemorizedAyahs, updateStreak } from '../utils/store';
 import { getSurahAyaatWithTransliteration, getAllSurahs } from '../utils/quranData';
-import AudioRecorderService from '../utils/audioRecorder';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 // import Svg, { Circle } from 'react-native-svg'; // Uncomment if using react-native-svg
 
@@ -27,16 +25,12 @@ const MemorizationScreen = ({ route, navigation }) => {
   const [rewardAmount, setRewardAmount] = useState(0);
   const [showGoToModal, setShowGoToModal] = useState(false);
   const [searchText, setSearchText] = useState('');
-  const [ayahRecordings, setAyahRecordings] = useState({});
-  const [surahRecording, setSurahRecording] = useState(null);
-  const [showSurahRecordingModal, setShowSurahRecordingModal] = useState(false);
   const [showTranslationModal, setShowTranslationModal] = useState(false);
   const [modalAyahIndex, setModalAyahIndex] = useState(null);
   const sessionHasanat = useRef(0);
   const rewardTimeout = useRef(null);
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const scaleAnim = useRef(new Animated.Value(1)).current;
-  const [showAyahRecordingModal, setShowAyahRecordingModal] = useState(false);
   const ayahListRef = useRef(null);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
 
@@ -45,36 +39,10 @@ const MemorizationScreen = ({ route, navigation }) => {
   const prevSurah = currentSurahIndex > 0 ? allSurahs[currentSurahIndex - 1] : null;
   const nextSurah = currentSurahIndex < allSurahs.length - 1 ? allSurahs[currentSurahIndex + 1] : null;
 
-  const loadRecordings = useCallback(async () => {
-    try {
-      // Load surah recording
-      const surahRec = await AudioRecorderService.getSurahRecording(surah.name);
-      setSurahRecording(surahRec);
-      
-      // Load ayah recordings
-      const recordings = {};
-      const ayahCards = ayaat.filter(a => a.type === 'ayah');
-      for (let i = 0; i < ayahCards.length; i++) {
-        const ayahNumber = i + 1;
-        try {
-          const recording = await AudioRecorderService.getAyahRecording(surah.name, ayahNumber);
-          if (recording) {
-            recordings[ayahNumber] = recording;
-          }
-        } catch (error) {
-          console.warn(`[MemorizationScreen] Failed to load ayah ${ayahNumber} recording:`, error);
-        }
-      }
-      setAyahRecordings(recordings);
-    } catch (error) {
-      console.error('[MemorizationScreen] Error loading recordings:', error);
-    }
-  }, [surah.name, ayaat]);
-
   React.useEffect(() => {
     async function fetchAyaat() {
       try {
-        const data = await getSurahAyaatWithTransliteration(surahNumber);
+      const data = await getSurahAyaatWithTransliteration(surahNumber);
         if (!data || !Array.isArray(data)) {
           console.error('[MemorizationScreen] Invalid data received from getSurahAyaatWithTransliteration');
           return;
@@ -121,71 +89,6 @@ const MemorizationScreen = ({ route, navigation }) => {
     return cards;
   }, [ayaat, surahNumber]);
 
-  // Load recordings after ayaat is set
-  React.useEffect(() => {
-    if (ayaat.length > 0) {
-      loadRecordings();
-    }
-  }, [ayaat, loadRecordings]);
-
-  const handleAyahRecordingComplete = async (filePath, duration) => {
-    try {
-      const ayahNumber = flashcards.slice(0, currentAyahIndex + 1).filter(a => a.type === 'ayah').length;
-      await AudioRecorderService.saveAyahRecording(surah.name, ayahNumber, filePath);
-      
-      // Update local state
-      setAyahRecordings(prev => ({
-        ...prev,
-        [ayahNumber]: {
-          filePath,
-          timestamp: new Date().toISOString(),
-          surahName: surah.name,
-          ayahNumber,
-        }
-      }));
-    } catch (error) {
-      console.error('Error saving ayah recording:', error);
-    }
-  };
-
-  const handleSurahRecordingComplete = async (filePath, duration) => {
-    try {
-      await AudioRecorderService.saveSurahRecording(surah.name, filePath);
-      setSurahRecording({
-        filePath,
-        timestamp: new Date().toISOString(),
-        surahName: surah.name,
-      });
-      setShowSurahRecordingModal(false);
-    } catch (error) {
-      console.error('Error saving surah recording:', error);
-    }
-  };
-
-  const handleResetAyahRecording = async () => {
-    try {
-      const ayahNumber = flashcards.slice(0, currentAyahIndex + 1).filter(a => a.type === 'ayah').length;
-      const key = `ayah_recordings_${surah.name}_${ayahNumber}`;
-      await AsyncStorage.removeItem(key);
-      
-      // Update local state
-      setAyahRecordings(prev => {
-        const newRecordings = { ...prev };
-        delete newRecordings[ayahNumber];
-        return newRecordings;
-      });
-      
-      // Force re-render by updating the current ayah index
-      const currentIndex = currentAyahIndex;
-      setCurrentAyahIndex(-1);
-      setTimeout(() => setCurrentAyahIndex(currentIndex), 100);
-      
-      setShowSettingsModal(false);
-    } catch (error) {
-      console.error('Error resetting ayah recording:', error);
-    }
-  };
-
   const animateFlashcard = (toValue) => {
     Animated.parallel([
       Animated.timing(fadeAnim, {
@@ -213,7 +116,7 @@ const MemorizationScreen = ({ route, navigation }) => {
     setCurrentAyahIndex(index);
     setShowGoToModal(false);
     setSearchText('');
-    setIsTextHidden(false);
+      setIsTextHidden(false);
   };
 
   const handleSearchSubmit = () => {
@@ -276,15 +179,6 @@ const MemorizationScreen = ({ route, navigation }) => {
     setShowReward(true);
     const realAyahIndex = flashcards.slice(0, currentAyahIndex + 1).filter(a => a.type === 'ayah').length - 1;
     updateMemorizedAyahs(surah.name, realAyahIndex).catch(console.error);
-    rewardTimeout.current = setTimeout(() => {
-      setShowReward(false);
-      if (currentAyahIndex < flashcards.length - 1) {
-        setCurrentAyahIndex(idx => idx + 1);
-        setIsTextHidden(false);
-      } else {
-        setShowSurahRecordingModal(true);
-      }
-    }, 2000);
   };
 
   const handlePrevious = () => {
@@ -334,19 +228,36 @@ const MemorizationScreen = ({ route, navigation }) => {
     }
   };
 
+  async function handleFinishSurah() {
+    try {
+      await updateStreak();
+    } catch (error) {
+      console.error('[MemorizationScreen] Error updating streak on reward finish:', error);
+    }
+    addHasanat(sessionHasanat.current);
+    sessionHasanat.current = 0;
+    navigation.navigate('Home');
+  }
+
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={{ flex: 1, backgroundColor: '#000' }}>
+      <ImageBackground 
+        source={require('../assets/IQRA2background.png')} 
+        style={styles.backgroundImage}
+        imageStyle={{ opacity: 0.2 }}
+      >
+        <SafeAreaView style={[styles.container, { backgroundColor: 'transparent' }]}>
       <View style={styles.headerWithHome}>
         <TouchableOpacity
           style={styles.homeButton}
-          onPress={async () => {
-            // Update streak when leaving the screen
-            try {
-              await updateStreak();
-            } catch (error) {
-              console.error('[MemorizationScreen] Error updating streak on home press:', error);
-            }
-            
+              onPress={async () => {
+                // Update streak when leaving the screen
+                try {
+                  await updateStreak();
+                } catch (error) {
+                  console.error('[MemorizationScreen] Error updating streak on home press:', error);
+                }
+                
             if (sessionHasanat.current > 0) {
               addHasanat(sessionHasanat.current);
               sessionHasanat.current = 0;
@@ -354,99 +265,99 @@ const MemorizationScreen = ({ route, navigation }) => {
             navigation.navigate('Home');
           }}
         >
-          <Image source={require('../assets/logo.png')} style={styles.homeIcon} resizeMode="contain" />
+              <Image source={require('../assets/IQRA2icon.png')} style={styles.homeIcon} resizeMode="contain" />
         </TouchableOpacity>
         <View style={styles.headerTextContainer}>
-          <Text variant="h2" color="primary" style={{ textAlign: 'center', width: '100%' }}>{surah?.name || 'Surah'}</Text>
+              <Text variant="h2" color="primary" style={{ textAlign: 'center', width: '100%' }}>{surah?.name || 'Surah'}</Text>
           <Text variant="body1" style={{ textAlign: 'center', width: '100%' }}>
-            {flashcards && flashcards[currentAyahIndex]?.type === 'ayah'
-              ? `Ayah ${flashcards.slice(0, currentAyahIndex + 1).filter(a => a.type === 'ayah').length}`
-              : flashcards && flashcards[currentAyahIndex]?.type === 'istiadhah'
+                {flashcards && flashcards[currentAyahIndex]?.type === 'ayah'
+                  ? `Ayah ${flashcards.slice(0, currentAyahIndex + 1).filter(a => a.type === 'ayah').length}`
+                  : flashcards && flashcards[currentAyahIndex]?.type === 'istiadhah'
                 ? "Isti3aadhah"
                 : 'BismAllah'}
           </Text>
           <View style={styles.progressContainer}>
             <ProgressBar 
-              progress={flashcards ? flashcards.slice(0, currentAyahIndex + 1).filter(a => a.type === 'ayah').length : 0}
-              total={flashcards ? flashcards.filter(a => a.type === 'ayah').length : 0}
+                  progress={flashcards ? flashcards.slice(0, currentAyahIndex + 1).filter(a => a.type === 'ayah').length : 0}
+                  total={flashcards ? flashcards.filter(a => a.type === 'ayah').length : 0}
               height={6}
               animated={true}
             />
           </View>
         </View>
-        <View style={styles.headerButtons}>
-          <TouchableOpacity
-            style={styles.headerButton}
-            onPress={() => setShowGoToModal(true)}
-          >
-            <Ionicons name="navigate" size={24} color={COLORS.primary} />
-          </TouchableOpacity>
-          {/* Hide translation button for first two cards of every surah except for 1st and 9th surah. For 1st and 9th surah, only hide for first card. */}
-          {!(
-            (surahNumber !== 1 && surahNumber !== 9 && (currentAyahIndex === 0 || currentAyahIndex === 1)) ||
-            ((surahNumber === 1 || surahNumber === 9) && currentAyahIndex === 0)
-          ) && (
-            <TouchableOpacity
-              style={[styles.headerButton, { marginTop: 8 }]}
-              onPress={openTranslationModal}
-            >
-              <Ionicons name="language" size={24} color={COLORS.primary} />
-            </TouchableOpacity>
-          )}
-        </View>
+            <View style={styles.headerButtons}>
+        <TouchableOpacity
+                style={styles.headerButton}
+          onPress={() => setShowGoToModal(true)}
+        >
+          <Ionicons name="navigate" size={24} color={COLORS.primary} />
+        </TouchableOpacity>
+              {/* Hide translation button for first two cards of every surah except for 1st and 9th surah. For 1st and 9th surah, only hide for first card. */}
+              {!(
+                (surahNumber !== 1 && surahNumber !== 9 && (currentAyahIndex === 0 || currentAyahIndex === 1)) ||
+                ((surahNumber === 1 || surahNumber === 9) && currentAyahIndex === 0)
+              ) && (
+                <TouchableOpacity
+                  style={[styles.headerButton, { marginTop: 8 }]}
+                  onPress={openTranslationModal}
+                >
+                  <Ionicons name="language" size={24} color={COLORS.primary} />
+                </TouchableOpacity>
+              )}
+            </View>
       </View>
 
-      <View style={{ flex: 1, flexDirection: 'column' }}>
-        <View style={{ flex: 1, justifyContent: 'center' }}>
-          <Animated.View style={[styles.flashcard, { opacity: fadeAnim, transform: [{ scale: scaleAnim }] }] }>
-            <Card variant="elevated" style={[styles.card, { flex: 1 }]}> 
-              <ScrollView style={styles.ayahScroll} contentContainerStyle={styles.ayahScrollContent} showsVerticalScrollIndicator={true}>
-                <Text
-                  variant="h2"
-                  style={[FONTS.arabic, styles.arabicText]}
-                  align="center">
-                  {flashcards[currentAyahIndex]?.type === 'istiadhah'
-                    ? flashcards[currentAyahIndex]?.text || ''
-                    : (isTextHidden ? '••••••••••••••••••••••••••••••••••••••••' : flashcards[currentAyahIndex]?.text || '')
-                  }
-                </Text>
-                {/* Show transliteration only when revealed */}
-                {!isTextHidden && (
-                  <Text
-                    variant="body2"
-                    style={styles.transliterationText}
-                    align="center"
-                  >
-                    {stripHtmlTags(flashcards[currentAyahIndex]?.transliteration || '')}
-                  </Text>
-                )}
-                {/* Show bismillah translation for bismillah card only */}
-                {flashcards[currentAyahIndex]?.type === 'bismillah' && (
-                  <Text
-                    variant="body2"
-                    style={[styles.transliterationText, { color: COLORS.primary, fontWeight: 'bold', marginTop: 8 }]}
-                    align="center"
-                  >
-                    {flashcards[currentAyahIndex]?.translation}
-                  </Text>
-                )}
-                {/* Show istiadhah translation for istiadhah card only */}
-                {flashcards[currentAyahIndex]?.type === 'istiadhah' && (
-                  <Text
-                    variant="body2"
-                    style={[styles.transliterationText, { color: COLORS.primary, fontWeight: 'bold', marginTop: 8 }]}
-                    align="center"
-                  >
-                    {flashcards[currentAyahIndex]?.translation}
-                  </Text>
-                )}
-              </ScrollView>
-            </Card>
-          </Animated.View>
-        </View>
-        {/* Button row below flashcard */}
-        {flashcards && flashcards[currentAyahIndex] && ((flashcards[currentAyahIndex]?.type === 'ayah') || 
-          (flashcards[currentAyahIndex]?.type === 'bismillah' && surahNumber === 1)) && (
+          <View style={{ flex: 1, flexDirection: 'column' }}>
+            <View style={{ flex: 1, justifyContent: 'center' }}>
+        <Animated.View style={[styles.flashcard, { opacity: fadeAnim, transform: [{ scale: scaleAnim }] }] }>
+                <Card variant="elevated" style={[styles.card, { flex: 1 }]}> 
+                  <ScrollView style={styles.ayahScroll} contentContainerStyle={styles.ayahScrollContent} showsVerticalScrollIndicator={true}>
+            <Text
+              variant="h2"
+              style={[FONTS.arabic, styles.arabicText]}
+              align="center">
+                      {flashcards[currentAyahIndex]?.type === 'istiadhah'
+                        ? flashcards[currentAyahIndex]?.text || ''
+                        : (isTextHidden ? '••••••••••••••••••••••••••••••••••••••••' : flashcards[currentAyahIndex]?.text || '')
+              }
+            </Text>
+            {/* Show transliteration only when revealed */}
+            {!isTextHidden && (
+              <Text
+                variant="body2"
+                style={styles.transliterationText}
+                align="center"
+              >
+                        {stripHtmlTags(flashcards[currentAyahIndex]?.transliteration || '')}
+                      </Text>
+                    )}
+                    {/* Show bismillah translation for bismillah card only */}
+                    {flashcards[currentAyahIndex]?.type === 'bismillah' && (
+                      <Text
+                        variant="body2"
+                        style={[styles.transliterationText, { color: COLORS.primary, fontWeight: 'bold', marginTop: 8 }]}
+                        align="center"
+                      >
+                        {flashcards[currentAyahIndex]?.translation}
+                      </Text>
+                    )}
+                    {/* Show istiadhah translation for istiadhah card only */}
+                    {flashcards[currentAyahIndex]?.type === 'istiadhah' && (
+                      <Text
+                        variant="body2"
+                        style={[styles.transliterationText, { color: COLORS.primary, fontWeight: 'bold', marginTop: 8 }]}
+                        align="center"
+                      >
+                        {flashcards[currentAyahIndex]?.translation}
+              </Text>
+            )}
+                  </ScrollView>
+          </Card>
+        </Animated.View>
+            </View>
+            {/* Button row below flashcard */}
+            {flashcards && flashcards[currentAyahIndex] && ((flashcards[currentAyahIndex]?.type === 'ayah') || 
+              (flashcards[currentAyahIndex]?.type === 'bismillah' && surahNumber === 1)) && (
           <View style={styles.buttonRow}>
             {/* Settings Button */}
             <TouchableOpacity
@@ -455,17 +366,6 @@ const MemorizationScreen = ({ route, navigation }) => {
             >
               <Ionicons name="settings" size={24} color={COLORS.primary} />
             </TouchableOpacity>
-            {/* Center: Record Button */}
-            {flashcards[currentAyahIndex]?.type === 'ayah' && (
-              <View style={styles.recordButtonContainer}>
-                <TouchableOpacity
-                  style={[styles.recordButton, { backgroundColor: COLORS.primary }]}
-                  onPress={() => setShowAyahRecordingModal(true)}
-                >
-                  <Ionicons name="mic" size={24} color={COLORS.white} />
-                </TouchableOpacity>
-              </View>
-            )}
             {/* Right: Reveal/Hide Button */}
             <TouchableOpacity
               style={styles.revealButtonNew}
@@ -477,33 +377,33 @@ const MemorizationScreen = ({ route, navigation }) => {
             </TouchableOpacity>
           </View>
         )}
-      </View>
-
-      <View style={styles.navigation}>
-        <Button
-          title={currentAyahIndex === 0 ? 'Back' : 'Previous'}
-          onPress={async () => {
-            if (currentAyahIndex === 0) {
-              // Update streak when going back to surah list
-              try {
-                await updateStreak();
-              } catch (error) {
-                console.error('[MemorizationScreen] Error updating streak on back press:', error);
+          </View>
+        
+        <View style={styles.navigation}>
+          <Button
+            title={currentAyahIndex === 0 ? 'Back' : 'Previous'}
+              onPress={async () => {
+              if (currentAyahIndex === 0) {
+                  // Update streak when going back to surah list
+                  try {
+                    await updateStreak();
+                  } catch (error) {
+                    console.error('[MemorizationScreen] Error updating streak on back press:', error);
+                  }
+                navigation.navigate('SurahList');
+              } else {
+                handlePrevious();
               }
-              navigation.navigate('SurahList');
-            } else {
-              handlePrevious();
-            }
-          }}
-          disabled={showReward}
-          style={styles.navButton}
-        />
-        <Button
-          title={currentAyahIndex === 0 ? 'Start' : (flashcards && currentAyahIndex === flashcards.length - 1 ? 'Finish' : 'Next')}
-          onPress={handleNext}
-          disabled={showReward}
-          style={styles.navButton}
-        />
+            }}
+            disabled={showReward}
+            style={styles.navButton}
+          />
+          <Button
+              title={currentAyahIndex === 0 ? 'Start' : (flashcards && currentAyahIndex === flashcards.length - 1 ? 'Finish' : 'Next')}
+            onPress={handleNext}
+            disabled={showReward}
+            style={styles.navButton}
+          />
       </View>
 
       {/* Go To Modal */}
@@ -532,35 +432,34 @@ const MemorizationScreen = ({ route, navigation }) => {
               </TouchableOpacity>
             </View>
             
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 }}>
-              <TouchableOpacity style={[styles.surahNavButton, { flex: 1, marginRight: 4 }]} onPress={() => ayahListRef.current?.scrollTo({ y: 0, animated: true })}>
-                <Text variant="body1" style={styles.surahNavButtonText}>Top</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={[styles.surahNavButton, { flex: 1, marginLeft: 4 }]} onPress={() => ayahListRef.current?.scrollToEnd({ animated: true })}>
-                <Text variant="body1" style={styles.surahNavButtonText}>Bottom</Text>
-              </TouchableOpacity>
-            </View>
-            
-            <ScrollView ref={ayahListRef} style={styles.ayahList} showsVerticalScrollIndicator={false}>
-              {/* Previous Surah Button */}
-              {prevSurah && (
-                <TouchableOpacity
-                  style={styles.surahNavButton}
-                  onPress={() => {
-                    setShowGoToModal(false);
-                    navigation.replace('Memorization', { surah: prevSurah });
-                  }}
-                >
-                  <Text variant="body1" style={styles.surahNavButtonText}>
-                    ← {prevSurah.name}
-                  </Text>
-                </TouchableOpacity>
-              )}
-              {/* Ayah List */}
-              {getFilteredAyaat().map((ayah, mapIndex) => {
-                const originalIndex = flashcards.indexOf(ayah);
-                const ayahNumber = flashcards.slice(0, originalIndex + 1).filter(a => a.type === 'ayah').length;
-                const hasRecording = ayah.type === 'ayah' && ayahRecordings[ayahNumber];
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 }}>
+                  <TouchableOpacity style={[styles.surahNavButton, { flex: 1, marginRight: 4 }]} onPress={() => ayahListRef.current?.scrollTo({ y: 0, animated: true })}>
+                    <Text variant="body1" style={styles.surahNavButtonText}>Top</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={[styles.surahNavButton, { flex: 1, marginLeft: 4 }]} onPress={() => ayahListRef.current?.scrollToEnd({ animated: true })}>
+                    <Text variant="body1" style={styles.surahNavButtonText}>Bottom</Text>
+                  </TouchableOpacity>
+                </View>
+                
+                <ScrollView ref={ayahListRef} style={styles.ayahList} showsVerticalScrollIndicator={false}>
+                  {/* Previous Surah Button */}
+                  {prevSurah && (
+                    <TouchableOpacity
+                      style={styles.surahNavButton}
+                      onPress={() => {
+                        setShowGoToModal(false);
+                        navigation.replace('Memorization', { surah: prevSurah });
+                      }}
+                    >
+                      <Text variant="body1" style={styles.surahNavButtonText}>
+                        ← {prevSurah.name}
+                      </Text>
+                    </TouchableOpacity>
+                  )}
+                  {/* Ayah List */}
+                  {getFilteredAyaat().map((ayah, mapIndex) => {
+                    const originalIndex = flashcards.indexOf(ayah);
+                    const ayahNumber = flashcards.slice(0, originalIndex + 1).filter(a => a.type === 'ayah').length;
                 return (
                   <TouchableOpacity
                     key={originalIndex}
@@ -570,33 +469,30 @@ const MemorizationScreen = ({ route, navigation }) => {
                     ]}
                     onPress={() => handleGoToAyah(originalIndex)}
                   >
-                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                      <Text variant="body1" style={styles.ayahItemText}>
-                        {ayah.type === 'istiadhah' ? "Isti'adhah" :
-                         ayah.type === 'bismillah' ? 'BismAllah' :
-                         `Ayah ${ayahNumber}`}
-                      </Text>
-                      {hasRecording && (
-                        <View style={styles.ayahDot} />
-                      )}
-                    </View>
+                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    <Text variant="body1" style={styles.ayahItemText}>
+                      {ayah.type === 'istiadhah' ? "Isti'adhah" :
+                       ayah.type === 'bismillah' ? 'BismAllah' :
+                             `Ayah ${ayahNumber}`}
+                    </Text>
+                        </View>
                   </TouchableOpacity>
                 );
               })}
-              {/* Next Surah Button */}
-              {nextSurah && (
-                <TouchableOpacity
-                  style={styles.surahNavButton}
-                  onPress={() => {
-                    setShowGoToModal(false);
-                    navigation.replace('Memorization', { surah: nextSurah });
-                  }}
-                >
-                  <Text variant="body1" style={styles.surahNavButtonText}>
-                    {nextSurah.name} →
-                  </Text>
-                </TouchableOpacity>
-              )}
+                  {/* Next Surah Button */}
+                  {nextSurah && (
+                    <TouchableOpacity
+                      style={styles.surahNavButton}
+                      onPress={() => {
+                        setShowGoToModal(false);
+                        navigation.replace('Memorization', { surah: nextSurah });
+                      }}
+                    >
+                      <Text variant="body1" style={styles.surahNavButtonText}>
+                        {nextSurah.name} →
+                      </Text>
+                    </TouchableOpacity>
+                  )}
             </ScrollView>
             <Button
               title="Cancel"
@@ -617,131 +513,44 @@ const MemorizationScreen = ({ route, navigation }) => {
         animationType="fade"
         onRequestClose={() => setShowReward(false)}
       >
-        <View style={styles.rewardModalOverlay}>
-          <Animated.View style={[styles.rewardModalContent, { transform: [{ scale: rewardScale }] }] }>
-            <Text variant="h2" color="primary">Masha'Allah</Text>
-            <Text variant="body1">
+            <View style={[styles.rewardModalOverlay, { justifyContent: 'flex-end', alignItems: 'center' }]}>
+              <Animated.View style={[styles.rewardModalContent, { transform: [{ scale: rewardScale }], marginBottom: 32 }] }>
+                <Text variant="h2" style={{ color: '#3E2723' }}>Masha2Allah</Text>
+                <Text variant="body1" style={{ color: '#3E2723' }}>
               You've earned <Text style={{ fontWeight: 'bold', color: COLORS.primary }}>{rewardAmount}</Text> 7asanaat for this Ayah!
             </Text>
             <Text variant="body2" style={{ marginTop: 8, fontStyle: 'italic', color: COLORS.textSecondary }}>
-              insha'Allah
+              insha2Allah
             </Text>
+                <View style={styles.rewardButtonRow}>
+                  <Button
+                    title="Revise"
+                    onPress={() => setShowReward(false)}
+                    style={[styles.rewardButton, { backgroundColor: COLORS.primary, marginRight: 8 }]}
+                  />
             <Button
               title={currentAyahIndex === ayaat.length - 1 ? 'Next Surah' : 'Next Ayah'}
-              onPress={async () => {
+                    onPress={async () => {
                 setShowReward(false);
                 if (currentAyahIndex < ayaat.length - 1) {
                   setCurrentAyahIndex(currentAyahIndex + 1);
                   setIsTextHidden(false);
                 } else {
-                  // Update streak when finishing surah
-                  try {
-                    await updateStreak();
-                  } catch (error) {
-                    console.error('[MemorizationScreen] Error updating streak on reward finish:', error);
-                  }
+                        // Update streak when finishing surah
+                        try {
+                          await updateStreak();
+                        } catch (error) {
+                          console.error('[MemorizationScreen] Error updating streak on reward finish:', error);
+                        }
                   addHasanat(sessionHasanat.current);
                   sessionHasanat.current = 0;
                   navigation.navigate('Home');
                 }
               }}
-              style={{ marginTop: SIZES.large }}
+                    style={[styles.rewardButton, { backgroundColor: COLORS.primary }]}
             />
+                </View>
           </Animated.View>
-        </View>
-      </Modal>
-
-      {/* Surah Recording Modal */}
-      <Modal
-        visible={showSurahRecordingModal}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setShowSurahRecordingModal(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text variant="h2" style={{ marginBottom: 16 }}>Record Complete Surah</Text>
-            <Text variant="body1" style={{ marginBottom: 24, textAlign: 'center' }}>
-              Now record yourself reciting the entire {surah.name} surah. This will be saved for your personal collection.
-            </Text>
-            
-            <AudioRecorder
-              surahName={surah.name}
-              type="surah"
-              onRecordingComplete={handleSurahRecordingComplete}
-              existingRecording={surahRecording}
-              style={styles.modalAudioRecorder}
-            />
-            
-            <View style={styles.modalButtons}>
-              <Button
-                title="Skip Recording"
-                onPress={async () => {
-                  setShowSurahRecordingModal(false);
-                  // Update streak when skipping recording
-                  try {
-                    await updateStreak();
-                  } catch (error) {
-                    console.error('[MemorizationScreen] Error updating streak on skip recording:', error);
-                  }
-                  addHasanat(sessionHasanat.current);
-                  sessionHasanat.current = 0;
-                  navigation.navigate('Home');
-                }}
-                style={{ backgroundColor: COLORS.accent, marginRight: SIZES.small }}
-              />
-              <Button
-                title="Finish"
-                onPress={async () => {
-                  setShowSurahRecordingModal(false);
-                  // Update streak when finishing recording
-                  try {
-                    await updateStreak();
-                  } catch (error) {
-                    console.error('[MemorizationScreen] Error updating streak on finish recording:', error);
-                  }
-                  addHasanat(sessionHasanat.current);
-                  sessionHasanat.current = 0;
-                  navigation.navigate('Home');
-                }}
-                style={{ backgroundColor: COLORS.primary }}
-              />
-            </View>
-          </View>
-        </View>
-      </Modal>
-
-      {/* Ayah Recording Modal */}
-      <Modal
-        visible={showAyahRecordingModal}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setShowAyahRecordingModal(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text variant="h2" style={{ marginBottom: 16 }}>Record Ayah</Text>
-            <Text variant="body1" style={{ marginBottom: 24, textAlign: 'center' }}>
-              Record yourself reciting this ayah. This will be saved for your personal collection.
-            </Text>
-            
-            <AudioRecorder
-              surahName={surah.name}
-              type="ayah"
-              ayahNumber={flashcards.slice(0, currentAyahIndex + 1).filter(a => a.type === 'ayah').length}
-              onRecordingComplete={handleAyahRecordingComplete}
-              existingRecording={ayahRecordings[flashcards.slice(0, currentAyahIndex + 1).filter(a => a.type === 'ayah').length]}
-              style={styles.modalAudioRecorder}
-            />
-            
-            <View style={styles.modalButtons}>
-              <Button
-                title="Cancel"
-                onPress={() => setShowAyahRecordingModal(false)}
-                style={{ backgroundColor: COLORS.primary, flex: 1, marginRight: SIZES.small }}
-              />
-            </View>
-          </View>
         </View>
       </Modal>
 
@@ -754,56 +563,50 @@ const MemorizationScreen = ({ route, navigation }) => {
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <Text variant="h2" style={{ marginBottom: 16 }}>Settings</Text>
+                <Text variant="h2" style={{ marginBottom: 16 }}>Settings</Text>
             
-            {flashcards[currentAyahIndex]?.type === 'ayah' && (
               <Button
-                title="Reset Ayah Recording"
-                onPress={handleResetAyahRecording}
-                style={{ backgroundColor: COLORS.primary, marginBottom: SIZES.medium }}
+                  title="Close"
+                onPress={() => setShowSettingsModal(false)}
+                style={{ backgroundColor: COLORS.primary }}
               />
-            )}
-            
-            <Button
-              title="Close"
-              onPress={() => setShowSettingsModal(false)}
-              style={{ backgroundColor: COLORS.primary }}
-            />
           </View>
         </View>
       </Modal>
 
-      {/* Translation Modal */}
-      <TranslationModal
-        visible={showTranslationModal}
-        onClose={() => setShowTranslationModal(false)}
-        currentSurah={surahNumber}
-        currentAyah={
-          modalAyahIndex !== null && flashcards[modalAyahIndex]?.type === 'ayah'
-            ? flashcards.slice(0, modalAyahIndex + 1).filter(a => a.type === 'ayah').length
-            : null
-        }
-        isFirstAyah={modalAyahIndex === flashcards.findIndex(a => a.type === 'ayah')}
-        isLastAyah={modalAyahIndex === flashcards.map((a, i) => a.type === 'ayah' ? i : null).filter(i => i !== null).slice(-1)[0]}
-        onAyahChange={dir => {
-          // Find all ayah indices
-          const ayahIndices = flashcards.map((a, i) => a.type === 'ayah' ? i : null).filter(i => i !== null);
-          const currentIdx = ayahIndices.indexOf(modalAyahIndex);
-          if (dir === 'prev' && currentIdx > 0) {
-            const newIndex = ayahIndices[currentIdx - 1];
-            setModalAyahIndex(newIndex);
-            setCurrentAyahIndex(newIndex);
-            setIsTextHidden(false);
-          }
-          if (dir === 'next' && currentIdx < ayahIndices.length - 1) {
-            const newIndex = ayahIndices[currentIdx + 1];
-            setModalAyahIndex(newIndex);
-            setCurrentAyahIndex(newIndex);
-            setIsTextHidden(false);
-          }
-        }}
-      />
+          {/* Translation Modal */}
+          <TranslationModal
+            visible={showTranslationModal}
+            onClose={() => setShowTranslationModal(false)}
+            currentSurah={surahNumber}
+            currentAyah={
+              modalAyahIndex !== null && flashcards[modalAyahIndex]?.type === 'ayah'
+                ? flashcards.slice(0, modalAyahIndex + 1).filter(a => a.type === 'ayah').length
+                : null
+            }
+            isFirstAyah={modalAyahIndex === flashcards.findIndex(a => a.type === 'ayah')}
+            isLastAyah={modalAyahIndex === flashcards.map((a, i) => a.type === 'ayah' ? i : null).filter(i => i !== null).slice(-1)[0]}
+            onAyahChange={dir => {
+              // Find all ayah indices
+              const ayahIndices = flashcards.map((a, i) => a.type === 'ayah' ? i : null).filter(i => i !== null);
+              const currentIdx = ayahIndices.indexOf(modalAyahIndex);
+              if (dir === 'prev' && currentIdx > 0) {
+                const newIndex = ayahIndices[currentIdx - 1];
+                setModalAyahIndex(newIndex);
+                setCurrentAyahIndex(newIndex);
+                setIsTextHidden(false);
+              }
+              if (dir === 'next' && currentIdx < ayahIndices.length - 1) {
+                const newIndex = ayahIndices[currentIdx + 1];
+                setModalAyahIndex(newIndex);
+                setCurrentAyahIndex(newIndex);
+                setIsTextHidden(false);
+              }
+            }}
+          />
     </SafeAreaView>
+      </ImageBackground>
+    </View>
   );
 };
 
@@ -847,7 +650,7 @@ const styles = StyleSheet.create({
     padding: SIZES.extraLarge,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: COLORS.white,
+    backgroundColor: '#F5E6C8',
     borderColor: COLORS.accent,
     borderWidth: 1,
     width: '100%',
@@ -877,7 +680,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   rewardModalContent: {
-    backgroundColor: COLORS.white,
+    backgroundColor: '#F5E6C8',
     borderRadius: SIZES.base,
     padding: SIZES.large,
     alignItems: 'center',
@@ -903,7 +706,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   modalContent: {
-    backgroundColor: COLORS.white,
+    backgroundColor: '#F5E6C8',
     borderRadius: SIZES.base,
     padding: SIZES.large,
     alignItems: 'center',
@@ -912,10 +715,14 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 4,
     elevation: 5,
+    marginHorizontal: 8,
   },
   ayahList: {
-    flex: 1,
     width: '100%',
+    backgroundColor: '#F5E6C8',
+    borderRadius: 12,
+    padding: 4,
+    maxHeight: 350,
   },
   ayahItem: {
     padding: SIZES.medium,
@@ -928,6 +735,7 @@ const styles = StyleSheet.create({
   ayahItemText: {
     fontFamily: 'System',
     fontSize: 16,
+    color: '#3E2723',
   },
   searchContainer: {
     flexDirection: 'row',
@@ -1041,6 +849,12 @@ const styles = StyleSheet.create({
   headerButton: {
     marginLeft: SIZES.medium,
   },
+  backgroundImage: {
+    flex: 1,
+    resizeMode: 'cover',
+  },
+  rewardButtonRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 24, width: '100%' },
+  rewardButton: { flex: 1 },
 });
 
 export default MemorizationScreen; 

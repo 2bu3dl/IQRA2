@@ -1,11 +1,11 @@
 export const COLORS = {
   primary: '#388E3C', // Forest green
   secondary: '#8D6E63', // Earthy brown
-  background: '#F5F5E6', // Light beige/earth
+  background: '#000000', // Black background
   accent: '#C0A060', // Muted gold/yellow
-  text: '#222F1F', // Deep greenish-black
-  textSecondary: '#5D6B57', // Muted olive
-  border: '#D7CCC8', // Light brown/earth
+  text: '#FFFFFF', // White text for contrast
+  textSecondary: '#CCCCCC', // Light gray for secondary text
+  border: '#333333', // Dark gray border
   white: '#FFFFFF',
   black: '#000000',
   error: '#FF5252',
