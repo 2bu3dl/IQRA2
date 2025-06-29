@@ -37,14 +37,14 @@ export const SIZES = {
 };
 
 export const FONTS = {
-  h1: { fontFamily: 'System', fontSize: SIZES.h1, lineHeight: 36 },
-  h2: { fontFamily: 'System', fontSize: SIZES.h2, lineHeight: 30 },
-  h3: { fontFamily: 'System', fontSize: SIZES.h3, lineHeight: 24 },
-  h4: { fontFamily: 'System', fontSize: SIZES.h4, lineHeight: 22 },
-  body1: { fontFamily: 'System', fontSize: SIZES.body1, lineHeight: 24 },
-  body2: { fontFamily: 'System', fontSize: SIZES.body2, lineHeight: 20 },
-  body3: { fontFamily: 'System', fontSize: SIZES.body3, lineHeight: 16 },
-  arabic: { fontFamily: 'QuranFont', fontSize: 28, lineHeight: 40 }, // Placeholder for custom Arabic font
+  h1: { fontFamily: 'Montserrat-Bold', fontSize: SIZES.h1, lineHeight: 36 },
+  h2: { fontFamily: 'Montserrat-Bold', fontSize: SIZES.h2, lineHeight: 30 },
+  h3: { fontFamily: 'Montserrat-Bold', fontSize: SIZES.h3, lineHeight: 24 },
+  h4: { fontFamily: 'Montserrat-Bold', fontSize: SIZES.h4, lineHeight: 22 },
+  body1: { fontFamily: 'Montserrat-Regular', fontSize: SIZES.body1, lineHeight: 24 },
+  body2: { fontFamily: 'Montserrat-Regular', fontSize: SIZES.body2, lineHeight: 20 },
+  body3: { fontFamily: 'Montserrat-Regular', fontSize: SIZES.body3, lineHeight: 16 },
+  arabic: { fontFamily: 'KFGQPC Uthman Taha Naskh', fontSize: 28, lineHeight: 40 },
 };
 
 export const SHADOWS = {

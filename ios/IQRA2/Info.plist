@@ -56,6 +56,8 @@
 	<key>UIAppFonts</key>
 	<array>
 		<string>UthmanTN_v2-0.ttf</string>
+		<string>Montserrat-Regular.ttf</string>
+		<string>Montserrat-Bold.ttf</string>
 	</array>
 </dict>
 </plist>

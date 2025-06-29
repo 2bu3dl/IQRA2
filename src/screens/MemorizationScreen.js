@@ -657,7 +657,6 @@ const styles = StyleSheet.create({
     maxHeight: '60%',
   },
   arabicText: {
-    fontFamily: 'System',
     lineHeight: 40,
   },
   revealButton: {

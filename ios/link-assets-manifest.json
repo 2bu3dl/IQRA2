@@ -2,6 +2,14 @@
   "migIndex": 1,
   "data": [
     {
+      "path": "src/assets/fonts/Montserrat-Bold.ttf",
+      "sha1": "bf257f6f91f6522eccea6d4f28d57bb118c98729"
+    },
+    {
+      "path": "src/assets/fonts/Montserrat-Regular.ttf",
+      "sha1": "9ca420aa453eb243037970c0c1c1adfe289f510f"
+    },
+    {
       "path": "src/assets/fonts/UthmanTN_v2-0.ttf",
       "sha1": "b7f621480cd715885719fdbc5a16521447f4c7f3"
     }
