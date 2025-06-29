@@ -97,10 +97,19 @@ const HomeScreen = ({ navigation }) => {
             <TouchableOpacity style={styles.introButton} onPress={() => setIntroVisible(true)}>
               <Ionicons name="help-circle-outline" size={24} color={COLORS.white} />
             </TouchableOpacity>
+            <View style={styles.logoTextContainer}>
               <Image source={require('../assets/IQRA2icon.png')} style={styles.logo} resizeMode="contain" />
+            </View>
             <TouchableOpacity style={styles.settingsButton} onPress={() => setSettingsVisible(true)}>
               <Ionicons name="settings-outline" size={24} color={COLORS.white} />
             </TouchableOpacity>
+          </View>
+          <View style={styles.customDivider}>
+            <View style={styles.dividerLine} />
+            <View style={styles.dividerGap}>
+              <Text style={styles.arabicText}>اللَّهُمَّ اجْعَلْنَا مِنْ أَهْلِ الْقُرْآن</Text>
+            </View>
+            <View style={styles.dividerLine} />
           </View>
         </View>
 
@@ -124,7 +133,7 @@ const HomeScreen = ({ navigation }) => {
 
           <View style={styles.statsGrid}>
             <Card style={styles.statCard}>
-                <Text variant="h3" style={{ textAlign: 'center' }}>7asanaat gains</Text>
+                <Text variant="h3" style={{ textAlign: 'center' }}>7asanat gains</Text>
                 <View style={{ backgroundColor: 'rgba(0,0,0,0.75)', borderRadius: 8, paddingHorizontal: 16, paddingVertical: 8, alignSelf: 'center', marginVertical: 8 }}>
                   <Text variant="h1" style={{ color: 'rgba(245,200,96,0.8)', fontWeight: 'bold', textAlign: 'center', fontSize: formatLargeNumber(data.totalHasanat).fontSize }}>{formatLargeNumber(data.totalHasanat).text}</Text>
                 </View>
@@ -245,15 +254,16 @@ const styles = StyleSheet.create({
   header: {
     padding: SIZES.large,
     alignItems: 'center',
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
   },
   logoContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     width: '100%',
-    marginBottom: SIZES.medium,
+  },
+  logoTextContainer: {
+    flexDirection: 'column',
+    alignItems: 'center',
   },
   logo: {
     width: 120,
@@ -304,7 +314,7 @@ const styles = StyleSheet.create({
   buttonGrid: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    marginTop: SIZES.medium,
+    marginTop: 4,
   },
   gridButton: {
     flex: 1,
@@ -342,6 +352,29 @@ const styles = StyleSheet.create({
     padding: SIZES.large,
     borderRadius: SIZES.base,
     width: '80%',
+    alignItems: 'center',
+  },
+  arabicText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: COLORS.accent,
+    marginTop: 0,
+    textAlign: 'center',
+    fontFamily: 'KFGQPC Uthman Taha Naskh',
+  },
+  customDivider: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: '100%',
+    marginTop: SIZES.small,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: COLORS.border,
+  },
+  dividerGap: {
+    width: 200,
     alignItems: 'center',
   },
 });

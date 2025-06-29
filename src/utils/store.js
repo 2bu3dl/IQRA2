@@ -120,7 +120,9 @@ export const addHasanat = async (amount) => {
     const today = getTodayString();
     let newStreak = parseInt(streak || '0');
 
-    if (lastActivityDate !== today) {
+    if (newStreak === 0) {
+      newStreak = 1;
+    } else if (lastActivityDate !== today) {
       // If last activity was yesterday, increment streak
       const lastDate = new Date(lastActivityDate || '');
       const yesterday = new Date();
@@ -140,10 +142,23 @@ export const addHasanat = async (amount) => {
       AsyncStorage.setItem(STORAGE_KEYS.STREAK, newStreak.toString()),
     ]);
 
+    console.log('[store.js] addHasanat:', { amount, newTotal, newToday, today, newStreak });
     return { totalHasanat: newTotal, todayHasanat: newToday, streak: newStreak };
   } catch (error) {
     console.error('Error adding hasanat:', error);
     return null;
+  }
+};
+
+// Get current streak without updating
+export const getCurrentStreak = async () => {
+  try {
+    const streak = await AsyncStorage.getItem(STORAGE_KEYS.STREAK);
+    console.log('[store.js] getCurrentStreak:', streak);
+    return parseInt(streak || '0') || 0;
+  } catch (error) {
+    console.error('Error getting current streak:', error);
+    return 0;
   }
 };
 
@@ -215,10 +230,14 @@ export const updateMemorizedAyahs = async (surahName, ayahIndex) => {
 // Reset all progress
 export const resetProgress = async () => {
   try {
+    // Set last activity date to yesterday
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayString = yesterday.toISOString().split('T')[0];
     await Promise.all([
       AsyncStorage.setItem(STORAGE_KEYS.TOTAL_HASANAT, '0'),
       AsyncStorage.setItem(STORAGE_KEYS.TODAY_HASANAT, '0'),
-      AsyncStorage.setItem(STORAGE_KEYS.LAST_ACTIVITY_DATE, getTodayString()),
+      AsyncStorage.setItem(STORAGE_KEYS.LAST_ACTIVITY_DATE, yesterdayString),
       AsyncStorage.setItem(STORAGE_KEYS.STREAK, '0'),
       AsyncStorage.setItem(STORAGE_KEYS.MEMORIZED_AYAHS, JSON.stringify(initialState.memorizedAyahs)),
     ]);

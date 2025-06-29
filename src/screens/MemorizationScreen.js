@@ -1,16 +1,19 @@
 import React, { useState, useRef, useCallback, memo, useMemo } from 'react';
-import { View, StyleSheet, SafeAreaView, TouchableOpacity, Modal, Animated, Image, ScrollView, TextInput, ImageBackground } from 'react-native';
-import { COLORS, SIZES, FONTS } from '../utils/theme';
+import { View, StyleSheet, SafeAreaView, TouchableOpacity, Modal, Animated, Image, ScrollView, TextInput, ImageBackground, TouchableWithoutFeedback } from 'react-native';
+import { COLORS as BASE_COLORS, SIZES, FONTS } from '../utils/theme';
 import Text from '../components/Text';
 import Button from '../components/Button';
 import CardOrig from '../components/Card';
 import ProgressBarOrig from '../components/ProgressBar';
 import TranslationModal from '../components/TranslationModal';
+import StreakAnimation from '../components/StreakAnimation';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { addHasanat, updateMemorizedAyahs, updateStreak } from '../utils/store';
+import { addHasanat, updateMemorizedAyahs, updateStreak, getCurrentStreak } from '../utils/store';
 import { getSurahAyaatWithTransliteration, getAllSurahs } from '../utils/quranData';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 // import Svg, { Circle } from 'react-native-svg'; // Uncomment if using react-native-svg
+
+const COLORS = { ...BASE_COLORS, primary: '#6BA368', accent: '#FFD700' };
 
 const Card = memo(CardOrig);
 const ProgressBar = memo(ProgressBarOrig);
@@ -33,6 +36,9 @@ const MemorizationScreen = ({ route, navigation }) => {
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const ayahListRef = useRef(null);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
+  const [showStreakAnimation, setShowStreakAnimation] = useState(false);
+  const [newStreak, setNewStreak] = useState(0);
+  const [previousStreak, setPreviousStreak] = useState(0);
 
   const allSurahs = getAllSurahs();
   const currentSurahIndex = allSurahs.findIndex(s => s.surah === surahNumber);
@@ -61,6 +67,15 @@ const MemorizationScreen = ({ route, navigation }) => {
     }
     fetchAyaat();
   }, [surahNumber]);
+
+  // Initialize previous streak on component mount and after reset
+  React.useEffect(() => {
+    const initializeStreak = async () => {
+      const currentStreak = await getCurrentStreak();
+      setPreviousStreak(currentStreak);
+    };
+    initializeStreak();
+  }, [route?.params?.resetFlag]);
 
   // Memoize flashcards so they're only rebuilt when surahNumber or ayaat changes
   const flashcards = useMemo(() => {
@@ -239,6 +254,11 @@ const MemorizationScreen = ({ route, navigation }) => {
     navigation.navigate('Home');
   }
 
+  const handleStreakAnimationComplete = () => {
+    setShowStreakAnimation(false);
+    setPreviousStreak(newStreak);
+  };
+
   return (
     <View style={{ flex: 1, backgroundColor: '#000' }}>
       <ImageBackground 
@@ -321,16 +341,14 @@ const MemorizationScreen = ({ route, navigation }) => {
                         : (isTextHidden ? '••••••••••••••••••••••••••••••••••••••••' : flashcards[currentAyahIndex]?.text || '')
               }
             </Text>
-            {/* Show transliteration only when revealed */}
-            {!isTextHidden && (
-              <Text
-                variant="body2"
-                style={styles.transliterationText}
-                align="center"
-              >
-                        {stripHtmlTags(flashcards[currentAyahIndex]?.transliteration || '')}
-                      </Text>
-                    )}
+            {/* Show transliteration always */}
+            <Text
+              variant="body2"
+              style={styles.transliterationText}
+              align="center"
+            >
+              {stripHtmlTags(flashcards[currentAyahIndex]?.transliteration || '')}
+            </Text>
                     {/* Show bismillah translation for bismillah card only */}
                     {flashcards[currentAyahIndex]?.type === 'bismillah' && (
                       <Text
@@ -377,19 +395,19 @@ const MemorizationScreen = ({ route, navigation }) => {
             </TouchableOpacity>
           </View>
         )}
-          </View>
         
-        <View style={styles.navigation}>
+        {/* Navigation buttons overlaid */}
+        <View style={styles.navigationOverlay}>
           <Button
             title={currentAyahIndex === 0 ? 'Back' : 'Previous'}
-              onPress={async () => {
+            onPress={async () => {
               if (currentAyahIndex === 0) {
-                  // Update streak when going back to surah list
-                  try {
-                    await updateStreak();
-                  } catch (error) {
-                    console.error('[MemorizationScreen] Error updating streak on back press:', error);
-                  }
+                // Update streak when going back to surah list
+                try {
+                  await updateStreak();
+                } catch (error) {
+                  console.error('[MemorizationScreen] Error updating streak on back press:', error);
+                }
                 navigation.navigate('SurahList');
               } else {
                 handlePrevious();
@@ -399,13 +417,14 @@ const MemorizationScreen = ({ route, navigation }) => {
             style={styles.navButton}
           />
           <Button
-              title={currentAyahIndex === 0 ? 'Start' : (flashcards && currentAyahIndex === flashcards.length - 1 ? 'Finish' : 'Next')}
+            title={currentAyahIndex === 0 ? 'Start' : (flashcards && currentAyahIndex === flashcards.length - 1 ? 'Finish' : 'Next')}
             onPress={handleNext}
             disabled={showReward}
             style={styles.navButton}
           />
-      </View>
-
+        </View>
+          </View>
+        
       {/* Go To Modal */}
       <Modal
         visible={showGoToModal}
@@ -532,17 +551,38 @@ const MemorizationScreen = ({ route, navigation }) => {
               title={currentAyahIndex === ayaat.length - 1 ? 'Next Surah' : 'Next Ayah'}
                     onPress={async () => {
                 setShowReward(false);
+                
+                // Calculate the real reward for the ayah
+                const reward = rewardAmount || 1;
+                // Get previous streak from storage before adding hasanat
+                const prevStreakFromStorage = await getCurrentStreak();
+                console.log('[MemorizationScreen] Previous streak:', prevStreakFromStorage, 'Reward:', reward);
+                // Add the real hasanat and update streak
+                await addHasanat(reward);
+                // Wait a bit to ensure AsyncStorage is updated
+                await new Promise(res => setTimeout(res, 150));
+                // Get new streak from storage
+                const currentStreak = await getCurrentStreak();
+                console.log('[MemorizationScreen] New streak after addHasanat:', currentStreak);
+                if (currentStreak > prevStreakFromStorage) {
+                  setNewStreak(currentStreak);
+                  setShowStreakAnimation(true);
+                  setPreviousStreak(prevStreakFromStorage);
+                  console.log('[MemorizationScreen] Streak increased! Showing animation.');
+                } else {
+                  console.log('[MemorizationScreen] Streak did not increase.');
+                }
+                
                 if (currentAyahIndex < ayaat.length - 1) {
                   setCurrentAyahIndex(currentAyahIndex + 1);
                   setIsTextHidden(false);
                 } else {
-                        // Update streak when finishing surah
+                        // Add all session hasanat at the end of the surah
                         try {
-                          await updateStreak();
+                          await addHasanat(sessionHasanat.current);
                         } catch (error) {
                           console.error('[MemorizationScreen] Error updating streak on reward finish:', error);
                         }
-                  addHasanat(sessionHasanat.current);
                   sessionHasanat.current = 0;
                   navigation.navigate('Home');
                 }
@@ -552,6 +592,20 @@ const MemorizationScreen = ({ route, navigation }) => {
                 </View>
           </Animated.View>
         </View>
+      </Modal>
+
+      {/* Streak Animation Modal */}
+      <Modal
+        visible={showStreakAnimation}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowStreakAnimation(false)}
+      >
+        <StreakAnimation
+          visible={showStreakAnimation}
+          newStreak={newStreak}
+          onAnimationComplete={handleStreakAnimationComplete}
+        />
       </Modal>
 
       {/* Settings Modal */}
@@ -647,17 +701,19 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   card: {
-    padding: SIZES.extraLarge,
+    padding: SIZES.extraLarge * 1.5,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#F5E6C8',
     borderColor: COLORS.accent,
     borderWidth: 1,
     width: '100%',
-    maxHeight: '60%',
+    maxHeight: '85%',
   },
   arabicText: {
-    lineHeight: 40,
+    lineHeight: 75,
+    color: '#1a1a1a',
+    fontSize: 46,
   },
   revealButton: {
     marginVertical: SIZES.medium,
@@ -691,9 +747,10 @@ const styles = StyleSheet.create({
   },
   transliterationText: {
     fontStyle: 'italic',
-    color: COLORS.textSecondary,
-    fontSize: 16,
+    color: '#CCCCCC',
+    fontSize: 20,
     marginTop: 12,
+    backgroundColor: 'transparent',
   },
   goToButton: {
     marginLeft: SIZES.medium,
@@ -854,6 +911,11 @@ const styles = StyleSheet.create({
   },
   rewardButtonRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 24, width: '100%' },
   rewardButton: { flex: 1 },
+  navigationOverlay: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: SIZES.large,
+  },
 });
 
 export default MemorizationScreen; 

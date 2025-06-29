@@ -165,6 +165,9 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     color: theme.colors.primary,
+    textAlign: 'center',
+    textDecorationLine: 'underline',
+    flex: 1,
   },
   closeButton: {
     width: 30,
