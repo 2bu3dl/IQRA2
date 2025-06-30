@@ -39,6 +39,7 @@ const initialState = {
       total: 7,
       memorized: 0,
       lastAyahIndex: -1,
+      completedAyaat: [],
     },
   },
 };
@@ -211,12 +212,22 @@ export const updateMemorizedAyahs = async (surahName, ayahIndex) => {
         total: 7, // For Al-Fatihah
         memorized: 0,
         lastAyahIndex: -1,
+        completedAyaat: [], // Track individual completed ayaat
       };
     }
 
-    if (ayahIndex > memorizedAyahs[surahName].lastAyahIndex) {
-      memorizedAyahs[surahName].memorized = ayahIndex + 1;
-      memorizedAyahs[surahName].lastAyahIndex = ayahIndex;
+    // Initialize completedAyaat array if it doesn't exist (for backward compatibility)
+    if (!memorizedAyahs[surahName].completedAyaat) {
+      memorizedAyahs[surahName].completedAyaat = [];
+    }
+
+    // Only mark this specific ayah as completed if it's not already completed
+    if (!memorizedAyahs[surahName].completedAyaat.includes(ayahIndex)) {
+      memorizedAyahs[surahName].completedAyaat.push(ayahIndex);
+      // Update the memorized count to the actual number of completed ayaat
+      memorizedAyahs[surahName].memorized = memorizedAyahs[surahName].completedAyaat.length;
+      // Update lastAyahIndex to the highest completed ayah
+      memorizedAyahs[surahName].lastAyahIndex = Math.max(...memorizedAyahs[surahName].completedAyaat);
     }
 
     await AsyncStorage.setItem(STORAGE_KEYS.MEMORIZED_AYAHS, JSON.stringify(memorizedAyahs));

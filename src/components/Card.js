@@ -32,8 +32,12 @@ const Card = ({ children, style, variant = 'default', padding = 'medium', onPres
       },
     };
 
+    // Check if style prop has backgroundColor, if so, don't apply default background
+    const hasCustomBackground = style && style.backgroundColor;
+    
     return {
       ...baseStyle,
+      ...(hasCustomBackground ? {} : { backgroundColor: COLORS.background }),
       ...variantStyles[variant],
       ...paddingStyles[padding],
     };

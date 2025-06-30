@@ -21,6 +21,7 @@ const ProgressBar = memo(ProgressBarOrig);
 const MemorizationScreen = ({ route, navigation }) => {
   const { surah } = route.params;
   const surahNumber = surah.id || surah.surah || 1;
+  
   const [ayaat, setAyaat] = useState([]);
   const [currentAyahIndex, setCurrentAyahIndex] = useState(0);
   const [isTextHidden, setIsTextHidden] = useState(false);
@@ -48,15 +49,10 @@ const MemorizationScreen = ({ route, navigation }) => {
   React.useEffect(() => {
     async function fetchAyaat() {
       try {
-      const data = await getSurahAyaatWithTransliteration(surahNumber);
-        if (!data || !Array.isArray(data)) {
-          console.error('[MemorizationScreen] Invalid data received from getSurahAyaatWithTransliteration');
-          return;
-        }
+        const data = await getSurahAyaatWithTransliteration(surahNumber);
         setAyaat(data);
         setIsTextHidden(false);
       } catch (error) {
-        console.error('[MemorizationScreen] Error fetching ayaat:', error);
         setAyaat([{
           type: 'ayah',
           text: 'بِسْمِ اللّٰهِ الرَّحْمٰنِ الرَّحِیْمِ',
@@ -168,7 +164,7 @@ const MemorizationScreen = ({ route, navigation }) => {
     return flashcards.filter((ayah, index) => {
       const ayahNumber = flashcards.slice(0, index + 1).filter(a => a.type === 'ayah').length;
       const ayahText = ayah.type === 'istiadhah' ? "Isti'adhah" :
-                      ayah.type === 'bismillah' ? 'BismAllah' :
+                      ayah.type === 'bismillah' ? 'Bismillah' :
                       `Ayah ${ayahNumber}`;
       
       return ayahText.toLowerCase().includes(searchLower) || 
@@ -256,7 +252,11 @@ const MemorizationScreen = ({ route, navigation }) => {
 
   const handleStreakAnimationComplete = () => {
     setShowStreakAnimation(false);
-    setPreviousStreak(newStreak);
+  };
+
+  // Function to clean surah name by removing existing numbers
+  const cleanSurahName = (name) => {
+    return name.replace(/^\d+\.?\s*/, ''); // Remove number and period at the beginning
   };
 
   return (
@@ -294,7 +294,7 @@ const MemorizationScreen = ({ route, navigation }) => {
                   ? `Ayah ${flashcards.slice(0, currentAyahIndex + 1).filter(a => a.type === 'ayah').length}`
                   : flashcards && flashcards[currentAyahIndex]?.type === 'istiadhah'
                 ? "Isti3aadhah"
-                : 'BismAllah'}
+                : 'Bismillah'}
           </Text>
           <View style={styles.progressContainer}>
             <ProgressBar 
@@ -434,7 +434,7 @@ const MemorizationScreen = ({ route, navigation }) => {
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <Text variant="h2" style={{ marginBottom: 16 }}>Navigate to Ayah</Text>
+            <Text variant="h2" style={{ marginBottom: 16, color: 'rgba(64, 64, 64, 0.9)' }}>Navigate to Ayah..</Text>
             
             {/* Search Input */}
             <View style={styles.searchContainer}>
@@ -451,12 +451,9 @@ const MemorizationScreen = ({ route, navigation }) => {
               </TouchableOpacity>
             </View>
             
-                <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 }}>
-                  <TouchableOpacity style={[styles.surahNavButton, { flex: 1, marginRight: 4 }]} onPress={() => ayahListRef.current?.scrollTo({ y: 0, animated: true })}>
-                    <Text variant="body1" style={styles.surahNavButtonText}>Top</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity style={[styles.surahNavButton, { flex: 1, marginLeft: 4 }]} onPress={() => ayahListRef.current?.scrollToEnd({ animated: true })}>
-                    <Text variant="body1" style={styles.surahNavButtonText}>Bottom</Text>
+                <View style={{ marginBottom: 8 }}>
+                  <TouchableOpacity style={[styles.surahNavButton, { backgroundColor: COLORS.primary }]} onPress={() => ayahListRef.current?.scrollTo({ y: 0, animated: true })}>
+                    <Ionicons name="chevron-up" size={24} color="rgba(64, 64, 64, 0.9)" />
                   </TouchableOpacity>
                 </View>
                 
@@ -471,7 +468,7 @@ const MemorizationScreen = ({ route, navigation }) => {
                       }}
                     >
                       <Text variant="body1" style={styles.surahNavButtonText}>
-                        ← {prevSurah.name}
+                        ← {prevSurah.surah}. {cleanSurahName(prevSurah.name)}
                       </Text>
                     </TouchableOpacity>
                   )}
@@ -489,9 +486,16 @@ const MemorizationScreen = ({ route, navigation }) => {
                     onPress={() => handleGoToAyah(originalIndex)}
                   >
                         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                    <Text variant="body1" style={styles.ayahItemText}>
+                    <Text variant="body1" style={[
+                      styles.ayahItemText,
+                      currentAyahIndex === originalIndex && { 
+                        color: '#FFFFFF',
+                        fontWeight: 'bold',
+                        fontSize: 18
+                      }
+                    ]}>
                       {ayah.type === 'istiadhah' ? "Isti'adhah" :
-                       ayah.type === 'bismillah' ? 'BismAllah' :
+                       ayah.type === 'bismillah' ? 'Bismillah' :
                              `Ayah ${ayahNumber}`}
                     </Text>
                         </View>
@@ -508,18 +512,23 @@ const MemorizationScreen = ({ route, navigation }) => {
                       }}
                     >
                       <Text variant="body1" style={styles.surahNavButtonText}>
-                        {nextSurah.name} →
+                        {nextSurah.surah}. {cleanSurahName(nextSurah.name)} →
                       </Text>
                     </TouchableOpacity>
                   )}
             </ScrollView>
+            
+            <TouchableOpacity style={[styles.surahNavButton, { backgroundColor: COLORS.primary, marginTop: 8 }]} onPress={() => ayahListRef.current?.scrollToEnd({ animated: true })}>
+              <Ionicons name="chevron-down" size={24} color="rgba(64, 64, 64, 0.9)" />
+            </TouchableOpacity>
+            
             <Button
               title="Cancel"
               onPress={() => {
                 setShowGoToModal(false);
                 setSearchText('');
               }}
-              style={{ backgroundColor: COLORS.primary, marginTop: 16 }}
+              style={{ backgroundColor: 'rgba(96, 96, 96, 0.9)', marginTop: 16, width: '90%' }}
             />
           </View>
         </View>
@@ -556,21 +565,16 @@ const MemorizationScreen = ({ route, navigation }) => {
                 const reward = rewardAmount || 1;
                 // Get previous streak from storage before adding hasanat
                 const prevStreakFromStorage = await getCurrentStreak();
-                console.log('[MemorizationScreen] Previous streak:', prevStreakFromStorage, 'Reward:', reward);
                 // Add the real hasanat and update streak
                 await addHasanat(reward);
                 // Wait a bit to ensure AsyncStorage is updated
                 await new Promise(res => setTimeout(res, 150));
                 // Get new streak from storage
                 const currentStreak = await getCurrentStreak();
-                console.log('[MemorizationScreen] New streak after addHasanat:', currentStreak);
                 if (currentStreak > prevStreakFromStorage) {
                   setNewStreak(currentStreak);
                   setShowStreakAnimation(true);
                   setPreviousStreak(prevStreakFromStorage);
-                  console.log('[MemorizationScreen] Streak increased! Showing animation.');
-                } else {
-                  console.log('[MemorizationScreen] Streak did not increase.');
                 }
                 
                 if (currentAyahIndex < ayaat.length - 1) {
@@ -757,13 +761,13 @@ const styles = StyleSheet.create({
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.4)',
+    backgroundColor: 'rgba(64, 64, 64, 0.9)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   modalContent: {
-    backgroundColor: '#F5E6C8',
-    borderRadius: SIZES.base,
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    borderRadius: 32,
     padding: SIZES.large,
     alignItems: 'center',
     shadowColor: COLORS.accent,
@@ -771,33 +775,38 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 4,
     elevation: 5,
-    marginHorizontal: 8,
+    marginHorizontal: 4,
+    width: '95%',
   },
   ayahList: {
     width: '100%',
-    backgroundColor: '#F5E6C8',
-    borderRadius: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    borderRadius: 24,
     padding: 4,
-    maxHeight: 350,
+    maxHeight: 250,
   },
   ayahItem: {
     padding: SIZES.medium,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
+    borderBottomColor: 'rgba(165,115,36,0.8)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   selectedAyahItem: {
-    backgroundColor: COLORS.accent,
+    backgroundColor: 'rgba(128, 128, 128, 0.8)',
   },
   ayahItemText: {
     fontFamily: 'System',
     fontSize: 16,
-    color: '#3E2723',
+    color: 'rgba(51, 105, 78, 0.8)',
+    textAlign: 'center',
+    fontWeight: 'bold',
   },
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: COLORS.accent,
+    borderColor: 'rgba(165,115,36,0.8)',
     borderRadius: SIZES.base,
     padding: SIZES.small,
     marginBottom: 16,
@@ -880,16 +889,16 @@ const styles = StyleSheet.create({
     flexGrow: 1,
   },
   surahNavButton: {
-    backgroundColor: COLORS.accent,
+    backgroundColor: 'rgba(51, 105, 78, 1)',
     padding: SIZES.medium,
-    borderRadius: SIZES.base,
+    borderRadius: 24,
     marginVertical: 8,
     alignItems: 'center',
   },
   surahNavButtonText: {
-    color: COLORS.primary,
+    color: 'rgba(255, 165, 0, 0.8)',
     fontWeight: 'bold',
-    fontSize: 18,
+    fontSize: 22,
   },
   ayahDot: {
     width: 10,

@@ -1,37 +1,31 @@
-import React, { useEffect, useRef } from 'react';
-import { View, StyleSheet, Animated } from 'react-native';
+import React, { useMemo } from 'react';
+import { View, StyleSheet } from 'react-native';
 import { COLORS, SIZES } from '../utils/theme';
 
-const ProgressBar = ({ progress, total, height = 8, animated = true }) => {
-  const progressAnim = useRef(new Animated.Value(0)).current;
-  
-  const progressPercentage = total > 0 ? (progress / total) * 100 : 0;
-
-  useEffect(() => {
-    if (animated) {
-      Animated.timing(progressAnim, {
-        toValue: progressPercentage,
-        duration: 800,
-        useNativeDriver: false,
-      }).start();
-    } else {
-      progressAnim.setValue(progressPercentage);
-    }
-  }, [progress, total, animated, progressAnim, progressPercentage]);
+const ProgressBar = ({ progress, total, height = 6, completed = false }) => {
+  // Memoize the progress percentage to prevent unnecessary recalculations
+  const progressPercentage = useMemo(() => {
+    return total > 0 ? (progress / total) * 100 : 0;
+  }, [progress, total]);
 
   return (
     <View style={[styles.container, { height }]}>
       <View style={[styles.background, { height }]} />
-      <Animated.View
+      <View
         style={[
           styles.progress,
           {
             height,
-            width: animated ? progressAnim.interpolate({
-              inputRange: [0, 100],
-              outputRange: ['0%', '100%'],
-            }) : `${progressPercentage}%`,
+            width: `${progressPercentage}%`,
+            backgroundColor: completed ? '#fae29f' : '#33694e',
           },
+          completed && {
+            shadowColor: '#fae29f',
+            shadowOffset: { width: 0, height: 0 },
+            shadowOpacity: 0.9,
+            shadowRadius: 6,
+            elevation: 6,
+          }
         ]}
       />
     </View>
@@ -48,11 +42,11 @@ const styles = StyleSheet.create({
   background: {
     position: 'absolute',
     width: '100%',
-    backgroundColor: COLORS.border,
+    backgroundColor: 'rgba(200, 200, 200, 0.3)',
     borderRadius: SIZES.base,
   },
   progress: {
-    backgroundColor: COLORS.success,
+    backgroundColor: '#33694e',
     borderRadius: SIZES.base,
   },
 });

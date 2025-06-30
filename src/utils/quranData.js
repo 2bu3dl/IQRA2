@@ -25,27 +25,27 @@ const SURAH_NAMES = {
   20: '6aha',
   21: 'Al-Anbya',
   22: 'Al-Hajj',
-  23: 'Al-Mu\'minun',
-  24: 'An-Nur',
+  23: 'Al-Mu2minoon',
+  24: 'An-Noor',
   25: 'Al-Furqan',
   26: 'Ash-Shu3ara2',
   27: 'An-Naml',
   28: 'Al-Qasas',
   29: 'Al-3ankaboot',
-  30: 'Ar-Rum',
+  30: 'Ar-Room',
   31: 'Luqmaan',
   32: 'As-Sajdah',
   33: 'Al-A7zab',
   34: 'Saba',
-  35: 'Fatir',
+  35: 'Fa6ir',
   36: 'Yaseen',
-  37: 'As-Saffat',
+  37: 'As-6affat',
   38: '9aad',
   39: 'Az-Zumar',
   40: 'Ghafir',
-  41: 'Fussilat',
+  41: 'Fu99ilat',
   42: 'Ash-Shura',
-  43: 'Az-Zukhruf',
+  43: 'Az-Zu5ruf',
   44: 'Ad-Dukhan',
   45: 'Al-Jathiyah',
   46: 'Al-Ahqaf',
@@ -87,17 +87,17 @@ const SURAH_NAMES = {
   82: 'Al-Infitar',
   83: 'Al-Mu6affifoon',
   84: 'Al-Inshiqaq',
-  85: 'Al-Buruj',
+  85: 'Al-Burooj',
   86: 'At-Tariq',
-  87: 'Al-A\'la',
+  87: 'Al-A3la',
   88: 'Al-Ghashiyah',
   89: 'Al-Fajr',
   90: 'Al-Balad',
   91: 'Ash-Shams',
   92: 'Al-Layl',
   93: 'Ad-Du7a',
-  94: 'Ash-Sharh',
-  95: 'At-Tin',
+  94: 'Ash-Shar7',
+  95: 'At-Teen',
   96: 'Al-3alaq',
   97: 'Al-Qadr',
   98: 'Al-Bayyinah',
@@ -108,42 +108,49 @@ const SURAH_NAMES = {
   103: 'Al-Asr',
   104: 'Al-Humazah',
   105: 'Al-Feel',
-  106: 'Quraish',
+  106: 'Quraysh',
   107: 'Al-Ma3oon',
   108: 'Al-Kawthar',
-  109: 'Al-Kafirun',
+  109: 'Al-Kafiroon',
   110: 'An-Nasr',
   111: 'Al-Masad',
-  112: 'Al-Ikhlas',
+  112: 'Al-I5las',
   113: 'Al-Falaq',
-  114: 'An-Nas',
+  114: 'An-Naas',
 };
 
 // Build surahMap and translitMap from the JSON arrays
 const surahMap = {};
 quranRaw.forEach(({ surah, ayah, text }) => {
-  if (!surahMap[surah]) surahMap[surah] = [];
-  surahMap[surah].push({ ayah, text });
+  const surahNum = parseInt(surah, 10); // Ensure it's a number
+  if (!surahMap[surahNum]) surahMap[surahNum] = [];
+  surahMap[surahNum].push({ ayah, text });
 });
 
 const translitMap = {};
 quranTransliterationRaw.forEach(({ surah, ayah, transliteration }) => {
-  if (!translitMap[surah]) translitMap[surah] = [];
-  translitMap[surah].push({ ayah, transliteration });
+  const surahNum = parseInt(surah, 10); // Ensure it's a number
+  if (!translitMap[surahNum]) translitMap[surahNum] = [];
+  translitMap[surahNum].push({ ayah, transliteration });
 });
 
 export function getSurahAyaat(surahNumber) {
-  return surahMap[surahNumber] || [];
+  const surahNum = parseInt(surahNumber, 10); // Ensure it's a number
+  return surahMap[surahNum] || [];
 }
 
 export function getSurahAyaatWithTransliteration(surahNumber) {
-  const ayaat = surahMap[surahNumber] || [];
-  const translitAyaat = translitMap[surahNumber] || [];
+  const surahNum = parseInt(surahNumber, 10); // Ensure it's a number
+  const ayaat = surahMap[surahNum] || [];
+  const translitAyaat = translitMap[surahNum] || [];
+  
   // Merge by ayah number
-  return ayaat.map((ayahObj, idx) => ({
+  const result = ayaat.map((ayahObj, idx) => ({
     ...ayahObj,
     transliteration: translitAyaat[idx]?.transliteration || '',
   }));
+  
+  return result;
 }
 
 export function getAllSurahs() {

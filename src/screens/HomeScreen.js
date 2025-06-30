@@ -97,17 +97,27 @@ const HomeScreen = ({ navigation }) => {
             <TouchableOpacity style={styles.introButton} onPress={() => setIntroVisible(true)}>
               <Ionicons name="help-circle-outline" size={24} color={COLORS.white} />
             </TouchableOpacity>
-            <View style={styles.logoTextContainer}>
+            <View style={[styles.logoTextContainer, {
+              shadowColor: '#fae29f',
+              shadowOffset: { width: 0, height: 0 },
+              shadowOpacity: 0.3,
+              shadowRadius: 8,
+              elevation: 6,
+            }]}>
               <Image source={require('../assets/IQRA2icon.png')} style={styles.logo} resizeMode="contain" />
             </View>
             <TouchableOpacity style={styles.settingsButton} onPress={() => setSettingsVisible(true)}>
-              <Ionicons name="settings-outline" size={24} color={COLORS.white} />
+              <Ionicons name="settings-outline" size={24} color="#FF8C00" />
             </TouchableOpacity>
           </View>
           <View style={styles.customDivider}>
             <View style={styles.dividerLine} />
             <View style={styles.dividerGap}>
-              <Text style={styles.arabicText}>اللَّهُمَّ اجْعَلْنَا مِنْ أَهْلِ الْقُرْآن</Text>
+              <Text style={[styles.arabicText, {
+                textShadowColor: '#fae29f',
+                textShadowOffset: { width: 0, height: 0 },
+                textShadowRadius: 3,
+              }]}>اللَّهُمَّ اجْعَلْنَا مِنْ أَهْلِ الْقُرْآن</Text>
             </View>
             <View style={styles.dividerLine} />
           </View>
@@ -121,13 +131,63 @@ const HomeScreen = ({ navigation }) => {
                 </View>
               </View>
               <Text variant="body1" style={{ marginBottom: SIZES.small, textAlign: 'center' }}>
-                <Text style={{ color: '#f5c860', fontWeight: 'bold' }}>{data.memorizedAyaat}</Text> out of <Text style={{ color: '#FFF', fontWeight: 'bold' }}>{data.totalAyaat}</Text> ayaat memorized
+                <Text style={{ 
+                  color: '#f5c860', 
+                  fontWeight: 'bold',
+                  textShadowColor: '#fae29f',
+                  textShadowOffset: { width: 0, height: 0 },
+                  textShadowRadius: 2,
+                }}>{data.memorizedAyaat}</Text> out of <Text style={{ color: '#FFF', fontWeight: 'bold' }}>{data.totalAyaat}</Text> ayaat memorized
             </Text>
             <View style={styles.progressBar}>
-              <View style={[styles.progressFill, { width: `${progressPercentage}%` }]} />
+              <View style={[
+                styles.progressFill, 
+                { 
+                  width: `${progressPercentage}%`,
+                  backgroundColor: progressPercentage === 100 ? '#fae29f' : '#33694e',
+                  ...(progressPercentage === 100 && {
+                    shadowColor: '#fae29f',
+                    shadowOffset: { width: 0, height: 0 },
+                    shadowOpacity: 1.0,
+                    shadowRadius: 15,
+                    elevation: 12,
+                  })
+                }
+              ]} />
             </View>
-            <Text variant="body2" color="textSecondary" style={{ marginTop: 8, textAlign: 'center' }}>
-              {progressPercentage}% Complete
+            <Text variant="body2" color="textSecondary" style={{ 
+              marginTop: 8, 
+              textAlign: 'center',
+              color: '#FFF',
+              fontSize: progressPercentage === 100 ? 18 : 16,
+              ...(progressPercentage === 100 && {
+                textShadowColor: '#fae29f',
+                textShadowOffset: { width: 0, height: 0 },
+                textShadowRadius: 8,
+                fontWeight: 'bold',
+              })
+            }}>
+              {progressPercentage === 100 ? (
+                <>
+                  <Text style={{ 
+                    fontWeight: 'bold',
+                    color: '#fae29f',
+                    textShadowColor: '#fae29f',
+                    textShadowOffset: { width: 0, height: 0 },
+                    textShadowRadius: 8,
+                  }}>100%</Text> COMPLETED - MASHA2ALLAH!
+                </>
+              ) : (
+                <>
+                  <Text style={{ 
+                    fontWeight: 'bold',
+                    color: '#fae29f',
+                    textShadowColor: '#fae29f',
+                    textShadowOffset: { width: 0, height: 0 },
+                    textShadowRadius: 2,
+                  }}>{progressPercentage}%</Text> Complete
+                </>
+              )}
             </Text>
           </Card>
 
@@ -135,7 +195,15 @@ const HomeScreen = ({ navigation }) => {
             <Card style={styles.statCard}>
                 <Text variant="h3" style={{ textAlign: 'center' }}>7asanat gains</Text>
                 <View style={{ backgroundColor: 'rgba(0,0,0,0.75)', borderRadius: 8, paddingHorizontal: 16, paddingVertical: 8, alignSelf: 'center', marginVertical: 8 }}>
-                  <Text variant="h1" style={{ color: 'rgba(245,200,96,0.8)', fontWeight: 'bold', textAlign: 'center', fontSize: formatLargeNumber(data.totalHasanat).fontSize }}>{formatLargeNumber(data.totalHasanat).text}</Text>
+                  <Text variant="h1" style={{ 
+                    color: 'rgba(245,200,96,0.8)', 
+                    fontWeight: 'bold', 
+                    textAlign: 'center', 
+                    fontSize: formatLargeNumber(data.totalHasanat).fontSize,
+                    textShadowColor: '#fae29f',
+                    textShadowOffset: { width: 0, height: 0 },
+                    textShadowRadius: 2,
+                  }}>{formatLargeNumber(data.totalHasanat).text}</Text>
                 </View>
                 <Text variant="body2" color="textSecondary" style={{ textAlign: 'center' }}>+{formatLargeNumber(data.todayHasanat).text} today</Text>
                 <Text variant="body2" style={{ textAlign: 'center', color: '#FFF', marginTop: 8, marginBottom: 4 }}>insha2Allah</Text>
@@ -173,6 +241,7 @@ const HomeScreen = ({ navigation }) => {
           >
             <View style={styles.modalOverlay}>
               <View style={styles.modalContent}>
+                <Image source={require('../assets/IQRA2icon.png')} style={styles.introLogo} resizeMode="contain" />
                 <Text variant="h2" style={{ marginBottom: 16 }}>Welcome to IQRA2</Text>
                 <Text variant="body1" style={{ marginBottom: 12, textAlign: 'center' }}>
                   IQRA2 is your personal Quran memorization companion. Track your progress, earn hasanat, and maintain your daily streak.
@@ -295,6 +364,11 @@ const styles = StyleSheet.create({
   progressFill: {
     height: '100%',
     backgroundColor: '#33694e',
+    shadowColor: '#33694e',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.6,
+    shadowRadius: 4,
+    elevation: 4,
   },
   statsGrid: {
     flexDirection: 'row',
@@ -376,6 +450,11 @@ const styles = StyleSheet.create({
   dividerGap: {
     width: 200,
     alignItems: 'center',
+  },
+  introLogo: {
+    width: 120,
+    height: 120,
+    marginBottom: 16,
   },
 });
 

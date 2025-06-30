@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useMemo } from 'react';
 import { View, StyleSheet, SafeAreaView, FlatList, Image, TouchableOpacity, ImageBackground, TextInput, Animated } from 'react-native';
 import { BlurView } from '@react-native-community/blur';
 import { COLORS as BASE_COLORS, SIZES, FONTS } from '../utils/theme';
@@ -11,7 +11,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 
 const COLORS = { ...BASE_COLORS, primary: '#33694e', accent: '#FFD700' };
 
-const SCROLL_BAR_HEIGHT = 200;
+const SCROLL_BAR_HEIGHT = 150;
 
 const SurahListScreen = ({ navigation, route }) => {
   const [data, setData] = useState({
@@ -24,9 +24,12 @@ const SurahListScreen = ({ navigation, route }) => {
   });
   const [selectedSurahId, setSelectedSurahId] = useState(null);
   const [searchText, setSearchText] = useState('');
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const [contentHeight, setContentHeight] = useState(1);
+  const [visibleHeight, setVisibleHeight] = useState(1);
   const flatListRef = useRef(null);
-  const scrollAnim = useRef(new Animated.Value(0)).current;
   const scrollBarRef = useRef(null);
+  const scrollY = useRef(new Animated.Value(0)).current;
 
   // Original surah names mapping for search functionality
   const ORIGINAL_SURAH_NAMES = {
@@ -146,6 +149,124 @@ const SurahListScreen = ({ navigation, route }) => {
     114: 'An-Nas',
   };
 
+  // English translations for surah names
+  const SURAH_ENGLISH_TRANSLATIONS = {
+    1: 'The Opening',
+    2: 'The Cow',
+    3: 'Family of Imran',
+    4: 'The Women',
+    5: 'The Table Spread',
+    6: 'The Cattle',
+    7: 'The Heights',
+    8: 'The Spoils of War',
+    9: 'The Repentance',
+    10: 'Jonah',
+    11: 'Hud',
+    12: 'Joseph',
+    13: 'The Thunder',
+    14: 'Abraham',
+    15: 'The Rocky Tract',
+    16: 'The Bees',
+    17: 'The Night Journey',
+    18: 'The Cave',
+    19: 'Mary',
+    20: 'Ta-Ha',
+    21: 'The Prophets',
+    22: 'The Pilgrimage',
+    23: 'The Believers',
+    24: 'The Light',
+    25: 'The Criterion',
+    26: 'The Poets',
+    27: 'The Ants',
+    28: 'The Stories',
+    29: 'The Spider',
+    30: 'The Romans',
+    31: 'Luqman',
+    32: 'The Prostration',
+    33: 'The Combined Forces',
+    34: 'Sheba',
+    35: 'Originator',
+    36: 'Ya-Sin',
+    37: 'Those Who Set The Ranks',
+    38: 'Sad',
+    39: 'The Troops',
+    40: 'The Forgiver',
+    41: 'Explained in Detail',
+    42: 'The Consultation',
+    43: 'The Ornaments of Gold',
+    44: 'The Smoke',
+    45: 'The Kneeling',
+    46: 'The Wind-Curved Sandhills',
+    47: 'Muhammad',
+    48: 'The Victory',
+    49: 'The Private Apartments',
+    50: 'Qaf',
+    51: 'The Winnowing Winds',
+    52: 'The Mount',
+    53: 'The Star',
+    54: 'The Moon',
+    55: 'The Beneficent',
+    56: 'The Event',
+    57: 'The Iron',
+    58: 'The Pleading Woman',
+    59: 'The Exile',
+    60: 'The Woman to be Examined',
+    61: 'The Ranks',
+    62: 'The Congregation',
+    63: 'The Hypocrites',
+    64: 'The Mutual Disillusion',
+    65: 'Divorce',
+    66: 'The Prohibition',
+    67: 'The Sovereignty',
+    68: 'The Pen',
+    69: 'The Reality',
+    70: 'The Ascending Stairways',
+    71: 'Noah',
+    72: 'The Jinn',
+    73: 'The Enshrouded One',
+    74: 'The Cloaked One',
+    75: 'The Resurrection',
+    76: 'Man',
+    77: 'The Emissaries',
+    78: 'The Tidings',
+    79: 'The Extractors',
+    80: 'He Frowned',
+    81: 'The Overthrowing',
+    82: 'The Cleaving',
+    83: 'The Defrauding',
+    84: 'The Splitting Open',
+    85: 'The Mansions of the Stars',
+    86: 'The Morning Star',
+    87: 'The Most High',
+    88: 'The Overwhelming',
+    89: 'The Dawn',
+    90: 'The City',
+    91: 'The Sun',
+    92: 'The Night',
+    93: 'The Morning Hours',
+    94: 'The Relief',
+    95: 'The Fig',
+    96: 'The Clot',
+    97: 'The Power',
+    98: 'The Clear Proof',
+    99: 'The Earthquake',
+    100: 'The Coursers',
+    101: 'The Calamity',
+    102: 'The Rivalry in World Increase',
+    103: 'The Declining Day',
+    104: 'The Traducer',
+    105: 'The Elephant',
+    106: 'Quraysh',
+    107: 'The Small Kindnesses',
+    108: 'The Abundance',
+    109: 'The Disbelievers',
+    110: 'The Victory',
+    111: 'The Palm Fiber',
+    112: 'Sincerity',
+    113: 'The Daybreak',
+    114: 'Mankind',
+  };
+
   useEffect(() => {
     const loadScreenData = async () => {
       const loadedData = await loadData();
@@ -177,16 +298,22 @@ const SurahListScreen = ({ navigation, route }) => {
     }
   }, [route.params?.currentSurahId]);
 
-  // Use offline Quran data for surah list
-  const surahs = getAllSurahs().map(({ surah, name, ayaat }) => ({
-    id: surah,
-    name: name,
-    totalAyahs: surah === 1 ? 7 : ayaat.length,
-    memorizedAyahs: Math.min(data.memorizedAyahs[name]?.memorized || 0, surah === 1 ? 7 : ayaat.length),
-  }));
+  // Use offline Quran data for surah list - memoized to prevent re-creation on every render
+  const surahs = useMemo(() => {
+    return getAllSurahs().map(({ surah, name, ayaat }) => {
+      const cleanedName = name.replace(/^\d+\s+/, ''); // Remove the number prefix from the name
+      return {
+        id: surah,
+        name: cleanedName,
+        originalName: name, // Keep the original name for progress lookup
+        totalAyahs: surah === 1 ? 7 : ayaat.length,
+        memorizedAyahs: Math.min(data.memorizedAyahs[cleanedName]?.memorized || 0, surah === 1 ? 7 : ayaat.length),
+      };
+    });
+  }, [data.memorizedAyahs]); // Only recreate when memorized data changes
 
-  // Filter surahs based on search text
-  const getFilteredSurahs = () => {
+  // Filter surahs based on search text - memoized to prevent unnecessary re-renders
+  const filteredSurahs = useMemo(() => {
     if (!searchText.trim()) {
       return surahs;
     }
@@ -201,48 +328,92 @@ const SurahListScreen = ({ navigation, route }) => {
              originalName.includes(searchLower) || 
              surahNumber.includes(searchLower);
     });
-  };
+  }, [surahs, searchText]); // Only recalculate when surahs or search text changes
 
   const renderSurahItem = ({ item, index }) => {
     const isSelected = selectedSurahId === item.id;
+    const isCompleted = item.memorizedAyahs === item.totalAyahs && item.totalAyahs > 0;
     
     return (
-    <Card
-      variant="elevated"
-        style={[
-          styles.surahCard, 
-          {
-            backgroundColor: COLORS.background,
-            borderColor: isSelected ? COLORS.primary : 'rgba(165,115,36,0.8)',
-            borderWidth: isSelected ? 2 : 1,
-          }
-        ]}
-      onPress={() => navigation.navigate('Memorization', { surah: item })}>
-      <View style={styles.surahInfo}>
-          <Text variant="h3" style={{ color: isSelected ? COLORS.primary : COLORS.text }}>
-            {item.name}
-          </Text>
-        <Text variant="body2" color="textSecondary" style={styles.progressText}>
-          {item.memorizedAyahs}/{item.totalAyahs} Ayaat memorized
-        </Text>
-        <View style={styles.progressContainer}>
-          <ProgressBar 
-            progress={item.memorizedAyahs} 
-            total={item.totalAyahs} 
-            height={10}
-            animated={true}
-          />
-        </View>
-          {isSelected && (
-            <View style={styles.currentIndicator}>
-              <Text variant="body2" color="primary" style={styles.currentText}>
-                Currently Memorizing
+      <View style={[
+        isCompleted && {
+          shadowColor: '#fae29f',
+          shadowOffset: { width: 0, height: 0 },
+          shadowOpacity: 0.4,
+          shadowRadius: 8,
+          elevation: 5,
+          borderRadius: SIZES.small,
+          marginHorizontal: SIZES.medium,
+          marginBottom: SIZES.medium,
+        }
+      ]}>
+        <TouchableOpacity
+          style={[
+            styles.surahCard, 
+            {
+              backgroundColor: 'rgba(0, 0, 0, 0.93)',
+              borderColor: isSelected ? COLORS.primary : 'rgba(165,115,36,0.8)',
+              borderWidth: isSelected ? 2 : 1,
+              marginHorizontal: isCompleted ? 0 : SIZES.medium,
+              // Add softer glowing border effect for completed surahs
+              ...(isCompleted && {
+                borderColor: '#fae29f',
+                borderWidth: 2,
+                shadowColor: '#fae29f',
+                shadowOffset: { width: 0, height: 0 },
+                shadowOpacity: 0.6,
+                shadowRadius: 12,
+                elevation: 8,
+              }),
+            }
+          ]}
+          onPress={() => navigation.navigate('Memorization', { surah: item })}
+          activeOpacity={0.8}
+        >
+          <View style={styles.surahInfo}>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <Text variant="h3" style={{ color: 'rgba(165,115,36,0.8)', marginRight: 4 }}>
+                {item.id}.
+              </Text>
+              <Text variant="h3" style={{ color: isSelected ? COLORS.primary : COLORS.text }}>
+                {item.name}
               </Text>
             </View>
-          )}
+            <Text variant="body2" style={{ color: 'rgba(51, 105, 78, 0.8)', marginTop: 2, fontStyle: 'italic', marginLeft: 20, marginBottom: 8 }}>
+              {SURAH_ENGLISH_TRANSLATIONS[item.id]}
+            </Text>
+            <Text variant="body2" color="textSecondary" style={[styles.progressText, { textAlign: 'center', marginTop: 0 }]}>
+              <Text style={[
+                isCompleted ? {
+                  textShadowColor: '#fae29f',
+                  textShadowOffset: { width: 0, height: 0 },
+                  textShadowRadius: 4,
+                } : {}
+              ]}>
+                {item.memorizedAyahs}
+              </Text>
+              /<Text style={{ color: 'rgba(255, 255, 255, 0.6)' }}>{item.totalAyahs}</Text> Ayaat memorized
+            </Text>
+            <View style={styles.progressContainer}>
+              <ProgressBar 
+                key={`progress-${item.id}`}
+                progress={item.memorizedAyahs} 
+                total={item.totalAyahs} 
+                height={8}
+                completed={isCompleted}
+              />
+            </View>
+            {isSelected && (
+              <View style={styles.currentIndicator}>
+                <Text variant="body2" color="primary" style={styles.currentText}>
+                  Currently Memorizing
+                </Text>
+              </View>
+            )}
+          </View>
+        </TouchableOpacity>
       </View>
-    </Card>
-  );
+    );
   };
 
   const handleScrollBarTouch = (y) => {
@@ -250,65 +421,49 @@ const SurahListScreen = ({ navigation, route }) => {
     if (!scrollBar) return;
     scrollBar.measure((fx, fy, width, height, px, py) => {
       const scrollBarHeight = height;
-      const scrollPercentage = Math.max(0, Math.min(1, y / scrollBarHeight));
+      const scrollPercent = Math.max(0, Math.min(1, y / scrollBarHeight));
+      
       if (flatListRef.current) {
-        const totalSurahs = getFilteredSurahs().length;
-        const targetIndex = Math.floor(scrollPercentage * totalSurahs);
-        const clampedIndex = Math.max(0, Math.min(totalSurahs - 1, targetIndex));
-        flatListRef.current.scrollToIndex({
-          index: clampedIndex,
-          animated: false,
-          viewPosition: 0,
+        const totalSurahs = filteredSurahs.length;
+        const itemHeight = 60;
+        const totalContentHeight = totalSurahs * itemHeight;
+        const scrollableHeight = Math.max(1, totalContentHeight - 400); // 400 is approximate visible height
+        const offset = scrollPercent * scrollableHeight;
+        
+        // Use immediate response for smooth finger following
+        flatListRef.current.scrollToOffset({ 
+          offset, 
+          animated: false 
         });
       }
     });
   };
 
   const renderScrollBar = () => {
-    const totalSurahs = getFilteredSurahs().length;
-    const circlesCount = Math.ceil(totalSurahs / 2);
+    const totalSurahs = filteredSurahs.length;
+    const itemHeight = 60;
+    const totalContentHeight = contentHeight; // Use actual content height instead of fixed
+    const scrollBarHeight = 663; // Slightly increased to ensure it reaches bottom
+    const handleHeight = 40; // Height of the handle
+    const maxHandlePosition = scrollBarHeight - handleHeight; // Full range
+    
+    const scrollHandlePosition = scrollY.interpolate({
+      inputRange: [0, Math.max(1, totalContentHeight - visibleHeight)], // Use actual scrollable range
+      outputRange: [0, maxHandlePosition],
+      extrapolate: 'clamp',
+    });
+
     return (
-      <View
-        style={styles.scrollBarContainer}
-        ref={scrollBarRef}
-        onStartShouldSetResponder={() => true}
-        onResponderGrant={e => {
-          const y = e.nativeEvent.locationY;
-          handleScrollBarTouch(y);
-        }}
-        onResponderMove={e => {
-          const y = e.nativeEvent.locationY;
-          handleScrollBarTouch(y);
-        }}
-      >
+      <View style={styles.scrollBarContainer}>
         <View style={styles.scrollBar}>
-          {Array.from({ length: circlesCount }, (_, index) => {
-            // Calculate circle size based on position
-            const isTop = index < circlesCount * 0.2;
-            const isBottom = index > circlesCount * 0.8;
-            const isMiddle = !isTop && !isBottom;
-            
-            let circleSize = 4; // Default size
-            if (isTop || isBottom) {
-              circleSize = 2; // Smaller for top and bottom
-            } else if (isMiddle) {
-              circleSize = 4; // Normal size for middle
-            }
-            
-            return (
-              <View 
-                key={index} 
-                style={[
-                  styles.scrollCircle, 
-                  { 
-                    width: circleSize, 
-                    height: circleSize, 
-                    borderRadius: circleSize / 2 
-                  }
-                ]} 
-              />
-            );
-          })}
+          <Animated.View 
+            style={[
+              styles.scrollHandle,
+              {
+                transform: [{ translateY: scrollHandlePosition }],
+              },
+            ]} 
+          />
         </View>
       </View>
     );
@@ -333,16 +488,20 @@ const SurahListScreen = ({ navigation, route }) => {
 
           {/* Search bar is now a sibling, not a child, of the header */}
           <View style={styles.searchContainer}>
-            <View style={styles.searchInputContainer}>
+            <View style={[styles.searchInputContainer, { 
+              backgroundColor: isSearchFocused ? 'rgba(255, 255, 255, 0.8)' : 'rgba(255, 255, 255, 0.6)' 
+            }]}>
               <Ionicons name="search" size={20} color={COLORS.primary} style={styles.searchIcon} />
               <TextInput
-                style={styles.searchInput}
+                style={[styles.searchInput, { fontWeight: isSearchFocused ? 'bold' : 'normal' }]}
                 placeholder="Search surahs by name or number..."
                 placeholderTextColor="#666"
                 value={searchText}
                 onChangeText={setSearchText}
                 autoCapitalize="none"
                 autoCorrect={false}
+                onFocus={() => setIsSearchFocused(true)}
+                onBlur={() => setIsSearchFocused(false)}
               />
               {searchText.length > 0 && (
                 <TouchableOpacity onPress={() => setSearchText('')} style={styles.clearButton}>
@@ -353,16 +512,30 @@ const SurahListScreen = ({ navigation, route }) => {
           </View>
           
           <View style={styles.contentContainer}>
-            <FlatList
+            <Animated.FlatList
               ref={flatListRef}
-              data={getFilteredSurahs()}
+              data={filteredSurahs}
               renderItem={renderSurahItem}
               keyExtractor={(item) => item.id.toString()}
               contentContainerStyle={styles.list}
               showsVerticalScrollIndicator={false}
+              onScroll={Animated.event(
+                [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+                { useNativeDriver: false }
+              )}
+              scrollEventThrottle={16}
+              onContentSizeChange={(w, h) => setContentHeight(h)}
+              onLayout={e => setVisibleHeight(e.nativeEvent.layout.height)}
+              initialNumToRender={20}
+              windowSize={21}
+              maxToRenderPerBatch={15}
+              updateCellsBatchingPeriod={16}
+              removeClippedSubviews={true}
               onScrollToIndexFailed={() => {
                 console.warn('Failed to scroll to index');
               }}
+              bounces={true}
+              overScrollMode="always"
             />
             
             {renderScrollBar()}
@@ -444,39 +617,43 @@ const styles = StyleSheet.create({
   },
   headerSubtitle: {
     color: '#222',
-    fontSize: 16,
+    fontSize: 18,
     marginTop: 4,
+    fontWeight: 'bold',
   },
   list: {
     padding: SIZES.medium,
     paddingTop: SIZES.large,
     marginTop: 160, // Reduced from 190 to move closer to search bar
+    paddingBottom: SIZES.extraLarge * 6, // Increased from 4 to 6 for more bottom space
   },
   surahCard: {
     marginBottom: SIZES.medium,
-    backgroundColor: COLORS.background,
+    backgroundColor: 'rgba(0, 0, 0, 0.93)',
     borderColor: 'rgba(165,115,36,0.8)',
     borderWidth: 1,
     borderRadius: SIZES.small,
     overflow: 'hidden',
+    marginHorizontal: SIZES.medium,
+    padding: SIZES.medium,
   },
   surahInfo: {
     flex: 1,
   },
   progressContainer: {
-    marginTop: SIZES.small,
+    marginTop: 0,
   },
   progressText: {
-    marginBottom: SIZES.small,
+    marginBottom: 0,
   },
   homeButton: {
     padding: SIZES.medium,
-    backgroundColor: 'rgba(64, 64, 64, 0.8)',
-    borderRadius: SIZES.small,
+    backgroundColor: 'rgba(165,115,36,0.8)',
+    borderRadius: 24,
     flexDirection: 'row',
     alignItems: 'center',
     flex: 1,
-    marginRight: SIZES.small,
+    marginRight: SIZES.small / 2,
     justifyContent: 'center',
   },
   homeIcon: {
@@ -525,8 +702,7 @@ const styles = StyleSheet.create({
   searchInputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    borderRadius: SIZES.small,
+    borderRadius: 20,
     padding: SIZES.small,
     borderWidth: 1,
     borderColor: '#C0C0C0',
@@ -536,18 +712,19 @@ const styles = StyleSheet.create({
   },
   searchInput: {
     flex: 1,
+    fontSize: 16,
   },
   clearButton: {
     padding: SIZES.small,
   },
   continueButton: {
     padding: SIZES.medium,
-    backgroundColor: COLORS.primary,
-    borderRadius: SIZES.small,
+    backgroundColor: 'rgba(51, 105, 78, 0.8)',
+    borderRadius: 24,
     flexDirection: 'row',
     alignItems: 'center',
     flex: 1,
-    marginLeft: SIZES.small,
+    marginLeft: SIZES.small / 2,
     justifyContent: 'center',
   },
   continueButtonText: {
@@ -556,30 +733,28 @@ const styles = StyleSheet.create({
     marginLeft: SIZES.small,
   },
   scrollBarContainer: {
-    width: 30,
-    height: SCROLL_BAR_HEIGHT,
     position: 'absolute',
-    right: -5,
-    top: '35%',
-    transform: [{ translateY: -SCROLL_BAR_HEIGHT / 2 }],
-    paddingVertical: SIZES.medium,
-    paddingHorizontal: SIZES.small,
-    justifyContent: 'center',
+    right: 10,
+    top: 180,
+    bottom: 100,
+    width: 20,
+    zIndex: 1000,
   },
   scrollBar: {
-    backgroundColor: 'rgba(64, 64, 64, 0.1)',
-    borderRadius: 15,
-    paddingVertical: SIZES.small,
-    alignItems: 'center',
-    flex: 1,
-    justifyContent: 'space-between',
-  },
-  scrollCircle: {
+    backgroundColor: 'rgba(200, 200, 200, 0.4)',
+    borderRadius: 10,
     width: 4,
-    height: 4,
+    height: '100%',
+    alignSelf: 'center',
+  },
+  scrollHandle: {
+    width: 4,
+    height: 40,
     borderRadius: 2,
-    backgroundColor: 'rgba(255, 255, 255, 0.4)',
-    marginVertical: 2,
+    backgroundColor: 'rgba(165,115,36,0.8)',
+    position: 'absolute',
+    top: 0,
+    left: 0,
   },
   contentContainer: {
     flexDirection: 'row',
