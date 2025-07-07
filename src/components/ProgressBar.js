@@ -17,10 +17,10 @@ const ProgressBar = ({ progress, total, height = 6, completed = false }) => {
           {
             height,
             width: `${progressPercentage}%`,
-            backgroundColor: completed ? '#fae29f' : '#33694e',
+            backgroundColor: completed ? '#DAA520' : '#33694e',
           },
           completed && {
-            shadowColor: '#fae29f',
+            shadowColor: '#DAA520',
             shadowOffset: { width: 0, height: 0 },
             shadowOpacity: 0.9,
             shadowRadius: 6,

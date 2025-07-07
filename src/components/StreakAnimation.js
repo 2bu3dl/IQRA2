@@ -1,10 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { View, StyleSheet, Animated, Dimensions } from 'react-native';
 import Text from './Text';
+import { useLanguage } from '../utils/languageContext';
 
 const { width, height } = Dimensions.get('window');
 
 const StreakAnimation = ({ visible, newStreak, onAnimationComplete }) => {
+  const { language, t } = useLanguage();
   const [displayNumber, setDisplayNumber] = useState(0);
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.5)).current;
@@ -91,6 +93,11 @@ const StreakAnimation = ({ visible, newStreak, onAnimationComplete }) => {
     }, 600);
   };
 
+  const toArabicNumber = (num) => {
+    if (language !== 'ar') return num.toString();
+    return num.toString().replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]);
+  };
+
   if (!visible) return null;
 
   // Calculate flip transform
@@ -109,7 +116,7 @@ const StreakAnimation = ({ visible, newStreak, onAnimationComplete }) => {
         }
       ]}>
         <View style={styles.content}>
-          <Text style={styles.title}>Daily Streak!</Text>
+          <Text style={styles.title}>{t('daily_streak')}</Text>
           <View style={styles.streakContainer}>
             <Animated.Text style={[
               styles.streakNumber,
@@ -117,9 +124,9 @@ const StreakAnimation = ({ visible, newStreak, onAnimationComplete }) => {
                 transform: [{ rotateY: flipInterpolate }]
               }
             ]}>
-              {displayNumber}
+              {toArabicNumber(displayNumber)}
             </Animated.Text>
-            <Text style={styles.streakLabel}>days</Text>
+            <Text style={styles.streakLabel}>{t('days')}</Text>
           </View>
         </View>
       </Animated.View>
@@ -160,7 +167,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#FFD700',
+    color: '#5b7f67',
     marginBottom: 20,
     textAlign: 'center',
     textDecorationLine: 'underline',
@@ -180,7 +187,7 @@ const styles = StyleSheet.create({
   },
   streakLabel: {
     fontSize: 18,
-    color: '#FFD700',
+    color: '#5b7f67',
     textAlign: 'center',
   },
 });

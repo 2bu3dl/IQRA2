@@ -10,10 +10,14 @@ import {
 } from 'react-native';
 import { getTranslationSources, getCurrentTranslation, loadAllTranslations } from '../utils/translations';
 import { theme } from '../utils/theme';
+import { useLanguage } from '../utils/languageContext';
 
 const ALL_KEYS = ['sahih', 'yusufali', 'maududi', 'hilali'];
 
 const TranslationModal = ({ visible, onClose, currentSurah, currentAyah, onAyahChange, isFirstAyah, isLastAyah }) => {
+  const { language, t } = useLanguage();
+  if (language === 'ar') return null;
+
   const [selectedSource, setSelectedSource] = useState('sahih');
   const [translation, setTranslation] = useState('');
   const [loading, setLoading] = useState(false);
@@ -72,7 +76,7 @@ const TranslationModal = ({ visible, onClose, currentSurah, currentAyah, onAyahC
       <View style={styles.overlay}>
         <View style={styles.modalContainer}>
           <View style={styles.header}>
-            <Text style={styles.title}>English Translation</Text>
+            <Text style={styles.title}>{t('translation')}</Text>
             <TouchableOpacity onPress={onClose} style={styles.closeButton}>
               <Text style={styles.closeButtonText}>✕</Text>
             </TouchableOpacity>
@@ -84,15 +88,13 @@ const TranslationModal = ({ visible, onClose, currentSurah, currentAyah, onAyahC
           </View>
 
           <View style={styles.translationContainer}>
-            <Text style={styles.ayahInfo}>
-              Surah {currentSurah}, Ayah {currentAyah}
-            </Text>
+            <Text style={styles.ayahInfo}>{t('surah')} {currentSurah}, {t('ayah')} {currentAyah}</Text>
             <ScrollView style={styles.translationScroll}>
               {loading ? (
-                <Text style={styles.loadingText}>Loading translation...</Text>
+                <Text style={styles.loadingText}>{t('loading')}</Text>
               ) : (
                 <Text style={styles.translationText}>
-                  {translation || 'Translation not available'}
+                  {translation || t('translation_not_available')}
                 </Text>
               )}
             </ScrollView>
@@ -105,14 +107,14 @@ const TranslationModal = ({ visible, onClose, currentSurah, currentAyah, onAyahC
               disabled={isFirstAyah}
               onPress={() => onAyahChange('prev')}
             >
-              <Text style={styles.ayahNavButtonText}>Previous</Text>
+              <Text style={styles.ayahNavButtonText}>{t('previous')}</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={[styles.ayahNavButton, isLastAyah && { opacity: 0.5 }]}
               disabled={isLastAyah}
               onPress={() => onAyahChange('next')}
             >
-              <Text style={styles.ayahNavButtonText}>Next</Text>
+              <Text style={styles.ayahNavButtonText}>{t('next')}</Text>
             </TouchableOpacity>
           </View>
 

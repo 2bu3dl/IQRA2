@@ -38,7 +38,7 @@ const initialState = {
     'Al-Fatihah': {
       total: 7,
       memorized: 0,
-      lastAyahIndex: -1,
+      lastAyahIndex: 0,
       completedAyaat: [],
     },
   },
@@ -211,7 +211,7 @@ export const updateMemorizedAyahs = async (surahName, ayahIndex) => {
       memorizedAyahs[surahName] = {
         total: 7, // For Al-Fatihah
         memorized: 0,
-        lastAyahIndex: -1,
+        lastAyahIndex: 0,
         completedAyaat: [], // Track individual completed ayaat
       };
     }
@@ -221,12 +221,15 @@ export const updateMemorizedAyahs = async (surahName, ayahIndex) => {
       memorizedAyahs[surahName].completedAyaat = [];
     }
 
+    // Convert 0-based ayahIndex to 1-based ayah number
+    const ayahNumber = ayahIndex + 1;
+    
     // Only mark this specific ayah as completed if it's not already completed
-    if (!memorizedAyahs[surahName].completedAyaat.includes(ayahIndex)) {
-      memorizedAyahs[surahName].completedAyaat.push(ayahIndex);
+    if (!memorizedAyahs[surahName].completedAyaat.includes(ayahNumber)) {
+      memorizedAyahs[surahName].completedAyaat.push(ayahNumber);
       // Update the memorized count to the actual number of completed ayaat
       memorizedAyahs[surahName].memorized = memorizedAyahs[surahName].completedAyaat.length;
-      // Update lastAyahIndex to the highest completed ayah
+      // Update lastAyahIndex to the highest completed ayah (1-based)
       memorizedAyahs[surahName].lastAyahIndex = Math.max(...memorizedAyahs[surahName].completedAyaat);
     }
 
@@ -234,6 +237,34 @@ export const updateMemorizedAyahs = async (surahName, ayahIndex) => {
     return memorizedAyahs;
   } catch (error) {
     console.error('Error updating memorized ayahs:', error);
+    return null;
+  }
+};
+
+// Save current position for resume
+export const saveCurrentPosition = async (surahName, flashcardIndex) => {
+  try {
+    const memorizedAyahsStr = await AsyncStorage.getItem(STORAGE_KEYS.MEMORIZED_AYAHS);
+    const memorizedAyahs = memorizedAyahsStr ? JSON.parse(memorizedAyahsStr) : initialState.memorizedAyahs;
+
+    if (!memorizedAyahs[surahName]) {
+      memorizedAyahs[surahName] = {
+        total: 7, // For Al-Fatihah
+        memorized: 0,
+        lastAyahIndex: 0,
+        completedAyaat: [],
+        currentFlashcardIndex: 0,
+      };
+    }
+
+    // Save the current flashcard index
+    memorizedAyahs[surahName].currentFlashcardIndex = flashcardIndex;
+
+    await AsyncStorage.setItem(STORAGE_KEYS.MEMORIZED_AYAHS, JSON.stringify(memorizedAyahs));
+    console.log('[store.js] Saved position:', surahName, flashcardIndex, JSON.stringify(memorizedAyahs[surahName]));
+    return memorizedAyahs;
+  } catch (error) {
+    console.error('Error saving current position:', error);
     return null;
   }
 };
