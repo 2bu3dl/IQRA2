@@ -622,7 +622,6 @@ const SurahListScreen = ({ navigation, route }) => {
               <Image
                 source={language === 'ar' ? require('../assets/IQRA2iconArabicoctagon.png') : require('../assets/IQRA2iconoctagon.png')}
                 style={[styles.homeIcon]}
-                resizeMode="contain"
               />
               <Text style={styles.homeButtonText}>{t('home')}</Text>
             </TouchableOpacity>
@@ -669,12 +668,6 @@ const SurahListScreen = ({ navigation, route }) => {
                   height: 36, 
                   tintColor: 'rgba(165,115,36,1.0)',
                   marginLeft: 12,
-                  transform: [{ rotate: '-90deg' }],
-                  shadowColor: '#000',
-                  shadowOffset: { width: 0, height: 2 },
-                  shadowOpacity: 0.3,
-                  shadowRadius: 4,
-                  elevation: 5,
                 }}
                 resizeMode="contain"
               />

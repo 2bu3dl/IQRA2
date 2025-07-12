@@ -129,7 +129,6 @@ const HomeScreen = ({ navigation }) => {
               <Image 
                 source={language === 'ar' ? require('../assets/IQRA2iconArabicoctagon.png') : require('../assets/IQRA2iconoctagon.png')} 
                 style={[styles.logo]} 
-                resizeMode="contain" 
               />
             </View>
             <TouchableOpacity style={styles.settingsButton} onPress={() => setSettingsVisible(true)}>
@@ -607,7 +606,7 @@ const styles = StyleSheet.create({
   buttonGrid: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    marginTop: -16,
+    marginTop: -8,
   },
   gridButton: {
     flex: 1,
