@@ -8,9 +8,10 @@ import ProgressBarOrig from '../components/ProgressBar';
 import TranslationModal from '../components/TranslationModal';
 import StreakAnimation from '../components/StreakAnimation';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { addHasanat, updateMemorizedAyahs, updateStreak, getCurrentStreak } from '../utils/store';
+import { addHasanat, updateMemorizedAyahs, updateStreak, getCurrentStreak, loadData, saveCurrentPosition } from '../utils/store';
 import { getSurahAyaatWithTransliteration, getAllSurahs } from '../utils/quranData';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useLanguage } from '../utils/languageContext';
 // import Svg, { Circle } from 'react-native-svg'; // Uncomment if using react-native-svg
 
 const COLORS = { ...BASE_COLORS, primary: '#6BA368', accent: '#FFD700' };
@@ -19,6 +20,11 @@ const Card = memo(CardOrig);
 const ProgressBar = memo(ProgressBarOrig);
 
 const MemorizationScreen = ({ route, navigation }) => {
+  const { language, t } = useLanguage();
+  const toArabicNumber = (num) => {
+    if (language !== 'ar') return num.toString();
+    return num.toString().replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]);
+  };
   const { surah } = route.params;
   const surahNumber = surah.id || surah.surah || 1;
   
@@ -33,6 +39,8 @@ const MemorizationScreen = ({ route, navigation }) => {
   const [modalAyahIndex, setModalAyahIndex] = useState(null);
   const sessionHasanat = useRef(0);
   const rewardTimeout = useRef(null);
+  const isResuming = useRef(false);
+  const flashcardsLoaded = useRef(false);
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const ayahListRef = useRef(null);
@@ -40,6 +48,7 @@ const MemorizationScreen = ({ route, navigation }) => {
   const [showStreakAnimation, setShowStreakAnimation] = useState(false);
   const [newStreak, setNewStreak] = useState(0);
   const [previousStreak, setPreviousStreak] = useState(0);
+  const [memorizationData, setMemorizationData] = useState(null);
 
   const allSurahs = getAllSurahs();
   const currentSurahIndex = allSurahs.findIndex(s => s.surah === surahNumber);
@@ -52,7 +61,7 @@ const MemorizationScreen = ({ route, navigation }) => {
         const data = await getSurahAyaatWithTransliteration(surahNumber);
         setAyaat(data);
         setIsTextHidden(false);
-      } catch (error) {
+    } catch (error) {
         setAyaat([{
           type: 'ayah',
           text: 'بِسْمِ اللّٰهِ الرَّحْمٰنِ الرَّحِیْمِ',
@@ -73,32 +82,70 @@ const MemorizationScreen = ({ route, navigation }) => {
     initializeStreak();
   }, [route?.params?.resetFlag]);
 
+  // Load memorization data
+  const loadMemorizationData = async () => {
+    const data = await loadData();
+    setMemorizationData(data);
+  };
+
+  React.useEffect(() => {
+    loadMemorizationData();
+  }, []);
+
   // Memoize flashcards so they're only rebuilt when surahNumber or ayaat changes
   const flashcards = useMemo(() => {
     if (!ayaat || !Array.isArray(ayaat)) return [];
     const cards = [];
-    // 1. Isti'adhah
+      // 1. Isti'adhah
     cards.push({
-      type: 'istiadhah',
-      text: 'أَعُوذُ بِاللَّهِ مِنَ الشَّيْطَانِ الرَّجِيمِ',
+        type: 'istiadhah',
+        text: 'أَعُوذُ بِاللَّهِ مِنَ الشَّيْطَانِ الرَّجِيمِ',
       transliteration: "A'udhu billahi min ash-shaytan ir-rajim",
       translation: 'I seek protection/refuge in Allah from shay6an, the accursed outcast (eternally expelled and rejected from divine mercy)'
-    });
-    // 2. Bismillah (if not Al-Fatihah and not Surah 9)
-    if (surahNumber !== 1 && surahNumber !== 9) {
+      });
+      // 2. Bismillah (if not Al-Fatihah and not Surah 9)
+      if (surahNumber !== 1 && surahNumber !== 9) {
       cards.push({
-        type: 'bismillah',
-        text: 'بِسْمِ اللّٰهِ الرَّحْمٰنِ الرَّحِیْمِ',
+          type: 'bismillah',
+          text: 'بِسْمِ اللّٰهِ الرَّحْمٰنِ الرَّحِیْمِ',
         transliteration: 'Bismillāhir-Raḥmānir-Raḥīm',
         translation: 'In the name of Allah, the Entirely Merciful, the Especially Merciful.'
-      });
-    }
-    // 3. All ayat as normal
+        });
+      }
+      // 3. All ayat as normal
     for (let i = 0; i < ayaat.length; i++) {
       cards.push({ ...ayaat[i], type: 'ayah' });
     }
     return cards;
   }, [ayaat, surahNumber]);
+
+  // Handle resume from specific index
+  React.useEffect(() => {
+    console.log('[MemorizationScreen] Resume effect - route.params:', route.params, 'flashcards.length:', flashcards.length);
+    if (route.params?.resumeFromIndex !== undefined && flashcards.length > 0) {
+      const resumeIndex = Math.min(route.params.resumeFromIndex, flashcards.length - 1);
+      console.log('[MemorizationScreen] Setting currentAyahIndex to:', resumeIndex);
+      
+      // Only set the position if the flashcards are properly loaded and the index is valid
+      if (flashcards.length > 10 && resumeIndex < flashcards.length) {
+        isResuming.current = true;
+        setCurrentAyahIndex(resumeIndex);
+        setIsTextHidden(false);
+        flashcardsLoaded.current = true;
+        // Reset the flag after a short delay
+        setTimeout(() => {
+          isResuming.current = false;
+        }, 100);
+      }
+    }
+  }, [flashcards, route.params?.resumeFromIndex]);
+
+  // Add this after currentAyahIndex and surah are defined
+  React.useEffect(() => {
+    if (surah?.name && currentAyahIndex !== undefined && !isResuming.current && flashcardsLoaded.current) {
+      saveCurrentPosition(surah.name, currentAyahIndex);
+    }
+  }, [surah?.name, currentAyahIndex]);
 
   const animateFlashcard = (toValue) => {
     Animated.parallel([
@@ -178,7 +225,7 @@ const MemorizationScreen = ({ route, navigation }) => {
     if (cardType !== 'ayah') {
       setShowReward(false);
       setCurrentAyahIndex(idx => idx + 1);
-      setIsTextHidden(false);
+          setIsTextHidden(false);
       return;
     }
     // Only run heavy logic for ayah cards
@@ -277,7 +324,13 @@ const MemorizationScreen = ({ route, navigation }) => {
                 } catch (error) {
                   console.error('[MemorizationScreen] Error updating streak on home press:', error);
                 }
-                
+                // Explicitly save current position
+                try {
+                  await saveCurrentPosition(surah.name, currentAyahIndex);
+                  console.log('[MemorizationScreen] Explicitly saved on Home:', surah.name, currentAyahIndex);
+                } catch (error) {
+                  console.error('[MemorizationScreen] Error saving current position on Home:', error);
+                }
             if (sessionHasanat.current > 0) {
               addHasanat(sessionHasanat.current);
               sessionHasanat.current = 0;
@@ -285,16 +338,28 @@ const MemorizationScreen = ({ route, navigation }) => {
             navigation.navigate('Home');
           }}
         >
-              <Image source={require('../assets/IQRA2icon.png')} style={styles.homeIcon} resizeMode="contain" />
+              <Image source={language === 'ar' ? require('../assets/IQRA2iconArabicoctagon.png') : require('../assets/IQRA2iconoctagon.png')} style={[styles.homeIcon]} resizeMode="contain" />
         </TouchableOpacity>
         <View style={styles.headerTextContainer}>
-              <Text variant="h2" color="primary" style={{ textAlign: 'center', width: '100%' }}>{surah?.name || 'Surah'}</Text>
-          <Text variant="body1" style={{ textAlign: 'center', width: '100%' }}>
+              <Text variant="h2" style={{ textAlign: 'center', width: '100%', color: '#5b7f67' }}>
+                {language === 'ar' ? t(`surah_${surahNumber}`) : (cleanSurahName(surah?.name) || 'Surah')}
+              </Text>
+          <Text variant="body1" style={{ textAlign: 'center', width: '100%', color: '#F5E6C8' }}>
                 {flashcards && flashcards[currentAyahIndex]?.type === 'ayah'
-                  ? `Ayah ${flashcards.slice(0, currentAyahIndex + 1).filter(a => a.type === 'ayah').length}`
+                  ? (language === 'ar' ? 
+                      <Text style={{ textAlign: 'center' }}>
+                        <Text style={{ color: '#F5E6C8' }}>{t('ayah')} </Text>
+                        <Text style={{ color: 'rgba(165,115,36,0.8)' }}>{toArabicNumber(flashcards.slice(0, currentAyahIndex + 1).filter(a => a.type === 'ayah').length)}</Text>
+                      </Text>
+                    : 
+                      <Text style={{ textAlign: 'center' }}>
+                        <Text style={{ color: '#F5E6C8' }}>Ayah </Text>
+                        <Text style={{ color: 'rgba(165,115,36,0.8)' }}>{toArabicNumber(flashcards.slice(0, currentAyahIndex + 1).filter(a => a.type === 'ayah').length)}</Text>
+                      </Text>
+                    )
                   : flashcards && flashcards[currentAyahIndex]?.type === 'istiadhah'
-                ? "Isti3aadhah"
-                : 'Bismillah'}
+                ? (language === 'ar' ? t('istiadhah') : "Isti3aadhah")
+                : (language === 'ar' ? 'بسم الله' : 'Bismillah')}
           </Text>
           <View style={styles.progressContainer}>
             <ProgressBar 
@@ -307,10 +372,26 @@ const MemorizationScreen = ({ route, navigation }) => {
         </View>
             <View style={styles.headerButtons}>
         <TouchableOpacity
-                style={styles.headerButton}
+          style={styles.headerButton}
           onPress={() => setShowGoToModal(true)}
         >
-          <Ionicons name="navigate" size={24} color={COLORS.primary} />
+          <View style={{
+            borderWidth: 2,
+            borderColor: 'rgba(165,115,36,0.8)',
+            borderRadius: 12,
+            padding: 6,
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.1,
+            shadowRadius: 4,
+            elevation: 3,
+          }}>
+            <Image 
+              source={require('../assets/app_icons/navigation.png')} 
+              style={{ width: 28, height: 28, tintColor: '#F5E6C8' }}
+              resizeMode="contain"
+            />
+          </View>
         </TouchableOpacity>
               {/* Hide translation button for first two cards of every surah except for 1st and 9th surah. For 1st and 9th surah, only hide for first card. */}
               {!(
@@ -321,7 +402,23 @@ const MemorizationScreen = ({ route, navigation }) => {
                   style={[styles.headerButton, { marginTop: 8 }]}
                   onPress={openTranslationModal}
                 >
-                  <Ionicons name="language" size={24} color={COLORS.primary} />
+                  <View style={{
+                    borderWidth: 2,
+                    borderColor: '#5b7f67',
+                    borderRadius: 12,
+                    padding: 6,
+                    shadowColor: '#000',
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.1,
+                    shadowRadius: 4,
+                    elevation: 3,
+                  }}>
+                    <Image 
+                      source={require('../assets/app_icons/translation.png')} 
+                      style={{ width: 28, height: 28, tintColor: '#F5E6C8' }}
+                      resizeMode="contain"
+                    />
+                  </View>
                 </TouchableOpacity>
               )}
             </View>
@@ -334,23 +431,25 @@ const MemorizationScreen = ({ route, navigation }) => {
                   <ScrollView style={styles.ayahScroll} contentContainerStyle={styles.ayahScrollContent} showsVerticalScrollIndicator={true}>
             <Text
               variant="h2"
-              style={[FONTS.arabic, styles.arabicText]}
+              style={[FONTS.arabic, styles.arabicText, { textAlign: 'center', alignSelf: 'center' }]}
               align="center">
                       {flashcards[currentAyahIndex]?.type === 'istiadhah'
                         ? flashcards[currentAyahIndex]?.text || ''
-                        : (isTextHidden ? '••••••••••••••••••••••••••••••••••••••••' : flashcards[currentAyahIndex]?.text || '')
+                        : (isTextHidden ? '⬡⬡⬡⬡⬡⬡⬡⬡⬡⬡⬡⬡⬡⬡⬡⬡⬡⬡⬡⬡⬡⬡⬡⬡⬡⬡⬡⬡⬡⬡⬡⬡⬡⬡⬡⬡⬡⬡⬡⬡' : flashcards[currentAyahIndex]?.text || '')
               }
             </Text>
-            {/* Show transliteration always */}
-            <Text
-              variant="body2"
-              style={styles.transliterationText}
-              align="center"
-            >
-              {stripHtmlTags(flashcards[currentAyahIndex]?.transliteration || '')}
-            </Text>
-                    {/* Show bismillah translation for bismillah card only */}
-                    {flashcards[currentAyahIndex]?.type === 'bismillah' && (
+            {/* Show transliteration only when text is not hidden and not in Arabic mode */}
+            {!isTextHidden && language === 'en' && (
+              <Text
+                variant="body2"
+                style={styles.transliterationText}
+                align="center"
+              >
+                {stripHtmlTags(flashcards[currentAyahIndex]?.transliteration || '')}
+              </Text>
+            )}
+                    {/* Show bismillah translation for bismillah card only in English mode */}
+                    {flashcards[currentAyahIndex]?.type === 'bismillah' && language === 'en' && (
                       <Text
                         variant="body2"
                         style={[styles.transliterationText, { color: COLORS.primary, fontWeight: 'bold', marginTop: 8 }]}
@@ -359,11 +458,11 @@ const MemorizationScreen = ({ route, navigation }) => {
                         {flashcards[currentAyahIndex]?.translation}
                       </Text>
                     )}
-                    {/* Show istiadhah translation for istiadhah card only */}
-                    {flashcards[currentAyahIndex]?.type === 'istiadhah' && (
+                    {/* Show istiadhah translation for istiadhah card only in English mode */}
+                    {flashcards[currentAyahIndex]?.type === 'istiadhah' && language === 'en' && (
                       <Text
                         variant="body2"
-                        style={[styles.transliterationText, { color: COLORS.primary, fontWeight: 'bold', marginTop: 8 }]}
+                        style={[styles.transliterationText, { color: '#5b7f67', fontWeight: 'bold', marginTop: 8 }]}
                         align="center"
                       >
                         {flashcards[currentAyahIndex]?.translation}
@@ -382,15 +481,72 @@ const MemorizationScreen = ({ route, navigation }) => {
               style={styles.settingsButton}
               onPress={() => setShowSettingsModal(true)}
             >
-              <Ionicons name="settings" size={24} color={COLORS.primary} />
+              <View style={{
+                borderWidth: 2,
+                borderColor: 'rgba(165,115,36,0.8)',
+                borderRadius: 12,
+                padding: 6,
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.1,
+                shadowRadius: 4,
+                elevation: 3,
+              }}>
+                <Image 
+                  source={require('../assets/app_icons/slider.png')} 
+                  style={{ width: 28, height: 28, tintColor: '#F5E6C8' }}
+                  resizeMode="contain"
+                />
+              </View>
             </TouchableOpacity>
-            {/* Right: Reveal/Hide Button */}
+            
+            {/* Audio Button */}
+                <TouchableOpacity
+              style={styles.audioButton}
+              onPress={() => {
+                // Audio recitations coming soon!
+              }}
+            >
+              <View style={{
+                borderWidth: 2,
+                borderColor: '#5b7f67',
+                borderRadius: 12,
+                padding: 6,
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.1,
+                shadowRadius: 4,
+                elevation: 3,
+              }}>
+                <Image 
+                  source={require('../assets/app_icons/audio.png')} 
+                  style={{ width: 28, height: 28, tintColor: '#F5E6C8' }}
+                  resizeMode="contain"
+                />
+              </View>
+            </TouchableOpacity>
+            {/* Centered: Reveal/Hide Button */}
             <TouchableOpacity
-              style={styles.revealButtonNew}
+              style={[styles.revealButtonNew, {
+                backgroundColor: isTextHidden ? '#F5E6C8' : 'rgba(245, 230, 200, 0.7)',
+                padding: SIZES.medium,
+                width: 160,
+                minHeight: 40,
+                alignItems: 'center',
+                justifyContent: 'center',
+                position: 'absolute',
+                left: '50%',
+                transform: [{ translateX: -60 }],
+              }]}
               onPress={handleRevealToggle}
             >
-              <Text variant="body1" color="primary" style={styles.revealButtonText}>
-                {isTextHidden ? 'Reveal' : 'Hide'}
+              <Text variant="body1" color="primary" style={[styles.revealButtonText, { 
+                fontSize: isTextHidden ? 18 : 22,
+                color: isTextHidden ? COLORS.primary : '#333333',
+                fontWeight: isTextHidden ? 'bold' : 'bold',
+                textAlign: 'center',
+              }]}>
+                {isTextHidden ? t('reveal') : t('hide')}
               </Text>
             </TouchableOpacity>
           </View>
@@ -399,7 +555,7 @@ const MemorizationScreen = ({ route, navigation }) => {
         {/* Navigation buttons overlaid */}
         <View style={styles.navigationOverlay}>
           <Button
-            title={currentAyahIndex === 0 ? 'Back' : 'Previous'}
+            title={currentAyahIndex === 0 ? t('back') : t('previous')}
             onPress={async () => {
               if (currentAyahIndex === 0) {
                 // Update streak when going back to surah list
@@ -414,17 +570,17 @@ const MemorizationScreen = ({ route, navigation }) => {
               }
             }}
             disabled={showReward}
-            style={styles.navButton}
+            style={[styles.navButton, { backgroundColor: '#5b7f67' }]}
           />
           <Button
-            title={currentAyahIndex === 0 ? 'Start' : (flashcards && currentAyahIndex === flashcards.length - 1 ? 'Finish' : 'Next')}
+                            title={currentAyahIndex === 0 ? t('start') : (flashcards && currentAyahIndex === flashcards.length - 1 ? t('finish') : t('next'))}
             onPress={handleNext}
             disabled={showReward}
-            style={styles.navButton}
+            style={[styles.navButton, { backgroundColor: '#5b7f67' }]}
           />
         </View>
-          </View>
-        
+      </View>
+
       {/* Go To Modal */}
       <Modal
         visible={showGoToModal}
@@ -434,26 +590,37 @@ const MemorizationScreen = ({ route, navigation }) => {
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <Text variant="h2" style={{ marginBottom: 16, color: 'rgba(64, 64, 64, 0.9)' }}>Navigate to Ayah..</Text>
+            <Text variant="h2" style={{ marginBottom: 16, color: 'rgba(64, 64, 64, 0.9)' }}>{t('navigation')}</Text>
             
             {/* Search Input */}
             <View style={styles.searchContainer}>
               <TextInput
-                style={styles.searchInput}
-                placeholder="Enter ayah number..."
+                style={[styles.searchInput, {
+                  textAlign: language === 'ar' ? 'right' : 'left',
+                  writingDirection: language === 'ar' ? 'rtl' : 'ltr'
+                }]}
+                placeholder={t('search_ayah')}
                 value={searchText}
                 onChangeText={setSearchText}
                 keyboardType="numeric"
                 onSubmitEditing={handleSearchSubmit}
               />
               <TouchableOpacity style={styles.searchButton} onPress={handleSearchSubmit}>
-                <Ionicons name="search" size={20} color={COLORS.white} />
+                <Image 
+                  source={require('../assets/app_icons/search.png')} 
+                  style={{ width: 20, height: 20, tintColor: COLORS.white }}
+                  resizeMode="contain"
+                />
               </TouchableOpacity>
             </View>
             
                 <View style={{ marginBottom: 8 }}>
-                  <TouchableOpacity style={[styles.surahNavButton, { backgroundColor: COLORS.primary }]} onPress={() => ayahListRef.current?.scrollTo({ y: 0, animated: true })}>
-                    <Ionicons name="chevron-up" size={24} color="rgba(64, 64, 64, 0.9)" />
+                  <TouchableOpacity style={[styles.surahNavButton, { backgroundColor: '#5b7f67' }]} onPress={() => ayahListRef.current?.scrollTo({ y: 0, animated: true })}>
+                    <Image 
+                      source={require('../assets/app_icons/down-up.png')} 
+                      style={{ width: 24, height: 24, tintColor: 'rgba(64, 64, 64, 0.9)', transform: [{ rotate: '180deg' }] }}
+                      resizeMode="contain"
+                    />
                   </TouchableOpacity>
                 </View>
                 
@@ -462,13 +629,38 @@ const MemorizationScreen = ({ route, navigation }) => {
                   {prevSurah && (
                     <TouchableOpacity
                       style={styles.surahNavButton}
-                      onPress={() => {
+                      onPress={async () => {
                         setShowGoToModal(false);
-                        navigation.replace('Memorization', { surah: prevSurah });
+                        
+                        // Load data to get memorization progress for the target surah
+                        const data = await loadData();
+                        const targetSurahData = data.memorizedAyahs[prevSurah.name];
+                        
+                        let resumeFromIndex = 0;
+                        console.log('[Navigation Modal - Prev] Target surah data:', targetSurahData);
+                        if (targetSurahData?.currentFlashcardIndex !== undefined && targetSurahData?.currentFlashcardIndex >= 0) {
+                          // Use the saved flashcard index directly
+                          resumeFromIndex = targetSurahData.currentFlashcardIndex;
+                          console.log('[Navigation Modal - Prev] Using saved flashcard index:', resumeFromIndex);
+                        } else {
+                          console.log('[Navigation Modal - Prev] No saved position, starting from beginning');
+                        }
+                        
+                        // Save current position before navigating
+                        try {
+                          await saveCurrentPosition(surah.name, currentAyahIndex);
+                        } catch (error) {
+                          console.error('[MemorizationScreen] Error saving position before navigation:', error);
+                        }
+                        
+                        navigation.replace('Memorization', { 
+                          surah: prevSurah,
+                          resumeFromIndex
+                        });
                       }}
                     >
-                      <Text variant="body1" style={styles.surahNavButtonText}>
-                        ← {prevSurah.surah}. {cleanSurahName(prevSurah.name)}
+                      <Text variant="body1" style={[styles.surahNavButtonText, { color: '#F5E6C8' }, language === 'ar' && { textAlign: 'center' }] }>
+                        {language === 'ar' ? `${t(`surah_${prevSurah.surah}`)} .${toArabicNumber(prevSurah.surah)}` : `← ${prevSurah.surah}. ${cleanSurahName(prevSurah.name)}`}
                       </Text>
                     </TouchableOpacity>
                   )}
@@ -485,19 +677,25 @@ const MemorizationScreen = ({ route, navigation }) => {
                     ]}
                     onPress={() => handleGoToAyah(originalIndex)}
                   >
-                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                    <Text variant="body1" style={[
-                      styles.ayahItemText,
-                      currentAyahIndex === originalIndex && { 
-                        color: '#FFFFFF',
-                        fontWeight: 'bold',
-                        fontSize: 18
-                      }
-                    ]}>
-                      {ayah.type === 'istiadhah' ? "Isti'adhah" :
-                       ayah.type === 'bismillah' ? 'Bismillah' :
-                             `Ayah ${ayahNumber}`}
+                        <View style={{ flexDirection: language === 'ar' ? 'row-reverse' : 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                          <View style={{ flex: 1, alignItems: 'center' }}>
+                            <Text variant="body1" style={[
+                              styles.ayahItemText,
+                              currentAyahIndex === originalIndex && { 
+                                color: '#666666',
+                                fontWeight: 'bold',
+                                fontSize: 18
+                              },
+                              { textAlign: 'center' }
+                            ]}>
+                              {ayah.type === 'istiadhah' ? (language === 'ar' ? t('istiadhah') : "Isti'adhah") :
+                               ayah.type === 'bismillah' ? t('bismillah') :
+                               `${t('ayah')} ${toArabicNumber(ayahNumber)}`}
                     </Text>
+                          </View>
+                          {ayah.type === 'ayah' && memorizationData?.memorizedAyahs[surah.name]?.completedAyaat?.includes(ayahNumber) && (
+                            <View style={styles.ayahDot} />
+                          )}
                         </View>
                   </TouchableOpacity>
                 );
@@ -506,24 +704,53 @@ const MemorizationScreen = ({ route, navigation }) => {
                   {nextSurah && (
                     <TouchableOpacity
                       style={styles.surahNavButton}
-                      onPress={() => {
+                      onPress={async () => {
                         setShowGoToModal(false);
-                        navigation.replace('Memorization', { surah: nextSurah });
+                        
+                        // Load data to get memorization progress for the target surah
+                        const data = await loadData();
+                        const targetSurahData = data.memorizedAyahs[nextSurah.name];
+                        
+                        let resumeFromIndex = 0;
+                        console.log('[Navigation Modal - Next] Target surah data:', targetSurahData);
+                        if (targetSurahData?.currentFlashcardIndex !== undefined && targetSurahData?.currentFlashcardIndex >= 0) {
+                          // Use the saved flashcard index directly
+                          resumeFromIndex = targetSurahData.currentFlashcardIndex;
+                          console.log('[Navigation Modal - Next] Using saved flashcard index:', resumeFromIndex);
+                        } else {
+                          console.log('[Navigation Modal - Next] No saved position, starting from beginning');
+                        }
+                        
+                        // Save current position before navigating
+                        try {
+                          await saveCurrentPosition(surah.name, currentAyahIndex);
+                        } catch (error) {
+                          console.error('[MemorizationScreen] Error saving position before navigation:', error);
+                        }
+                        
+                        navigation.replace('Memorization', { 
+                          surah: nextSurah,
+                          resumeFromIndex
+                        });
                       }}
                     >
-                      <Text variant="body1" style={styles.surahNavButtonText}>
-                        {nextSurah.surah}. {cleanSurahName(nextSurah.name)} →
+                      <Text variant="body1" style={[styles.surahNavButtonText, { color: '#F5E6C8' }, language === 'ar' && { textAlign: 'center' }] }>
+                        {language === 'ar' ? `${t(`surah_${nextSurah.surah}`)} .${toArabicNumber(nextSurah.surah)}` : `${nextSurah.surah}. ${cleanSurahName(nextSurah.name)} →`}
                       </Text>
                     </TouchableOpacity>
                   )}
             </ScrollView>
             
-            <TouchableOpacity style={[styles.surahNavButton, { backgroundColor: COLORS.primary, marginTop: 8 }]} onPress={() => ayahListRef.current?.scrollToEnd({ animated: true })}>
-              <Ionicons name="chevron-down" size={24} color="rgba(64, 64, 64, 0.9)" />
+            <TouchableOpacity style={[styles.surahNavButton, { backgroundColor: '#5b7f67', marginTop: 8 }]} onPress={() => ayahListRef.current?.scrollToEnd({ animated: true })}>
+              <Image 
+                source={require('../assets/app_icons/down-up.png')} 
+                style={{ width: 24, height: 24, tintColor: 'rgba(64, 64, 64, 0.9)' }}
+                resizeMode="contain"
+              />
             </TouchableOpacity>
             
             <Button
-              title="Cancel"
+              title={t('close')}
               onPress={() => {
                 setShowGoToModal(false);
                 setSearchText('');
@@ -542,22 +769,50 @@ const MemorizationScreen = ({ route, navigation }) => {
         onRequestClose={() => setShowReward(false)}
       >
             <View style={[styles.rewardModalOverlay, { justifyContent: 'flex-end', alignItems: 'center' }]}>
-              <Animated.View style={[styles.rewardModalContent, { transform: [{ scale: rewardScale }], marginBottom: 32 }] }>
-                <Text variant="h2" style={{ color: '#3E2723' }}>Masha2Allah</Text>
+              <Animated.View style={[styles.rewardModalContent, { transform: [{ scale: rewardScale }], marginBottom: 20 }] }>
+                <Text variant="h2" style={{ color: '#33694e' }}>{t('masha2allah')}</Text>
                 <Text variant="body1" style={{ color: '#3E2723' }}>
-              You've earned <Text style={{ fontWeight: 'bold', color: COLORS.primary }}>{rewardAmount}</Text> 7asanaat for this Ayah!
+                  {language === 'ar' ? (
+                    <>
+                      لقد كسبت{' '}
+                      <Text style={{ 
+                        color: 'rgba(165,115,36,0.8)', 
+                        fontWeight: 'bold',
+                        textShadowColor: 'rgba(165,115,36,0.8)',
+                        textShadowOffset: { width: 0, height: 0 },
+                        textShadowRadius: 4,
+                      }}>
+                        {toArabicNumber(rewardAmount)}
             </Text>
-            <Text variant="body2" style={{ marginTop: 8, fontStyle: 'italic', color: COLORS.textSecondary }}>
-              insha2Allah
+                      {' '}حسنة لهذه الآية!
+                    </>
+                  ) : (
+                    <>
+                      You've earned{' '}
+                      <Text style={{ 
+                        color: 'rgba(165,115,36,0.8)', 
+                        fontWeight: 'bold',
+                        textShadowColor: 'rgba(165,115,36,0.8)',
+                        textShadowOffset: { width: 0, height: 0 },
+                        textShadowRadius: 4,
+                      }}>
+                        {toArabicNumber(rewardAmount)}
+            </Text>
+                      {' '}7asanaat for this Ayah!
+                    </>
+                  )}
+                </Text>
+            <Text variant="body2" style={{ marginTop: 8, fontStyle: 'italic', color: '#555' }}>
+              {t('insha2allah')}
             </Text>
                 <View style={styles.rewardButtonRow}>
-                  <Button
-                    title="Revise"
+            <Button
+                    title={t('revise')}
                     onPress={() => setShowReward(false)}
-                    style={[styles.rewardButton, { backgroundColor: COLORS.primary, marginRight: 8 }]}
+                    style={[styles.rewardButton, { backgroundColor: '#5b7f67', marginRight: 8 }]}
                   />
             <Button
-              title={currentAyahIndex === ayaat.length - 1 ? 'Next Surah' : 'Next Ayah'}
+                              title={currentAyahIndex === flashcards.length - 1 ? t('next_surah') : t('next_ayah')}
                     onPress={async () => {
                 setShowReward(false);
                 
@@ -577,9 +832,11 @@ const MemorizationScreen = ({ route, navigation }) => {
                   setPreviousStreak(prevStreakFromStorage);
                 }
                 
-                if (currentAyahIndex < ayaat.length - 1) {
+                if (currentAyahIndex < flashcards.length - 1) {
                   setCurrentAyahIndex(currentAyahIndex + 1);
                   setIsTextHidden(false);
+                  // Reload memorization data to update dots
+                  await loadMemorizationData();
                 } else {
                         // Add all session hasanat at the end of the surah
                         try {
@@ -588,10 +845,10 @@ const MemorizationScreen = ({ route, navigation }) => {
                           console.error('[MemorizationScreen] Error updating streak on reward finish:', error);
                         }
                   sessionHasanat.current = 0;
-                  navigation.navigate('Home');
+                  navigation.navigate('SurahList');
                 }
               }}
-                    style={[styles.rewardButton, { backgroundColor: COLORS.primary }]}
+                    style={[styles.rewardButton, { backgroundColor: '#5b7f67' }]}
             />
                 </View>
           </Animated.View>
@@ -626,7 +883,7 @@ const MemorizationScreen = ({ route, navigation }) => {
               <Button
                   title="Close"
                 onPress={() => setShowSettingsModal(false)}
-                style={{ backgroundColor: COLORS.primary }}
+                style={{ backgroundColor: '#5b7f67' }}
               />
           </View>
         </View>
@@ -684,11 +941,13 @@ const styles = StyleSheet.create({
   homeIcon: {
     width: 64,
     height: 64,
-    borderRadius: 16,
+    borderRadius: 80,
   },
   headerTextContainer: {
     flex: 1,
     alignItems: 'center',
+    justifyContent: 'center',
+    paddingRight: 20,
   },
   progressContainer: {
     marginTop: SIZES.small,
@@ -731,6 +990,11 @@ const styles = StyleSheet.create({
   navButton: {
     flex: 1,
     marginHorizontal: SIZES.small,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 5,
   },
   rewardModalOverlay: {
     flex: 1,
@@ -743,15 +1007,15 @@ const styles = StyleSheet.create({
     borderRadius: SIZES.base,
     padding: SIZES.large,
     alignItems: 'center',
-    shadowColor: COLORS.accent,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 5,
+    shadowColor: '#333333',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.5,
+    shadowRadius: 12,
+    elevation: 8,
   },
   transliterationText: {
     fontStyle: 'italic',
-    color: '#CCCCCC',
+    color: '#999999',
     fontSize: 20,
     marginTop: 12,
     backgroundColor: 'transparent',
@@ -770,11 +1034,11 @@ const styles = StyleSheet.create({
     borderRadius: 32,
     padding: SIZES.large,
     alignItems: 'center',
-    shadowColor: COLORS.accent,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 5,
+    shadowColor: '#333333',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.5,
+    shadowRadius: 12,
+    elevation: 8,
     marginHorizontal: 4,
     width: '95%',
   },
@@ -784,6 +1048,13 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     padding: 4,
     maxHeight: 250,
+    borderWidth: 4,
+    borderColor: '#999999',
+    shadowColor: '#333333',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.5,
+    shadowRadius: 10,
+    elevation: 8,
   },
   ayahItem: {
     padding: SIZES.medium,
@@ -793,7 +1064,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   selectedAyahItem: {
-    backgroundColor: 'rgba(128, 128, 128, 0.8)',
+    backgroundColor: '#F5E6C8',
+    borderRadius: 20,
   },
   ayahItemText: {
     fontFamily: 'System',
@@ -807,7 +1079,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 1,
     borderColor: 'rgba(165,115,36,0.8)',
-    borderRadius: SIZES.base,
+    borderRadius: 25,
     padding: SIZES.small,
     marginBottom: 16,
     width: '100%',
@@ -852,9 +1124,13 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: SIZES.medium,
     paddingHorizontal: SIZES.medium,
+    position: 'relative',
   },
   settingsButton: {
     // Left side
+  },
+  audioButton: {
+    // Right side
   },
   recordButtonContainer: {
     flex: 1,
@@ -862,11 +1138,16 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   revealButtonNew: {
-    backgroundColor: COLORS.white,
-    borderRadius: SIZES.base,
+    backgroundColor: '#F5E6C8',
+    borderRadius: 20,
     padding: SIZES.small,
-    borderWidth: 1,
-    borderColor: COLORS.primary,
+    borderWidth: 3,
+    borderColor: 'rgba(51, 105, 78, 0.7)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 5,
     // Right side
   },
   revealButtonText: {
@@ -887,6 +1168,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     flexGrow: 1,
+    paddingVertical: 20,
   },
   surahNavButton: {
     backgroundColor: 'rgba(51, 105, 78, 1)',
@@ -894,6 +1176,11 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     marginVertical: 8,
     alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 5,
   },
   surahNavButtonText: {
     color: 'rgba(255, 165, 0, 0.8)',
@@ -901,11 +1188,10 @@ const styles = StyleSheet.create({
     fontSize: 22,
   },
   ayahDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: COLORS.success,
-    marginLeft: 8,
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#5b7f67',
   },
   headerButtons: {
     flexDirection: 'column',

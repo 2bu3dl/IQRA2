@@ -8,12 +8,19 @@ import ProgressBar from '../components/ProgressBar';
 import { loadData } from '../utils/store';
 import { getAllSurahs } from '../utils/quranData';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import { useLanguage } from '../utils/languageContext';
 
 const COLORS = { ...BASE_COLORS, primary: '#33694e', accent: '#FFD700' };
 
 const SCROLL_BAR_HEIGHT = 150;
 
 const SurahListScreen = ({ navigation, route }) => {
+  const { language, t } = useLanguage();
+  // Helper to convert numbers to Arabic-Indic if needed
+  const toArabicNumber = (num) => {
+    if (language !== 'ar') return num.toString();
+    return num.toString().replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]);
+  };
   const [data, setData] = useState({
     memorizedAyahs: {
       'Al-Fatihah': {
@@ -303,11 +310,11 @@ const SurahListScreen = ({ navigation, route }) => {
     return getAllSurahs().map(({ surah, name, ayaat }) => {
       const cleanedName = name.replace(/^\d+\s+/, ''); // Remove the number prefix from the name
       return {
-        id: surah,
+    id: surah,
         name: cleanedName,
         originalName: name, // Keep the original name for progress lookup
-        totalAyahs: surah === 1 ? 7 : ayaat.length,
-        memorizedAyahs: Math.min(data.memorizedAyahs[cleanedName]?.memorized || 0, surah === 1 ? 7 : ayaat.length),
+    totalAyahs: surah === 1 ? 7 : ayaat.length,
+    memorizedAyahs: Math.min(data.memorizedAyahs[name]?.memorized || 0, surah === 1 ? 7 : ayaat.length),
       };
     });
   }, [data.memorizedAyahs]); // Only recreate when memorized data changes
@@ -370,35 +377,70 @@ const SurahListScreen = ({ navigation, route }) => {
           onPress={() => navigation.navigate('Memorization', { surah: item })}
           activeOpacity={0.8}
         >
-          <View style={styles.surahInfo}>
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <Text variant="h3" style={{ color: 'rgba(165,115,36,0.8)', marginRight: 4 }}>
-                {item.id}.
+      <View style={styles.surahInfo}>
+            <View style={{ 
+              flexDirection: language === 'ar' ? 'row-reverse' : 'row', 
+              alignItems: 'center',
+              justifyContent: language === 'ar' ? 'flex-end' : 'flex-start',
+              width: '100%'
+            }}>
+              <Text variant="h3" style={{ 
+                color: 'rgba(165,115,36,0.8)', 
+                marginRight: language === 'ar' ? 0 : 4,
+                marginLeft: language === 'ar' ? 4 : 0
+              }}>
+                {language === 'ar' ? `.${toArabicNumber(item.id)}` : `${toArabicNumber(item.id)}.`}
               </Text>
-              <Text variant="h3" style={{ color: isSelected ? COLORS.primary : COLORS.text }}>
-                {item.name}
+              <Text variant="h3" style={{ 
+                color: isSelected ? COLORS.primary : '#F5E6C8',
+                textAlign: language === 'ar' ? 'right' : 'left',
+                flex: language === 'ar' ? 1 : undefined
+              }}>
+                {language === 'ar' ? t(`surah_${item.id}`) : item.name}
               </Text>
             </View>
-            <Text variant="body2" style={{ color: 'rgba(51, 105, 78, 0.8)', marginTop: 2, fontStyle: 'italic', marginLeft: 20, marginBottom: 8 }}>
-              {SURAH_ENGLISH_TRANSLATIONS[item.id]}
-            </Text>
-            <Text variant="body2" color="textSecondary" style={[styles.progressText, { textAlign: 'center', marginTop: 0 }]}>
-              <Text style={[
-                isCompleted ? {
-                  textShadowColor: '#fae29f',
-                  textShadowOffset: { width: 0, height: 0 },
-                  textShadowRadius: 4,
-                } : {}
-              ]}>
-                {item.memorizedAyahs}
+            {language === 'en' && (
+              <Text variant="body2" style={{ color: 'rgba(51, 105, 78, 0.8)', marginTop: 2, fontStyle: 'italic', marginLeft: 20, marginBottom: 8 }}>
+                {SURAH_ENGLISH_TRANSLATIONS[item.id]}
               </Text>
-              /<Text style={{ color: 'rgba(255, 255, 255, 0.6)' }}>{item.totalAyahs}</Text> Ayaat memorized
-            </Text>
-            <View style={styles.progressContainer}>
-              <ProgressBar 
+            )}
+            <Text variant="body2" color="textSecondary" style={[styles.progressText, { 
+              textAlign: 'center', 
+              marginTop: 0 
+            }]}>
+              {language === 'ar' ? (
+                <>
+                  <Text style={{ color: 'rgba(255, 255, 255, 0.6)' }}>{toArabicNumber(item.totalAyahs)}</Text>
+                  /<Text style={[
+                    isCompleted ? {
+                      textShadowColor: '#fae29f',
+                      textShadowOffset: { width: 0, height: 0 },
+                      textShadowRadius: 4,
+                    } : {}
+                  ]}>
+                    {toArabicNumber(item.memorizedAyahs)}
+                  </Text> {t('ayaat_memorized')}
+                </>
+              ) : (
+                <>
+                  <Text style={[
+                    isCompleted ? {
+                      textShadowColor: '#fae29f',
+                      textShadowOffset: { width: 0, height: 0 },
+                      textShadowRadius: 4,
+                    } : {}
+                  ]}>
+                    {toArabicNumber(item.memorizedAyahs)}
+                  </Text>
+                  /<Text style={{ color: 'rgba(255, 255, 255, 0.6)' }}>{toArabicNumber(item.totalAyahs)}</Text> {t('ayaat_memorized')}
+                </>
+              )}
+        </Text>
+        <View style={styles.progressContainer}>
+          <ProgressBar 
                 key={`progress-${item.id}`}
-                progress={item.memorizedAyahs} 
-                total={item.totalAyahs} 
+            progress={item.memorizedAyahs} 
+            total={item.totalAyahs} 
                 height={8}
                 completed={isCompleted}
               />
@@ -406,7 +448,7 @@ const SurahListScreen = ({ navigation, route }) => {
             {isSelected && (
               <View style={styles.currentIndicator}>
                 <Text variant="body2" color="primary" style={styles.currentText}>
-                  Currently Memorizing
+                  {t('memorize')}
                 </Text>
               </View>
             )}
@@ -454,7 +496,10 @@ const SurahListScreen = ({ navigation, route }) => {
     });
 
     return (
-      <View style={styles.scrollBarContainer}>
+      <View style={[styles.scrollBarContainer, {
+        right: language === 'ar' ? undefined : 10,
+        left: language === 'ar' ? 10 : undefined
+      }]}>
         <View style={styles.scrollBar}>
           <Animated.View 
             style={[
@@ -466,7 +511,7 @@ const SurahListScreen = ({ navigation, route }) => {
           />
         </View>
       </View>
-    );
+  );
   };
 
   return (
@@ -477,11 +522,30 @@ const SurahListScreen = ({ navigation, route }) => {
         imageStyle={{ opacity: 0.2 }}
       >
         <SafeAreaView style={[styles.container, { backgroundColor: 'transparent' }]}>
-          <View style={styles.header}>
+      <View style={styles.header}>
             <View style={styles.headerBlurContainer}>
               <View style={styles.headerTextContainer}>
-                <Text variant="h1" style={[styles.titleText, { color: COLORS.white }]}>Surahs</Text>
-                <Text variant="body1" style={styles.headerSubtitle}>Qa2imat as-Suwar (Surah List)</Text>
+                {language === 'ar' ? (
+                  <Text variant="h1" style={{ 
+                    fontSize: 30, 
+                    fontWeight: 'bold', 
+                    color: '#F5E6C8', 
+                    marginTop: 16, 
+                    marginBottom: 16,
+                    textShadowColor: '#000',
+                    textShadowOffset: { width: 1, height: 1 },
+                    textShadowRadius: 3
+                  }}>{t('welcome_subtitle')}</Text>
+                ) : (
+                  <>
+                    <Text variant="h1" style={[styles.titleText, { 
+                      color: '#F5E6C8',
+                      marginTop: language === 'ar' ? 12 : 0,
+                      paddingTop: language === 'ar' ? 4 : 0
+                    }]}>{language === 'ar' ? 'السور' : 'Surahs'}</Text>
+                    <Text variant="body1" style={styles.headerSubtitle}>{t('welcome_subtitle')}</Text>
+                  </>
+                )}
               </View>
             </View>
           </View>
@@ -489,12 +553,20 @@ const SurahListScreen = ({ navigation, route }) => {
           {/* Search bar is now a sibling, not a child, of the header */}
           <View style={styles.searchContainer}>
             <View style={[styles.searchInputContainer, { 
-              backgroundColor: isSearchFocused ? 'rgba(255, 255, 255, 0.8)' : 'rgba(255, 255, 255, 0.6)' 
+              backgroundColor: isSearchFocused ? 'rgba(245, 230, 200, 0.8)' : 'rgba(245, 230, 200, 0.6)' 
             }]}>
-              <Ionicons name="search" size={20} color={COLORS.primary} style={styles.searchIcon} />
+              <Image 
+                source={require('../assets/app_icons/search.png')} 
+                style={{ width: 20, height: 20, tintColor: COLORS.primary, marginRight: SIZES.small }}
+                resizeMode="contain"
+              />
               <TextInput
-                style={[styles.searchInput, { fontWeight: isSearchFocused ? 'bold' : 'normal' }]}
-                placeholder="Search surahs by name or number..."
+                style={[styles.searchInput, { 
+                  fontWeight: isSearchFocused ? 'bold' : 'normal',
+                  textAlign: language === 'ar' ? 'right' : 'left',
+                  writingDirection: language === 'ar' ? 'rtl' : 'ltr'
+                }]}
+                placeholder={t('search_surahs')}
                 placeholderTextColor="#666"
                 value={searchText}
                 onChangeText={setSearchText}
@@ -506,18 +578,18 @@ const SurahListScreen = ({ navigation, route }) => {
               {searchText.length > 0 && (
                 <TouchableOpacity onPress={() => setSearchText('')} style={styles.clearButton}>
                   <Ionicons name="close-circle" size={20} color="#666" />
-                </TouchableOpacity>
+        </TouchableOpacity>
               )}
-            </View>
-          </View>
-          
+        </View>
+      </View>
+      
           <View style={styles.contentContainer}>
             <Animated.FlatList
               ref={flatListRef}
               data={filteredSurahs}
-              renderItem={renderSurahItem}
-              keyExtractor={(item) => item.id.toString()}
-              contentContainerStyle={styles.list}
+        renderItem={renderSurahItem}
+        keyExtractor={(item) => item.id.toString()}
+        contentContainerStyle={styles.list}
               showsVerticalScrollIndicator={false}
               onScroll={Animated.event(
                 [{ nativeEvent: { contentOffset: { y: scrollY } } }],
@@ -548,25 +620,37 @@ const SurahListScreen = ({ navigation, route }) => {
               onPress={() => navigation.navigate('Home')}
             >
               <Image
-                source={require('../assets/IQRA2logo.png')}
-                style={styles.homeIcon}
+                source={language === 'ar' ? require('../assets/IQRA2iconArabicoctagon.png') : require('../assets/IQRA2iconoctagon.png')}
+                style={[styles.homeIcon]}
                 resizeMode="contain"
               />
-              <Text style={styles.homeButtonText}>Home</Text>
+              <Text style={styles.homeButtonText}>{t('home')}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
               style={styles.continueButton}
               onPress={() => {
-                // Find the last memorized surah
-                const lastMemorizedSurah = surahs.find(surah => 
-                  data.memorizedAyahs[surah.name]?.memorized > 0
-                );
+                // Find the surah with the highest currentFlashcardIndex (most recent activity)
+                let lastMemorizedSurah = null;
+                let highestFlashcardIndex = -1;
+                
+                surahs.forEach(surah => {
+                  const surahData = data.memorizedAyahs[surah.name];
+                  if (surahData?.currentFlashcardIndex !== undefined && surahData?.currentFlashcardIndex > highestFlashcardIndex) {
+                    lastMemorizedSurah = surah;
+                    highestFlashcardIndex = surahData.currentFlashcardIndex;
+                  }
+                });
                 
                 if (lastMemorizedSurah) {
+                  // Use the saved flashcard index directly
+                  const flashcardIndex = data.memorizedAyahs[lastMemorizedSurah.name].currentFlashcardIndex;
+                  console.log('[SurahListScreen] Continue: lastMemorizedSurah', lastMemorizedSurah.name, 'flashcardIndex', flashcardIndex);
+                  
                   navigation.navigate('Memorization', { 
                     surah: lastMemorizedSurah,
-                    currentSurahId: lastMemorizedSurah.id 
+                    currentSurahId: lastMemorizedSurah.id,
+                    resumeFromIndex: flashcardIndex
                   });
                 } else {
                   // If no memorized surahs, start with the first one
@@ -577,10 +661,26 @@ const SurahListScreen = ({ navigation, route }) => {
                 }
               }}
             >
-              <Text style={styles.continueButtonText}>Continue</Text>
+              <Text style={styles.continueButtonText}>{t('continue')}</Text>
+              <Image 
+                source={require('../assets/app_icons/down-up.png')} 
+                style={{ 
+                  width: 36, 
+                  height: 36, 
+                  tintColor: 'rgba(165,115,36,1.0)',
+                  marginLeft: 12,
+                  transform: [{ rotate: '-90deg' }],
+                  shadowColor: '#000',
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.3,
+                  shadowRadius: 4,
+                  elevation: 5,
+                }}
+                resizeMode="contain"
+              />
             </TouchableOpacity>
           </View>
-        </SafeAreaView>
+    </SafeAreaView>
       </ImageBackground>
     </View>
   );
@@ -616,7 +716,7 @@ const styles = StyleSheet.create({
     textDecorationThickness: 4,
   },
   headerSubtitle: {
-    color: '#222',
+    color: '#CCCCCC',
     fontSize: 18,
     marginTop: 4,
     fontWeight: 'bold',
@@ -655,11 +755,16 @@ const styles = StyleSheet.create({
     flex: 1,
     marginRight: SIZES.small / 2,
     justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 5,
   },
   homeIcon: {
     width: 48,
     height: 48,
-    borderRadius: 12,
+    borderRadius: 80,
   },
   homeButtonText: {
     color: COLORS.white,
@@ -726,6 +831,11 @@ const styles = StyleSheet.create({
     flex: 1,
     marginLeft: SIZES.small / 2,
     justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 5,
   },
   continueButtonText: {
     color: COLORS.white,

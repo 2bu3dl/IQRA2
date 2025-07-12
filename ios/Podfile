@@ -1,9 +1,6 @@
 # Resolve react_native_pods.rb with node to allow for hoisting
 require Pod::Executable.execute_command('node', ['-p',
-  'require.resolve(
-    "react-native/scripts/react_native_pods.rb",
-    {paths: [process.argv[1]]},
-  )', __dir__]).strip
+  'require.resolve("react-native/scripts/react_native_pods.rb", {paths: [process.argv[1]]})', __dir__]).strip
 
 platform :ios, min_ios_version_supported
 prepare_react_native_project!
@@ -17,19 +14,25 @@ end
 target 'IQRA2' do
   config = use_native_modules!
 
+  # Temporarily disable New Architecture to fix UTF-8 encoding issues
+  ENV['RCT_NEW_ARCH_ENABLED'] = '0'
+
   use_react_native!(
     :path => config[:reactNativePath],
     # An absolute path to your application root.
-    :app_path => "#{Pod::Config.instance.installation_root}/.."
+    :app_path => "#{Pod::Config.instance.installation_root}/..",
+    # Temporarily disable Hermes to avoid script execution issues
+    :hermes_enabled => false
   )
 
-  post_install do |installer|
-    # https://github.com/facebook/react-native/blob/main/packages/react-native/scripts/react_native_pods.rb#L197-L202
-    react_native_post_install(
-      installer,
-      config[:reactNativePath],
-      :mac_catalyst_enabled => false,
-      # :ccache_enabled => true
-    )
-  end
+  # Temporarily comment out post_install to bypass UTF-8 encoding issue
+  # post_install do |installer|
+  #   # https://github.com/facebook/react-native/blob/main/packages/react-native/scripts/react_native_pods.rb#L197-L202
+  #   react_native_post_install(
+  #     installer,
+  #     config[:reactNativePath],
+  #     :mac_catalyst_enabled => false
+  #   )
+  #   __apply_Xcode_12_5_M1_post_install_workaround(installer)
+  # end
 end
