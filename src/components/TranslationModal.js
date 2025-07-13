@@ -88,15 +88,17 @@ const TranslationModal = ({ visible, onClose, currentSurah, currentAyah, onAyahC
           </View>
 
           <View style={styles.translationContainer}>
-            <Text style={styles.ayahInfo}>{t('surah')} {currentSurah}, {t('ayah')} {currentAyah}</Text>
+            <Text style={styles.ayahInfo}>{`Surah ${currentSurah}, Ayah ${currentAyah}`}</Text>
             <ScrollView style={styles.translationScroll}>
-              {loading ? (
-                <Text style={styles.loadingText}>{t('loading')}</Text>
-              ) : (
-                <Text style={styles.translationText}>
-                  {translation || t('translation_not_available')}
-                </Text>
-              )}
+              <View style={styles.translationText}>
+                {loading ? (
+                  <Text style={styles.loadingText}>{t('loading')}</Text>
+                ) : (
+                  <Text style={{ fontSize: 20, lineHeight: 32, color: '#444', fontWeight: 'bold', textAlign: 'justify' }}>
+                    {translation || t('translation_not_available')}
+                  </Text>
+                )}
+              </View>
             </ScrollView>
           </View>
 
@@ -167,9 +169,13 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#1a1a1a',
+    color: '#444',
     textAlign: 'center',
     textDecorationLine: 'underline',
+    // Softer shadow for title
+    textShadowColor: '#A68B2C',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 1,
   },
   closeButton: {
     width: 30,
@@ -181,6 +187,12 @@ const styles = StyleSheet.create({
     position: 'absolute',
     right: 0,
     top: 0,
+    // Deeper shadow for close button
+    shadowColor: '#A68B2C',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.32,
+    shadowRadius: 16,
+    elevation: 12,
   },
   closeButtonText: {
     color: 'white',
@@ -208,6 +220,10 @@ const styles = StyleSheet.create({
     color: 'rgba(51, 105, 78, 0.8)',
     marginBottom: 15,
     textAlign: 'center',
+    // Add a bit of shadow
+    textShadowColor: '#A68B2C',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
   },
   translationScroll: {
     flex: 1,
@@ -217,13 +233,19 @@ const styles = StyleSheet.create({
     lineHeight: 32,
     color: '#1a1a1a',
     textAlign: 'justify',
-    backgroundColor: '#F5E6C8',
+    backgroundColor: '#FAF3E3',
     borderColor: 'rgba(165,115,36,0.8)',
     borderWidth: 2,
-    borderRadius: 10,
+    borderRadius: 24, // even more rounded
     padding: 16,
     marginVertical: 8,
     fontWeight: 'bold',
+    // Deeper shadow
+    shadowColor: '#A68B2C',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.32,
+    shadowRadius: 16,
+    elevation: 12,
   },
   loadingText: {
     fontSize: 18,
@@ -243,11 +265,17 @@ const styles = StyleSheet.create({
     minWidth: 0,
     paddingVertical: 12,
     paddingHorizontal: 8,
-    borderRadius: 10,
+    borderRadius: 14, // more rounded
     backgroundColor: 'rgba(165,115,36,0.8)',
     borderWidth: 2,
     borderColor: 'rgba(165,115,36,0.8)',
     marginHorizontal: 4,
+    // Deeper shadow
+    shadowColor: '#A68B2C',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.32,
+    shadowRadius: 16,
+    elevation: 12,
   },
   sourceButtonText: {
     textAlign: 'center',
@@ -265,10 +293,16 @@ const styles = StyleSheet.create({
   ayahNavButton: {
     flex: 1,
     backgroundColor: theme.colors.primary,
-    borderRadius: 8,
+    borderRadius: 12,
     paddingVertical: 10,
     marginHorizontal: 8,
     alignItems: 'center',
+    // Deeper shadow for nav buttons
+    shadowColor: '#A68B2C',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.32,
+    shadowRadius: 16,
+    elevation: 12,
   },
   ayahNavButtonText: {
     color: 'white',

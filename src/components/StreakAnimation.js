@@ -180,7 +180,7 @@ const styles = StyleSheet.create({
   streakNumber: {
     fontSize: 100,
     fontWeight: 'bold',
-    color: '#FFD700',
+    color: '#D4AF37',
     textAlign: 'center',
     marginBottom: 8,
     alignSelf: 'center',

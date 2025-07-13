@@ -5,6 +5,7 @@
   "scripts": {
     "android": "react-native run-android",
     "ios": "react-native run-ios",
+    "ios-workspace": "open ios/IQRA2.xcworkspace",
     "lint": "eslint .",
     "start": "react-native start",
     "test": "jest"
@@ -17,8 +18,7 @@
     "@react-navigation/native": "^7.1.11",
     "@react-navigation/native-stack": "^7.3.16",
     "react": "19.1.0",
-    "react-native": "0.80.0",
-    "react-native-audio-recorder-player": "^3.6.13",
+    "react-native": "^0.80.1",
     "react-native-device-info": "^14.0.4",
     "react-native-fs": "^2.20.0",
     "react-native-gesture-handler": "^2.26.0",

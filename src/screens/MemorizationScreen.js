@@ -294,7 +294,7 @@ const MemorizationScreen = ({ route, navigation }) => {
     }
     addHasanat(sessionHasanat.current);
     sessionHasanat.current = 0;
-    navigation.navigate('Home');
+    navigation.navigate('Home', { refresh: true });
   }
 
   const handleStreakAnimationComplete = () => {
@@ -335,7 +335,7 @@ const MemorizationScreen = ({ route, navigation }) => {
               addHasanat(sessionHasanat.current);
               sessionHasanat.current = 0;
             }
-            navigation.navigate('Home');
+            navigation.navigate('Home', { refresh: true });
           }}
         >
               <Image source={language === 'ar' ? require('../assets/IQRA2iconArabicoctagon.png') : require('../assets/IQRA2iconoctagon.png')} style={[styles.homeIcon]} resizeMode="contain" />
@@ -597,9 +597,10 @@ const MemorizationScreen = ({ route, navigation }) => {
               <TextInput
                 style={[styles.searchInput, {
                   textAlign: language === 'ar' ? 'right' : 'left',
-                  writingDirection: language === 'ar' ? 'rtl' : 'ltr'
+                  writingDirection: language === 'ar' ? 'rtl' : 'ltr',
                 }]}
                 placeholder={t('search_ayah')}
+                placeholderTextColor="#888"
                 value={searchText}
                 onChangeText={setSearchText}
                 keyboardType="numeric"
@@ -845,7 +846,7 @@ const MemorizationScreen = ({ route, navigation }) => {
                           console.error('[MemorizationScreen] Error updating streak on reward finish:', error);
                         }
                   sessionHasanat.current = 0;
-                  navigation.navigate('SurahList');
+                  navigation.navigate('SurahList', { refresh: true });
                 }
               }}
                     style={[styles.rewardButton, { backgroundColor: '#5b7f67' }]}

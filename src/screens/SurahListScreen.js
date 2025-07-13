@@ -274,18 +274,27 @@ const SurahListScreen = ({ navigation, route }) => {
     114: 'Mankind',
   };
 
-  useEffect(() => {
-    const loadScreenData = async () => {
-      const loadedData = await loadData();
-      setData(loadedData);
-    };
+  // Ensure loadScreenData is defined at the top level
+  const loadScreenData = async () => {
+    const loadedData = await loadData();
+    setData(loadedData);
+  };
 
+  useEffect(() => {
     loadScreenData();
 
     // Refresh data when screen comes into focus
     const unsubscribe = navigation.addListener('focus', loadScreenData);
     return unsubscribe;
   }, [navigation]);
+
+  // Handle refresh parameter from navigation and clear it after use
+  useEffect(() => {
+    if (route.params?.refresh) {
+      loadScreenData();
+      navigation.setParams({ refresh: false });
+    }
+  }, [route.params?.refresh]);
 
   // Check if we're coming from MemorizationScreen with current ayah info
   useEffect(() => {
@@ -305,16 +314,28 @@ const SurahListScreen = ({ navigation, route }) => {
     }
   }, [route.params?.currentSurahId]);
 
+  // Debug: Log memorizedAyahs keys and surah names used for lookup
+  useEffect(() => {
+    if (data && data.memorizedAyahs) {
+      console.log('[SurahListScreen] memorizedAyahs keys:', Object.keys(data.memorizedAyahs));
+    }
+  }, [data]);
+
   // Use offline Quran data for surah list - memoized to prevent re-creation on every render
   const surahs = useMemo(() => {
     return getAllSurahs().map(({ surah, name, ayaat }) => {
       const cleanedName = name.replace(/^\d+\s+/, ''); // Remove the number prefix from the name
+      // Debug: Log the surah name and cleanedName
+      console.log('[SurahListScreen] Surah:', name, 'Cleaned:', cleanedName, 'Memorized:', data.memorizedAyahs[name]?.memorized, data.memorizedAyahs[cleanedName]?.memorized);
       return {
     id: surah,
         name: cleanedName,
         originalName: name, // Keep the original name for progress lookup
     totalAyahs: surah === 1 ? 7 : ayaat.length,
-    memorizedAyahs: Math.min(data.memorizedAyahs[name]?.memorized || 0, surah === 1 ? 7 : ayaat.length),
+    memorizedAyahs: Math.min(
+      data.memorizedAyahs[name]?.memorized || data.memorizedAyahs[cleanedName]?.memorized || 0,
+      surah === 1 ? 7 : ayaat.length
+    ),
       };
     });
   }, [data.memorizedAyahs]); // Only recreate when memorized data changes
@@ -663,11 +684,12 @@ const SurahListScreen = ({ navigation, route }) => {
               <Text style={styles.continueButtonText}>{t('continue')}</Text>
               <Image 
                 source={require('../assets/app_icons/down-up.png')} 
-                style={{ 
+                style={{
                   width: 36, 
                   height: 36, 
                   tintColor: 'rgba(165,115,36,1.0)',
                   marginLeft: 12,
+                  transform: [{ rotate: '-90deg' }],
                 }}
                 resizeMode="contain"
               />

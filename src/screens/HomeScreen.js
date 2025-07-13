@@ -11,7 +11,45 @@ import { useLanguage } from '../utils/languageContext';
 
 const COLORS = { ...BASE_COLORS, primary: '#6BA368', accent: '#FFD700' };
 
-const HomeScreen = ({ navigation }) => {
+const formatLargeNumber = (num) => {
+  if (num >= 1000000) {
+    return {
+      text: (num / 1000000).toFixed(1).replace(/\.0$/, '') + 'M',
+      fontSize: 24
+    };
+  } else if (num >= 100000) {
+    return {
+      text: num.toLocaleString(),
+      fontSize: 28
+    };
+  } else {
+    return {
+      text: num.toLocaleString(),
+      fontSize: 32
+    };
+  }
+};
+
+const formatStreakNumber = (num) => {
+  if (num >= 1000) {
+    return {
+      text: num.toLocaleString(),
+      fontSize: 28
+    };
+  } else if (num >= 100) {
+    return {
+      text: num.toString(),
+      fontSize: 32
+    };
+  } else {
+    return {
+      text: num.toString(),
+      fontSize: 36
+    };
+  }
+};
+
+const HomeScreen = ({ navigation, route }) => {
   const { language, changeLanguage, t } = useLanguage();
   const toArabicNumber = (num) => {
     if (language !== 'ar') return num.toString();
@@ -34,58 +72,25 @@ const HomeScreen = ({ navigation }) => {
   const [introVisible, setIntroVisible] = useState(false);
   const [resetting, setResetting] = useState(false);
 
-  // Function to format large numbers with appropriate font sizes
-  const formatLargeNumber = (num) => {
-    if (num >= 1000000) {
-      return {
-        text: (num / 1000000).toFixed(1).replace(/\.0$/, '') + 'M',
-        fontSize: 24
-      };
-    } else if (num >= 100000) {
-      return {
-        text: num.toLocaleString(),
-        fontSize: 28
-      };
-    } else {
-      return {
-        text: num.toLocaleString(),
-        fontSize: 32
-      };
-    }
-  };
-
-  // Function to format streak numbers with appropriate font sizes
-  const formatStreakNumber = (num) => {
-    if (num >= 1000) {
-      return {
-        text: num.toLocaleString(),
-        fontSize: 28
-      };
-    } else if (num >= 100) {
-      return {
-        text: num.toString(),
-        fontSize: 32
-      };
-    } else {
-      return {
-        text: num.toString(),
-        fontSize: 36
-      };
-    }
+  const loadScreenData = async () => {
+    const loadedData = await loadData();
+    setData(loadedData);
   };
 
   useEffect(() => {
-    const loadScreenData = async () => {
-      const loadedData = await loadData();
-      setData(loadedData);
-    };
-
     loadScreenData();
 
     // Refresh data when screen comes into focus
     const unsubscribe = navigation.addListener('focus', loadScreenData);
     return unsubscribe;
   }, [navigation]);
+
+  // Handle refresh parameter from navigation
+  useEffect(() => {
+    if (route.params?.refresh) {
+      loadScreenData();
+    }
+  }, [route.params?.refresh]);
 
   // Calculate percentage
   const progressPercentage = data.totalAyaat > 0 ? Math.round((data.memorizedAyaat / data.totalAyaat) * 100) : 0;
@@ -273,7 +278,7 @@ const HomeScreen = ({ navigation }) => {
             </Card>
           </View>
 
-          <View style={styles.buttonGrid}>
+          <View style={[styles.buttonGrid, { marginTop: language === 'ar' ? styles.buttonGrid.marginTop : 2 }]}>
             <TouchableOpacity
               style={[styles.gridButton, { 
                 shadowColor: '#fae29f', 
