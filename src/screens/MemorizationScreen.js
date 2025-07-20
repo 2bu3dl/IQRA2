@@ -1,5 +1,5 @@
-import React, { useState, useRef, useCallback, memo, useMemo } from 'react';
-import { View, StyleSheet, SafeAreaView, TouchableOpacity, Modal, Animated, Image, ScrollView, TextInput, ImageBackground, TouchableWithoutFeedback } from 'react-native';
+import React, { useState, useRef, useCallback, memo, useMemo, useEffect } from 'react';
+import { View, StyleSheet, SafeAreaView, TouchableOpacity, Modal, Animated, Image, ScrollView, TextInput, ImageBackground, TouchableWithoutFeedback, Alert } from 'react-native';
 import { COLORS as BASE_COLORS, SIZES, FONTS } from '../utils/theme';
 import Text from '../components/Text';
 import Button from '../components/Button';
@@ -7,11 +7,13 @@ import CardOrig from '../components/Card';
 import ProgressBarOrig from '../components/ProgressBar';
 import TranslationModal from '../components/TranslationModal';
 import StreakAnimation from '../components/StreakAnimation';
+import AnimatedRewardModal from '../components/AnimatedRewardModal';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { addHasanat, updateMemorizedAyahs, updateStreak, getCurrentStreak, loadData, saveCurrentPosition } from '../utils/store';
 import { getSurahAyaatWithTransliteration, getAllSurahs } from '../utils/quranData';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useLanguage } from '../utils/languageContext';
+import audioPlayer from '../utils/audioPlayer';
 // import Svg, { Circle } from 'react-native-svg'; // Uncomment if using react-native-svg
 
 const COLORS = { ...BASE_COLORS, primary: '#6BA368', accent: '#FFD700' };
@@ -49,6 +51,8 @@ const MemorizationScreen = ({ route, navigation }) => {
   const [newStreak, setNewStreak] = useState(0);
   const [previousStreak, setPreviousStreak] = useState(0);
   const [memorizationData, setMemorizationData] = useState(null);
+  const [isAudioPlaying, setIsAudioPlaying] = useState(false);
+  const [currentPlayingAyah, setCurrentPlayingAyah] = useState(null);
 
   const allSurahs = getAllSurahs();
   const currentSurahIndex = allSurahs.findIndex(s => s.surah === surahNumber);
@@ -58,7 +62,7 @@ const MemorizationScreen = ({ route, navigation }) => {
   React.useEffect(() => {
     async function fetchAyaat() {
       try {
-        const data = await getSurahAyaatWithTransliteration(surahNumber);
+      const data = await getSurahAyaatWithTransliteration(surahNumber);
         setAyaat(data);
         setIsTextHidden(false);
     } catch (error) {
@@ -68,7 +72,7 @@ const MemorizationScreen = ({ route, navigation }) => {
           transliteration: 'Bismillāhir-Raḥmānir-Raḥīm'
         }]);
         setIsTextHidden(false);
-      }
+    }
     }
     fetchAyaat();
   }, [surahNumber]);
@@ -90,6 +94,38 @@ const MemorizationScreen = ({ route, navigation }) => {
 
   React.useEffect(() => {
     loadMemorizationData();
+  }, []);
+
+  // Audio functionality
+  useEffect(() => {
+    // Cleanup audio when component unmounts
+    return () => {
+      audioPlayer.cleanup();
+    };
+  }, []);
+
+  // Update audio playing status
+  useEffect(() => {
+    let isMounted = true;
+    const updateAudioStatus = async () => {
+      try {
+        const status = await audioPlayer.getStatus();
+        if (isMounted) {
+          setIsAudioPlaying(status.isPlaying);
+          setCurrentPlayingAyah(status.currentAyah);
+        }
+      } catch (e) {
+        // Optionally handle error
+      }
+    };
+
+    const interval = setInterval(() => {
+      updateAudioStatus();
+    }, 500); // Reduced frequency for better performance
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
   }, []);
 
   // Memoize flashcards so they're only rebuilt when surahNumber or ayaat changes
@@ -115,7 +151,7 @@ const MemorizationScreen = ({ route, navigation }) => {
       // 3. All ayat as normal
     for (let i = 0; i < ayaat.length; i++) {
       cards.push({ ...ayaat[i], type: 'ayah' });
-    }
+      }
     return cards;
   }, [ayaat, surahNumber]);
 
@@ -139,7 +175,7 @@ const MemorizationScreen = ({ route, navigation }) => {
       }
     }
   }, [flashcards, route.params?.resumeFromIndex]);
-
+      
   // Add this after currentAyahIndex and surah are defined
   React.useEffect(() => {
     if (surah?.name && currentAyahIndex !== undefined && !isResuming.current && flashcardsLoaded.current) {
@@ -259,19 +295,7 @@ const MemorizationScreen = ({ route, navigation }) => {
     };
   }, []);
 
-  // Reward modal animation
-  const rewardScale = useRef(new Animated.Value(0.8)).current;
-  React.useEffect(() => {
-    if (showReward) {
-      Animated.spring(rewardScale, {
-        toValue: 1,
-        friction: 5,
-        useNativeDriver: true,
-      }).start();
-    } else {
-      rewardScale.setValue(0.8);
-    }
-  }, [showReward, rewardScale]);
+
 
   // Helper function to strip HTML tags
   const stripHtmlTags = (text) => {
@@ -304,6 +328,98 @@ const MemorizationScreen = ({ route, navigation }) => {
   // Function to clean surah name by removing existing numbers
   const cleanSurahName = (name) => {
     return name.replace(/^\d+\.?\s*/, ''); // Remove number and period at the beginning
+  };
+
+  // Static audio map for Al-Fatiha and Al-Mulk
+  const audioMap = {
+    // Al-Fatiha (Surah 1)
+    '001_001': require('../assets/AlFatiha_Mishary/001001.mp3'),
+    '001_002': require('../assets/AlFatiha_Mishary/001002.mp3'),
+    '001_003': require('../assets/AlFatiha_Mishary/001003.mp3'),
+    '001_004': require('../assets/AlFatiha_Mishary/001004.mp3'),
+    '001_005': require('../assets/AlFatiha_Mishary/001005.mp3'),
+    '001_006': require('../assets/AlFatiha_Mishary/001006.mp3'),
+    '001_007': require('../assets/AlFatiha_Mishary/001007.mp3'),
+    // Al-Mulk (Surah 67)
+    '067_001': require('../assets/AlMulk_AlGhamdi/067001.mp3'),
+    '067_002': require('../assets/AlMulk_AlGhamdi/067002.mp3'),
+    '067_003': require('../assets/AlMulk_AlGhamdi/067003.mp3'),
+    '067_004': require('../assets/AlMulk_AlGhamdi/067004.mp3'),
+    '067_005': require('../assets/AlMulk_AlGhamdi/067005.mp3'),
+    '067_006': require('../assets/AlMulk_AlGhamdi/067006.mp3'),
+    '067_007': require('../assets/AlMulk_AlGhamdi/067007.mp3'),
+    '067_008': require('../assets/AlMulk_AlGhamdi/067008.mp3'),
+    '067_009': require('../assets/AlMulk_AlGhamdi/067009.mp3'),
+    '067_010': require('../assets/AlMulk_AlGhamdi/067010.mp3'),
+    '067_011': require('../assets/AlMulk_AlGhamdi/067011.mp3'),
+    '067_012': require('../assets/AlMulk_AlGhamdi/067012.mp3'),
+    '067_013': require('../assets/AlMulk_AlGhamdi/067013.mp3'),
+    '067_014': require('../assets/AlMulk_AlGhamdi/067014.mp3'),
+    '067_015': require('../assets/AlMulk_AlGhamdi/067015.mp3'),
+    '067_016': require('../assets/AlMulk_AlGhamdi/067016.mp3'),
+    '067_017': require('../assets/AlMulk_AlGhamdi/067017.mp3'),
+    '067_018': require('../assets/AlMulk_AlGhamdi/067018.mp3'),
+    '067_019': require('../assets/AlMulk_AlGhamdi/067019.mp3'),
+    '067_020': require('../assets/AlMulk_AlGhamdi/067020.mp3'),
+    '067_021': require('../assets/AlMulk_AlGhamdi/067021.mp3'),
+    '067_022': require('../assets/AlMulk_AlGhamdi/067022.mp3'),
+    '067_023': require('../assets/AlMulk_AlGhamdi/067023.mp3'),
+    '067_024': require('../assets/AlMulk_AlGhamdi/067024.mp3'),
+    '067_025': require('../assets/AlMulk_AlGhamdi/067025.mp3'),
+    '067_026': require('../assets/AlMulk_AlGhamdi/067026.mp3'),
+    '067_027': require('../assets/AlMulk_AlGhamdi/067027.mp3'),
+    '067_028': require('../assets/AlMulk_AlGhamdi/067028.mp3'),
+    '067_029': require('../assets/AlMulk_AlGhamdi/067029.mp3'),
+    '067_030': require('../assets/AlMulk_AlGhamdi/067030.mp3'),
+  };
+
+  function getAyahAudioUri(surahNumber, ayahNumber) {
+    const key = `${surahNumber.toString().padStart(3, '0')}_${ayahNumber.toString().padStart(3, '0')}`;
+    const audioRequire = audioMap[key];
+    if (!audioRequire) return null;
+    return audioRequire; // Return the require() result directly
+  }
+
+  // Audio functionality
+  const handleAudioPlay = async () => {
+    const currentFlashcard = flashcards[currentAyahIndex];
+    if (currentFlashcard && currentFlashcard.type === 'ayah') {
+      let ayahNumber = 0;
+      for (let i = 0; i <= currentAyahIndex; i++) {
+        if (flashcards[i].type === 'ayah') {
+          ayahNumber++;
+        }
+      }
+      const audioSource = getAyahAudioUri(surahNumber, ayahNumber);
+      console.log('[Audio] Attempting to play:', { surahNumber, ayahNumber, audioSource: !!audioSource });
+      
+      if (!audioSource) {
+        Alert.alert(
+          t('audio_not_available'),
+          t('audio_not_available_message'),
+          [{ text: t('ok'), style: 'default' }]
+        );
+        return;
+      }
+
+      try {
+        const success = await audioPlayer.playAudio(audioSource);
+        if (!success) {
+          Alert.alert(
+            t('audio_error'),
+            t('audio_error_message'),
+            [{ text: t('ok'), style: 'default' }]
+          );
+        }
+      } catch (error) {
+        console.error('[Audio] Error playing audio:', error);
+        Alert.alert(
+          t('audio_error'),
+          t('audio_error_message'),
+          [{ text: t('ok'), style: 'default' }]
+        );
+      }
+    }
   };
 
   return (
@@ -500,31 +616,40 @@ const MemorizationScreen = ({ route, navigation }) => {
               </View>
             </TouchableOpacity>
             
-            {/* Audio Button */}
+            {/* Audio Button with Reciter Preference */}
+            <View style={{ position: 'relative', alignItems: 'center', justifyContent: 'center' }}>
                 <TouchableOpacity
-              style={styles.audioButton}
-              onPress={() => {
-                // Audio recitations coming soon!
-              }}
-            >
-              <View style={{
-                borderWidth: 2,
-                borderColor: '#5b7f67',
-                borderRadius: 12,
-                padding: 6,
-                shadowColor: '#000',
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.1,
-                shadowRadius: 4,
-                elevation: 3,
-              }}>
-                <Image 
-                  source={require('../assets/app_icons/audio.png')} 
-                  style={{ width: 28, height: 28, tintColor: '#F5E6C8' }}
-                  resizeMode="contain"
-                />
+                style={styles.audioButton}
+                onPress={handleAudioPlay}
+                activeOpacity={0.8}
+              >
+                <View style={{
+                  borderWidth: 2,
+                  borderColor: isAudioPlaying ? '#FFD700' : '#5b7f67',
+                  borderRadius: 12,
+                  padding: 6,
+                  shadowColor: '#000',
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.1,
+                  shadowRadius: 4,
+                  elevation: 3,
+                  width: 48,
+                  height: 48,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}>
+                  <Image
+                    source={require('../assets/app_icons/audio.png')}
+                    style={{
+                      width: 28,
+                      height: 28,
+                      tintColor: isAudioPlaying ? '#FFD700' : '#F5E6C8',
+                    }}
+                    resizeMode="contain"
+                  />
+                </View>
+                </TouchableOpacity>
               </View>
-            </TouchableOpacity>
             {/* Centered: Reveal/Hide Button */}
             <TouchableOpacity
               style={[styles.revealButtonNew, {
@@ -762,99 +887,50 @@ const MemorizationScreen = ({ route, navigation }) => {
         </View>
       </Modal>
 
-      {/* Reward Modal */}
-      <Modal
+      {/* Animated Reward Modal */}
+      <AnimatedRewardModal
         visible={showReward}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setShowReward(false)}
-      >
-            <View style={[styles.rewardModalOverlay, { justifyContent: 'flex-end', alignItems: 'center' }]}>
-              <Animated.View style={[styles.rewardModalContent, { transform: [{ scale: rewardScale }], marginBottom: 20 }] }>
-                <Text variant="h2" style={{ color: '#33694e' }}>{t('masha2allah')}</Text>
-                <Text variant="body1" style={{ color: '#3E2723' }}>
-                  {language === 'ar' ? (
-                    <>
-                      لقد كسبت{' '}
-                      <Text style={{ 
-                        color: 'rgba(165,115,36,0.8)', 
-                        fontWeight: 'bold',
-                        textShadowColor: 'rgba(165,115,36,0.8)',
-                        textShadowOffset: { width: 0, height: 0 },
-                        textShadowRadius: 4,
-                      }}>
-                        {toArabicNumber(rewardAmount)}
-            </Text>
-                      {' '}حسنة لهذه الآية!
-                    </>
-                  ) : (
-                    <>
-                      You've earned{' '}
-                      <Text style={{ 
-                        color: 'rgba(165,115,36,0.8)', 
-                        fontWeight: 'bold',
-                        textShadowColor: 'rgba(165,115,36,0.8)',
-                        textShadowOffset: { width: 0, height: 0 },
-                        textShadowRadius: 4,
-                      }}>
-                        {toArabicNumber(rewardAmount)}
-            </Text>
-                      {' '}7asanaat for this Ayah!
-                    </>
-                  )}
-                </Text>
-            <Text variant="body2" style={{ marginTop: 8, fontStyle: 'italic', color: '#555' }}>
-              {t('insha2allah')}
-            </Text>
-                <View style={styles.rewardButtonRow}>
-            <Button
-                    title={t('revise')}
-                    onPress={() => setShowReward(false)}
-                    style={[styles.rewardButton, { backgroundColor: '#5b7f67', marginRight: 8 }]}
-                  />
-            <Button
-                              title={currentAyahIndex === flashcards.length - 1 ? t('next_surah') : t('next_ayah')}
-                    onPress={async () => {
-                setShowReward(false);
-                
-                // Calculate the real reward for the ayah
-                const reward = rewardAmount || 1;
-                // Get previous streak from storage before adding hasanat
-                const prevStreakFromStorage = await getCurrentStreak();
-                // Add the real hasanat and update streak
-                await addHasanat(reward);
-                // Wait a bit to ensure AsyncStorage is updated
-                await new Promise(res => setTimeout(res, 150));
-                // Get new streak from storage
-                const currentStreak = await getCurrentStreak();
-                if (currentStreak > prevStreakFromStorage) {
-                  setNewStreak(currentStreak);
-                  setShowStreakAnimation(true);
-                  setPreviousStreak(prevStreakFromStorage);
-                }
-                
-                if (currentAyahIndex < flashcards.length - 1) {
-                  setCurrentAyahIndex(currentAyahIndex + 1);
-                  setIsTextHidden(false);
-                  // Reload memorization data to update dots
-                  await loadMemorizationData();
-                } else {
-                        // Add all session hasanat at the end of the surah
-                        try {
-                          await addHasanat(sessionHasanat.current);
-                        } catch (error) {
-                          console.error('[MemorizationScreen] Error updating streak on reward finish:', error);
-                        }
-                  sessionHasanat.current = 0;
-                  navigation.navigate('SurahList', { refresh: true });
-                }
-              }}
-                    style={[styles.rewardButton, { backgroundColor: '#5b7f67' }]}
-            />
-                </View>
-          </Animated.View>
-        </View>
-      </Modal>
+        rewardAmount={rewardAmount}
+        onClose={() => setShowReward(false)}
+        onNext={async () => {
+          setShowReward(false);
+          
+          // Calculate the real reward for the ayah
+          const reward = rewardAmount || 1;
+          // Get previous streak from storage before adding hasanat
+          const prevStreakFromStorage = await getCurrentStreak();
+          // Add the real hasanat and update streak
+          await addHasanat(reward);
+          // Wait a bit to ensure AsyncStorage is updated
+          await new Promise(res => setTimeout(res, 150));
+          // Get new streak from storage
+          const currentStreak = await getCurrentStreak();
+          if (currentStreak > prevStreakFromStorage) {
+            setNewStreak(currentStreak);
+            setShowStreakAnimation(true);
+            setPreviousStreak(prevStreakFromStorage);
+          }
+          
+          if (currentAyahIndex < flashcards.length - 1) {
+            setCurrentAyahIndex(currentAyahIndex + 1);
+            setIsTextHidden(false);
+            // Reload memorization data to update dots
+            await loadMemorizationData();
+          } else {
+            // Add all session hasanat at the end of the surah
+            try {
+              await addHasanat(sessionHasanat.current);
+            } catch (error) {
+              console.error('[MemorizationScreen] Error updating streak on reward finish:', error);
+            }
+            sessionHasanat.current = 0;
+            navigation.navigate('SurahList', { refresh: true });
+          }
+        }}
+        isLastAyah={currentAyahIndex === flashcards.length - 1}
+        language={language}
+        toArabicNumber={toArabicNumber}
+      />
 
       {/* Streak Animation Modal */}
       <Modal
@@ -867,7 +943,7 @@ const MemorizationScreen = ({ route, navigation }) => {
           visible={showStreakAnimation}
           newStreak={newStreak}
           onAnimationComplete={handleStreakAnimationComplete}
-        />
+              />
       </Modal>
 
       {/* Settings Modal */}
@@ -920,6 +996,9 @@ const MemorizationScreen = ({ route, navigation }) => {
               }
             }}
           />
+
+          {/* Reciter Selection Modal */}
+          {/* Removed as per edit hint */}
     </SafeAreaView>
       </ImageBackground>
     </View>
@@ -1133,6 +1212,9 @@ const styles = StyleSheet.create({
   audioButton: {
     // Right side
   },
+  reciterButton: {
+    marginLeft: SIZES.medium,
+  },
   recordButtonContainer: {
     flex: 1,
     alignItems: 'center',
@@ -1211,6 +1293,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginTop: SIZES.large,
+  },
+  audioSettingsIcon: {
+    position: 'absolute',
+    bottom: -5,
+    right: -5,
+    backgroundColor: '#F5E6C8',
+    borderRadius: 10,
+    padding: 3,
+    borderWidth: 1,
+    borderColor: '#5b7f67',
   },
 });
 

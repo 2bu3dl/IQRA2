@@ -5,7 +5,7 @@ import { COLORS as BASE_COLORS, SIZES, FONTS } from '../utils/theme';
 import Text from '../components/Text';
 import Card from '../components/Card';
 import ProgressBar from '../components/ProgressBar';
-import { loadData } from '../utils/store';
+import { loadData, saveCurrentPosition } from '../utils/store';
 import { getAllSurahs } from '../utils/quranData';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useLanguage } from '../utils/languageContext';
@@ -275,10 +275,10 @@ const SurahListScreen = ({ navigation, route }) => {
   };
 
   // Ensure loadScreenData is defined at the top level
-  const loadScreenData = async () => {
-    const loadedData = await loadData();
-    setData(loadedData);
-  };
+    const loadScreenData = async () => {
+      const loadedData = await loadData();
+      setData(loadedData);
+    };
 
   useEffect(() => {
     loadScreenData();
@@ -317,7 +317,7 @@ const SurahListScreen = ({ navigation, route }) => {
   // Debug: Log memorizedAyahs keys and surah names used for lookup
   useEffect(() => {
     if (data && data.memorizedAyahs) {
-      console.log('[SurahListScreen] memorizedAyahs keys:', Object.keys(data.memorizedAyahs));
+      // console.log('[SurahListScreen] memorizedAyahs keys:', Object.keys(data.memorizedAyahs));
     }
   }, [data]);
 
@@ -326,7 +326,7 @@ const SurahListScreen = ({ navigation, route }) => {
     return getAllSurahs().map(({ surah, name, ayaat }) => {
       const cleanedName = name.replace(/^\d+\s+/, ''); // Remove the number prefix from the name
       // Debug: Log the surah name and cleanedName
-      console.log('[SurahListScreen] Surah:', name, 'Cleaned:', cleanedName, 'Memorized:', data.memorizedAyahs[name]?.memorized, data.memorizedAyahs[cleanedName]?.memorized);
+      // console.log('[SurahListScreen] Surah:', name, 'Cleaned:', cleanedName, 'Memorized:', data.memorizedAyahs[name]?.memorized, data.memorizedAyahs[cleanedName]?.memorized);
       return {
     id: surah,
         name: cleanedName,
@@ -638,7 +638,25 @@ const SurahListScreen = ({ navigation, route }) => {
           <View style={styles.bottomBar}>
             <TouchableOpacity
               style={styles.homeButton}
-              onPress={() => navigation.navigate('Home')}
+              onPress={async () => {
+                // Save current position if a surah is selected
+                if (selectedSurahId && surahs && surahs.length > 0) {
+                  const selectedSurah = surahs.find(s => s.id === selectedSurahId);
+                  if (selectedSurah) {
+                    // Find the memorizedAyahs data for this surah
+                    const surahData = data.memorizedAyahs[selectedSurah.name];
+                    // Save the current flashcard index if available
+                    if (surahData && surahData.currentFlashcardIndex !== undefined) {
+                      try {
+                        await saveCurrentPosition(selectedSurah.name, surahData.currentFlashcardIndex);
+                      } catch (error) {
+                        console.error('[SurahListScreen] Error saving current position on Home:', error);
+                      }
+                    }
+                  }
+                }
+                navigation.navigate('Home');
+              }}
             >
               <Image
                 source={language === 'ar' ? require('../assets/IQRA2iconArabicoctagon.png') : require('../assets/IQRA2iconoctagon.png')}

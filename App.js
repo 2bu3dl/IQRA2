@@ -14,24 +14,24 @@ const Stack = createNativeStackNavigator();
 function App() {
   return (
     <LanguageProvider>
-      <NavigationContainer>
-        <Stack.Navigator
-          initialRouteName="Home"
-          screenOptions={{
-            headerStyle: {
-              backgroundColor: COLORS.primary,
-            },
-            headerTintColor: COLORS.white,
-            headerTitleStyle: {
-              fontWeight: 'bold',
-            },
-            headerShown: false,
-          }}>
-          <Stack.Screen name="Home" component={HomeScreen} />
-          <Stack.Screen name="SurahList" component={SurahListScreen} />
-          <Stack.Screen name="Memorization" component={MemorizationScreen} />
-        </Stack.Navigator>
-      </NavigationContainer>
+    <NavigationContainer>
+      <Stack.Navigator
+        initialRouteName="Home"
+        screenOptions={{
+          headerStyle: {
+            backgroundColor: COLORS.primary,
+          },
+          headerTintColor: COLORS.white,
+          headerTitleStyle: {
+            fontWeight: 'bold',
+          },
+          headerShown: false,
+        }}>
+        <Stack.Screen name="Home" component={HomeScreen} />
+        <Stack.Screen name="SurahList" component={SurahListScreen} />
+        <Stack.Screen name="Memorization" component={MemorizationScreen} />
+      </Stack.Navigator>
+    </NavigationContainer>
     </LanguageProvider>
   );
 }

@@ -16,11 +16,11 @@ const ALL_KEYS = ['sahih', 'yusufali', 'maududi', 'hilali'];
 
 const TranslationModal = ({ visible, onClose, currentSurah, currentAyah, onAyahChange, isFirstAyah, isLastAyah }) => {
   const { language, t } = useLanguage();
-  if (language === 'ar') return null;
-
   const [selectedSource, setSelectedSource] = useState('sahih');
   const [translation, setTranslation] = useState('');
   const [loading, setLoading] = useState(false);
+
+  if (language === 'ar') return null;
 
   const translationSources = getTranslationSources();
 
@@ -38,7 +38,6 @@ const TranslationModal = ({ visible, onClose, currentSurah, currentAyah, onAyahC
   const loadTranslations = async (source) => {
     setLoading(true);
     try {
-      await loadAllTranslations();
       if (currentAyah) {
         const currentTranslation = getCurrentTranslation(source, currentSurah, currentAyah);
         setTranslation(currentTranslation);

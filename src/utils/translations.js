@@ -44,7 +44,7 @@ export const loadTranslation = async (source) => {
 export const getTranslation = (source, surah, ayah) => {
   const translations = translationCache[source] || TRANSLATION_DATA[source];
   // Debug log
-  console.log('getTranslation', { source, surah, ayah, translations: !!translations, surahKeys: translations ? Object.keys(translations) : [] });
+  // console.log('getTranslation', { source, surah, ayah, translations: !!translations, surahKeys: translations ? Object.keys(translations) : [] });
   if (
     translations &&
     translations[String(surah)] &&
@@ -60,11 +60,11 @@ export const getTranslationSources = () => {
   return TRANSLATION_SOURCES;
 };
 
-// Load all translations
-export const loadAllTranslations = async () => {
-  const sources = Object.keys(TRANSLATION_SOURCES);
-  sources.forEach(source => loadTranslation(source));
-};
+// Commented out to avoid loading all translations at once
+// export const loadAllTranslations = async () => {
+//   const sources = Object.keys(TRANSLATION_SOURCES);
+//   sources.forEach(source => loadTranslation(source));
+// };
 
 // Get translation for current ayah with fallback
 export const getCurrentTranslation = (source, currentSurah, currentAyah) => {

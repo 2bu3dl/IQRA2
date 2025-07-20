@@ -72,10 +72,10 @@ const HomeScreen = ({ navigation, route }) => {
   const [introVisible, setIntroVisible] = useState(false);
   const [resetting, setResetting] = useState(false);
 
-  const loadScreenData = async () => {
-    const loadedData = await loadData();
-    setData(loadedData);
-  };
+    const loadScreenData = async () => {
+      const loadedData = await loadData();
+      setData(loadedData);
+    };
 
   useEffect(() => {
     loadScreenData();
@@ -503,9 +503,9 @@ const HomeScreen = ({ navigation, route }) => {
                 disabled={resetting}
               />
               <View style={{ marginTop: 16 }}>
-                <Button
+              <Button
                   title={t('close')}
-                  onPress={() => setSettingsVisible(false)}
+                onPress={() => setSettingsVisible(false)}
                   style={{ 
                     backgroundColor: '#5b7f67',
                     shadowColor: '#000',
@@ -514,7 +514,7 @@ const HomeScreen = ({ navigation, route }) => {
                     shadowRadius: 6,
                     elevation: 8,
                   }}
-                />
+              />
               </View>
             </View>
           </View>

@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as RNLocalize from 'react-native-localize';
 
 const LanguageContext = createContext();
 
@@ -24,6 +25,14 @@ export const LanguageProvider = ({ children }) => {
       const savedLanguage = await AsyncStorage.getItem('app_language');
       if (savedLanguage) {
         setLanguage(savedLanguage);
+      } else {
+        // Detect system language if not set
+        const locales = RNLocalize.getLocales();
+        if (Array.isArray(locales) && locales.length > 0 && locales[0].languageCode === 'ar') {
+          setLanguage('ar');
+        } else {
+          setLanguage('en');
+        }
       }
     } catch (error) {
       console.log('Error loading language:', error);
@@ -100,6 +109,13 @@ export const LanguageProvider = ({ children }) => {
       'search_ayah': 'Enter ayah number...',
       'istiadhah': 'Isti\'adhah',
       'ayah': 'Ayah',
+      'audio_error': 'Audio Error',
+      'audio_playback_error': 'There was an error playing the audio. Please try again.',
+      'audio_not_available': 'Audio Not Available',
+      'audio_not_available_message': 'Audio recitation is not available for this ayah yet.',
+      'audio_only_for_ayahs': 'Audio is only available for Quranic ayahs.',
+      'choose_reciter': 'Choose Reciter',
+      'reciter_selection': 'Reciter Selection',
       
       // Surah names in English
       'surah_1': 'Al-Fatihah',
@@ -278,6 +294,13 @@ export const LanguageProvider = ({ children }) => {
       'search_ayah': 'أدخل رقم الآية...',
       'istiadhah': 'الاستعاذة',
       'ayah': 'آية',
+      'audio_error': 'خطأ في الصوت',
+      'audio_playback_error': 'حدث خطأ في تشغيل الصوت. يرجى المحاولة مرة أخرى.',
+      'audio_not_available': 'الصوت غير متاح',
+      'audio_not_available_message': 'التلاوة الصوتية غير متاحة لهذه الآية بعد.',
+      'audio_only_for_ayahs': 'الصوت متاح فقط لآيات القرآن.',
+      'choose_reciter': 'اختر القارئ',
+      'reciter_selection': 'اختيار القارئ',
       
       // Surah names in Arabic
       'surah_1': 'الفاتحة',
