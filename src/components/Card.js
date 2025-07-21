@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { COLORS, SIZES, SHADOWS } from '../utils/theme';
+import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 
 const Card = ({ children, style, variant = 'default', padding = 'medium', onPress }) => {
   const getCardStyle = () => {
@@ -45,7 +46,10 @@ const Card = ({ children, style, variant = 'default', padding = 'medium', onPres
 
   if (onPress) {
     return (
-      <TouchableOpacity onPress={onPress} activeOpacity={0.8} style={style}>
+      <TouchableOpacity 
+        onPress={onPress}
+        onPressIn={() => { ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true }); }}
+        activeOpacity={0.8} style={style}>
         <View style={getCardStyle()}>{children}</View>
       </TouchableOpacity>
     );

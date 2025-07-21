@@ -108,9 +108,34 @@ class AudioPlayer {
     }
   }
 
+  async pauseAudio() {
+    try {
+      const state = await TrackPlayer.getState();
+      if (state === State.Playing) {
+        await TrackPlayer.pause();
+        this.isPlaying = false;
+        console.log('[AudioPlayer] Audio paused');
+      }
+    } catch (error) {
+      console.error('[AudioPlayer] Error pausing audio:', error);
+    }
+  }
+
+  async seekToStart() {
+    try {
+      const state = await TrackPlayer.getState();
+      if (state === State.Playing || state === State.Paused) {
+        await TrackPlayer.seekTo(0);
+        console.log('[AudioPlayer] Audio seeked to start');
+      }
+    } catch (error) {
+      console.error('[AudioPlayer] Error seeking audio:', error);
+    }
+  }
+
   cleanup() {
     this.stopAudio();
-    TrackPlayer.destroy();
+    // Removed TrackPlayer.destroy() as it does not exist in v2
   }
 }
 

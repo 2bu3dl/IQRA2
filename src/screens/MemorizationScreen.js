@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback, memo, useMemo, useEffect } from 'react';
-import { View, StyleSheet, SafeAreaView, TouchableOpacity, Modal, Animated, Image, ScrollView, TextInput, ImageBackground, TouchableWithoutFeedback, Alert } from 'react-native';
+import { View, StyleSheet, SafeAreaView, TouchableOpacity, Modal, Animated, Image, ScrollView, TextInput, ImageBackground, TouchableWithoutFeedback, Alert, Pressable, Easing, Platform } from 'react-native';
 import { COLORS as BASE_COLORS, SIZES, FONTS } from '../utils/theme';
 import Text from '../components/Text';
 import Button from '../components/Button';
@@ -14,6 +14,8 @@ import { getSurahAyaatWithTransliteration, getAllSurahs } from '../utils/quranDa
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useLanguage } from '../utils/languageContext';
 import audioPlayer from '../utils/audioPlayer';
+import telemetryService from '../utils/telemetry';
+import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 // import Svg, { Circle } from 'react-native-svg'; // Uncomment if using react-native-svg
 
 const COLORS = { ...BASE_COLORS, primary: '#6BA368', accent: '#FFD700' };
@@ -53,6 +55,8 @@ const MemorizationScreen = ({ route, navigation }) => {
   const [memorizationData, setMemorizationData] = useState(null);
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
   const [currentPlayingAyah, setCurrentPlayingAyah] = useState(null);
+  const [isRepeating, setIsRepeating] = useState(false);
+  const spinAnim = useRef(new Animated.Value(0)).current;
 
   const allSurahs = getAllSurahs();
   const currentSurahIndex = allSurahs.findIndex(s => s.surah === surahNumber);
@@ -256,6 +260,8 @@ const MemorizationScreen = ({ route, navigation }) => {
   };
 
   const handleNext = async () => {
+    await audioPlayer.stopAudio();
+    setIsAudioPlaying(false);
     if (!flashcards || currentAyahIndex >= flashcards.length) return;
     const cardType = flashcards[currentAyahIndex]?.type;
     if (cardType !== 'ayah') {
@@ -273,9 +279,15 @@ const MemorizationScreen = ({ route, navigation }) => {
     setShowReward(true);
     const realAyahIndex = flashcards.slice(0, currentAyahIndex + 1).filter(a => a.type === 'ayah').length - 1;
     updateMemorizedAyahs(surah.name, realAyahIndex).catch(console.error);
+    
+    // Track telemetry
+    telemetryService.trackHasanatEarned(hasanat, 'ayah_completion');
+    telemetryService.trackMemorizationProgress(surah.name, realAyahIndex + 1, ((realAyahIndex + 1) / ayaat.filter(a => a.type === 'ayah').length) * 100);
   };
 
-  const handlePrevious = () => {
+  const handlePrevious = async () => {
+    await audioPlayer.stopAudio();
+    setIsAudioPlaying(false);
     if (currentAyahIndex > 0 && ayaat && ayaat.length > 0) {
       setCurrentAyahIndex(currentAyahIndex - 1);
       // Reveal text by default for ayah and bismillah cards
@@ -380,47 +392,75 @@ const MemorizationScreen = ({ route, navigation }) => {
     return audioRequire; // Return the require() result directly
   }
 
-  // Audio functionality
-  const handleAudioPlay = async () => {
+  // Replace handleAudioPlay with toggle logic
+  const handleAudioButtonPress = async () => {
+    const status = await audioPlayer.getStatus();
+    if (status.isPlaying) {
+      await audioPlayer.pauseAudio();
+      setIsAudioPlaying(false);
+    } else {
+      // Play current ayah
+      const currentFlashcard = flashcards[currentAyahIndex];
+      if (currentFlashcard && currentFlashcard.type === 'ayah') {
+        let ayahNumber = 0;
+        for (let i = 0; i <= currentAyahIndex; i++) {
+          if (flashcards[i].type === 'ayah') ayahNumber++;
+        }
+        const audioSource = getAyahAudioUri(surahNumber, ayahNumber);
+        if (audioSource) {
+          await audioPlayer.playAudio(audioSource);
+          setIsAudioPlaying(true);
+        }
+      }
+    }
+  };
+
+  // Start spinning animation
+  const startSpin = () => {
+    spinAnim.setValue(0);
+    Animated.loop(
+      Animated.timing(spinAnim, {
+        toValue: 1,
+        duration: 1000,
+        easing: Easing.linear,
+        useNativeDriver: true,
+      })
+    ).start();
+  };
+
+  // Stop spinning animation
+  const stopSpin = () => {
+    spinAnim.stopAnimation();
+    spinAnim.setValue(0);
+    setIsRepeating(false);
+  };
+
+  const handleAudioButtonLongPress = async () => {
+    // Two haptic feedbacks: one instant, one after 750ms
+    ReactNativeHapticFeedback.trigger('impactMedium', { enableVibrateFallback: true });
+    setTimeout(() => {
+      ReactNativeHapticFeedback.trigger('impactMedium', { enableVibrateFallback: true });
+    }, 750);
+    // Repeat: seek to start and play
     const currentFlashcard = flashcards[currentAyahIndex];
     if (currentFlashcard && currentFlashcard.type === 'ayah') {
       let ayahNumber = 0;
       for (let i = 0; i <= currentAyahIndex; i++) {
-        if (flashcards[i].type === 'ayah') {
-          ayahNumber++;
-        }
+        if (flashcards[i].type === 'ayah') ayahNumber++;
       }
       const audioSource = getAyahAudioUri(surahNumber, ayahNumber);
-      console.log('[Audio] Attempting to play:', { surahNumber, ayahNumber, audioSource: !!audioSource });
-      
-      if (!audioSource) {
-        Alert.alert(
-          t('audio_not_available'),
-          t('audio_not_available_message'),
-          [{ text: t('ok'), style: 'default' }]
-        );
-        return;
-      }
-
-      try {
-        const success = await audioPlayer.playAudio(audioSource);
-        if (!success) {
-          Alert.alert(
-            t('audio_error'),
-            t('audio_error_message'),
-            [{ text: t('ok'), style: 'default' }]
-          );
-        }
-      } catch (error) {
-        console.error('[Audio] Error playing audio:', error);
-        Alert.alert(
-          t('audio_error'),
-          t('audio_error_message'),
-          [{ text: t('ok'), style: 'default' }]
-        );
+      if (audioSource) {
+        await audioPlayer.seekToStart();
+        await audioPlayer.playAudio(audioSource);
+        setIsAudioPlaying(true);
       }
     }
   };
+
+  const spin = spinAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '360deg'],
+  });
 
   return (
     <View style={{ flex: 1, backgroundColor: '#000' }}>
@@ -547,7 +587,7 @@ const MemorizationScreen = ({ route, navigation }) => {
                   <ScrollView style={styles.ayahScroll} contentContainerStyle={styles.ayahScrollContent} showsVerticalScrollIndicator={true}>
             <Text
               variant="h2"
-              style={[FONTS.arabic, styles.arabicText, { textAlign: 'center', alignSelf: 'center' }]}
+              style={[FONTS.arabic, styles.arabicText, { textAlign: 'center', alignSelf: 'center', writingDirection: 'rtl' }]}
               align="center">
                       {flashcards[currentAyahIndex]?.type === 'istiadhah'
                         ? flashcards[currentAyahIndex]?.text || ''
@@ -618,37 +658,60 @@ const MemorizationScreen = ({ route, navigation }) => {
             
             {/* Audio Button with Reciter Preference */}
             <View style={{ position: 'relative', alignItems: 'center', justifyContent: 'center' }}>
-                <TouchableOpacity
-                style={styles.audioButton}
-                onPress={handleAudioPlay}
-                activeOpacity={0.8}
-              >
-                <View style={{
-                  borderWidth: 2,
-                  borderColor: isAudioPlaying ? '#FFD700' : '#5b7f67',
-                  borderRadius: 12,
-                  padding: 6,
-                  shadowColor: '#000',
-                  shadowOffset: { width: 0, height: 2 },
-                  shadowOpacity: 0.1,
-                  shadowRadius: 4,
-                  elevation: 3,
-                  width: 48,
-                  height: 48,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}>
-                  <Image
-                    source={require('../assets/app_icons/audio.png')}
+                {/* Spinning ring */}
+                {isRepeating && (
+                  <Animated.View
                     style={{
-                      width: 28,
-                      height: 28,
-                      tintColor: isAudioPlaying ? '#FFD700' : '#F5E6C8',
+                      position: 'absolute',
+                      width: 60,
+                      height: 60,
+                      borderRadius: 30,
+                      borderWidth: 3,
+                      borderColor: '#FFD700',
+                      borderStyle: 'solid',
+                      opacity: 1,
+                      transform: [{ rotate: spin }],
+                      zIndex: 1,
                     }}
-                    resizeMode="contain"
                   />
-                </View>
-                </TouchableOpacity>
+                )}
+                <Pressable
+                  style={styles.audioButton}
+                  onPress={handleAudioButtonPress}
+                  onPressIn={() => ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true })}
+                  onLongPress={async () => {
+                    ReactNativeHapticFeedback.trigger('impactMedium', { enableVibrateFallback: true });
+                    await handleAudioButtonLongPress();
+                  }}
+                  delayLongPress={500}
+                >
+                  <View style={{
+                    borderWidth: 2,
+                    borderColor: isAudioPlaying ? '#FFD700' : '#5b7f67',
+                    borderRadius: 12,
+                    padding: 6,
+                    shadowColor: '#000',
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.1,
+                    shadowRadius: 4,
+                    elevation: 3,
+                    width: 48,
+                    height: 48,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backgroundColor: 'transparent',
+                  }}>
+                    <Image
+                      source={require('../assets/app_icons/audio.png')}
+                      style={{
+                        width: 28,
+                        height: 28,
+                        tintColor: isAudioPlaying ? '#FFD700' : '#F5E6C8',
+                      }}
+                      resizeMode="contain"
+                    />
+                  </View>
+                </Pressable>
               </View>
             {/* Centered: Reveal/Hide Button */}
             <TouchableOpacity
@@ -663,7 +726,10 @@ const MemorizationScreen = ({ route, navigation }) => {
                 left: '50%',
                 transform: [{ translateX: -60 }],
               }]}
-              onPress={handleRevealToggle}
+              onPress={() => {
+                ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true });
+                handleRevealToggle();
+              }}
             >
               <Text variant="body1" color="primary" style={[styles.revealButtonText, { 
                 fontSize: isTextHidden ? 18 : 22,
@@ -682,6 +748,7 @@ const MemorizationScreen = ({ route, navigation }) => {
           <Button
             title={currentAyahIndex === 0 ? t('back') : t('previous')}
             onPress={async () => {
+              ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true });
               if (currentAyahIndex === 0) {
                 // Update streak when going back to surah list
                 try {
@@ -699,7 +766,10 @@ const MemorizationScreen = ({ route, navigation }) => {
           />
           <Button
                             title={currentAyahIndex === 0 ? t('start') : (flashcards && currentAyahIndex === flashcards.length - 1 ? t('finish') : t('next'))}
-            onPress={handleNext}
+            onPress={async () => {
+              ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true });
+              handleNext();
+            }}
             disabled={showReward}
             style={[styles.navButton, { backgroundColor: '#5b7f67' }]}
           />

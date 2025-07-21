@@ -9,6 +9,7 @@ import { loadData, saveCurrentPosition } from '../utils/store';
 import { getAllSurahs } from '../utils/quranData';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useLanguage } from '../utils/languageContext';
+import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 
 const COLORS = { ...BASE_COLORS, primary: '#33694e', accent: '#FFD700' };
 
@@ -396,6 +397,7 @@ const SurahListScreen = ({ navigation, route }) => {
             }
           ]}
           onPress={() => navigation.navigate('Memorization', { surah: item })}
+          onPressIn={() => ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true })}
           activeOpacity={0.8}
         >
       <View style={styles.surahInfo}>
@@ -639,6 +641,7 @@ const SurahListScreen = ({ navigation, route }) => {
             <TouchableOpacity
               style={styles.homeButton}
               onPress={async () => {
+                ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true });
                 // Save current position if a surah is selected
                 if (selectedSurahId && surahs && surahs.length > 0) {
                   const selectedSurah = surahs.find(s => s.id === selectedSurahId);
@@ -657,6 +660,7 @@ const SurahListScreen = ({ navigation, route }) => {
                 }
                 navigation.navigate('Home');
               }}
+              onPressIn={() => ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true })}
             >
               <Image
                 source={language === 'ar' ? require('../assets/IQRA2iconArabicoctagon.png') : require('../assets/IQRA2iconoctagon.png')}
@@ -668,6 +672,7 @@ const SurahListScreen = ({ navigation, route }) => {
             <TouchableOpacity
               style={styles.continueButton}
               onPress={() => {
+                ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true });
                 // Find the surah with the highest currentFlashcardIndex (most recent activity)
                 let lastMemorizedSurah = null;
                 let highestFlashcardIndex = -1;
@@ -698,6 +703,7 @@ const SurahListScreen = ({ navigation, route }) => {
                   });
                 }
               }}
+              onPressIn={() => ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true })}
             >
               <Text style={styles.continueButtonText}>{t('continue')}</Text>
               <Image 

@@ -8,6 +8,8 @@ import { loadData, resetProgress } from '../utils/store';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useLanguage } from '../utils/languageContext';
+import telemetryService from '../utils/telemetry';
+import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 
 const COLORS = { ...BASE_COLORS, primary: '#6BA368', accent: '#FFD700' };
 
@@ -80,8 +82,14 @@ const HomeScreen = ({ navigation, route }) => {
   useEffect(() => {
     loadScreenData();
 
+    // Track app usage
+    telemetryService.trackAppUsage('screen_view', { screen: 'Home' });
+
     // Refresh data when screen comes into focus
-    const unsubscribe = navigation.addListener('focus', loadScreenData);
+    const unsubscribe = navigation.addListener('focus', () => {
+      loadScreenData();
+      telemetryService.trackAppUsage('screen_focus', { screen: 'Home' });
+    });
     return unsubscribe;
   }, [navigation]);
 
@@ -105,7 +113,7 @@ const HomeScreen = ({ navigation, route }) => {
       <SafeAreaView style={[styles.container, { backgroundColor: 'transparent' }]}>
         <View style={styles.header}>
           <View style={styles.logoContainer}>
-            <TouchableOpacity style={styles.introButton} onPress={() => setIntroVisible(true)}>
+            <TouchableOpacity style={styles.introButton} onPress={() => setIntroVisible(true)} onPressIn={() => ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true })}>
               <View style={{
                 borderWidth: 2,
                 borderColor: '#5b7f67',
@@ -136,7 +144,7 @@ const HomeScreen = ({ navigation, route }) => {
                 style={[styles.logo]} 
               />
             </View>
-            <TouchableOpacity style={styles.settingsButton} onPress={() => setSettingsVisible(true)}>
+            <TouchableOpacity style={styles.settingsButton} onPress={() => setSettingsVisible(true)} onPressIn={() => ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true })}>
               <View style={{
                 borderWidth: 2,
                 borderColor: 'rgba(165,115,36,0.8)',
@@ -279,49 +287,63 @@ const HomeScreen = ({ navigation, route }) => {
           </View>
 
           <View style={[styles.buttonGrid, { marginTop: language === 'ar' ? styles.buttonGrid.marginTop : 2 }]}>
-            <TouchableOpacity
-              style={[styles.gridButton, { 
-                shadowColor: '#fae29f', 
-                shadowOffset: { width: 0, height: 0 }, 
-                shadowOpacity: 0.2, 
-                shadowRadius: 8, 
-                elevation: 6, 
-                flexDirection: 'column', 
-                alignItems: 'center',
-                padding: language === 'ar' ? SIZES.extraLarge : SIZES.large,
-              }]}
-              onPress={() => navigation.navigate('SurahList')}
-            >
-              <View style={styles.buttonIconContainer}>
-                <Image source={require('../assets/openQuran.png')} style={[styles.buttonIcon, { width: 45, height: 45 }]} resizeMode="contain" />
-              </View>
-                <View style={{ 
-                  backgroundColor: 'rgba(0,0,0,0.8)', 
-                  borderRadius: 8, 
-                  paddingHorizontal: language === 'ar' ? 20 : 16, 
-                  paddingTop: language === 'ar' ? 16 : 12,
-                  paddingBottom: language === 'ar' ? 20 : 8,
-                  alignItems: 'center', 
-                  justifyContent: 'center', 
-                  shadowColor: '#fae29f', 
-                  shadowOffset: { width: 0, height: 0 }, 
-                  shadowOpacity: 0.6, 
-                  shadowRadius: 10, 
-                  elevation: 8 
-                }}>
-                  <Text variant="body1" style={[styles.gridButtonText, { 
-                    color: '#fae29f', 
-                    textAlign: 'center', 
-                    width: '100%', 
-                    fontWeight: 'bold', 
-                    fontSize: language === 'ar' ? 26 : 22, 
-                    textShadowColor: '#fae29f', 
-                    textShadowOffset: { width: 0, height: 0 }, 
-                    textShadowRadius: 4,
-                    lineHeight: language === 'ar' ? 30 : 26,
-                  }]}>{t('quran_memorize')}</Text>
-                </View>
-            </TouchableOpacity>
+            {(() => {
+              const [pressed, setPressed] = useState(false);
+              return (
+                <TouchableOpacity
+                  style={[styles.gridButton, {
+                    shadowColor: '#fae29f',
+                    shadowOffset: { width: 0, height: 0 },
+                    shadowOpacity: pressed ? 0.9 : 0.2,
+                    shadowRadius: pressed ? 24 : 8,
+                    elevation: pressed ? 18 : 6,
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    padding: language === 'ar' ? SIZES.extraLarge : SIZES.large,
+                  }]}
+                  onPress={() => {
+                    telemetryService.trackUserInteraction('button_click', { 
+                      button: 'Start Memorization',
+                      screen: 'Home'
+                    });
+                    navigation.navigate('SurahList');
+                  }}
+                  onPressIn={() => { setPressed(true); ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true }); }}
+                  onPressOut={() => setPressed(false)}
+                  activeOpacity={1}
+                >
+                  <View style={styles.buttonIconContainer}>
+                    <Image source={require('../assets/openQuran.png')} style={[styles.buttonIcon, { width: 45, height: 45 }]} resizeMode="contain" />
+                  </View>
+                  <View style={{ 
+                    backgroundColor: 'rgba(0,0,0,0.8)', 
+                    borderRadius: 8, 
+                    paddingHorizontal: language === 'ar' ? 20 : 16, 
+                    paddingTop: language === 'ar' ? 16 : 12,
+                    paddingBottom: language === 'ar' ? 20 : 8,
+                    alignItems: 'center', 
+                    justifyContent: 'center', 
+                    shadowColor: '#fae29f', 
+                    shadowOffset: { width: 0, height: 0 }, 
+                    shadowOpacity: pressed ? 1.0 : 0.6, 
+                    shadowRadius: pressed ? 24 : 10, 
+                    elevation: pressed ? 20 : 8 
+                  }}>
+                    <Text variant="body1" style={[styles.gridButtonText, { 
+                      color: '#fae29f', 
+                      textAlign: 'center', 
+                      width: '100%', 
+                      fontWeight: 'bold', 
+                      fontSize: language === 'ar' ? 26 : 22, 
+                      textShadowColor: '#fae29f', 
+                      textShadowOffset: { width: 0, height: 0 }, 
+                      textShadowRadius: 4,
+                      lineHeight: language === 'ar' ? 30 : 26,
+                    }]}>{t('quran_memorize')}</Text>
+                  </View>
+                </TouchableOpacity>
+              );
+            })()}
           </View>
         </View>
 
@@ -391,6 +413,7 @@ const HomeScreen = ({ navigation, route }) => {
                   title={t('bismillah')}
                   onPress={() => setIntroVisible(false)}
                   style={{ backgroundColor: '#33694e' }}
+                  onPressIn={() => ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true })}
                 />
               </View>
             </View>
@@ -429,7 +452,7 @@ const HomeScreen = ({ navigation, route }) => {
               <View style={{ flexDirection: 'row', marginBottom: 32, gap: 8 }}>
                 <Button
                   title={t('english_button')}
-                  onPress={() => changeLanguage('en')}
+                  onPress={() => { ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true }); changeLanguage('en'); }}
                   style={{ 
                     backgroundColor: language === 'en' ? '#33694e' : 'rgba(128,128,128,0.6)', 
                     flex: 1,
@@ -440,10 +463,11 @@ const HomeScreen = ({ navigation, route }) => {
                     shadowRadius: 6,
                     elevation: 8,
                   }}
+                  onPressIn={() => ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true })}
                 />
                 <Button
                   title={t('arabic_button')}
-                  onPress={() => changeLanguage('ar')}
+                  onPress={() => { ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true }); changeLanguage('ar'); }}
                   style={{ 
                     backgroundColor: language === 'ar' ? '#33694e' : 'rgba(128,128,128,0.6)', 
                     flex: 1,
@@ -454,12 +478,14 @@ const HomeScreen = ({ navigation, route }) => {
                     shadowRadius: 6,
                     elevation: 8,
                   }}
+                  onPressIn={() => ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true })}
                 />
               </View>
               
               <Button
                 title={t('reset_today')}
                 onPress={async () => {
+                  ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true });
                   setResetting(true);
                   // Reset only today's hasanat
                   const today = new Date().toISOString().split('T')[0];
@@ -480,10 +506,12 @@ const HomeScreen = ({ navigation, route }) => {
                   elevation: 8,
                 }}
                 disabled={resetting}
+                onPressIn={() => ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true })}
               />
               <Button
                 title={resetting ? t('resetting') : t('reset_all')}
                 onPress={async () => {
+                  ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true });
                   setResetting(true);
                   await resetProgress();
                   setResetting(false);
@@ -501,11 +529,12 @@ const HomeScreen = ({ navigation, route }) => {
                   elevation: 8,
                 }}
                 disabled={resetting}
+                onPressIn={() => ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true })}
               />
               <View style={{ marginTop: 16 }}>
               <Button
                   title={t('close')}
-                onPress={() => setSettingsVisible(false)}
+                onPress={() => { ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true }); setSettingsVisible(false); }}
                   style={{ 
                     backgroundColor: '#5b7f67',
                     shadowColor: '#000',
@@ -514,6 +543,7 @@ const HomeScreen = ({ navigation, route }) => {
                     shadowRadius: 6,
                     elevation: 8,
                   }}
+                  onPressIn={() => ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true })}
               />
               </View>
             </View>
