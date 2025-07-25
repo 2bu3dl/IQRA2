@@ -36,15 +36,46 @@ export const SIZES = {
   height: '100%',
 };
 
+const KSA_FONT_CANDIDATES = [
+  'KSAHeavy',
+  'KSA Heavy',
+  'KSA-Heavy',
+  'KSA_Heavy',
+  'KSA Heavy Regular',
+  'KSAHeavy-Regular',
+  'KSA Heavy-Regular',
+  'KSAHeavyReg',
+  'KSA HeavyReg',
+  'KSAHeavy Regular',
+  'KSA Heavy Regular',
+];
+
+const getFontFamily = (language, weight = 'regular') => {
+  if (language === 'ar') {
+    return KSA_FONT_CANDIDATES;
+  }
+  if (weight === 'bold') {
+    return 'Montserrat-Bold';
+  }
+  return 'Montserrat-Regular';
+};
+
 export const FONTS = {
-  h1: { fontFamily: 'Montserrat-Bold', fontSize: SIZES.h1, lineHeight: 36 },
-  h2: { fontFamily: 'Montserrat-Bold', fontSize: SIZES.h2, lineHeight: 30 },
-  h3: { fontFamily: 'Montserrat-Bold', fontSize: SIZES.h3, lineHeight: 24 },
-  h4: { fontFamily: 'Montserrat-Bold', fontSize: SIZES.h4, lineHeight: 22 },
-  body1: { fontFamily: 'Montserrat-Regular', fontSize: SIZES.body1, lineHeight: 24 },
-  body2: { fontFamily: 'Montserrat-Regular', fontSize: SIZES.body2, lineHeight: 20 },
-  body3: { fontFamily: 'Montserrat-Regular', fontSize: SIZES.body3, lineHeight: 16 },
-  arabic: { fontFamily: 'KFGQPC Uthman Taha Naskh', fontSize: 28, lineHeight: 40 },
+  h1: { fontSize: SIZES.h1, lineHeight: 36, getFont: (language) => ({ fontFamily: getFontFamily(language, 'bold') }) },
+  h2: { fontSize: SIZES.h2, lineHeight: 30, getFont: (language) => ({ fontFamily: getFontFamily(language, 'bold') }) },
+  h3: { fontSize: SIZES.h3, lineHeight: 24, getFont: (language) => ({ fontFamily: getFontFamily(language, 'bold') }) },
+  h4: { fontSize: SIZES.h4, lineHeight: 22, getFont: (language) => ({ fontFamily: getFontFamily(language, 'bold') }) },
+  body1: { fontSize: SIZES.body1, lineHeight: 24, getFont: (language) => ({ fontFamily: getFontFamily(language) }) },
+  body2: { fontSize: SIZES.body2, lineHeight: 20, getFont: (language) => ({ fontFamily: getFontFamily(language) }) },
+  body3: { fontSize: SIZES.body3, lineHeight: 16, getFont: (language) => ({ fontFamily: getFontFamily(language) }) },
+  arabic: { 
+    fontFamily: 'UthmanTN_v2-0', 
+    fontSize: 28, 
+    lineHeight: 40,
+    writingDirection: 'rtl',
+    textAlign: 'center',
+    includeFontPadding: false
+  },
 };
 
 export const SHADOWS = {

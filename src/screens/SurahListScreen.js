@@ -1,27 +1,497 @@
-import React, { useEffect, useState, useRef, useMemo } from 'react';
-import { View, StyleSheet, SafeAreaView, FlatList, Image, TouchableOpacity, ImageBackground, TextInput, Animated } from 'react-native';
-import { BlurView } from '@react-native-community/blur';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
+import {
+  View,
+  Text as RNText,
+  FlatList,
+  TouchableOpacity,
+  Image,
+  ImageBackground,
+  SafeAreaView,
+  TextInput,
+  ScrollView,
+  PanResponder,
+  StyleSheet,
+  Animated,
+} from 'react-native';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import { useLanguage } from '../utils/languageContext';
+import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
+import Svg, { Polygon, Line } from 'react-native-svg';
 import { COLORS as BASE_COLORS, SIZES, FONTS } from '../utils/theme';
 import Text from '../components/Text';
 import Card from '../components/Card';
 import ProgressBar from '../components/ProgressBar';
 import { loadData, saveCurrentPosition } from '../utils/store';
 import { getAllSurahs } from '../utils/quranData';
-import Ionicons from 'react-native-vector-icons/Ionicons';
-import { useLanguage } from '../utils/languageContext';
-import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 
 const COLORS = { ...BASE_COLORS, primary: '#33694e', accent: '#FFD700' };
 
 const SCROLL_BAR_HEIGHT = 150;
 
+// Thematic categories data structure - moved outside component for performance
+const THEME_CATEGORIES = [
+  {
+    id: 'asma_husna',
+    titleEn: 'Asma\' al-Husna',
+    titleAr: 'الأسماء الحسنى',
+    descEn: 'Surahs emphasizing the Beautiful Names of Allah',
+    descAr: 'السور التي تؤكد على أسماء الله الحسنى',
+    iconText: 'Names',
+    subcategories: [
+      {
+        id: 'ar_rahman',
+        titleEn: 'Ar-Rahman (The Merciful)',
+        titleAr: 'الرحمن',
+        surahs: [1, 55, 19, 21]
+      },
+      {
+        id: 'al_ghafoor',
+        titleEn: 'Al-Ghafoor (The Forgiving)',
+        titleAr: 'الغفور',
+        surahs: [39, 40, 67, 71]
+      },
+      {
+        id: 'al_hakeem',
+        titleEn: 'Al-Hakeem (The Wise)',
+        titleAr: 'الحكيم',
+        surahs: [31, 34, 35, 39]
+      }
+    ]
+  },
+  {
+    id: 'concepts',
+    titleEn: 'Islamic Concepts',
+    titleAr: 'المفاهيم الإسلامية',
+    descEn: 'Core spiritual and theological concepts',
+    descAr: 'المفاهيم الروحية واللاهوتية الأساسية',
+    iconText: 'Faith',
+    subcategories: [
+      {
+        id: 'tawhid',
+        titleEn: 'Tawhid (Unity of Allah)',
+        titleAr: 'التوحيد',
+        surahs: [112, 2, 3, 4]
+      },
+      {
+        id: 'ihsan',
+        titleEn: 'Ihsan (Excellence in Worship)',
+        titleAr: 'الإحسان',
+        surahs: [2, 3, 4, 16]
+      },
+      {
+        id: 'khushoo',
+        titleEn: 'Khushoo\' (Humility in Prayer)',
+        titleAr: 'الخشوع',
+        surahs: [23, 70, 107, 2]
+      },
+      {
+        id: 'ikhlas',
+        titleEn: 'Ikhlas (Sincerity)',
+        titleAr: 'الإخلاص',
+        surahs: [112, 39, 40, 98]
+      }
+    ]
+  },
+  {
+    id: 'stories',
+    titleEn: 'Prophetic Stories',
+    titleAr: 'قصص الأنبياء',
+    descEn: 'Stories of Prophets and righteous people',
+    descAr: 'قصص الأنبياء والصالحين',
+    iconText: 'Stories',
+    subcategories: [
+      {
+        id: 'musa',
+        titleEn: 'Prophet Musa (Moses)',
+        titleAr: 'النبي موسى',
+        surahs: [2, 7, 10, 20, 28]
+      },
+      {
+        id: 'isa',
+        titleEn: 'Prophet Isa (Jesus)',
+        titleAr: 'النبي عيسى',
+        surahs: [3, 4, 5, 19]
+      },
+      {
+        id: 'yusuf',
+        titleEn: 'Prophet Yusuf (Joseph)',
+        titleAr: 'النبي يوسف',
+        surahs: [12]
+      },
+      {
+        id: 'ibrahim',
+        titleEn: 'Prophet Ibrahim (Abraham)',
+        titleAr: 'النبي إبراهيم',
+        surahs: [2, 3, 4, 6, 14, 19]
+      }
+    ]
+  },
+  {
+    id: 'dua',
+    titleEn: 'Du\'a in Qur\'an',
+    titleAr: 'الدعاء في القرآن',
+    descEn: 'Supplications and prayers found in the Qur\'an',
+    descAr: 'الأدعية والصلوات الموجودة في القرآن',
+    iconText: 'Du\'a',
+    subcategories: [
+      {
+        id: 'seeking_guidance',
+        titleEn: 'Seeking Guidance',
+        titleAr: 'طلب الهداية',
+        surahs: [1, 2, 25]
+      },
+      {
+        id: 'seeking_forgiveness',
+        titleEn: 'Seeking Forgiveness',
+        titleAr: 'طلب المغفرة',
+        surahs: [3, 59, 110]
+      },
+      {
+        id: 'protection',
+        titleEn: 'Seeking Protection',
+        titleAr: 'طلب الحماية',
+        surahs: [113, 114, 2]
+      }
+    ]
+  },
+  {
+    id: 'environmental',
+    titleEn: 'Environmental Stewardship',
+    titleAr: 'حماية البيئة',
+    descEn: 'Our relationship with and responsibility over nature',
+    descAr: 'علاقتنا ومسؤوليتنا تجاه الطبيعة',
+    iconText: 'Nature',
+    subcategories: [
+      {
+        id: 'creation',
+        titleEn: 'Signs in Creation',
+        titleAr: 'آيات في الخلق',
+        surahs: [2, 3, 6, 16, 30]
+      },
+      {
+        id: 'balance',
+        titleEn: 'Natural Balance',
+        titleAr: 'التوازن الطبيعي',
+        surahs: [55, 67, 76]
+      },
+      {
+        id: 'gratitude',
+        titleEn: 'Gratitude for Provisions',
+        titleAr: 'الشكر على النعم',
+        surahs: [14, 16, 35]
+      }
+    ]
+  },
+  {
+    id: 'heart',
+    titleEn: 'Purification of Heart',
+    titleAr: 'تطهير القلب',
+    descEn: 'Spiritual purification and diseases of the heart',
+    descAr: 'التطهر الروحي وأمراض القلب',
+    iconText: 'Heart',
+    subcategories: [
+      {
+        id: 'taqwa',
+        titleEn: 'Taqwa (God-consciousness)',
+        titleAr: 'التقوى',
+        surahs: [2, 3, 4, 5]
+      },
+      {
+        id: 'patience',
+        titleEn: 'Sabr (Patience)',
+        titleAr: 'الصبر',
+        surahs: [2, 3, 103, 90]
+      },
+      {
+        id: 'remembrance',
+        titleEn: 'Dhikr (Remembrance of Allah)',
+        titleAr: 'ذكر الله',
+        surahs: [13, 29, 39, 62]
+      }
+    ]
+  }
+];
+
+// Juz-to-Surah mapping - defines which Surahs belong to each Juz
+const JUZ_SURAH_MAPPING = {
+  1: { surahs: [1, 2], range: "Al-Fatihah to Al-Baqarah 141", startSurah: 1, startAyah: 1, endSurah: 2, endAyah: 141 },
+  2: { surahs: [2], range: "Al-Baqarah 142-252", startSurah: 2, startAyah: 142, endSurah: 2, endAyah: 252 },
+  3: { surahs: [2, 3], range: "Al-Baqarah 253 to Ali Imran 92", startSurah: 2, startAyah: 253, endSurah: 3, endAyah: 92 },
+  4: { surahs: [3, 4], range: "Ali Imran 93 to An-Nisa 23", startSurah: 3, startAyah: 93, endSurah: 4, endAyah: 23 },
+  5: { surahs: [4], range: "An-Nisa 24-147", startSurah: 4, startAyah: 24, endSurah: 4, endAyah: 147 },
+  6: { surahs: [4, 5], range: "An-Nisa 148 to Al-Ma'idah 81", startSurah: 4, startAyah: 148, endSurah: 5, endAyah: 81 },
+  7: { surahs: [5, 6], range: "Al-Ma'idah 82 to Al-An'am 110", startSurah: 5, startAyah: 82, endSurah: 6, endAyah: 110 },
+  8: { surahs: [6, 7], range: "Al-An'am 111 to Al-A'raf 87", startSurah: 6, startAyah: 111, endSurah: 7, endAyah: 87 },
+  9: { surahs: [7, 8], range: "Al-A'raf 88 to Al-Anfal 40", startSurah: 7, startAyah: 88, endSurah: 8, endAyah: 40 },
+  10: { surahs: [8, 9], range: "Al-Anfal 41 to At-Tawbah 92", startSurah: 8, startAyah: 41, endSurah: 9, endAyah: 92 },
+  11: { surahs: [9, 10, 11], range: "At-Tawbah 93 to Hud 5", startSurah: 9, startAyah: 93, endSurah: 11, endAyah: 5 },
+  12: { surahs: [11, 12], range: "Hud 6 to Yusuf 52", startSurah: 11, startAyah: 6, endSurah: 12, endAyah: 52 },
+  13: { surahs: [12, 13, 14], range: "Yusuf 53 to Ibrahim 52", startSurah: 12, startAyah: 53, endSurah: 14, endAyah: 52 },
+  14: { surahs: [15, 16], range: "Al-Hijr to An-Nahl 128", startSurah: 15, startAyah: 1, endSurah: 16, endAyah: 128 },
+  15: { surahs: [17, 18], range: "Al-Isra to Al-Kahf 74", startSurah: 17, startAyah: 1, endSurah: 18, endAyah: 74 },
+  16: { surahs: [18, 19, 20], range: "Al-Kahf 75 to Ta-Ha 135", startSurah: 18, startAyah: 75, endSurah: 20, endAyah: 135 },
+  17: { surahs: [21, 22], range: "Al-Anbya to Al-Hajj 78", startSurah: 21, startAyah: 1, endSurah: 22, endAyah: 78 },
+  18: { surahs: [23, 24, 25], range: "Al-Mu'minun to Al-Furqan 20", startSurah: 23, startAyah: 1, endSurah: 25, endAyah: 20 },
+  19: { surahs: [25, 26, 27], range: "Al-Furqan 21 to An-Naml 55", startSurah: 25, startAyah: 21, endSurah: 27, endAyah: 55 },
+  20: { surahs: [27, 28, 29], range: "An-Naml 56 to Al-Ankabut 45", startSurah: 27, startAyah: 56, endSurah: 29, endAyah: 45 },
+  21: { surahs: [29, 30, 31, 32, 33], range: "Al-Ankabut 46 to Al-Ahzab 30", startSurah: 29, startAyah: 46, endSurah: 33, endAyah: 30 },
+  22: { surahs: [33, 34, 35, 36], range: "Al-Ahzab 31 to Ya-Sin 27", startSurah: 33, startAyah: 31, endSurah: 36, endAyah: 27 },
+  23: { surahs: [36, 37, 38, 39], range: "Ya-Sin 28 to Az-Zumar 31", startSurah: 36, startAyah: 28, endSurah: 39, endAyah: 31 },
+  24: { surahs: [39, 40, 41], range: "Az-Zumar 32 to Fussilat 46", startSurah: 39, startAyah: 32, endSurah: 41, endAyah: 46 },
+  25: { surahs: [41, 42, 43, 44, 45], range: "Fussilat 47 to Al-Jathiyah 37", startSurah: 41, startAyah: 47, endSurah: 45, endAyah: 37 },
+  26: { surahs: [46, 47, 48, 49, 50, 51], range: "Al-Ahqaf to Adh-Dhariyat 30", startSurah: 46, startAyah: 1, endSurah: 51, endAyah: 30 },
+  27: { surahs: [51, 52, 53, 54, 55, 56, 57], range: "Adh-Dhariyat 31 to Al-Hadid 29", startSurah: 51, startAyah: 31, endSurah: 57, endAyah: 29 },
+  28: { surahs: [58, 59, 60, 61, 62, 63, 64, 65, 66], range: "Al-Mujadila to At-Tahrim 12", startSurah: 58, startAyah: 1, endSurah: 66, endAyah: 12 },
+  29: { surahs: [67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77], range: "Al-Mulk to Al-Mursalat 50", startSurah: 67, startAyah: 1, endSurah: 77, endAyah: 50 },
+  30: { surahs: [78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114], range: "An-Naba to An-Nas", startSurah: 78, startAyah: 1, endSurah: 114, endAyah: 6 }
+};
+
 const SurahListScreen = ({ navigation, route }) => {
   const { language, t } = useLanguage();
+  const [searchText, setSearchText] = useState('');
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const [activeTab, setActiveTab] = useState(0);
+  const [juzFilter, setJuzFilter] = useState({ isActive: false });
+
+  // Check if we're in Juz mode - now using state instead of route params
+  const isJuzMode = juzFilter.isActive;
+  const juzNumber = juzFilter.juzNumber;
+  const juzData = juzFilter.juzData;
+  const juzTitle = juzFilter.title;
+  const juzSubtitle = juzFilter.subtitle;
+
   // Helper to convert numbers to Arabic-Indic if needed
   const toArabicNumber = (num) => {
     if (language !== 'ar') return num.toString();
     return num.toString().replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]);
   };
+
+  // Function to clear Juz filter
+  const clearJuzFilter = () => {
+    setJuzFilter({ isActive: false });
+    setSearchText(''); // Clear search when clearing filter
+    ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true });
+  };
+
+  // Tab data
+  const tabs = [
+    { id: 0, titleKey: 'surah' },
+    { id: 1, titleKey: 'juz' },
+    { id: 2, titleKey: 'categories' }
+  ];
+
+  const renderTabBar = () => (
+    <View style={styles.tabBar}>
+      {tabs.map((tab) => {
+        const isDisabled = isJuzMode && tab.id !== 0; // Disable other tabs when in Juz mode
+        return (
+          <TouchableOpacity
+            key={tab.id}
+            style={[
+              styles.tabButton,
+              activeTab === tab.id && styles.activeTabButton,
+              isDisabled && styles.disabledTabButton
+            ]}
+            onPress={() => {
+              if (!isDisabled) {
+                ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true });
+                setActiveTab(tab.id);
+              }
+            }}
+            disabled={isDisabled}
+          >
+            <RNText style={[
+              styles.tabText,
+              activeTab === tab.id && styles.activeTabText,
+              isDisabled && styles.disabledTabText
+            ]}>
+              {t(tab.titleKey)}
+              {tab.id === 0 && isJuzMode && ' ✦'} {/* Add indicator for filtered tab */}
+            </RNText>
+          </TouchableOpacity>
+        );
+      })}
+    </View>
+  );
+
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case 0:
+        return <AllSurahsTab navigation={navigation} route={route} searchText={searchText} isJuzMode={isJuzMode} juzData={juzData} />;
+      case 1:
+        return <JuzWheelTab navigation={navigation} setJuzFilter={setJuzFilter} setActiveTab={setActiveTab} setSearchText={setSearchText} language={language} />;
+      case 2:
+        return <ThemesTab navigation={navigation} />;
+      default:
+        return <AllSurahsTab navigation={navigation} route={route} searchText={searchText} isJuzMode={isJuzMode} juzData={juzData} />;
+    }
+  };
+
+  return (
+    <View style={{ flex: 1, backgroundColor: '#000' }}>
+      <ImageBackground 
+        source={require('../assets/IQRA2background.png')} 
+        style={styles.backgroundImage}
+        imageStyle={{ opacity: 0.2 }}
+      >
+        <SafeAreaView style={[styles.container, { backgroundColor: 'transparent' }]}>
+          {/* Header */}
+          <View style={styles.header}>
+            <View style={styles.headerBlurContainer}>
+              <View style={styles.headerTextContainer}>
+                {isJuzMode ? (
+                  // Juz mode header
+                  <>
+                    <RNText variant="h1" style={[
+                      { fontFamily: 'KFGQPC Uthman Taha Naskh', fontSize: 30, fontWeight: 'bold', color: '#F5E6C8', marginTop: 16, marginBottom: 8, textShadowColor: '#000', textShadowOffset: { width: 1, height: 1 }, textShadowRadius: 3 }
+                    ]}>{juzTitle}</RNText>
+                    <RNText variant="body1" style={[
+                      { fontFamily: language === 'ar' ? 'KFGQPC Uthman Taha Naskh' : 'Montserrat-Regular', fontSize: 16, color: '#CCCCCC', textAlign: 'center', marginBottom: 16 }
+                    ]}>{juzSubtitle}</RNText>
+                    <TouchableOpacity 
+                      style={styles.clearFilterButton}
+                      onPress={clearJuzFilter}
+                    >
+                      <Ionicons name="close-circle" size={24} color="#F5E6C8" />
+                      <RNText style={[{ fontFamily: language === 'ar' ? 'KFGQPC Uthman Taha Naskh' : 'Montserrat-Regular', fontSize: 16, color: '#F5E6C8', marginLeft: 8 }]}>
+                        {language === 'ar' ? 'إظهار جميع السور' : 'Show All Surahs'}
+                      </RNText>
+                    </TouchableOpacity>
+                  </>
+                ) : language === 'ar' ? (
+                  <RNText variant="h1" style={[
+                    { 
+                      fontFamily: 'KFGQPC Uthman Taha Naskh', 
+                      fontSize: 40, // Make all titles consistently larger
+                      fontWeight: 'bold', 
+                      color: '#F5E6C8', 
+                      marginTop: 16, 
+                      marginBottom: 16, 
+                      textShadowColor: '#000', 
+                      textShadowOffset: { width: 1, height: 1 }, 
+                      textShadowRadius: 3 
+                    }
+                  ]}>
+                    {activeTab === 0 ? t('welcome_subtitle') : (activeTab === 1 ? 'الجزء' : 'الفئات')}
+                  </RNText>
+                ) : (
+                  <>
+                    <RNText variant="h1" style={[FONTS.h1.getFont(language), styles.titleText, { 
+                      color: '#F5E6C8', 
+                      marginTop: language === 'ar' ? 12 : 0, 
+                      paddingTop: language === 'ar' ? 4 : 0,
+                      fontSize: 40 // Make all titles larger and consistent
+                    }]}>
+                      {language === 'ar' ? 
+                        (activeTab === 0 ? 'السور' : activeTab === 1 ? 'الجزء' : 'الفئات') : 
+                        (activeTab === 0 ? 'Surahs' : activeTab === 1 ? 'Juz' : 'Categories')
+                      }
+                    </RNText>
+                    {activeTab === 0 && (
+                      <RNText variant="body1" style={[FONTS.body1.getFont(language), styles.headerSubtitle]}>{t('welcome_subtitle')}</RNText>
+                    )}
+                  </>
+                )}
+              </View>
+            </View>
+          </View>
+
+          {/* Search bar - only show for All Surahs tab */}
+          {activeTab === 0 && (
+            <View style={styles.searchContainer}>
+              <View style={[styles.searchInputContainer, { 
+                backgroundColor: isSearchFocused ? 'rgba(245, 230, 200, 0.2)' : 'rgba(245, 230, 200, 0.15)' // Made even more transparent
+              }]}>
+                <Image 
+                  source={require('../assets/app_icons/search.png')} 
+                  style={{ width: 20, height: 20, tintColor: COLORS.primary, marginRight: SIZES.small }}
+                  resizeMode="contain"
+                />
+                <TextInput
+                  style={[styles.searchInput, { fontFamily: 'KFGQPC Uthman Taha Naskh', fontWeight: isSearchFocused ? 'bold' : 'normal', textAlign: language === 'ar' ? 'right' : 'left', writingDirection: language === 'ar' ? 'rtl' : 'ltr' }]}
+                  placeholder={isJuzMode ? 
+                    (language === 'ar' ? `البحث في ${juzTitle}...` : `Search in ${juzTitle}...`) : 
+                    t('search_surahs')
+                  }
+                  placeholderTextColor="#666"
+                  value={searchText}
+                  onChangeText={setSearchText}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  allowFontScaling={false}
+                  onFocus={() => setIsSearchFocused(true)}
+                  onBlur={() => setIsSearchFocused(false)}
+                />
+                {searchText.length > 0 && (
+                  <TouchableOpacity onPress={() => setSearchText('')} style={styles.clearButton}>
+                    <Ionicons name="close-circle" size={20} color="#666" />
+                  </TouchableOpacity>
+                )}
+              </View>
+            </View>
+          )}
+
+          {/* Tab Content */}
+          <View style={styles.tabContentContainer}>
+            {renderTabContent()}
+          </View>
+
+          {/* Tab Bar - always show */}
+          {renderTabBar()}
+
+          {/* Bottom Bar */}
+          <View style={styles.bottomBar}>
+            <TouchableOpacity
+              style={styles.homeButton}
+              onPress={() => {
+                ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true });
+                navigation.navigate('Home');
+              }}
+            >
+              <Image
+                source={language === 'ar' ? require('../assets/IQRA2iconArabicoctagon.png') : require('../assets/IQRA2iconoctagon.png')}
+                style={[styles.homeIcon]}
+              />
+              <RNText style={[FONTS.body2.getFont(language), styles.homeButtonText]}>{t('home')}</RNText>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.continueButton}
+              onPress={() => {
+                ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true });
+                navigation.navigate('Memorization', { surah: { id: 1 } });
+              }}
+            >
+              <RNText style={[FONTS.body2.getFont(language), styles.continueButtonText]}>{t('continue')}</RNText>
+              <Image 
+                source={require('../assets/app_icons/down-up.png')} 
+                style={{
+                  width: 36, 
+                  height: 36, 
+                  tintColor: 'rgba(165,115,36,1.0)',
+                  marginLeft: 12,
+                  transform: [{ rotate: '-90deg' }],
+                }}
+                resizeMode="contain"
+              />
+            </TouchableOpacity>
+          </View>
+        </SafeAreaView>
+      </ImageBackground>
+    </View>
+  );
+};
+
+// Phase 1: All Surahs Tab Component
+const AllSurahsTab = ({ navigation, route, searchText, isJuzMode, juzData }) => {
+  const { language, t } = useLanguage();
+  
+  // Helper to convert numbers to Arabic-Indic if needed
+  const toArabicNumber = (num) => {
+    if (language !== 'ar') return num.toString();
+    return num.toString().replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]);
+  };
+
   const [data, setData] = useState({
     memorizedAyahs: {
       'Al-Fatihah': {
@@ -31,8 +501,6 @@ const SurahListScreen = ({ navigation, route }) => {
     },
   });
   const [selectedSurahId, setSelectedSurahId] = useState(null);
-  const [searchText, setSearchText] = useState('');
-  const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [contentHeight, setContentHeight] = useState(1);
   const [visibleHeight, setVisibleHeight] = useState(1);
   const flatListRef = useRef(null);
@@ -315,19 +783,10 @@ const SurahListScreen = ({ navigation, route }) => {
     }
   }, [route.params?.currentSurahId]);
 
-  // Debug: Log memorizedAyahs keys and surah names used for lookup
-  useEffect(() => {
-    if (data && data.memorizedAyahs) {
-      // console.log('[SurahListScreen] memorizedAyahs keys:', Object.keys(data.memorizedAyahs));
-    }
-  }, [data]);
-
   // Use offline Quran data for surah list - memoized to prevent re-creation on every render
   const surahs = useMemo(() => {
-    return getAllSurahs().map(({ surah, name, ayaat }) => {
+    let allSurahs = getAllSurahs().map(({ surah, name, ayaat }) => {
       const cleanedName = name.replace(/^\d+\s+/, ''); // Remove the number prefix from the name
-      // Debug: Log the surah name and cleanedName
-      // console.log('[SurahListScreen] Surah:', name, 'Cleaned:', cleanedName, 'Memorized:', data.memorizedAyahs[name]?.memorized, data.memorizedAyahs[cleanedName]?.memorized);
       return {
     id: surah,
         name: cleanedName,
@@ -339,7 +798,14 @@ const SurahListScreen = ({ navigation, route }) => {
     ),
       };
     });
-  }, [data.memorizedAyahs]); // Only recreate when memorized data changes
+
+    // Filter by Juz if in Juz mode
+    if (isJuzMode && juzData) {
+      allSurahs = allSurahs.filter(surah => juzData.surahs.includes(surah.id));
+    }
+
+    return allSurahs;
+  }, [data.memorizedAyahs, isJuzMode, juzData]); // Only recreate when memorized data changes or Juz mode changes
 
   // Filter surahs based on search text - memoized to prevent unnecessary re-renders
   const filteredSurahs = useMemo(() => {
@@ -380,7 +846,7 @@ const SurahListScreen = ({ navigation, route }) => {
           style={[
             styles.surahCard, 
             {
-              backgroundColor: 'rgba(0, 0, 0, 0.93)',
+              backgroundColor: 'rgba(0, 0, 0, 0.85)', // Made more transparent (reduced from 0.93)
               borderColor: isSelected ? COLORS.primary : 'rgba(165,115,36,0.8)',
               borderWidth: isSelected ? 2 : 1,
               marginHorizontal: isCompleted ? 0 : SIZES.medium,
@@ -407,34 +873,40 @@ const SurahListScreen = ({ navigation, route }) => {
               justifyContent: language === 'ar' ? 'flex-end' : 'flex-start',
               width: '100%'
             }}>
-              <Text variant="h3" style={{ 
-                color: 'rgba(165,115,36,0.8)', 
-                marginRight: language === 'ar' ? 0 : 4,
-                marginLeft: language === 'ar' ? 4 : 0
-              }}>
+              <RNText variant="h3" style={[FONTS.h3.getFont(language), { color: 'rgba(165,115,36,0.8)', marginRight: language === 'ar' ? 0 : 4, marginLeft: language === 'ar' ? 4 : 0 }]}>
                 {language === 'ar' ? `.${toArabicNumber(item.id)}` : `${toArabicNumber(item.id)}.`}
-              </Text>
-              <Text variant="h3" style={{ 
-                color: isSelected ? COLORS.primary : '#F5E6C8',
-                textAlign: language === 'ar' ? 'right' : 'left',
-                flex: language === 'ar' ? 1 : undefined
-              }}>
+              </RNText>
+              <RNText variant="h3" style={[
+  language === 'ar'
+                  ? { 
+                      fontFamily: 'KFGQPC Uthman Taha Naskh', 
+                      fontSize: 24, // Increased from 20 to make surah names larger
+                      lineHeight: 28, // Adjusted line height accordingly
+                      color: isSelected ? COLORS.primary : '#F5E6C8', 
+                      textAlign: 'right', 
+                      flex: 1,
+                      writingDirection: 'rtl',
+                      includeFontPadding: false
+                    }
+                  : [FONTS.h3.getFont(language), { color: isSelected ? COLORS.primary : '#F5E6C8', textAlign: 'left', fontSize: 22 }], // Increased English size too
+              ]} lang={language === 'ar' ? 'ar' : undefined}>
                 {language === 'ar' ? t(`surah_${item.id}`) : item.name}
-              </Text>
+              </RNText>
             </View>
             {language === 'en' && (
-              <Text variant="body2" style={{ color: 'rgba(51, 105, 78, 0.8)', marginTop: 2, fontStyle: 'italic', marginLeft: 20, marginBottom: 8 }}>
+              <RNText variant="body2" style={[FONTS.body2.getFont(language), { color: 'rgba(51, 105, 78, 0.8)', marginTop: 2, fontStyle: 'italic', marginLeft: 20, marginBottom: 8 }]}>
                 {SURAH_ENGLISH_TRANSLATIONS[item.id]}
-              </Text>
+              </RNText>
             )}
-            <Text variant="body2" color="textSecondary" style={[styles.progressText, { 
+            <RNText variant="body2" style={[FONTS.body2.getFont(language), styles.progressText, { 
               textAlign: 'center', 
-              marginTop: 0 
+              marginTop: 0,
+              color: '#CCCCCC' // Made more visible by adding explicit color
             }]}>
               {language === 'ar' ? (
                 <>
-                  <Text style={{ color: 'rgba(255, 255, 255, 0.6)' }}>{toArabicNumber(item.totalAyahs)}</Text>
-                  /<Text style={[
+                  <RNText style={{ color: 'rgba(255, 255, 255, 0.6)' }}>{toArabicNumber(item.totalAyahs)}</RNText>
+                  /<RNText style={[
                     isCompleted ? {
                       textShadowColor: '#fae29f',
                       textShadowOffset: { width: 0, height: 0 },
@@ -442,11 +914,11 @@ const SurahListScreen = ({ navigation, route }) => {
                     } : {}
                   ]}>
                     {toArabicNumber(item.memorizedAyahs)}
-                  </Text> {t('ayaat_memorized')}
+                  </RNText> {t('ayaat_memorized')}
                 </>
               ) : (
                 <>
-                  <Text style={[
+                  <RNText style={[
                     isCompleted ? {
                       textShadowColor: '#fae29f',
                       textShadowOffset: { width: 0, height: 0 },
@@ -454,11 +926,11 @@ const SurahListScreen = ({ navigation, route }) => {
                     } : {}
                   ]}>
                     {toArabicNumber(item.memorizedAyahs)}
-                  </Text>
-                  /<Text style={{ color: 'rgba(255, 255, 255, 0.6)' }}>{toArabicNumber(item.totalAyahs)}</Text> {t('ayaat_memorized')}
+                  </RNText>
+                  /<RNText style={{ color: 'rgba(255, 255, 255, 0.6)' }}>{toArabicNumber(item.totalAyahs)}</RNText> {t('ayaat_memorized')}
                 </>
               )}
-        </Text>
+            </RNText>
         <View style={styles.progressContainer}>
           <ProgressBar 
                 key={`progress-${item.id}`}
@@ -470,38 +942,15 @@ const SurahListScreen = ({ navigation, route }) => {
             </View>
             {isSelected && (
               <View style={styles.currentIndicator}>
-                <Text variant="body2" color="primary" style={styles.currentText}>
+                <RNText variant="body2" color="primary" style={[FONTS.body2.getFont(language), styles.currentText]}>
                   {t('memorize')}
-                </Text>
+                </RNText>
               </View>
             )}
           </View>
         </TouchableOpacity>
       </View>
     );
-  };
-
-  const handleScrollBarTouch = (y) => {
-    const scrollBar = scrollBarRef.current;
-    if (!scrollBar) return;
-    scrollBar.measure((fx, fy, width, height, px, py) => {
-      const scrollBarHeight = height;
-      const scrollPercent = Math.max(0, Math.min(1, y / scrollBarHeight));
-      
-      if (flatListRef.current) {
-        const totalSurahs = filteredSurahs.length;
-        const itemHeight = 60;
-        const totalContentHeight = totalSurahs * itemHeight;
-        const scrollableHeight = Math.max(1, totalContentHeight - 400); // 400 is approximate visible height
-        const offset = scrollPercent * scrollableHeight;
-        
-        // Use immediate response for smooth finger following
-        flatListRef.current.scrollToOffset({ 
-          offset, 
-          animated: false 
-        });
-      }
-    });
   };
 
   const renderScrollBar = () => {
@@ -520,8 +969,8 @@ const SurahListScreen = ({ navigation, route }) => {
 
     return (
       <View style={[styles.scrollBarContainer, {
-        right: language === 'ar' ? undefined : 10,
-        left: language === 'ar' ? 10 : undefined
+        right: language === 'ar' ? undefined : 0, // Moved to edge
+        left: language === 'ar' ? 0 : undefined // Moved to edge
       }]}>
         <View style={styles.scrollBar}>
           <Animated.View 
@@ -538,74 +987,7 @@ const SurahListScreen = ({ navigation, route }) => {
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#000' }}>
-      <ImageBackground 
-        source={require('../assets/IQRA2background.png')} 
-        style={styles.backgroundImage}
-        imageStyle={{ opacity: 0.2 }}
-      >
-        <SafeAreaView style={[styles.container, { backgroundColor: 'transparent' }]}>
-      <View style={styles.header}>
-            <View style={styles.headerBlurContainer}>
-              <View style={styles.headerTextContainer}>
-                {language === 'ar' ? (
-                  <Text variant="h1" style={{ 
-                    fontSize: 30, 
-                    fontWeight: 'bold', 
-                    color: '#F5E6C8', 
-                    marginTop: 16, 
-                    marginBottom: 16,
-                    textShadowColor: '#000',
-                    textShadowOffset: { width: 1, height: 1 },
-                    textShadowRadius: 3
-                  }}>{t('welcome_subtitle')}</Text>
-                ) : (
-                  <>
-                    <Text variant="h1" style={[styles.titleText, { 
-                      color: '#F5E6C8',
-                      marginTop: language === 'ar' ? 12 : 0,
-                      paddingTop: language === 'ar' ? 4 : 0
-                    }]}>{language === 'ar' ? 'السور' : 'Surahs'}</Text>
-                    <Text variant="body1" style={styles.headerSubtitle}>{t('welcome_subtitle')}</Text>
-                  </>
-                )}
-              </View>
-            </View>
-          </View>
-
-          {/* Search bar is now a sibling, not a child, of the header */}
-          <View style={styles.searchContainer}>
-            <View style={[styles.searchInputContainer, { 
-              backgroundColor: isSearchFocused ? 'rgba(245, 230, 200, 0.8)' : 'rgba(245, 230, 200, 0.6)' 
-            }]}>
-              <Image 
-                source={require('../assets/app_icons/search.png')} 
-                style={{ width: 20, height: 20, tintColor: COLORS.primary, marginRight: SIZES.small }}
-                resizeMode="contain"
-              />
-              <TextInput
-                style={[styles.searchInput, { 
-                  fontWeight: isSearchFocused ? 'bold' : 'normal',
-                  textAlign: language === 'ar' ? 'right' : 'left',
-                  writingDirection: language === 'ar' ? 'rtl' : 'ltr'
-                }]}
-                placeholder={t('search_surahs')}
-                placeholderTextColor="#666"
-                value={searchText}
-                onChangeText={setSearchText}
-                autoCapitalize="none"
-                autoCorrect={false}
-                onFocus={() => setIsSearchFocused(true)}
-                onBlur={() => setIsSearchFocused(false)}
-              />
-              {searchText.length > 0 && (
-                <TouchableOpacity onPress={() => setSearchText('')} style={styles.clearButton}>
-                  <Ionicons name="close-circle" size={20} color="#666" />
-        </TouchableOpacity>
-              )}
-        </View>
-      </View>
-      
+    <View style={{ flex: 1 }}>
           <View style={styles.contentContainer}>
             <Animated.FlatList
               ref={flatListRef}
@@ -635,92 +1017,439 @@ const SurahListScreen = ({ navigation, route }) => {
             
             {renderScrollBar()}
           </View>
-          
-          {/* Bottom Bar */}
-          <View style={styles.bottomBar}>
-            <TouchableOpacity
-              style={styles.homeButton}
-              onPress={async () => {
-                ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true });
-                // Save current position if a surah is selected
-                if (selectedSurahId && surahs && surahs.length > 0) {
-                  const selectedSurah = surahs.find(s => s.id === selectedSurahId);
-                  if (selectedSurah) {
-                    // Find the memorizedAyahs data for this surah
-                    const surahData = data.memorizedAyahs[selectedSurah.name];
-                    // Save the current flashcard index if available
-                    if (surahData && surahData.currentFlashcardIndex !== undefined) {
-                      try {
-                        await saveCurrentPosition(selectedSurah.name, surahData.currentFlashcardIndex);
-                      } catch (error) {
-                        console.error('[SurahListScreen] Error saving current position on Home:', error);
-                      }
-                    }
-                  }
-                }
-                navigation.navigate('Home');
-              }}
-              onPressIn={() => ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true })}
-            >
-              <Image
-                source={language === 'ar' ? require('../assets/IQRA2iconArabicoctagon.png') : require('../assets/IQRA2iconoctagon.png')}
-                style={[styles.homeIcon]}
-              />
-              <Text style={styles.homeButtonText}>{t('home')}</Text>
-            </TouchableOpacity>
+    </View>
+  );
+};
 
+// Phase 2: Juz Wheel Tab Component
+const JuzWheelTab = ({ navigation, setJuzFilter, setActiveTab, setSearchText, language }) => {
+  const { t } = useLanguage();
+  const [selectedJuz, setSelectedJuz] = useState(30); // Start at 30 by default
+  const panResponder = useRef(null);
+  const [containerLayout, setContainerLayout] = useState({ width: 300, height: 300 });
+  const lastHapticTime = useRef(0); // Add reference to track last haptic feedback time
+
+  const handleJuzPress = () => {
+    ReactNativeHapticFeedback.trigger('impactMedium', { enableVibrateFallback: true });
+    console.log(`Filtering to Juz ${selectedJuz}`);
+    
+    const juzData = JUZ_SURAH_MAPPING[selectedJuz];
+    if (juzData) {
+      // Clear search text and switch to Surah tab (tab 0) and apply Juz filter
+      setSearchText('');
+      setActiveTab(0);
+      setJuzFilter({
+        isActive: true,
+        juzNumber: selectedJuz,
+        juzData: juzData,
+        title: language === 'ar' ? `الجزء ${selectedJuz}` : `Juz ${selectedJuz}`,
+        subtitle: juzData.range
+      });
+    }
+  };
+
+  const calculateJuzFromTouch = (x, y) => {
+    const centerX = containerLayout.width / 2;
+    const centerY = containerLayout.height / 2;
+    const relativeX = x - centerX;
+    const relativeY = y - centerY;
+    
+    // Calculate distance from center
+    const distance = Math.sqrt(relativeX * relativeX + relativeY * relativeY);
+    
+    // Only respond to touches within the polygon ring area
+    // Inner radius: 80 (central button area), Outer radius: 150 (edge of component)
+    if (distance < 80 || distance > 150) {
+      return selectedJuz; // Return current selection if touch is outside valid area
+    }
+    
+    // Calculate angle using atan2 which gives us -π to π
+    let angle = Math.atan2(relativeY, relativeX);
+    
+    // Convert to degrees (-180 to 180)
+    angle = (angle * 180) / Math.PI;
+    
+    // Adjust so that top (12 o'clock) is 0°
+    // In standard coordinates: top = -90°, right = 0°, bottom = 90°, left = 180°/-180°
+    // We want: top = 0°, so add 90°
+    angle = angle + 90;
+    
+    // Normalize to 0-360°
+    if (angle < 0) angle += 360;
+    if (angle >= 360) angle -= 360;
+    
+    // Calculate Juz number (1-30)
+    // Each Juz takes up 360/30 = 12 degrees
+    const juzNumber = Math.floor(angle / 12) + 1;
+    
+    // Ensure we stay within bounds
+    const clampedJuzNumber = Math.max(1, Math.min(30, juzNumber));
+    
+    console.log(`Touch: (${x.toFixed(1)}, ${y.toFixed(1)}) -> Distance: ${distance.toFixed(1)} -> Relative: (${relativeX.toFixed(1)}, ${relativeY.toFixed(1)}) -> Angle: ${angle.toFixed(1)}° -> Juz: ${clampedJuzNumber}`);
+    
+    return clampedJuzNumber;
+  };
+
+  useEffect(() => {
+    panResponder.current = PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: () => true,
+      onPanResponderGrant: (evt) => {
+        // Don't change selection on initial touch - just acknowledge the gesture
+        console.log('Touch started - maintaining current selection');
+      },
+      onPanResponderMove: (evt) => {
+        const { locationX, locationY } = evt.nativeEvent;
+        const juzNumber = calculateJuzFromTouch(locationX, locationY);
+        
+        if (juzNumber !== selectedJuz && juzNumber >= 1 && juzNumber <= 30) {
+          setSelectedJuz(juzNumber);
+          const now = Date.now();
+          if (now - lastHapticTime.current > 50) { // Limit haptic feedback to every 50ms
+            ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true });
+            lastHapticTime.current = now;
+          }
+        }
+      },
+    });
+  }, [selectedJuz, containerLayout]);
+
+  // Generate 30-sided polygon points
+  const generatePolygonPoints = (centerX, centerY, radius, sides = 6) => { // Changed from 30 to 6 for hexagon
+    const points = [];
+    for (let i = 0; i < sides; i++) {
+      const angle = (2 * Math.PI * i) / sides;
+      const x = centerX + radius * Math.cos(angle);
+      const y = centerY + radius * Math.sin(angle);
+      points.push(`${x},${y}`);
+    }
+    return points.join(' ');
+  };
+
+  return (
+    <View style={styles.juzContainer}>
+      <RNText variant="h2" style={[styles.juzTitle, { fontFamily: language === 'ar' ? 'KFGQPC Uthman Taha Naskh' : 'Montserrat-Bold' }]}>
+        {language === 'ar' ? 'اختر' : 'Select'}
+      </RNText>
+
+      <View 
+        style={styles.polygonContainer}
+        {...(panResponder.current?.panHandlers || {})}
+        onLayout={e => setContainerLayout(e.nativeEvent.layout)}
+      >
+                       {/* Background hexagon */}
+               <Svg width={300} height={300} style={styles.polygonSvg}>
+                 <Polygon
+                   points={generatePolygonPoints(150, 150, 140)}
+                   fill="rgba(165, 115, 36, 0.1)"
+                   stroke="#A57324"
+                   strokeWidth="2"
+                 />
+                 <Polygon
+                   points={generatePolygonPoints(150, 150, 120)}
+                   fill="rgba(165, 115, 36, 0.05)"
+                   stroke="#A57324"
+                   strokeWidth="1"
+                   strokeDasharray="5,5"
+                 />
+                 
+                 {/* 30 lines pointing inward */}
+                 {Array.from({ length: 30 }, (_, i) => {
+                   const angle = (2 * Math.PI * i) / 30;
+                   const outerRadius = 145;
+                   const innerRadius = 125;
+                   
+                   // Calculate angle to match touch detection
+                   // Juz 1 at top (12 o'clock) = -90° in standard coordinates
+                   // Each Juz is 12° clockwise from there
+                   const angleInDegrees = -90 + (i * 12); // Start at top, go clockwise
+                   const adjustedAngle = (angleInDegrees * Math.PI) / 180; // Convert to radians
+                   
+                   const outerX = 150 + outerRadius * Math.cos(adjustedAngle);
+                   const outerY = 150 + outerRadius * Math.sin(adjustedAngle);
+                   const innerX = 150 + innerRadius * Math.cos(adjustedAngle);
+                   const innerY = 150 + innerRadius * Math.sin(adjustedAngle);
+                   
+                   const isSelected = i + 1 === selectedJuz;
+                   
+                   return (
+                     <Line
+                       key={i}
+                       x1={outerX}
+                       y1={outerY}
+                       x2={innerX}
+                       y2={innerY}
+                       stroke={isSelected ? '#A57324' : 'rgba(165, 115, 36, 0.4)'}
+                       strokeWidth={isSelected ? 3 : 2}
+                       strokeLinecap="round"
+                     />
+                   );
+                 })}
+                 
+                 {/* Central hexagon button */}
+                 <Polygon
+                   points={generatePolygonPoints(150, 150, 70)}
+                   fill="rgba(51, 105, 78, 0.2)"
+                   stroke="#33694e"
+                   strokeWidth="2"
+                 />
+               </Svg>
+
+        {/* Central hexagon button with text */}
             <TouchableOpacity
-              style={styles.continueButton}
+          style={styles.centralJuzButton}
+          onPress={handleJuzPress}
+        >
+          <RNText style={[styles.juzNumber, { fontFamily: language === 'ar' ? 'KFGQPC Uthman Taha Naskh Bold' : 'Montserrat-Bold' }]}>
+            {selectedJuz}
+          </RNText>
+          <RNText style={[styles.juzLabel, { fontFamily: language === 'ar' ? 'KFGQPC Uthman Taha Naskh' : 'Montserrat-Regular' }]}>
+            {language === 'ar' ? 'اضغط للدخول' : 'Tap to Enter'}
+          </RNText>
+        </TouchableOpacity>
+      </View>
+
+      <RNText variant="body1" style={[styles.juzInfo, { fontFamily: language === 'ar' ? 'KFGQPC Uthman Taha Naskh' : 'Montserrat-Regular' }]}>
+        {language === 'ar' 
+          ? <>
+              <RNText>الجزء </RNText>
+              <RNText style={{ color: '#F5E6C8', fontWeight: 'bold' }}>{selectedJuz}</RNText>
+              <RNText> من القرآن الكريم</RNText>
+            </>
+          : <>
+              <RNText>Juz </RNText>
+              <RNText style={{ color: '#F5E6C8', fontWeight: 'bold' }}>{selectedJuz}</RNText>
+              <RNText> of the Holy Qur'an</RNText>
+            </>
+        }
+      </RNText>
+    </View>
+  );
+};
+
+// Phase 3: Themes/Categories Tab Component
+const ThemesTab = ({ navigation }) => {
+  const { language, t } = useLanguage();
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [selectedSubcategory, setSelectedSubcategory] = useState(null);
+  const [searchTheme, setSearchTheme] = useState('');
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
+  
+  // Add scroll bar functionality
+  const [contentHeight, setContentHeight] = useState(1);
+  const [visibleHeight, setVisibleHeight] = useState(1);
+  const flatListRef = useRef(null);
+  const scrollY = useRef(new Animated.Value(0)).current;
+
+  // Convert numbers to Arabic if needed
+  const toArabicNumber = (num) => {
+    if (language !== 'ar') return num.toString();
+    return num.toString().replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]);
+  };
+
+  // Filter categories based on search
+  const filteredCategories = useMemo(() => {
+    if (!searchTheme.trim()) return THEME_CATEGORIES;
+    
+    return THEME_CATEGORIES.filter(category => {
+      const titleMatch = (language === 'ar' ? category.titleAr : category.titleEn)
+        .toLowerCase().includes(searchTheme.toLowerCase());
+      const descMatch = (language === 'ar' ? category.descAr : category.descEn)
+        .toLowerCase().includes(searchTheme.toLowerCase());
+      const subcategoryMatch = category.subcategories.some(sub => 
+        (language === 'ar' ? sub.titleAr : sub.titleEn)
+          .toLowerCase().includes(searchTheme.toLowerCase())
+      );
+      
+      return titleMatch || descMatch || subcategoryMatch;
+    });
+  }, [searchTheme, language]);
+
+  const renderCategoryCard = (category) => (
+    <TouchableOpacity
+      key={category.id}
+      style={[
+        styles.categoryCard,
+        selectedCategory?.id === category.id && styles.selectedCategoryCard
+      ]}
+      onPress={() => {
+        ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true });
+        setSelectedCategory(selectedCategory?.id === category.id ? null : category);
+        setSelectedSubcategory(null);
+      }}
+      activeOpacity={0.8}
+    >
+      <View style={styles.categoryHeader}>
+        <View style={[styles.categoryTextContainer, { alignItems: 'center', textAlign: 'center' }]}>
+          <RNText style={[styles.categoryTitle, { 
+            fontFamily: language === 'ar' ? 'KFGQPC Uthman Taha Naskh Bold' : 'Montserrat-Bold',
+            textAlign: 'center'
+          }]}>
+            {language === 'ar' ? category.titleAr : category.titleEn}
+          </RNText>
+          <RNText style={[styles.categoryDesc, {
+            fontFamily: language === 'ar' ? 'KFGQPC Uthman Taha Naskh' : 'Montserrat-Regular',
+            textAlign: 'center'
+          }]}>
+            {language === 'ar' ? category.descAr : category.descEn}
+          </RNText>
+        </View>
+      </View>
+      
+      {selectedCategory?.id === category.id && (
+        <View style={styles.subcategoryContainer}>
+          <View style={styles.subcategoryDivider} />
+          {category.subcategories.map((sub, index) => (
+            <TouchableOpacity
+              key={sub.id}
+              style={[
+                styles.subcategoryCard,
+                selectedSubcategory?.id === sub.id && styles.selectedSubcategoryCard,
+                index === category.subcategories.length - 1 && { marginBottom: 0 }
+              ]}
               onPress={() => {
                 ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true });
-                // Find the surah with the highest currentFlashcardIndex (most recent activity)
-                let lastMemorizedSurah = null;
-                let highestFlashcardIndex = -1;
-                
-                surahs.forEach(surah => {
-                  const surahData = data.memorizedAyahs[surah.name];
-                  if (surahData?.currentFlashcardIndex !== undefined && surahData?.currentFlashcardIndex > highestFlashcardIndex) {
-                    lastMemorizedSurah = surah;
-                    highestFlashcardIndex = surahData.currentFlashcardIndex;
-                  }
-                });
-                
-                if (lastMemorizedSurah) {
-                  // Use the saved flashcard index directly
-                  const flashcardIndex = data.memorizedAyahs[lastMemorizedSurah.name].currentFlashcardIndex;
-                  console.log('[SurahListScreen] Continue: lastMemorizedSurah', lastMemorizedSurah.name, 'flashcardIndex', flashcardIndex);
-                  
-                  navigation.navigate('Memorization', { 
-                    surah: lastMemorizedSurah,
-                    currentSurahId: lastMemorizedSurah.id,
-                    resumeFromIndex: flashcardIndex
-                  });
-                } else {
-                  // If no memorized surahs, start with the first one
-                  navigation.navigate('Memorization', { 
-                    surah: surahs[0],
-                    currentSurahId: surahs[0].id 
-                  });
-                }
+                setSelectedSubcategory(selectedSubcategory?.id === sub.id ? null : sub);
               }}
-              onPressIn={() => ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true })}
+              activeOpacity={0.7}
             >
-              <Text style={styles.continueButtonText}>{t('continue')}</Text>
-              <Image 
-                source={require('../assets/app_icons/down-up.png')} 
-                style={{
-                  width: 36, 
-                  height: 36, 
-                  tintColor: 'rgba(165,115,36,1.0)',
-                  marginLeft: 12,
-                  transform: [{ rotate: '-90deg' }],
-                }}
-                resizeMode="contain"
-              />
+              <View style={styles.subcategoryHeader}>
+                <RNText style={[styles.subcategoryTitle, {
+                  fontFamily: language === 'ar' ? 'KFGQPC Uthman Taha Naskh Bold' : 'Montserrat-Bold'
+                }]}>
+                  {language === 'ar' ? sub.titleAr : sub.titleEn}
+                </RNText>
+                <RNText style={[styles.subcategorySurahs, {
+                  fontFamily: language === 'ar' ? 'KFGQPC Uthman Taha Naskh' : 'Montserrat-Regular'
+                }]}>
+                  {language === 'ar' ? 'السور: ' : 'Surahs: '}
+                  {sub.surahs.map(s => toArabicNumber(s)).join(', ')}
+                </RNText>
+              </View>
+              
+              {selectedSubcategory?.id === sub.id && (
+                <TouchableOpacity
+                  style={styles.exploreSubcategoryButton}
+                  onPress={() => {
+                    ReactNativeHapticFeedback.trigger('impactMedium', { enableVibrateFallback: true });
+                    // Navigate to first surah in this subcategory
+                  navigation.navigate('Memorization', { 
+                      surah: { id: sub.surahs[0] }
+                    });
+                  }}
+                  activeOpacity={0.8}
+                >
+                  <RNText style={[styles.exploreSubcategoryButtonText, {
+                    fontFamily: language === 'ar' ? 'KFGQPC Uthman Taha Naskh Bold' : 'Montserrat-Bold',
+                    textAlign: 'center' // Center the text
+                  }]}>
+                    {language === 'ar' ? 'استكشف هذا الموضوع' : 'Explore this Theme'}
+                  </RNText>
+                </TouchableOpacity>
+              )}
             </TouchableOpacity>
+          ))}
+        </View>
+      )}
+    </TouchableOpacity>
+  );
+
+  // Render scroll bar for categories
+  const renderCategoriesScrollBar = () => {
+    const totalContentHeight = contentHeight;
+    const scrollBarHeight = 500; // Reduced from 663 to fit categories tab better
+    const handleHeight = 40;
+    const maxHandlePosition = scrollBarHeight - handleHeight;
+    
+    const scrollHandlePosition = scrollY.interpolate({
+      inputRange: [0, Math.max(1, totalContentHeight - visibleHeight)],
+      outputRange: [0, maxHandlePosition],
+      extrapolate: 'clamp',
+    });
+
+    return (
+      <View style={[styles.scrollBarContainer, {
+        right: language === 'ar' ? undefined : 0, // Moved to edge
+        left: language === 'ar' ? 0 : undefined // Moved to edge
+      }]}>
+        <View style={styles.scrollBar}>
+          <Animated.View 
+            style={[
+              styles.scrollHandle,
+              {
+                transform: [{ translateY: scrollHandlePosition }],
+              },
+            ]} 
+          />
+        </View>
+      </View>
+    );
+  };
+
+  return (
+    <View style={styles.themesTabContent}>
+      <View style={styles.themesHeader}>
+        {/* Search bar for themes */}
+        <View style={styles.themeSearchContainer}>
+          <View style={[styles.themeSearchInputContainer, {
+            backgroundColor: isSearchFocused ? 'rgba(245, 230, 200, 0.15)' : 'rgba(245, 230, 200, 0.1)'
+          }]}>
+            <Ionicons 
+              name="search" 
+              size={20} 
+              color="rgba(165, 115, 36, 0.8)" 
+              style={{ marginRight: SIZES.small }}
+            />
+            <TextInput
+              style={[styles.themeSearchInput, { 
+                fontFamily: language === 'ar' ? 'KFGQPC Uthman Taha Naskh' : 'Montserrat-Regular',
+                textAlign: language === 'ar' ? 'right' : 'left',
+                writingDirection: language === 'ar' ? 'rtl' : 'ltr'
+              }]}
+              placeholder={language === 'ar' ? 'ابحث في الفئات...' : 'Search through categories...'}
+              placeholderTextColor="rgba(255, 255, 255, 0.5)"
+              value={searchTheme}
+              onChangeText={setSearchTheme}
+              autoCapitalize="none"
+              autoCorrect={false}
+              allowFontScaling={false}
+              onFocus={() => setIsSearchFocused(true)}
+              onBlur={() => setIsSearchFocused(false)}
+            />
+            {searchTheme.length > 0 && (
+              <TouchableOpacity onPress={() => setSearchTheme('')} style={styles.clearThemeButton}>
+                <Ionicons name="close-circle" size={20} color="rgba(255, 255, 255, 0.6)" />
+            </TouchableOpacity>
+            )}
           </View>
-    </SafeAreaView>
-      </ImageBackground>
+        </View>
+      </View>
+      
+      <Animated.FlatList
+        ref={flatListRef}
+        data={filteredCategories}
+        renderItem={({ item }) => renderCategoryCard(item)}
+        keyExtractor={(item) => item.id}
+        contentContainerStyle={styles.categoriesList}
+        showsVerticalScrollIndicator={false}
+        bounces={true}
+        style={styles.categoriesScrollView}
+        onScroll={Animated.event(
+          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+          { useNativeDriver: false }
+        )}
+        scrollEventThrottle={16}
+        onContentSizeChange={(w, h) => setContentHeight(h)}
+        onLayout={e => setVisibleHeight(e.nativeEvent.layout.height)}
+        ListEmptyComponent={() => (
+          <View style={styles.emptyThemes}>
+            <RNText style={styles.emptyThemesText}>
+              {language === 'ar' ? 'لا توجد نتائج' : 'No themes found'}
+            </RNText>
+          </View>
+        )}
+      />
+      {renderCategoriesScrollBar()}
     </View>
   );
 };
@@ -757,14 +1486,25 @@ const styles = StyleSheet.create({
   headerSubtitle: {
     color: '#CCCCCC',
     fontSize: 18,
-    marginTop: 4,
-    fontWeight: 'bold',
+    textAlign: 'center',
+    textShadowColor: '#000',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 2,
+  },
+  clearFilterButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: SIZES.small,
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    borderRadius: 20,
+    marginTop: SIZES.small,
   },
   list: {
     padding: SIZES.medium,
     paddingTop: SIZES.large,
     marginTop: 160, // Reduced from 190 to move closer to search bar
-    paddingBottom: SIZES.extraLarge * 6, // Increased from 4 to 6 for more bottom space
+    paddingBottom: SIZES.extraLarge * 8, // Increased further to ensure accessibility behind tabs
   },
   surahCard: {
     marginBottom: SIZES.medium,
@@ -783,7 +1523,9 @@ const styles = StyleSheet.create({
     marginTop: 0,
   },
   progressText: {
-    marginBottom: 0,
+    marginBottom: 4, // Add some space below
+    fontSize: 14, // Make it slightly larger
+    fontWeight: '500', // Make it slightly bolder
   },
   homeButton: {
     padding: SIZES.medium,
@@ -838,7 +1580,7 @@ const styles = StyleSheet.create({
   searchContainer: {
     padding: SIZES.medium,
     position: 'absolute',
-    top: 140, // Move down a bit more
+    top: 150, // Moved down a tiny bit from 140
     left: 0,
     right: 0,
     zIndex: 10,
@@ -857,6 +1599,7 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     fontSize: 16,
+    color: '#FFFFFF', // Made text whiter
   },
   clearButton: {
     padding: SIZES.small,
@@ -917,6 +1660,456 @@ const styles = StyleSheet.create({
     padding: SIZES.large,
     paddingTop: 0,
     paddingBottom: SIZES.medium,
+  },
+  tabBar: {
+    flexDirection: 'row',
+    backgroundColor: 'rgba(45, 85, 65, 0.85)', // More muted green (reduced saturation)
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    paddingVertical: SIZES.small,
+    paddingHorizontal: SIZES.medium,
+    position: 'absolute',
+    bottom: 110, // Brought back up a tiny bit from 100
+    left: 0,
+    right: 0,
+    justifyContent: 'space-around',
+    elevation: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+  },
+  tabButton: {
+    alignItems: 'center',
+    paddingVertical: SIZES.small,
+    paddingHorizontal: SIZES.medium,
+    borderRadius: SIZES.small,
+    backgroundColor: 'rgba(0, 0, 0, 0.3)', // Thinner, slightly transparent black
+    transform: [{ scale: 1 }], // Default scale
+  },
+  activeTabButton: {
+    backgroundColor: 'rgba(165,115,36,0.8)',
+    transform: [{ scale: 1.1 }], // Make selected tab larger
+  },
+  tabText: {
+    color: '#999',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  activeTabText: {
+    color: COLORS.white,
+  },
+  tabContentContainer: {
+    flex: 1,
+    marginTop: 20, // Space for search bar
+    marginBottom: 0, // Remove margin to allow content all the way down
+  },
+  tabContent: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: SIZES.large,
+  },
+  comingSoonText: {
+    color: COLORS.white,
+    fontSize: 24,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: SIZES.small,
+  },
+  comingSoonSubtext: {
+    color: '#CCCCCC',
+    fontSize: 16,
+    textAlign: 'center',
+  },
+  wheelContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: SIZES.large,
+    position: 'relative',
+  },
+  juzNumber: {
+    fontFamily: 'KFGQPC Uthman Taha Naskh',
+    fontSize: 32, // Much larger since it's just the number now
+    fontWeight: 'bold',
+    color: COLORS.white,
+    textAlign: 'center',
+    textShadowColor: '#000',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 2,
+  },
+  wheelCenter: {
+    position: 'absolute',
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: 'rgba(165,115,36,0.9)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 3,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  wheelCenterText: {
+    fontFamily: 'KFGQPC Uthman Taha Naskh',
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: COLORS.white,
+    textAlign: 'center',
+    marginBottom: SIZES.extraSmall,
+  },
+  wheelCenterSubtext: {
+    fontFamily: 'KFGQPC Uthman Taha Naskh',
+    fontSize: 14,
+    color: '#CCCCCC',
+    textAlign: 'center',
+  },
+  juzDetails: {
+    marginTop: SIZES.large,
+    padding: SIZES.medium,
+    backgroundColor: 'rgba(64, 64, 64, 0.9)',
+    borderRadius: SIZES.medium,
+    borderWidth: 1,
+    borderColor: 'rgba(165,115,36,0.8)',
+    alignSelf: 'center',
+    width: '90%',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  juzDetailsTitle: {
+    fontFamily: 'KFGQPC Uthman Taha Naskh',
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: COLORS.white,
+    textAlign: 'center',
+    marginBottom: SIZES.small,
+  },
+  juzDetailsRange: {
+    fontFamily: 'KFGQPC Uthman Taha Naskh',
+    fontSize: 16,
+    color: '#CCCCCC',
+    textAlign: 'center',
+    marginBottom: SIZES.small,
+  },
+  juzDetailsSurahs: {
+    fontFamily: 'KFGQPC Uthman Taha Naskh',
+    fontSize: 16,
+    color: '#CCCCCC',
+    textAlign: 'center',
+    marginBottom: SIZES.medium,
+  },
+  exploreJuzButton: {
+    backgroundColor: COLORS.primary,
+    paddingVertical: SIZES.small,
+    paddingHorizontal: SIZES.medium,
+    borderRadius: 20,
+    alignSelf: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+  },
+  exploreJuzButtonText: {
+    fontFamily: 'KFGQPC Uthman Taha Naskh',
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: COLORS.white,
+    textAlign: 'center',
+  },
+  juzWheelTitle: {
+    fontFamily: 'KFGQPC Uthman Taha Naskh',
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: COLORS.white,
+    textAlign: 'center',
+    marginBottom: SIZES.large,
+  },
+  juzWheelInstructions: {
+    fontFamily: 'KFGQPC Uthman Taha Naskh',
+    fontSize: 18,
+    color: '#CCCCCC',
+    textAlign: 'center',
+    marginTop: SIZES.medium,
+  },
+  themesTabContent: {
+    flex: 1,
+    backgroundColor: 'transparent', // Make black background completely transparent
+    padding: SIZES.medium,
+  },
+  themesHeader: {
+    width: '100%',
+    alignItems: 'center',
+    marginTop: SIZES.extraLarge * 2, // Move components down further under Categories title
+    marginBottom: SIZES.medium,
+  },
+  themesTitle: {
+    fontFamily: 'KFGQPC Uthman Taha Naskh',
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: COLORS.white,
+    textAlign: 'center',
+    marginBottom: SIZES.small,
+  },
+  themesSubtitle: {
+    fontFamily: 'KFGQPC Uthman Taha Naskh',
+    fontSize: 18,
+    color: '#CCCCCC',
+    textAlign: 'center',
+    marginBottom: SIZES.large,
+  },
+  themeSearchContainer: {
+    width: '100%',
+    marginBottom: SIZES.medium,
+  },
+  themeSearchInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 20, // Match Surah search
+    padding: SIZES.small, // Match Surah search
+    borderWidth: 1,
+    borderColor: '#C0C0C0', // Match Surah search
+    backgroundColor: 'transparent', // Match Surah search
+  },
+  themeSearchInput: {
+    flex: 1,
+    fontSize: 16,
+    color: COLORS.text, // Use default text color to match Surah search
+    paddingHorizontal: 0, // Match Surah search
+  },
+  clearThemeButton: {
+    padding: SIZES.small,
+  },
+  categoriesList: {
+    paddingBottom: SIZES.extraLarge * 4, // Increased for content behind tabs
+  },
+  categoryCard: {
+    backgroundColor: 'rgba(64, 64, 64, 0.4)', // Made more transparent
+    borderRadius: SIZES.large,
+    borderWidth: 1,
+    borderColor: 'rgba(165,115,36,0.3)',
+    padding: SIZES.medium,
+    marginBottom: SIZES.medium,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  selectedCategoryCard: {
+    borderColor: 'rgba(165,115,36,0.8)',
+    borderWidth: 2,
+    backgroundColor: 'rgba(165, 115, 36, 0.1)',
+  },
+  categoryHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: '100%',
+  },
+  categoryIconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(165, 115, 36, 0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: SIZES.small,
+  },
+  categoryIcon: {
+    fontFamily: 'KFGQPC Uthman Taha Naskh',
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: 'rgba(165,115,36,0.8)',
+  },
+  categoryTextContainer: {
+    flex: 1,
+  },
+  categoryTitle: {
+    fontFamily: 'KFGQPC Uthman Taha Naskh',
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#F5E6C8', // Match title color
+    marginBottom: SIZES.extraSmall,
+  },
+  categoryDesc: {
+    fontFamily: 'KFGQPC Uthman Taha Naskh',
+    fontSize: 14,
+    color: '#CCCCCC',
+    textAlign: 'center',
+  },
+  expandIcon: {
+    padding: SIZES.small,
+  },
+  subcategoryContainer: {
+    width: '100%',
+  },
+  subcategoryDivider: {
+    height: 1,
+    backgroundColor: 'rgba(165, 115, 36, 0.5)',
+    marginVertical: SIZES.small,
+  },
+  subcategoryCard: {
+    backgroundColor: 'rgba(80, 80, 80, 0.9)',
+    borderRadius: SIZES.medium,
+    borderWidth: 1,
+    borderColor: 'rgba(165,115,36,0.8)',
+    padding: SIZES.medium,
+    marginBottom: SIZES.small,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  selectedSubcategoryCard: {
+    borderColor: COLORS.primary,
+    borderWidth: 2,
+  },
+  subcategoryHeader: {
+    width: '100%',
+    alignItems: 'center',
+    marginBottom: SIZES.extraSmall,
+  },
+  subcategoryTitle: {
+    fontFamily: 'KFGQPC Uthman Taha Naskh',
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#F5E6C8', // Match title color
+    marginBottom: SIZES.extraSmall,
+  },
+  subcategorySurahs: {
+    fontFamily: 'KFGQPC Uthman Taha Naskh',
+    fontSize: 14,
+    color: '#CCCCCC',
+    textAlign: 'center',
+  },
+  exploreSubcategoryButton: {
+    backgroundColor: COLORS.primary,
+    paddingVertical: SIZES.small,
+    paddingHorizontal: SIZES.medium,
+    borderRadius: 20,
+    alignSelf: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+    marginTop: SIZES.small,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  exploreSubcategoryButtonText: {
+    fontFamily: 'KFGQPC Uthman Taha Naskh',
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: COLORS.white,
+    textAlign: 'center',
+  },
+  juzProgressContainer: {
+    position: 'absolute',
+    width: 40,
+    height: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.4)',
+  },
+  progressBarBackground: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 4,
+    overflow: 'hidden',
+  },
+  progressBarFill: {
+    height: '100%',
+    borderRadius: 4,
+  },
+  juzProgressNumber: {
+    fontFamily: 'KFGQPC Uthman Taha Naskh',
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: COLORS.white,
+    textAlign: 'center',
+    textShadowColor: '#000',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 2,
+  },
+  juzContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: SIZES.large,
+    backgroundColor: 'transparent', // Made fully transparent
+    marginTop: -30, // Brought up a tiny bit more (from -20)
+  },
+  juzTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#F5E6C8',
+    textAlign: 'center',
+    marginBottom: SIZES.large,
+  },
+  juzSubtitle: {
+    fontSize: 16,
+    color: '#CCCCCC',
+    textAlign: 'center',
+    marginBottom: SIZES.extraLarge,
+  },
+  polygonContainer: {
+    width: 300,
+    height: 300,
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'relative',
+  },
+  polygonSvg: {
+    position: 'absolute',
+  },
+  centralJuzButton: {
+    position: 'absolute',
+    width: 140,
+    height: 140,
+    borderRadius: 70,
+    backgroundColor: 'transparent', // Made transparent since hexagon is in SVG
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10,
+  },
+  juzLabel: {
+    fontSize: 16,
+    color: '#CCCCCC',
+    textAlign: 'center',
+  },
+
+  juzInfo: {
+    fontSize: 18,
+    color: '#CCCCCC',
+    textAlign: 'center',
+    marginTop: SIZES.medium,
+  },
+  emptyThemes: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: SIZES.large,
+  },
+  emptyThemesText: {
+    fontFamily: 'KFGQPC Uthman Taha Naskh',
+    fontSize: 20,
+    color: '#CCCCCC',
+    textAlign: 'center',
+  },
+  categoriesScrollView: {
+    flex: 1,
+  },
+  disabledTabButton: {
+    opacity: 0.5,
+  },
+  disabledTabText: {
+    color: '#666',
   },
 });
 

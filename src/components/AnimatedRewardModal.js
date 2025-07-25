@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Modal, Animated, StyleSheet } from 'react-native';
+import { View, Modal, Animated, StyleSheet, TouchableWithoutFeedback } from 'react-native';
 import Text from './Text';
 import Button from './Button';
 import { COLORS, SIZES } from '../utils/theme';
@@ -23,9 +23,12 @@ const AnimatedRewardModal = ({
   const resultAnim = useRef(new Animated.Value(0)).current;
   const textScaleAnim = useRef(new Animated.Value(1)).current;
 
+  // Store timeout IDs so we can clear them
+  const timeoutsRef = useRef([]);
+
   useEffect(() => {
     if (visible) {
-      setCurrentStep(0);
+      setCurrentStep(1); // Start at letter count
       setCalculationComplete(false);
       setLetterCount(0);
       
@@ -52,31 +55,63 @@ const AnimatedRewardModal = ({
       numberAnim.setValue(0);
       resultAnim.setValue(0);
       textScaleAnim.setValue(1);
+      // Clear all timeouts when modal closes
+      clearAllTimeouts();
     }
+    // Also clear timeouts on unmount
+    return () => clearAllTimeouts();
   }, [visible]);
 
+  const clearAllTimeouts = () => {
+    timeoutsRef.current.forEach(timeoutId => clearTimeout(timeoutId));
+    timeoutsRef.current = [];
+  };
+
+  const skipAnimation = () => {
+    clearAllTimeouts();
+    // Immediately show the final result
+    setCurrentStep(3);
+    setCalculationComplete(true);
+    setLetterCount(rewardAmount / 10);
+    
+    // Animate to final state
+    Animated.parallel([
+      Animated.timing(resultAnim, {
+        toValue: 1,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+      Animated.timing(opacityAnim, {
+        toValue: 1,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+      Animated.timing(scaleAnim, {
+        toValue: 1,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  };
+
   const startCalculationAnimation = () => {
-    // Step 1: Show letter count calculation
-    setTimeout(() => {
-      setCurrentStep(1);
-      // Start from the actual letter count, not 0
-      const letterCount = rewardAmount / 10;
-      setLetterCount(letterCount);
-      numberAnim.setValue(letterCount);
-    }, 400);
+    // Step 1: Show letter count calculation (immediately)
+    const letterCount = rewardAmount / 10;
+    setLetterCount(letterCount);
+    numberAnim.setValue(letterCount);
 
     // Step 2: Show multiplication
-    setTimeout(() => {
+    timeoutsRef.current.push(setTimeout(() => {
       setCurrentStep(2);
       animateTextScale();
-    }, 1200);
+    }, 800)); // So user sees letter count for a bit
 
     // Step 3: Show result
-    setTimeout(() => {
+    timeoutsRef.current.push(setTimeout(() => {
       setCurrentStep(3);
       setCalculationComplete(true);
       animateResult();
-    }, 2000);
+    }, 1600));
   };
 
   const animateNumber = (from, to, duration) => {
@@ -120,21 +155,15 @@ const AnimatedRewardModal = ({
       <View style={styles.modalContentInner}>
         {/* Masha'Allah title - always visible at top */}
         <Animated.View style={{ opacity: opacityAnim }}>
-          <Text variant="h2" style={styles.title}>
+          <Text variant="h2" style={[styles.title, { fontFamily: 'Montserrat-Bold' }]}>
             {language === 'ar' ? 'ماشاء الله' : 'Masha\'Allah'}
           </Text>
         </Animated.View>
 
         {/* Content based on current step */}
-        {currentStep === 0 && (
-          <View style={styles.calculationContainer}>
-            {/* Empty space for initial screen */}
-          </View>
-        )}
-
         {currentStep === 1 && (
           <View style={styles.calculationContainer}>
-            <Animated.Text style={[styles.calculationText, { transform: [{ scale: textScaleAnim }] }]}>
+            <Animated.Text style={[styles.calculationText, { transform: [{ scale: textScaleAnim }] }]}> 
               {language === 'ar' ? (
                 <>
                   <Text style={styles.calculationLabel}>عدد الحروف: </Text>
@@ -211,41 +240,42 @@ const AnimatedRewardModal = ({
       animationType="none"
       onRequestClose={onClose}
     >
-      <View style={styles.modalOverlay}>
-        <Animated.View 
-          style={[
-            styles.modalContent, 
-            { 
-              transform: [{ scale: scaleAnim }],
-              opacity: opacityAnim
-            }
-          ]}
-        >
-          {renderCalculationStep()}
-          
-          {calculationComplete && (
-            <Animated.View 
-              style={[styles.buttonContainer, { opacity: resultAnim }]}
-            >
-              <View style={styles.rewardButtonRow}>
-                <Button
-                  title={language === 'ar' ? 'مراجعة' : 'Revise'}
-                  onPress={onClose}
-                  style={[styles.rewardButton, { backgroundColor: '#5b7f67', marginRight: 8 }]}
-                />
-                <Button
-                  title={isLastAyah 
-                    ? (language === 'ar' ? 'السورة التالية' : 'Next Surah') 
-                    : (language === 'ar' ? 'الآية التالية' : 'Next Ayah')
-                  }
-                  onPress={onNext}
-                  style={[styles.rewardButton, { backgroundColor: '#5b7f67' }]}
-                />
-              </View>
-            </Animated.View>
-          )}
-        </Animated.View>
-      </View>
+      <TouchableWithoutFeedback onPress={skipAnimation}>
+        <View style={styles.modalOverlay}>
+          <Animated.View 
+            style={[
+              styles.modalContent, 
+              { 
+                transform: [{ scale: scaleAnim }],
+                opacity: opacityAnim
+              }
+            ]}
+          >
+            {renderCalculationStep()}
+            {calculationComplete && (
+              <Animated.View 
+                style={[styles.buttonContainer, { opacity: resultAnim }]}
+              >
+                <View style={styles.rewardButtonRow}>
+                  <Button
+                    title={language === 'ar' ? 'مراجعة' : 'Revise'}
+                    onPress={onClose}
+                    style={[styles.rewardButton, { backgroundColor: '#5b7f67', marginRight: 8 }]}
+                  />
+                  <Button
+                    title={isLastAyah 
+                      ? (language === 'ar' ? 'السورة التالية' : 'Next Surah') 
+                      : (language === 'ar' ? 'الآية التالية' : 'Next Ayah')
+                    }
+                    onPress={onNext}
+                    style={[styles.rewardButton, { backgroundColor: '#5b7f67' }]}
+                  />
+                </View>
+              </Animated.View>
+            )}
+          </Animated.View>
+        </View>
+      </TouchableWithoutFeedback>
     </Modal>
   );
 };

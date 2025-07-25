@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as RNLocalize from 'react-native-localize';
+import { I18nManager } from 'react-native';
 
 const LanguageContext = createContext();
 
@@ -25,11 +26,16 @@ export const LanguageProvider = ({ children }) => {
       const savedLanguage = await AsyncStorage.getItem('app_language');
       if (savedLanguage) {
         setLanguage(savedLanguage);
+        // Force RTL for Arabic language on app start
+        if (savedLanguage === 'ar') {
+          I18nManager.forceRTL(true);
+        }
       } else {
         // Detect system language if not set
         const locales = RNLocalize.getLocales();
         if (Array.isArray(locales) && locales.length > 0 && locales[0].languageCode === 'ar') {
           setLanguage('ar');
+          I18nManager.forceRTL(true);
         } else {
           setLanguage('en');
         }
@@ -45,6 +51,16 @@ export const LanguageProvider = ({ children }) => {
     try {
       await AsyncStorage.setItem('app_language', newLanguage);
       setLanguage(newLanguage);
+      
+      // Force RTL for Arabic language
+      if (newLanguage === 'ar') {
+        I18nManager.forceRTL(true);
+        // Note: RTL changes require app restart to take full effect
+        console.log('[LanguageContext] RTL enabled for Arabic');
+      } else {
+        I18nManager.forceRTL(false);
+        console.log('[LanguageContext] RTL disabled for English');
+      }
     } catch (error) {
       console.log('Error saving language:', error);
     }
@@ -59,7 +75,7 @@ export const LanguageProvider = ({ children }) => {
       'complete': 'Complete',
       'completed': 'COMPLETED - MASHA2ALLAH!',
       'hasanat_gains': '7asanat gains',
-      'today_hasanat': 'Today\'s 7asanat',
+      'today_hasanat': 'Today',
       'total_hasanat': 'Total 7asanat',
       'streak': 'Day Streak',
       'memorized': 'Memorized',
@@ -81,6 +97,13 @@ export const LanguageProvider = ({ children }) => {
       'insha2allah': 'insha2Allah',
       'quran_memorize': 'Memorize Qur2an b2ithnAllah',
       'welcome_subtitle': 'Qa2imat as-Suwar (Surah List)',
+      'all_surahs': 'All Surahs',
+      'juz_wheel': '30 Juz',
+      'themes': 'Themes',
+      'surah': 'Surah',
+      'juz': 'Juz',
+      'categories': 'Categories',
+      'coming_soon': 'Coming Soon',
       'intro_title': 'Asalamu alaykum\nwa rahmat Allah',
       'intro_description': '{app_name} is your personal Qur2an memorization companion. Track your progress, earn 7asanat, and maintain your daily streak as you journey through the Holy Qur2an.',
       'welcome_to_iqra2': 'Welcome to IQRA2',
@@ -244,7 +267,7 @@ export const LanguageProvider = ({ children }) => {
       'complete': 'مكتمل',
       'completed': 'مكتمل - ما شاء الله!',
       'hasanat_gains': 'الحسنات المكتسبة',
-      'today_hasanat': 'حسنات اليوم',
+      'today_hasanat': 'اليوم',
       'total_hasanat': 'إجمالي الحسنات',
       'streak': 'يوم متتالي',
       'memorized': 'محفوظ',
@@ -264,8 +287,15 @@ export const LanguageProvider = ({ children }) => {
       'days': 'أيام',
       'masha2allah': 'ما شاء الله',
       'insha2allah': 'إن شاء الله',
-      'quran_memorize': 'احفظ القرآن بإذن الله',
+      'quran_memorize': 'احفظ  القرآن  بإذن الله',
       'welcome_subtitle': 'قائمة السور',
+      'all_surahs': 'جميع السور',
+      'juz_wheel': '٣٠ جزء',
+      'themes': 'المواضيع',
+      'surah': 'السور',
+      'juz': 'الجزء',
+      'categories': 'الفئات',
+      'coming_soon': 'قريباً',
       'intro_title': 'السلام عليكم ورحمة الله',
       'intro_description': 'ٱقۡرَأۡ هو رفيقك الشخصي لحفظ القرآن. تتبع تقدمك، اكسب الحسنات، وحافظ على تتابعك اليومي أثناء رحلتك في القرآن الكريم.',
       'welcome_to_iqra2': 'مرحباً بك في ٱقۡرَأۡ',

@@ -10,6 +10,8 @@ const Text = ({
   fontFamily,
   weight,
   align,
+  lang,
+  ...props
 }) => {
   const getTextStyle = () => {
     const baseStyle = {
@@ -29,10 +31,17 @@ const Text = ({
       baseStyle.textAlign = align;
     }
 
+    // Add RTL support for Arabic
+    if (lang === 'ar') {
+      baseStyle.writingDirection = 'rtl';
+      baseStyle.textAlign = 'right';
+      baseStyle.includeFontPadding = false;
+    }
+
     return baseStyle;
   };
 
-  return <RNText style={[getTextStyle(), style]}>{children}</RNText>;
+  return <RNText style={[getTextStyle(), style]} allowFontScaling={false} {...props}>{children}</RNText>;
 };
 
 export default Text; 

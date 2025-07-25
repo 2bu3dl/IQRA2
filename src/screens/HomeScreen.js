@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, SafeAreaView, Image, ImageBackground, Modal, TouchableOpacity } from 'react-native';
-import { COLORS as BASE_COLORS, SIZES } from '../utils/theme';
+import { COLORS as BASE_COLORS, SIZES, FONTS } from '../utils/theme';
 import Text from '../components/Text';
 import Button from '../components/Button';
 import Card from '../components/Card';
@@ -10,6 +10,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useLanguage } from '../utils/languageContext';
 import telemetryService from '../utils/telemetry';
 import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
+import watchConnectivity from '../utils/watchConnectivity';
 
 const COLORS = { ...BASE_COLORS, primary: '#6BA368', accent: '#FFD700' };
 
@@ -77,6 +78,13 @@ const HomeScreen = ({ navigation, route }) => {
     const loadScreenData = async () => {
       const loadedData = await loadData();
       setData(loadedData);
+      
+      // Sync data with Apple Watch
+      try {
+        await watchConnectivity.syncUserProgress(loadedData);
+      } catch (error) {
+        console.log('Apple Watch not available or sync failed:', error.message);
+      }
     };
 
   useEffect(() => {
@@ -172,17 +180,109 @@ const HomeScreen = ({ navigation, route }) => {
                 textShadowColor: '#fae29f',
                 textShadowOffset: { width: 0, height: 0 },
                 textShadowRadius: 3,
-              }]}>اللَّهُمَّ اجْعَلْنَا مِنْ أَهْلِ الْقُرْآن</Text>
+              }]} allowFontScaling={false} lang="ar">اللَّهُمَّ اجْعَلْنَا مِنْ أَهْلِ الْقُرْآن</Text>
             </View>
             <View style={styles.dividerLine} />
           </View>
         </View>
 
         <View style={styles.mainContent}>
-          <Card variant="elevated" style={styles.progressCard}>
+          <View style={{
+            flexDirection: 'row',
+            justifyContent: 'space-around',
+            marginTop: 25, // Fine-tune button position
+            marginBottom: 20,
+            position: 'relative',
+            zIndex: 1,
+            height: 120 // Fixed height
+          }}>
+            {(() => {
+              const [pressed, setPressed] = useState(false);
+              return (
+                <TouchableOpacity
+                  style={[{
+                    flex: 1,
+                    marginHorizontal: SIZES.small,
+                    padding: SIZES.large,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backgroundColor: 'transparent',
+                    borderRadius: SIZES.base,
+                    shadowColor: '#fae29f',
+                    shadowOffset: { width: 0, height: 0 },
+                    shadowOpacity: pressed ? 0.9 : 0.2,
+                    shadowRadius: pressed ? 24 : 8,
+                    elevation: pressed ? 18 : 6,
+                    flexDirection: 'column',
+                    position: 'relative',
+                    zIndex: 2,
+                    height: 120
+                  }]}
+                  onPress={() => {
+                    telemetryService.trackUserInteraction('button_click', { 
+                      button: 'Start Memorization',
+                      screen: 'Home'
+                    });
+                    navigation.navigate('SurahList');
+                  }}
+                  onPressIn={() => { setPressed(true); ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true }); }}
+                  onPressOut={() => setPressed(false)}
+                  activeOpacity={1}
+                >
+                  <View style={styles.buttonIconContainer}>
+                    <Image source={require('../assets/openQuran.png')} style={[styles.buttonIcon, { width: 45, height: 45 }]} resizeMode="contain" />
+                  </View>
+                  <View style={{ 
+                    backgroundColor: 'rgba(0,0,0,0.8)', 
+                    borderRadius: 8, 
+                    paddingHorizontal: 16, 
+                    paddingTop: language === 'ar' ? 8 : 12,
+                    paddingBottom: language === 'ar' ? 12 : 8,
+                    alignItems: 'center', 
+                    justifyContent: 'center', 
+                    shadowColor: '#fae29f', 
+                    shadowOffset: { width: 0, height: 0 }, 
+                    shadowOpacity: pressed ? 1.0 : 0.6, 
+                    shadowRadius: pressed ? 24 : 10, 
+                    elevation: pressed ? 20 : 8,
+                    minHeight: language === 'ar' ? 80 : 60
+                  }}>
+                    <Text style={[{
+                      marginTop: language === 'ar' ? 4 : SIZES.small,
+                      textAlign: 'center',
+                      color: '#fae29f', 
+                      width: '100%', 
+                      fontWeight: 'bold', 
+                      fontSize: 22, 
+                      textShadowColor: '#fae29f', 
+                      textShadowOffset: { width: 0, height: 0 }, 
+                      textShadowRadius: 4,
+                      lineHeight: language === 'ar' ? 36 : 26,
+                      fontFamily: 'Montserrat-Bold'
+                    }]}>{t('quran_memorize')}</Text>
+                  </View>
+                </TouchableOpacity>
+              );
+            })()}
+          </View>
+
+          <Card variant="elevated" style={{
+            marginBottom: -50,
+            marginTop: 60,
+            backgroundColor: 'rgba(128,128,128,0.3)',
+            borderColor: 'rgba(165,115,36,0.8)',
+            borderWidth: 1,
+            padding: SIZES.medium,
+            shadowColor: '#000000',
+            shadowOffset: { width: 4, height: 4 },
+            shadowOpacity: 0.6,
+            shadowRadius: 6,
+            elevation: 8,
+            height: 160
+          }}>
               <View style={{ alignItems: 'center' }}>
                 <View style={{ borderBottomWidth: 2, borderBottomColor: 'rgba(51,51,51,0.6)', paddingBottom: 4, marginBottom: 12 }}>
-                  <Text variant="h2" style={{ 
+                  <Text variant="h2" style={[FONTS.h2.getFont(language), { 
                     textAlign: 'center', 
                     color: '#5b7f67', 
                     fontWeight: 'bold',
@@ -193,7 +293,7 @@ const HomeScreen = ({ navigation, route }) => {
                     shadowOffset: { width: 0, height: 1 },
                     shadowOpacity: 0.3,
                     shadowRadius: 3,
-                  }}>{t('memorization_progress')}</Text>
+                  }]}>{t('memorization_progress')}</Text>
                 </View>
               </View>
               <Text variant="body1" style={{ marginBottom: SIZES.small, textAlign: 'center' }}>
@@ -257,8 +357,30 @@ const HomeScreen = ({ navigation, route }) => {
             </Text>
           </Card>
 
-          <View style={styles.statsGrid}>
-            <Card style={styles.statCard}>
+          <View style={{
+            flexDirection: 'row',
+            justifyContent: 'space-around',
+            marginBottom: SIZES.medium,
+            marginTop: 80,
+            position: 'relative',
+            zIndex: 1
+          }}>
+            <Card style={{
+              flex: 1,
+              padding: SIZES.medium,
+              backgroundColor: 'rgba(128,128,128,0.3)',
+              borderColor: 'rgba(165,115,36,0.8)',
+              borderWidth: 1,
+              borderRadius: SIZES.base,
+              alignItems: 'center',
+              justifyContent: 'center',
+              shadowColor: '#000000',
+              shadowOffset: { width: 4, height: 4 },
+              shadowOpacity: 0.6,
+              shadowRadius: 6,
+              elevation: 8,
+              height: 180
+            }}>
                 <Text variant="h3" style={{ textAlign: 'center', color: '#CCCCCC' }}>{t('hasanat_gains')}</Text>
                 <View style={{ backgroundColor: 'rgba(0,0,0,0.75)', borderRadius: 8, paddingHorizontal: 16, paddingVertical: 8, alignSelf: 'center', marginVertical: 8 }}>
                   <Text variant="h1" style={{ 
@@ -274,76 +396,31 @@ const HomeScreen = ({ navigation, route }) => {
                 <Text variant="body2" color="textSecondary" style={{ textAlign: 'center' }}>+{toArabicNumber(formatLargeNumber(data.todayHasanat).text)} {t('today_hasanat')}</Text>
                 <Text variant="body2" style={{ textAlign: 'center', color: '#F5E6C8', marginTop: 8, marginBottom: 4 }}>{t('insha2allah')}</Text>
             </Card>
-            <Card style={styles.statCard}>
+            <Card style={{
+              flex: 1,
+              padding: SIZES.medium,
+              backgroundColor: 'rgba(128,128,128,0.3)',
+              borderColor: 'rgba(165,115,36,0.8)',
+              borderWidth: 1,
+              borderRadius: SIZES.base,
+              alignItems: 'center',
+              justifyContent: 'center',
+              shadowColor: '#000000',
+              shadowOffset: { width: 4, height: 4 },
+              shadowOpacity: 0.6,
+              shadowRadius: 6,
+              elevation: 8,
+              height: 180
+            }}>
                 <View style={{ marginTop: 8 }}>
-                    <Text variant="h3" style={{ textAlign: 'center', color: '#CCCCCC', marginTop: language === 'en' ? -12 : 0 }}>{t('streak')}</Text>
-                    <View style={{ backgroundColor: 'rgba(0,0,0,0.75)', borderRadius: 8, paddingHorizontal: 16, paddingVertical: 8, alignSelf: 'center', marginVertical: language === 'en' ? 4 : 8, alignItems: 'center', justifyContent: 'center' }}>
+                    <Text variant="h3" style={{ textAlign: 'center', color: '#CCCCCC', marginTop: 0 }}>{t('streak')}</Text>
+                    <View style={{ backgroundColor: 'rgba(0,0,0,0.75)', borderRadius: 8, paddingHorizontal: 16, paddingVertical: 8, alignSelf: 'center', marginVertical: 8, alignItems: 'center', justifyContent: 'center' }}>
                       <Text variant="h1" style={{ color: '#5b7f67', textAlign: 'center', fontWeight: 'bold', fontSize: formatStreakNumber(data.streak).fontSize, lineHeight: formatStreakNumber(data.streak).fontSize * 1.2 }}>{toArabicNumber(formatStreakNumber(data.streak).text)}</Text>
                     </View>
                     <Text variant="body2" color="textSecondary" style={{ textAlign: 'center' }}>{t('days')}</Text>
-                    <Text variant="body2" style={{ textAlign: 'center', color: '#F5E6C8', marginTop: language === 'en' ? 24 : 8, marginBottom: 4 }}>{t('masha2allah')}</Text>
+                    <Text variant="body2" style={{ textAlign: 'center', color: '#F5E6C8', marginTop: 8, marginBottom: 4 }}>{t('masha2allah')}</Text>
                 </View>
             </Card>
-          </View>
-
-          <View style={[styles.buttonGrid, { marginTop: language === 'ar' ? styles.buttonGrid.marginTop : 2 }]}>
-            {(() => {
-              const [pressed, setPressed] = useState(false);
-              return (
-                <TouchableOpacity
-                  style={[styles.gridButton, {
-                    shadowColor: '#fae29f',
-                    shadowOffset: { width: 0, height: 0 },
-                    shadowOpacity: pressed ? 0.9 : 0.2,
-                    shadowRadius: pressed ? 24 : 8,
-                    elevation: pressed ? 18 : 6,
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    padding: language === 'ar' ? SIZES.extraLarge : SIZES.large,
-                  }]}
-                  onPress={() => {
-                    telemetryService.trackUserInteraction('button_click', { 
-                      button: 'Start Memorization',
-                      screen: 'Home'
-                    });
-                    navigation.navigate('SurahList');
-                  }}
-                  onPressIn={() => { setPressed(true); ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true }); }}
-                  onPressOut={() => setPressed(false)}
-                  activeOpacity={1}
-                >
-                  <View style={styles.buttonIconContainer}>
-                    <Image source={require('../assets/openQuran.png')} style={[styles.buttonIcon, { width: 45, height: 45 }]} resizeMode="contain" />
-                  </View>
-                  <View style={{ 
-                    backgroundColor: 'rgba(0,0,0,0.8)', 
-                    borderRadius: 8, 
-                    paddingHorizontal: language === 'ar' ? 20 : 16, 
-                    paddingTop: language === 'ar' ? 16 : 12,
-                    paddingBottom: language === 'ar' ? 20 : 8,
-                    alignItems: 'center', 
-                    justifyContent: 'center', 
-                    shadowColor: '#fae29f', 
-                    shadowOffset: { width: 0, height: 0 }, 
-                    shadowOpacity: pressed ? 1.0 : 0.6, 
-                    shadowRadius: pressed ? 24 : 10, 
-                    elevation: pressed ? 20 : 8 
-                  }}>
-                    <Text variant="body1" style={[styles.gridButtonText, { 
-                      color: '#fae29f', 
-                      textAlign: 'center', 
-                      width: '100%', 
-                      fontWeight: 'bold', 
-                      fontSize: language === 'ar' ? 26 : 22, 
-                      textShadowColor: '#fae29f', 
-                      textShadowOffset: { width: 0, height: 0 }, 
-                      textShadowRadius: 4,
-                      lineHeight: language === 'ar' ? 30 : 26,
-                    }]}>{t('quran_memorize')}</Text>
-                  </View>
-                </TouchableOpacity>
-              );
-            })()}
           </View>
         </View>
 
@@ -688,7 +765,8 @@ const styles = StyleSheet.create({
     color: COLORS.accent,
     marginTop: 0,
     textAlign: 'center',
-    fontFamily: 'KFGQPC Uthman Taha Naskh',
+    fontFamily: 'UthmanTN_v2-0',
+    writingDirection: 'rtl',
   },
   customDivider: {
     flexDirection: 'row',

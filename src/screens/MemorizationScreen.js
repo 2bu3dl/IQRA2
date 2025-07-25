@@ -16,6 +16,7 @@ import { useLanguage } from '../utils/languageContext';
 import audioPlayer from '../utils/audioPlayer';
 import telemetryService from '../utils/telemetry';
 import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
+import Slider from '@react-native-community/slider';
 // import Svg, { Circle } from 'react-native-svg'; // Uncomment if using react-native-svg
 
 const COLORS = { ...BASE_COLORS, primary: '#6BA368', accent: '#FFD700' };
@@ -24,6 +25,7 @@ const Card = memo(CardOrig);
 const ProgressBar = memo(ProgressBarOrig);
 
 const MemorizationScreen = ({ route, navigation }) => {
+  console.log('[DEBUG] MemorizationScreen mounted');
   const { language, t } = useLanguage();
   const toArabicNumber = (num) => {
     if (language !== 'ar') return num.toString();
@@ -57,6 +59,8 @@ const MemorizationScreen = ({ route, navigation }) => {
   const [currentPlayingAyah, setCurrentPlayingAyah] = useState(null);
   const [isRepeating, setIsRepeating] = useState(false);
   const spinAnim = useRef(new Animated.Value(0)).current;
+  const [ayahFontSize, setAyahFontSize] = useState(40);
+  const [isBoldFont, setIsBoldFont] = useState(false);
 
   const allSurahs = getAllSurahs();
   const currentSurahIndex = allSurahs.findIndex(s => s.surah === surahNumber);
@@ -67,6 +71,13 @@ const MemorizationScreen = ({ route, navigation }) => {
     async function fetchAyaat() {
       try {
       const data = await getSurahAyaatWithTransliteration(surahNumber);
+        console.log('[MemorizationScreen] Loaded ayaat for surah', surahNumber, ':', data);
+        if (surahNumber === 2) {
+          const ayah4 = data.find(ayah => ayah.ayah === 4);
+          if (ayah4) {
+            console.log('[MemorizationScreen] Ayah 4 text:', ayah4.text);
+          }
+        }
         setAyaat(data);
         setIsTextHidden(false);
     } catch (error) {
@@ -186,6 +197,16 @@ const MemorizationScreen = ({ route, navigation }) => {
       saveCurrentPosition(surah.name, currentAyahIndex);
     }
   }, [surah?.name, currentAyahIndex]);
+
+  useEffect(() => {
+    if (
+      surahNumber === 2 &&
+      flashcards[currentAyahIndex]?.type === 'ayah' &&
+      flashcards[currentAyahIndex]?.ayah === 4
+    ) {
+      console.log('[DEBUG] Surah 2, Ayah 4 text:', flashcards[currentAyahIndex]?.text);
+    }
+  }, [surahNumber, currentAyahIndex, flashcards]);
 
   const animateFlashcard = (toValue) => {
     Animated.parallel([
@@ -462,6 +483,9 @@ const MemorizationScreen = ({ route, navigation }) => {
     outputRange: ['0deg', '360deg'],
   });
 
+  const fontCandidates = ['UthmanTN_v2-0', 'UthmanTN', 'KFGQPC Uthman Taha Naskh', 'Uthman Taha Naskh'];
+  const fontFamily = fontCandidates[currentAyahIndex % fontCandidates.length];
+
   return (
     <View style={{ flex: 1, backgroundColor: '#000' }}>
       <ImageBackground 
@@ -581,18 +605,48 @@ const MemorizationScreen = ({ route, navigation }) => {
       </View>
 
           <View style={{ flex: 1, flexDirection: 'column' }}>
-            <View style={{ flex: 1, justifyContent: 'center' }}>
+            {/*
+            <View style={{ alignItems: 'center', marginTop: 16 }}>
+              <Text
+                variant="h2"
+                style={[
+                  language === 'ar'
+                    ? { fontFamily: 'UthmanTNB_v2-0', fontSize: 28, color: '#5b7f67', textAlign: 'center', marginBottom: 8 }
+                    : [FONTS.h2.getFont(language), { color: '#5b7f67', textAlign: 'center', marginBottom: 8 }],
+                ]}
+              >
+                {language === 'ar' ? t(`surah_${surahNumber}`) : cleanSurahName(surah.name)}
+              </Text>
+            </View>
+            */}
         <Animated.View style={[styles.flashcard, { opacity: fadeAnim, transform: [{ scale: scaleAnim }] }] }>
                 <Card variant="elevated" style={[styles.card, { flex: 1 }]}> 
                   <ScrollView style={styles.ayahScroll} contentContainerStyle={styles.ayahScrollContent} showsVerticalScrollIndicator={true}>
             <Text
               variant="h2"
-              style={[FONTS.arabic, styles.arabicText, { textAlign: 'center', alignSelf: 'center', writingDirection: 'rtl' }]}
-              align="center">
-                      {flashcards[currentAyahIndex]?.type === 'istiadhah'
-                        ? flashcards[currentAyahIndex]?.text || ''
-                        : (isTextHidden ? '⬡⬡⬡⬡⬡⬡⬡⬡⬡⬡⬡⬡⬡⬡⬡⬡⬡⬡⬡⬡⬡⬡⬡⬡⬡⬡⬡⬡⬡⬡⬡⬡⬡⬡⬡⬡⬡⬡⬡⬡' : flashcards[currentAyahIndex]?.text || '')
-              }
+              style={[FONTS.arabic, styles.arabicText, { 
+                fontFamily: isBoldFont ? 'KFGQPC Uthman Taha Naskh Bold' : 'KFGQPC Uthman Taha Naskh', 
+                fontSize: ayahFontSize, 
+                textAlign: 'center', 
+                alignSelf: 'center', 
+                writingDirection: 'rtl',
+                textAlignVertical: 'center',
+                includeFontPadding: false,
+                textAlign: 'center'
+              }]}
+              align="center"
+              allowFontScaling={false}
+              lang="ar"
+              onLayout={() => {
+                // Debug log for Surah 2, Ayah 4
+                if (surahNumber === 2 && flashcards[currentAyahIndex]?.type === 'ayah' && flashcards[currentAyahIndex]?.ayah === 4) {
+                  console.log('[DEBUG] Surah 2, Ayah 4 text:', flashcards[currentAyahIndex]?.text);
+                }
+              }}
+            >
+              {isTextHidden
+                ? (flashcards[currentAyahIndex]?.text ? '⬡'.repeat(Math.min(44, Math.ceil(flashcards[currentAyahIndex]?.text.length / 2))) : '')
+                : flashcards[currentAyahIndex]?.text}
             </Text>
             {/* Show transliteration only when text is not hidden and not in Arabic mode */}
             {!isTextHidden && language === 'en' && (
@@ -774,7 +828,6 @@ const MemorizationScreen = ({ route, navigation }) => {
             style={[styles.navButton, { backgroundColor: '#5b7f67' }]}
           />
         </View>
-      </View>
 
       {/* Go To Modal */}
       <Modal
@@ -1025,13 +1078,78 @@ const MemorizationScreen = ({ route, navigation }) => {
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-                <Text variant="h2" style={{ marginBottom: 16 }}>Settings</Text>
+            {/* Close X button at top right */}
+            <TouchableOpacity
+              style={{
+                position: 'absolute',
+                top: 16,
+                right: 16,
+                backgroundColor: '#FF4444',
+                borderRadius: 20,
+                width: 40,
+                height: 40,
+                justifyContent: 'center',
+                alignItems: 'center',
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.3,
+                shadowRadius: 4,
+                elevation: 3,
+              }}
+              onPress={() => setShowSettingsModal(false)}
+            >
+              <Text style={{ 
+                color: 'white', 
+                fontSize: 20, 
+                fontWeight: 'bold',
+                lineHeight: 20,
+              }}>
+                ×
+              </Text>
+            </TouchableOpacity>
+
+            <Text variant="h2" style={{ marginBottom: 16, marginTop: 8, color: '#A57324' }}>Font Settings</Text>
             
-              <Button
-                  title="Close"
-                onPress={() => setShowSettingsModal(false)}
-                style={{ backgroundColor: '#5b7f67' }}
-              />
+            {/* Font Size Slider */}
+            <Text style={{ marginBottom: 6, fontWeight: 'bold', color: '#5b7f67', fontSize: 16 }}>Qur2an Font Size</Text>
+            <Slider
+              style={{ width: 220, height: 40, marginBottom: 16 }}
+              minimumValue={24}
+              maximumValue={52}
+              step={1}
+              value={ayahFontSize}
+              onValueChange={setAyahFontSize}
+              minimumTrackTintColor="#5b7f67"
+              maximumTrackTintColor="#CCCCCC"
+              thumbTintColor="#A57324"
+            />
+            
+            {/* Font Style Toggle */}
+            <Text style={{ marginBottom: 6, fontWeight: 'bold', color: '#5b7f67', fontSize: 16 }}>Qur2an Font Style</Text>
+            <TouchableOpacity
+              style={{
+                backgroundColor: isBoldFont ? '#5b7f67' : '#CCCCCC',
+                paddingHorizontal: 20,
+                paddingVertical: 10,
+                borderRadius: 8,
+                marginBottom: 16,
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.3,
+                shadowRadius: 4,
+                elevation: 3,
+              }}
+              onPress={() => setIsBoldFont(!isBoldFont)}
+            >
+              <Text style={{ 
+                color: isBoldFont ? '#F5E6C8' : '#5b7f67', 
+                fontWeight: 'bold', 
+                fontSize: 16,
+                textAlign: 'center'
+              }}>
+                {isBoldFont ? 'BOLD' : 'Regular'}
+              </Text>
+            </TouchableOpacity>
           </View>
         </View>
       </Modal>
@@ -1175,22 +1293,26 @@ const styles = StyleSheet.create({
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(64, 64, 64, 0.9)',
-    justifyContent: 'center',
+    backgroundColor: 'rgba(128, 128, 128, 0.5)',
+    justifyContent: 'flex-end',
     alignItems: 'center',
   },
   modalContent: {
     backgroundColor: 'rgba(255, 255, 255, 0.8)',
-    borderRadius: 32,
-    padding: SIZES.large,
+    borderTopLeftRadius: 32,
+    borderTopRightRadius: 32,
+    borderBottomLeftRadius: 0,
+    borderBottomRightRadius: 0,
+    padding: SIZES.small,
+    paddingTop: SIZES.medium,
     alignItems: 'center',
     shadowColor: '#333333',
-    shadowOffset: { width: 0, height: 6 },
+    shadowOffset: { width: 0, height: -6 },
     shadowOpacity: 0.5,
     shadowRadius: 12,
     elevation: 8,
-    marginHorizontal: 4,
-    width: '95%',
+    width: '100%',
+    paddingBottom: 16,
   },
   ayahList: {
     width: '100%',

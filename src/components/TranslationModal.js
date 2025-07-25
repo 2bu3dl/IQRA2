@@ -21,8 +21,6 @@ const TranslationModal = ({ visible, onClose, currentSurah, currentAyah, onAyahC
   const [translation, setTranslation] = useState('');
   const [loading, setLoading] = useState(false);
 
-  if (language === 'ar') return null;
-
   const translationSources = getTranslationSources();
 
   useEffect(() => {
@@ -35,6 +33,8 @@ const TranslationModal = ({ visible, onClose, currentSurah, currentAyah, onAyahC
       }
     }
   }, [visible, currentSurah, currentAyah]);
+
+  if (language === 'ar') return null;
 
   const loadTranslations = async (source) => {
     setLoading(true);

@@ -124,6 +124,7 @@ const surahMap = {};
 quranRaw.forEach(({ surah, ayah, text }) => {
   const surahNum = parseInt(surah, 10); // Ensure it's a number
   if (!surahMap[surahNum]) surahMap[surahNum] = [];
+  
   surahMap[surahNum].push({ ayah, text });
 });
 

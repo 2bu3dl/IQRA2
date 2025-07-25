@@ -6,6 +6,8 @@
     "android": "react-native run-android",
     "ios": "react-native run-ios",
     "ios-workspace": "open ios/IQRA2.xcworkspace",
+    "watch": "react-native run-ios --simulator='Apple Watch Series 10 (46mm)'",
+    "watch-simulator": "xcrun simctl boot 'Apple Watch Series 10 (46mm)' && npm run watch",
     "lint": "eslint .",
     "start": "react-native start",
     "test": "jest"

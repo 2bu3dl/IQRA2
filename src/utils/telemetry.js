@@ -13,7 +13,8 @@ const TELEMETRY_URL = 'http://localhost:5001/api/iqra2/telemetry';
 // Telemetry data structure
 class TelemetryService {
   constructor() {
-    this.isEnabled = true;
+    // Disable telemetry for development to prevent errors
+    this.isEnabled = false;
     this.queue = [];
     this.lastSent = 0;
     this.sessionId = null;
@@ -41,8 +42,10 @@ class TelemetryService {
 
       console.log('[Telemetry] Initialized with session:', this.sessionId);
       
-      // Start sending data periodically
-      this.startPeriodicSend();
+      // Only start periodic sending if telemetry is enabled
+      if (this.isEnabled) {
+        this.startPeriodicSend();
+      }
       
     } catch (error) {
       console.error('[Telemetry] Initialization error:', error);
@@ -72,6 +75,8 @@ class TelemetryService {
 
   // Track app performance metrics
   async trackPerformance() {
+    if (!this.isEnabled) return;
+    
     try {
       const performanceData = {
         memoryUsage: await this.getMemoryUsage(),
@@ -170,7 +175,7 @@ class TelemetryService {
 
   // Send data to backend
   async sendData() {
-    if (this.queue.length === 0) return;
+    if (this.queue.length === 0 || !this.isEnabled) return;
 
     try {
       const dataToSend = this.queue.splice(0, TELEMETRY_CONFIG.BATCH_SIZE);
@@ -198,12 +203,18 @@ class TelemetryService {
     } catch (error) {
       console.error('[Telemetry] Send error:', error);
       // Put events back in queue for retry
-      this.queue.unshift(...dataToSend);
+      if (this.queue.length > 0) {
+        // Get the events that were being sent
+        const eventsToRetry = this.queue.splice(0, TELEMETRY_CONFIG.BATCH_SIZE);
+        this.queue.unshift(...eventsToRetry);
+      }
     }
   }
 
   // Start periodic sending
   startPeriodicSend() {
+    if (!this.isEnabled) return;
+    
     setInterval(() => {
       if (this.queue.length > 0) {
         this.sendData();
@@ -215,6 +226,11 @@ class TelemetryService {
   setEnabled(enabled) {
     this.isEnabled = enabled;
     console.log('[Telemetry]', enabled ? 'Enabled' : 'Disabled');
+    
+    // Start periodic sending if enabling
+    if (enabled) {
+      this.startPeriodicSend();
+    }
   }
 
   // Get current queue status

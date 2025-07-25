@@ -44,6 +44,8 @@
 		<string>UthmanTN_v2-0.ttf</string>
 		<string>Montserrat-Regular.ttf</string>
 		<string>Montserrat-Bold.ttf</string>
+		<string>KSAHeavy.ttf</string>
+		<string>UthmanTNB_v2-0.ttf</string>
 	</array>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>

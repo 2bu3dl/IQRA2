@@ -3,21 +3,18 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 56;
+	objectVersion = 70;
 	objects = {
 
 /* Begin PBXBuildFile section */
 		0C80B921A6F3F58F76C31292 /* libPods-IQRA2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5DCACB8F33CDC322A6C60F78 /* libPods-IQRA2.a */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		23AD0F3B98084826AD3818C9 /* Montserrat-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 497E90635E1D4D63B9C1FBF7 /* Montserrat-Bold.ttf */; };
-		5E3C4B353CF9D22E37D6CED0 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */; };
 		761780ED2CA45674006654EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761780EC2CA45674006654EE /* AppDelegate.swift */; };
 		78FF702459244C3D998A120C /* UthmanTN_v2-0.ttf in Resources */ = {isa = PBXBuildFile; fileRef = E36218C1AA38425399953908 /* UthmanTN_v2-0.ttf */; };
-		796D9C8EB21E4BF7A76348E4 /* KSAHeavy.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 52C00D17AFA24336AA59F63A /* KSAHeavy.ttf */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
 		CE5CC92097EE4694873E4173 /* Montserrat-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 2F04E8AC4AD243DA8DBD43E4 /* Montserrat-Regular.ttf */; };
 		D040CBC6B347D9F9B9CEAE2D /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */; };
-		FD63C71DC90A4122A602EDE4 /* UthmanTNB_v2-0.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 78C94F5480BF404C80F4F382 /* UthmanTNB_v2-0.ttf */; };
 		FE894A2C2E242CF00054180C /* 001001.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FATIHA_001 /* 001001.mp3 */; };
 		FE894A2D2E242CF00054180C /* 001002.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FATIHA_002 /* 001002.mp3 */; };
 		FE894A2E2E242CF00054180C /* 001003.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FATIHA_003 /* 001003.mp3 */; };
@@ -82,11 +79,9 @@
 		2F04E8AC4AD243DA8DBD43E4 /* Montserrat-Regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Montserrat-Regular.ttf"; path = "../src/assets/fonts/Montserrat-Regular.ttf"; sourceTree = "<group>"; };
 		3B4392A12AC88292D35C810B /* Pods-IQRA2.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-IQRA2.debug.xcconfig"; path = "Target Support Files/Pods-IQRA2/Pods-IQRA2.debug.xcconfig"; sourceTree = "<group>"; };
 		497E90635E1D4D63B9C1FBF7 /* Montserrat-Bold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Montserrat-Bold.ttf"; path = "../src/assets/fonts/Montserrat-Bold.ttf"; sourceTree = "<group>"; };
-		52C00D17AFA24336AA59F63A /* KSAHeavy.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = KSAHeavy.ttf; path = ../src/assets/fonts/KSAHeavy.ttf; sourceTree = "<group>"; };
 		5709B34CF0A7D63546082F79 /* Pods-IQRA2.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-IQRA2.release.xcconfig"; path = "Target Support Files/Pods-IQRA2/Pods-IQRA2.release.xcconfig"; sourceTree = "<group>"; };
 		5DCACB8F33CDC322A6C60F78 /* libPods-IQRA2.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-IQRA2.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		761780EC2CA45674006654EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = IQRA2/AppDelegate.swift; sourceTree = "<group>"; };
-		78C94F5480BF404C80F4F382 /* UthmanTNB_v2-0.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "UthmanTNB_v2-0.ttf"; path = "../src/assets/fonts/UthmanTNB_v2-0.ttf"; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = IQRA2/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		E36218C1AA38425399953908 /* UthmanTN_v2-0.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "UthmanTN_v2-0.ttf"; path = "../src/assets/fonts/UthmanTN_v2-0.ttf"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
@@ -134,39 +129,9 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		FE4B9B982E2F00810080B3DC /* IQRA2Watch Extension Watch App */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-			);
-			explicitFileTypes = {
-			};
-			explicitFolders = (
-			);
-			path = "IQRA2Watch Extension Watch App";
-			sourceTree = "<group>";
-		};
-		FE4B9BA92E2F00830080B3DC /* IQRA2Watch Extension Watch AppTests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-			);
-			explicitFileTypes = {
-			};
-			explicitFolders = (
-			);
-			path = "IQRA2Watch Extension Watch AppTests";
-			sourceTree = "<group>";
-		};
-		FE4B9BB32E2F00830080B3DC /* IQRA2Watch Extension Watch AppUITests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-			);
-			explicitFileTypes = {
-			};
-			explicitFolders = (
-			);
-			path = "IQRA2Watch Extension Watch AppUITests";
-			sourceTree = "<group>";
-		};
+		FE4B9B982E2F00810080B3DC /* IQRA2Watch Extension Watch App */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = "IQRA2Watch Extension Watch App"; sourceTree = "<group>"; };
+		FE4B9BA92E2F00830080B3DC /* IQRA2Watch Extension Watch AppTests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = "IQRA2Watch Extension Watch AppTests"; sourceTree = "<group>"; };
+		FE4B9BB32E2F00830080B3DC /* IQRA2Watch Extension Watch AppUITests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = "IQRA2Watch Extension Watch AppUITests"; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -303,8 +268,6 @@
 				FE9B985C2E24C68900CE6688 /* 067028.mp3 */,
 				FE9B984B2E24C68600CE6688 /* 067029.mp3 */,
 				FE9B98512E24C68700CE6688 /* 067030.mp3 */,
-				52C00D17AFA24336AA59F63A /* KSAHeavy.ttf */,
-				78C94F5480BF404C80F4F382 /* UthmanTNB_v2-0.ttf */,
 			);
 			name = Resources;
 			sourceTree = "<group>";
@@ -357,6 +320,8 @@
 				FE4B9B982E2F00810080B3DC /* IQRA2Watch Extension Watch App */,
 			);
 			name = "IQRA2Watch Extension Watch App";
+			packageProductDependencies = (
+			);
 			productName = "IQRA2Watch Extension Watch App";
 			productReference = FE4B9B972E2F00810080B3DC /* IQRA2Watch Extension Watch App.app */;
 			productType = "com.apple.product-type.application";
@@ -378,6 +343,8 @@
 				FE4B9BA92E2F00830080B3DC /* IQRA2Watch Extension Watch AppTests */,
 			);
 			name = "IQRA2Watch Extension Watch AppTests";
+			packageProductDependencies = (
+			);
 			productName = "IQRA2Watch Extension Watch AppTests";
 			productReference = FE4B9BA62E2F00830080B3DC /* IQRA2Watch Extension Watch AppTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
@@ -399,6 +366,8 @@
 				FE4B9BB32E2F00830080B3DC /* IQRA2Watch Extension Watch AppUITests */,
 			);
 			name = "IQRA2Watch Extension Watch AppUITests";
+			packageProductDependencies = (
+			);
 			productName = "IQRA2Watch Extension Watch AppUITests";
 			productReference = FE4B9BB02E2F00830080B3DC /* IQRA2Watch Extension Watch AppUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
@@ -497,8 +466,6 @@
 				78FF702459244C3D998A120C /* UthmanTN_v2-0.ttf in Resources */,
 				23AD0F3B98084826AD3818C9 /* Montserrat-Bold.ttf in Resources */,
 				CE5CC92097EE4694873E4173 /* Montserrat-Regular.ttf in Resources */,
-				796D9C8EB21E4BF7A76348E4 /* KSAHeavy.ttf in Resources */,
-				FD63C71DC90A4122A602EDE4 /* UthmanTNB_v2-0.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -506,7 +473,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				5E3C4B353CF9D22E37D6CED0 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -757,10 +723,7 @@
 					"-DFOLLY_CFG_NO_COROUTINES=1",
 					"-DFOLLY_HAVE_CLOCK_GETTIME=1",
 				);
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					" ",
-				);
+				OTHER_LDFLAGS = "$(inherited)  ";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) DEBUG";
@@ -829,10 +792,7 @@
 					"-DFOLLY_CFG_NO_COROUTINES=1",
 					"-DFOLLY_HAVE_CLOCK_GETTIME=1",
 				);
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					" ",
-				);
+				OTHER_LDFLAGS = "$(inherited)  ";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				USE_HERMES = false;
