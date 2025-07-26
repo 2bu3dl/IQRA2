@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, SafeAreaView, Image, ImageBackground, Modal, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, SafeAreaView, Image, ImageBackground, Modal, TouchableOpacity, Dimensions } from 'react-native';
 import { COLORS as BASE_COLORS, SIZES, FONTS } from '../utils/theme';
 import Text from '../components/Text';
 import Button from '../components/Button';
@@ -54,6 +54,12 @@ const formatStreakNumber = (num) => {
 
 const HomeScreen = ({ navigation, route }) => {
   const { language, changeLanguage, t } = useLanguage();
+  
+  // Get screen dimensions for responsive layout
+  const { width, height } = Dimensions.get('window');
+  const isSmallScreen = height < 700;
+  const isMediumScreen = height < 850;
+  
   const toArabicNumber = (num) => {
     if (language !== 'ar') return num.toString();
     return num.toString().replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]);
@@ -267,8 +273,8 @@ const HomeScreen = ({ navigation, route }) => {
           </View>
 
           <Card variant="elevated" style={{
-            marginBottom: -50,
-            marginTop: 60,
+            marginBottom: isSmallScreen ? -30 : -50,
+            marginTop: isSmallScreen ? 40 : (isMediumScreen ? 50 : 60),
             backgroundColor: 'rgba(128,128,128,0.3)',
             borderColor: 'rgba(165,115,36,0.8)',
             borderWidth: 1,
@@ -278,7 +284,7 @@ const HomeScreen = ({ navigation, route }) => {
             shadowOpacity: 0.6,
             shadowRadius: 6,
             elevation: 8,
-            height: 160
+            height: isSmallScreen ? 140 : 160
           }}>
               <View style={{ alignItems: 'center' }}>
                 <View style={{ borderBottomWidth: 2, borderBottomColor: 'rgba(51,51,51,0.6)', paddingBottom: 4, marginBottom: 12 }}>
@@ -361,7 +367,7 @@ const HomeScreen = ({ navigation, route }) => {
             flexDirection: 'row',
             justifyContent: 'space-around',
             marginBottom: SIZES.medium,
-            marginTop: 80,
+            marginTop: isSmallScreen ? 40 : (isMediumScreen ? 60 : 80),
             position: 'relative',
             zIndex: 1
           }}>
@@ -379,7 +385,7 @@ const HomeScreen = ({ navigation, route }) => {
               shadowOpacity: 0.6,
               shadowRadius: 6,
               elevation: 8,
-              height: 180
+              height: isSmallScreen ? 150 : 180
             }}>
                 <Text variant="h3" style={{ textAlign: 'center', color: '#CCCCCC' }}>{t('hasanat_gains')}</Text>
                 <View style={{ backgroundColor: 'rgba(0,0,0,0.75)', borderRadius: 8, paddingHorizontal: 16, paddingVertical: 8, alignSelf: 'center', marginVertical: 8 }}>
@@ -410,7 +416,7 @@ const HomeScreen = ({ navigation, route }) => {
               shadowOpacity: 0.6,
               shadowRadius: 6,
               elevation: 8,
-              height: 180
+              height: isSmallScreen ? 150 : 180
             }}>
                 <View style={{ marginTop: 8 }}>
                     <Text variant="h3" style={{ textAlign: 'center', color: '#CCCCCC', marginTop: 0 }}>{t('streak')}</Text>

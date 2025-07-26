@@ -8,6 +8,7 @@ const STORAGE_KEYS = {
   LAST_ACTIVITY_DATE: 'last_activity_date',
   STREAK: 'streak',
   MEMORIZED_AYAHS: 'memorized_ayahs',
+  LAST_POSITION: 'last_position',
 };
 
 // Calculate total ayaat in the Qur'an
@@ -287,5 +288,39 @@ export const resetProgress = async () => {
   } catch (error) {
     console.error('Error resetting progress:', error);
     return false;
+  }
+};
+
+// Save the last accessed position (for continue button)
+export const saveLastPosition = async (surahName, surahNumber, flashcardIndex) => {
+  try {
+    const lastPosition = {
+      surahName,
+      surahNumber,
+      flashcardIndex,
+      timestamp: Date.now(),
+    };
+    await AsyncStorage.setItem(STORAGE_KEYS.LAST_POSITION, JSON.stringify(lastPosition));
+    console.log('[store.js] Saved last position:', lastPosition);
+    return lastPosition;
+  } catch (error) {
+    console.error('Error saving last position:', error);
+    return null;
+  }
+};
+
+// Load the last accessed position (for continue button)
+export const loadLastPosition = async () => {
+  try {
+    const lastPositionStr = await AsyncStorage.getItem(STORAGE_KEYS.LAST_POSITION);
+    if (lastPositionStr) {
+      const lastPosition = JSON.parse(lastPositionStr);
+      console.log('[store.js] Loaded last position:', lastPosition);
+      return lastPosition;
+    }
+    return null;
+  } catch (error) {
+    console.error('Error loading last position:', error);
+    return null;
   }
 }; 

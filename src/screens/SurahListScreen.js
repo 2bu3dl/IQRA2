@@ -21,7 +21,7 @@ import { COLORS as BASE_COLORS, SIZES, FONTS } from '../utils/theme';
 import Text from '../components/Text';
 import Card from '../components/Card';
 import ProgressBar from '../components/ProgressBar';
-import { loadData, saveCurrentPosition } from '../utils/store';
+import { loadData, saveCurrentPosition, loadLastPosition } from '../utils/store';
 import { getAllSurahs } from '../utils/quranData';
 
 const COLORS = { ...BASE_COLORS, primary: '#33694e', accent: '#FFD700' };
@@ -252,6 +252,7 @@ const SurahListScreen = ({ navigation, route }) => {
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [activeTab, setActiveTab] = useState(0);
   const [juzFilter, setJuzFilter] = useState({ isActive: false });
+  const [previousJuzFilter, setPreviousJuzFilter] = useState({ isActive: false }); // Store previous Juz state
 
   // Check if we're in Juz mode - now using state instead of route params
   const isJuzMode = juzFilter.isActive;
@@ -268,9 +269,18 @@ const SurahListScreen = ({ navigation, route }) => {
 
   // Function to clear Juz filter
   const clearJuzFilter = () => {
+    setPreviousJuzFilter(juzFilter); // Save current Juz state before clearing
     setJuzFilter({ isActive: false });
     setSearchText(''); // Clear search when clearing filter
     ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true });
+  };
+
+  // Function to return to previous Juz
+  const returnToPreviousJuz = () => {
+    if (previousJuzFilter.isActive) {
+      setJuzFilter(previousJuzFilter);
+      ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true });
+    }
   };
 
   // Tab data
@@ -283,30 +293,47 @@ const SurahListScreen = ({ navigation, route }) => {
   const renderTabBar = () => (
     <View style={styles.tabBar}>
       {tabs.map((tab) => {
-        const isDisabled = isJuzMode && tab.id !== 0; // Disable other tabs when in Juz mode
         return (
           <TouchableOpacity
             key={tab.id}
             style={[
               styles.tabButton,
-              activeTab === tab.id && styles.activeTabButton,
-              isDisabled && styles.disabledTabButton
+              activeTab === tab.id && styles.activeTabButton
             ]}
-            onPress={() => {
-              if (!isDisabled) {
-                ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true });
-                setActiveTab(tab.id);
+                          onPress={() => {
+              ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true });
+              
+              if (isJuzMode) {
+                // Handle special actions when in Juz mode
+                if (tab.id === 0) {
+                  // Tapping "Surah" acts like "All Surahs" button
+                  clearJuzFilter();
+                } else if (tab.id === 1) {
+                  // Tapping "Juz" goes back to Juz selection
+                  clearJuzFilter();
+                  setActiveTab(1);
+                } else if (tab.id === 2) {
+                  // Tapping "Categories" goes to categories
+                  clearJuzFilter();
+                  setActiveTab(2);
+                }
+              } else {
+                // Normal tab switching or return to previous Juz
+                if (tab.id === 0 && activeTab === 0 && previousJuzFilter.isActive) {
+                  // Tapping Surah tab again when already on it - return to previous Juz
+                  returnToPreviousJuz();
+                } else {
+                  setActiveTab(tab.id);
+                }
               }
             }}
-            disabled={isDisabled}
           >
             <RNText style={[
               styles.tabText,
-              activeTab === tab.id && styles.activeTabText,
-              isDisabled && styles.disabledTabText
+              activeTab === tab.id && styles.activeTabText
             ]}>
               {t(tab.titleKey)}
-              {tab.id === 0 && isJuzMode && ' ✦'} {/* Add indicator for filtered tab */}
+              {tab.id === 0 && isJuzMode && ' ⬢'} {/* Use hexagon instead of sparkle */}
             </RNText>
           </TouchableOpacity>
         );
@@ -319,7 +346,7 @@ const SurahListScreen = ({ navigation, route }) => {
       case 0:
         return <AllSurahsTab navigation={navigation} route={route} searchText={searchText} isJuzMode={isJuzMode} juzData={juzData} />;
       case 1:
-        return <JuzWheelTab navigation={navigation} setJuzFilter={setJuzFilter} setActiveTab={setActiveTab} setSearchText={setSearchText} language={language} />;
+        return <JuzWheelTab navigation={navigation} setJuzFilter={setJuzFilter} setPreviousJuzFilter={setPreviousJuzFilter} setActiveTab={setActiveTab} setSearchText={setSearchText} language={language} />;
       case 2:
         return <ThemesTab navigation={navigation} />;
       default:
@@ -343,20 +370,12 @@ const SurahListScreen = ({ navigation, route }) => {
                   // Juz mode header
                   <>
                     <RNText variant="h1" style={[
-                      { fontFamily: 'KFGQPC Uthman Taha Naskh', fontSize: 30, fontWeight: 'bold', color: '#F5E6C8', marginTop: 16, marginBottom: 8, textShadowColor: '#000', textShadowOffset: { width: 1, height: 1 }, textShadowRadius: 3 }
+                      { fontFamily: 'KFGQPC Uthman Taha Naskh', fontSize: 40, fontWeight: 'bold', color: '#F5E6C8', marginTop: 30, marginBottom: 8, textShadowColor: '#000', textShadowOffset: { width: 1, height: 1 }, textShadowRadius: 3 }
                     ]}>{juzTitle}</RNText>
                     <RNText variant="body1" style={[
                       { fontFamily: language === 'ar' ? 'KFGQPC Uthman Taha Naskh' : 'Montserrat-Regular', fontSize: 16, color: '#CCCCCC', textAlign: 'center', marginBottom: 16 }
                     ]}>{juzSubtitle}</RNText>
-                    <TouchableOpacity 
-                      style={styles.clearFilterButton}
-                      onPress={clearJuzFilter}
-                    >
-                      <Ionicons name="close-circle" size={24} color="#F5E6C8" />
-                      <RNText style={[{ fontFamily: language === 'ar' ? 'KFGQPC Uthman Taha Naskh' : 'Montserrat-Regular', fontSize: 16, color: '#F5E6C8', marginLeft: 8 }]}>
-                        {language === 'ar' ? 'إظهار جميع السور' : 'Show All Surahs'}
-                      </RNText>
-                    </TouchableOpacity>
+
                   </>
                 ) : language === 'ar' ? (
                   <RNText variant="h1" style={[
@@ -365,7 +384,7 @@ const SurahListScreen = ({ navigation, route }) => {
                       fontSize: 40, // Make all titles consistently larger
                       fontWeight: 'bold', 
                       color: '#F5E6C8', 
-                      marginTop: 16, 
+                      marginTop: 30, // Brought down more
                       marginBottom: 16, 
                       textShadowColor: '#000', 
                       textShadowOffset: { width: 1, height: 1 }, 
@@ -378,7 +397,7 @@ const SurahListScreen = ({ navigation, route }) => {
                   <>
                     <RNText variant="h1" style={[FONTS.h1.getFont(language), styles.titleText, { 
                       color: '#F5E6C8', 
-                      marginTop: language === 'ar' ? 12 : 0, 
+                      marginTop: 30, // Brought down more
                       paddingTop: language === 'ar' ? 4 : 0,
                       fontSize: 40 // Make all titles larger and consistent
                     }]}>
@@ -398,13 +417,19 @@ const SurahListScreen = ({ navigation, route }) => {
 
           {/* Search bar - only show for All Surahs tab */}
           {activeTab === 0 && (
-            <View style={styles.searchContainer}>
+            <View style={[styles.searchContainer, { 
+              top: isJuzMode ? (language === 'ar' ? 180 : 160) : (language === 'ar' ? 160 : 140), // Brought down search box in Surah tab
+              flexDirection: isJuzMode ? 'row' : 'column',
+              alignItems: isJuzMode ? 'center' : 'stretch'
+            }]}>
               <View style={[styles.searchInputContainer, { 
-                backgroundColor: isSearchFocused ? 'rgba(245, 230, 200, 0.2)' : 'rgba(245, 230, 200, 0.15)' // Made even more transparent
+                backgroundColor: isSearchFocused ? 'rgba(245, 230, 200, 0.2)' : 'rgba(245, 230, 200, 0.15)', // Made even more transparent
+                flex: isJuzMode ? 1 : undefined,
+                marginRight: isJuzMode ? SIZES.small : 0
               }]}>
                 <Image 
                   source={require('../assets/app_icons/search.png')} 
-                  style={{ width: 20, height: 20, tintColor: COLORS.primary, marginRight: SIZES.small }}
+                  style={{ width: 20, height: 20, tintColor: 'rgba(165,115,36,0.8)', marginRight: SIZES.small }}
                   resizeMode="contain"
                 />
                 <TextInput
@@ -428,6 +453,20 @@ const SurahListScreen = ({ navigation, route }) => {
                   </TouchableOpacity>
                 )}
               </View>
+              
+              {/* Show "All Surahs" button when in Juz mode */}
+              {isJuzMode && (
+                <TouchableOpacity 
+                  style={styles.allSurahsButton}
+                  onPress={clearJuzFilter}
+                >
+                  <RNText style={[styles.allSurahsButtonText, {
+                    fontFamily: language === 'ar' ? 'KFGQPC Uthman Taha Naskh' : 'Montserrat-Bold'
+                  }]}>
+                    {language === 'ar' ? 'جميع السور' : 'All Surahs'}
+                  </RNText>
+                </TouchableOpacity>
+              )}
             </View>
           )}
 
@@ -457,9 +496,37 @@ const SurahListScreen = ({ navigation, route }) => {
 
             <TouchableOpacity
               style={styles.continueButton}
-              onPress={() => {
+              onPress={async () => {
                 ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true });
-                navigation.navigate('Memorization', { surah: { id: 1 } });
+                
+                try {
+                  // Load user's last position
+                  const lastPosition = await loadLastPosition();
+                  console.log('[DEBUG] Continue button - loaded last position:', lastPosition);
+                  
+                  if (lastPosition && lastPosition.surahNumber && lastPosition.flashcardIndex !== undefined) {
+                    // Use the saved last position
+                    const targetSurah = { 
+                      id: lastPosition.surahNumber, 
+                      name: lastPosition.surahName 
+                    };
+                    const resumeFromIndex = lastPosition.flashcardIndex;
+                    
+                    console.log('[Continue] Using last position:', targetSurah, 'index:', resumeFromIndex);
+                    navigation.navigate('Memorization', { 
+                      surah: targetSurah, 
+                      resumeFromIndex: resumeFromIndex 
+                    });
+                  } else {
+                    // Fallback to Al-Fatiha if no saved position
+                    console.log('[Continue] No last position found, defaulting to Al-Fatiha');
+                    navigation.navigate('Memorization', { surah: { id: 1 } });
+                  }
+                } catch (error) {
+                  console.error('Error loading last position:', error);
+                  // Fallback to Al-Fatiha if there's an error
+                  navigation.navigate('Memorization', { surah: { id: 1 } });
+                }
               }}
             >
               <RNText style={[FONTS.body2.getFont(language), styles.continueButtonText]}>{t('continue')}</RNText>
@@ -846,7 +913,7 @@ const AllSurahsTab = ({ navigation, route, searchText, isJuzMode, juzData }) => 
           style={[
             styles.surahCard, 
             {
-              backgroundColor: 'rgba(0, 0, 0, 0.85)', // Made more transparent (reduced from 0.93)
+              backgroundColor: 'rgba(0, 0, 0, 0.4)', // Less transparent black background for readability
               borderColor: isSelected ? COLORS.primary : 'rgba(165,115,36,0.8)',
               borderWidth: isSelected ? 2 : 1,
               marginHorizontal: isCompleted ? 0 : SIZES.medium,
@@ -954,36 +1021,39 @@ const AllSurahsTab = ({ navigation, route, searchText, isJuzMode, juzData }) => 
   };
 
   const renderScrollBar = () => {
-    const totalSurahs = filteredSurahs.length;
-    const itemHeight = 60;
-    const totalContentHeight = contentHeight; // Use actual content height instead of fixed
-    const scrollBarHeight = 663; // Slightly increased to ensure it reaches bottom
-    const handleHeight = 40; // Height of the handle
-    const maxHandlePosition = scrollBarHeight - handleHeight; // Full range
+    if (contentHeight <= visibleHeight) return null; // Don't show if no scrolling needed
     
-    const scrollHandlePosition = scrollY.interpolate({
-      inputRange: [0, Math.max(1, totalContentHeight - visibleHeight)], // Use actual scrollable range
-      outputRange: [0, maxHandlePosition],
+    // Calculate actual scroll bar height based on container positioning (top: 180, bottom: 200)
+    // Assuming screen height around 800px, actual height would be 800 - 180 - 200 = 420px
+    const scrollBarHeight = visibleHeight - 380; // 180 (top) + 200 (bottom) = 380
+    const handleHeight = 40;
+    const trackHeight = Math.max(100, scrollBarHeight - handleHeight); // Ensure minimum track height
+    
+    const scrollableDistance = contentHeight - visibleHeight;
+    
+    const handlePosition = scrollY.interpolate({
+      inputRange: [0, scrollableDistance],
+      outputRange: [0, trackHeight],
       extrapolate: 'clamp',
     });
 
     return (
       <View style={[styles.scrollBarContainer, {
-        right: language === 'ar' ? undefined : 0, // Moved to edge
-        left: language === 'ar' ? 0 : undefined // Moved to edge
+        right: language === 'ar' ? undefined : 0,
+        left: language === 'ar' ? 0 : undefined
       }]}>
         <View style={styles.scrollBar}>
           <Animated.View 
             style={[
               styles.scrollHandle,
               {
-                transform: [{ translateY: scrollHandlePosition }],
+                transform: [{ translateY: handlePosition }],
               },
             ]} 
           />
         </View>
       </View>
-  );
+    );
   };
 
   return (
@@ -1022,7 +1092,7 @@ const AllSurahsTab = ({ navigation, route, searchText, isJuzMode, juzData }) => 
 };
 
 // Phase 2: Juz Wheel Tab Component
-const JuzWheelTab = ({ navigation, setJuzFilter, setActiveTab, setSearchText, language }) => {
+const JuzWheelTab = ({ navigation, setJuzFilter, setPreviousJuzFilter, setActiveTab, setSearchText, language }) => {
   const { t } = useLanguage();
   const [selectedJuz, setSelectedJuz] = useState(30); // Start at 30 by default
   const panResponder = useRef(null);
@@ -1038,13 +1108,15 @@ const JuzWheelTab = ({ navigation, setJuzFilter, setActiveTab, setSearchText, la
       // Clear search text and switch to Surah tab (tab 0) and apply Juz filter
       setSearchText('');
       setActiveTab(0);
-      setJuzFilter({
+      const newJuzFilter = {
         isActive: true,
         juzNumber: selectedJuz,
         juzData: juzData,
         title: language === 'ar' ? `الجزء ${selectedJuz}` : `Juz ${selectedJuz}`,
         subtitle: juzData.range
-      });
+      };
+      setPreviousJuzFilter(newJuzFilter); // Save this as the previous state for returning later
+      setJuzFilter(newJuzFilter);
     }
   };
 
@@ -1179,7 +1251,7 @@ const JuzWheelTab = ({ navigation, setJuzFilter, setActiveTab, setSearchText, la
                        y1={outerY}
                        x2={innerX}
                        y2={innerY}
-                       stroke={isSelected ? '#A57324' : 'rgba(165, 115, 36, 0.4)'}
+                       stroke={isSelected ? '#33694e' : 'rgba(165, 115, 36, 0.4)'}
                        strokeWidth={isSelected ? 3 : 2}
                        strokeLinecap="round"
                      />
@@ -1356,28 +1428,32 @@ const ThemesTab = ({ navigation }) => {
 
   // Render scroll bar for categories
   const renderCategoriesScrollBar = () => {
-    const totalContentHeight = contentHeight;
-    const scrollBarHeight = 500; // Reduced from 663 to fit categories tab better
-    const handleHeight = 40;
-    const maxHandlePosition = scrollBarHeight - handleHeight;
+    if (contentHeight <= visibleHeight) return null; // Don't show if no scrolling needed
     
-    const scrollHandlePosition = scrollY.interpolate({
-      inputRange: [0, Math.max(1, totalContentHeight - visibleHeight)],
-      outputRange: [0, maxHandlePosition],
+    // Calculate actual scroll bar height based on container positioning
+    const scrollBarHeight = visibleHeight - 380; // Same calculation as main scroll bar
+    const handleHeight = 40;
+    const trackHeight = Math.max(100, scrollBarHeight - handleHeight); // Ensure minimum track height
+    
+    const scrollableDistance = contentHeight - visibleHeight;
+    
+    const handlePosition = scrollY.interpolate({
+      inputRange: [0, scrollableDistance],
+      outputRange: [0, trackHeight],
       extrapolate: 'clamp',
     });
 
     return (
       <View style={[styles.scrollBarContainer, {
-        right: language === 'ar' ? undefined : 0, // Moved to edge
-        left: language === 'ar' ? 0 : undefined // Moved to edge
+        right: language === 'ar' ? undefined : 0,
+        left: language === 'ar' ? 0 : undefined
       }]}>
         <View style={styles.scrollBar}>
           <Animated.View 
             style={[
               styles.scrollHandle,
               {
-                transform: [{ translateY: scrollHandlePosition }],
+                transform: [{ translateY: handlePosition }],
               },
             ]} 
           />
@@ -1388,40 +1464,40 @@ const ThemesTab = ({ navigation }) => {
 
   return (
     <View style={styles.themesTabContent}>
-      <View style={styles.themesHeader}>
-        {/* Search bar for themes */}
-        <View style={styles.themeSearchContainer}>
-          <View style={[styles.themeSearchInputContainer, {
-            backgroundColor: isSearchFocused ? 'rgba(245, 230, 200, 0.15)' : 'rgba(245, 230, 200, 0.1)'
-          }]}>
-            <Ionicons 
-              name="search" 
-              size={20} 
-              color="rgba(165, 115, 36, 0.8)" 
-              style={{ marginRight: SIZES.small }}
-            />
-            <TextInput
-              style={[styles.themeSearchInput, { 
-                fontFamily: language === 'ar' ? 'KFGQPC Uthman Taha Naskh' : 'Montserrat-Regular',
-                textAlign: language === 'ar' ? 'right' : 'left',
-                writingDirection: language === 'ar' ? 'rtl' : 'ltr'
-              }]}
-              placeholder={language === 'ar' ? 'ابحث في الفئات...' : 'Search through categories...'}
-              placeholderTextColor="rgba(255, 255, 255, 0.5)"
-              value={searchTheme}
-              onChangeText={setSearchTheme}
-              autoCapitalize="none"
-              autoCorrect={false}
-              allowFontScaling={false}
-              onFocus={() => setIsSearchFocused(true)}
-              onBlur={() => setIsSearchFocused(false)}
-            />
-            {searchTheme.length > 0 && (
-              <TouchableOpacity onPress={() => setSearchTheme('')} style={styles.clearThemeButton}>
-                <Ionicons name="close-circle" size={20} color="rgba(255, 255, 255, 0.6)" />
-            </TouchableOpacity>
-            )}
-          </View>
+      {/* Search bar for themes - positioned absolutely like Surah tab */}
+      <View style={[styles.themeSearchContainer, {
+        top: language === 'ar' ? 60 : 40 // Brought up search bar in categories tab
+      }]}>
+        <View style={[styles.themeSearchInputContainer, {
+          backgroundColor: isSearchFocused ? 'rgba(245, 230, 200, 0.15)' : 'rgba(245, 230, 200, 0.1)'
+        }]}>
+          <Ionicons 
+            name="search" 
+            size={20} 
+            color="rgba(165, 115, 36, 0.8)" 
+            style={{ marginRight: SIZES.small }}
+          />
+          <TextInput
+            style={[styles.themeSearchInput, { 
+              fontFamily: language === 'ar' ? 'KFGQPC Uthman Taha Naskh' : 'Montserrat-Regular',
+              textAlign: language === 'ar' ? 'right' : 'left',
+              writingDirection: language === 'ar' ? 'rtl' : 'ltr'
+            }]}
+            placeholder={language === 'ar' ? 'ابحث في الفئات...' : 'Search through categories...'}
+            placeholderTextColor="rgba(255, 255, 255, 0.5)"
+            value={searchTheme}
+            onChangeText={setSearchTheme}
+            autoCapitalize="none"
+            autoCorrect={false}
+            allowFontScaling={false}
+            onFocus={() => setIsSearchFocused(true)}
+            onBlur={() => setIsSearchFocused(false)}
+          />
+          {searchTheme.length > 0 && (
+            <TouchableOpacity onPress={() => setSearchTheme('')} style={styles.clearThemeButton}>
+              <Ionicons name="close-circle" size={20} color="rgba(255, 255, 255, 0.6)" />
+          </TouchableOpacity>
+          )}
         </View>
       </View>
       
@@ -1465,7 +1541,7 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: SIZES.extraLarge,
     borderBottomRightRadius: SIZES.extraLarge,
     marginTop: 0,
-    minHeight: 100,
+    minHeight: 45, // Made even shorter
     position: 'absolute',
     top: 0,
     left: 0,
@@ -1475,7 +1551,7 @@ const styles = StyleSheet.create({
   headerTextContainer: {
     flex: 1,
     alignItems: 'center',
-    paddingTop: 60,
+    paddingTop: 10, // Made even shorter for more compact header
   },
   titleText: {
     textDecorationLine: 'underline',
@@ -1491,20 +1567,12 @@ const styles = StyleSheet.create({
     textShadowOffset: { width: 1, height: 1 },
     textShadowRadius: 2,
   },
-  clearFilterButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: SIZES.small,
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
-    borderRadius: 20,
-    marginTop: SIZES.small,
-  },
+
   list: {
     padding: SIZES.medium,
-    paddingTop: SIZES.large,
-    marginTop: 160, // Reduced from 190 to move closer to search bar
-    paddingBottom: SIZES.extraLarge * 8, // Increased further to ensure accessibility behind tabs
+    paddingTop: 180, // Reduced further for shorter header
+    marginTop: 0, // Removed margin to allow content to show through headers
+    paddingBottom: SIZES.extraLarge * 12, // Increased significantly more for proper tab clearance
   },
   surahCard: {
     marginBottom: SIZES.medium,
@@ -1600,9 +1668,31 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 16,
     color: '#FFFFFF', // Made text whiter
+    textShadowColor: 'rgba(0, 0, 0, 0.8)', // Add text shadow for better readability
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 2,
   },
   clearButton: {
     padding: SIZES.small,
+  },
+  allSurahsButton: {
+    backgroundColor: 'rgba(51, 105, 78, 0.8)',
+    paddingHorizontal: SIZES.medium,
+    paddingVertical: SIZES.small + 2,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  allSurahsButtonText: {
+    color: '#F5E6C8',
+    fontSize: 14,
+    fontWeight: 'bold',
+    textAlign: 'center',
   },
   continueButton: {
     padding: SIZES.medium,
@@ -1628,7 +1718,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     right: 10,
     top: 180,
-    bottom: 100,
+    bottom: 200, // Increased from 100 to make scroll bar visually shorter
     width: 20,
     zIndex: 1000,
   },
@@ -1839,7 +1929,7 @@ const styles = StyleSheet.create({
   themesTabContent: {
     flex: 1,
     backgroundColor: 'transparent', // Make black background completely transparent
-    padding: SIZES.medium,
+    padding: 0, // Removed padding to allow content to flow through headers
   },
   themesHeader: {
     width: '100%',
@@ -1863,8 +1953,11 @@ const styles = StyleSheet.create({
     marginBottom: SIZES.large,
   },
   themeSearchContainer: {
-    width: '100%',
-    marginBottom: SIZES.medium,
+    position: 'absolute', // Position absolutely like Surah search
+    left: 0,
+    right: 0,
+    zIndex: 10,
+    padding: SIZES.medium, // Add padding like Surah search
   },
   themeSearchInputContainer: {
     flexDirection: 'row',
@@ -1880,12 +1973,17 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: COLORS.text, // Use default text color to match Surah search
     paddingHorizontal: 0, // Match Surah search
+    textShadowColor: 'rgba(0, 0, 0, 0.8)', // Add text shadow for better readability
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 2,
   },
   clearThemeButton: {
     padding: SIZES.small,
   },
   categoriesList: {
-    paddingBottom: SIZES.extraLarge * 4, // Increased for content behind tabs
+    paddingTop: 160, // Brought down first category box
+    paddingBottom: SIZES.extraLarge * 8, // Increased significantly more for proper tab clearance
+    paddingHorizontal: SIZES.medium, // Add horizontal padding for proper spacing
   },
   categoryCard: {
     backgroundColor: 'rgba(64, 64, 64, 0.4)', // Made more transparent
@@ -1894,6 +1992,7 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(165,115,36,0.3)',
     padding: SIZES.medium,
     marginBottom: SIZES.medium,
+    marginHorizontal: SIZES.large, // Add horizontal margins to make boxes less wide
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
@@ -2105,12 +2204,7 @@ const styles = StyleSheet.create({
   categoriesScrollView: {
     flex: 1,
   },
-  disabledTabButton: {
-    opacity: 0.5,
-  },
-  disabledTabText: {
-    color: '#666',
-  },
+
 });
 
 export default SurahListScreen; 

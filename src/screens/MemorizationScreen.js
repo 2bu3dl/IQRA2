@@ -9,7 +9,7 @@ import TranslationModal from '../components/TranslationModal';
 import StreakAnimation from '../components/StreakAnimation';
 import AnimatedRewardModal from '../components/AnimatedRewardModal';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { addHasanat, updateMemorizedAyahs, updateStreak, getCurrentStreak, loadData, saveCurrentPosition } from '../utils/store';
+import { addHasanat, updateMemorizedAyahs, updateStreak, getCurrentStreak, loadData, saveCurrentPosition, saveLastPosition } from '../utils/store';
 import { getSurahAyaatWithTransliteration, getAllSurahs } from '../utils/quranData';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useLanguage } from '../utils/languageContext';
@@ -31,8 +31,12 @@ const MemorizationScreen = ({ route, navigation }) => {
     if (language !== 'ar') return num.toString();
     return num.toString().replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]);
   };
-  const { surah } = route.params;
+  const { surah, resumeFromIndex } = route.params;
   const surahNumber = surah.id || surah.surah || 1;
+
+
+
+
   
   const [ayaat, setAyaat] = useState([]);
   const [currentAyahIndex, setCurrentAyahIndex] = useState(0);
@@ -172,24 +176,25 @@ const MemorizationScreen = ({ route, navigation }) => {
 
   // Handle resume from specific index
   React.useEffect(() => {
-    console.log('[MemorizationScreen] Resume effect - route.params:', route.params, 'flashcards.length:', flashcards.length);
-    if (route.params?.resumeFromIndex !== undefined && flashcards.length > 0) {
-      const resumeIndex = Math.min(route.params.resumeFromIndex, flashcards.length - 1);
+    console.log('[MemorizationScreen] Resume effect - resumeFromIndex:', resumeFromIndex, 'flashcards.length:', flashcards.length);
+    if (resumeFromIndex !== undefined && flashcards.length > 0) {
+      const resumeIndex = Math.min(resumeFromIndex, flashcards.length - 1);
       console.log('[MemorizationScreen] Setting currentAyahIndex to:', resumeIndex);
       
-      // Only set the position if the flashcards are properly loaded and the index is valid
-      if (flashcards.length > 10 && resumeIndex < flashcards.length) {
+      // Set the position if flashcards are loaded and the index is valid
+      if (resumeIndex >= 0 && resumeIndex < flashcards.length) {
         isResuming.current = true;
         setCurrentAyahIndex(resumeIndex);
         setIsTextHidden(false);
         flashcardsLoaded.current = true;
+        console.log('[MemorizationScreen] Successfully resumed to index:', resumeIndex);
         // Reset the flag after a short delay
         setTimeout(() => {
           isResuming.current = false;
         }, 100);
       }
     }
-  }, [flashcards, route.params?.resumeFromIndex]);
+  }, [flashcards, resumeFromIndex]);
       
   // Add this after currentAyahIndex and surah are defined
   React.useEffect(() => {
@@ -360,6 +365,7 @@ const MemorizationScreen = ({ route, navigation }) => {
 
   // Function to clean surah name by removing existing numbers
   const cleanSurahName = (name) => {
+    if (!name) return ''; // Safety check for undefined/null names
     return name.replace(/^\d+\.?\s*/, ''); // Remove number and period at the beginning
   };
 
@@ -506,7 +512,9 @@ const MemorizationScreen = ({ route, navigation }) => {
                 }
                 // Explicitly save current position
                 try {
+                  console.log('[DEBUG] About to save position - surah.name:', surah.name, 'currentAyahIndex:', currentAyahIndex);
                   await saveCurrentPosition(surah.name, currentAyahIndex);
+                  await saveLastPosition(surah.name, surahNumber, currentAyahIndex);
                   console.log('[MemorizationScreen] Explicitly saved on Home:', surah.name, currentAyahIndex);
                 } catch (error) {
                   console.error('[MemorizationScreen] Error saving current position on Home:', error);
@@ -624,7 +632,7 @@ const MemorizationScreen = ({ route, navigation }) => {
                   <ScrollView style={styles.ayahScroll} contentContainerStyle={styles.ayahScrollContent} showsVerticalScrollIndicator={true}>
             <Text
               variant="h2"
-              style={[FONTS.arabic, styles.arabicText, { 
+              style={[styles.arabicText, { 
                 fontFamily: isBoldFont ? 'KFGQPC Uthman Taha Naskh Bold' : 'KFGQPC Uthman Taha Naskh', 
                 fontSize: ayahFontSize, 
                 textAlign: 'center', 
@@ -637,12 +645,6 @@ const MemorizationScreen = ({ route, navigation }) => {
               align="center"
               allowFontScaling={false}
               lang="ar"
-              onLayout={() => {
-                // Debug log for Surah 2, Ayah 4
-                if (surahNumber === 2 && flashcards[currentAyahIndex]?.type === 'ayah' && flashcards[currentAyahIndex]?.ayah === 4) {
-                  console.log('[DEBUG] Surah 2, Ayah 4 text:', flashcards[currentAyahIndex]?.text);
-                }
-              }}
             >
               {isTextHidden
                 ? (flashcards[currentAyahIndex]?.text ? '⬡'.repeat(Math.min(44, Math.ceil(flashcards[currentAyahIndex]?.text.length / 2))) : '')
