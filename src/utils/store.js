@@ -9,6 +9,7 @@ const STORAGE_KEYS = {
   STREAK: 'streak',
   MEMORIZED_AYAHS: 'memorized_ayahs',
   LAST_POSITION: 'last_position',
+  STREAK_UPDATED_TODAY: 'streak_updated_today',
 };
 
 // Calculate total ayaat in the Qur'an
@@ -45,8 +46,24 @@ const initialState = {
   },
 };
 
-// Helper to get today's date string
-const getTodayString = () => new Date().toISOString().split('T')[0];
+// Helper to get today's date string in local timezone
+const getTodayString = () => {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+// Helper to check if two dates are consecutive days
+const isConsecutiveDay = (dateStr1, dateStr2) => {
+  if (!dateStr1 || !dateStr2) return false;
+  const date1 = new Date(dateStr1);
+  const date2 = new Date(dateStr2);
+  const diffTime = Math.abs(date2 - date1);
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  return diffDays === 1;
+};
 
 // Load all data from storage
 export const loadData = async () => {
@@ -107,41 +124,32 @@ export const loadData = async () => {
   }
 };
 
-// Update streak logic in addHasanat
+// Add hasanat and update streak if needed
 export const addHasanat = async (amount) => {
   try {
-    const [totalHasanat, todayHasanat, lastActivityDate, streak] = await Promise.all([
+    const [totalHasanat, todayHasanat, lastActivityDate] = await Promise.all([
       AsyncStorage.getItem(STORAGE_KEYS.TOTAL_HASANAT),
       AsyncStorage.getItem(STORAGE_KEYS.TODAY_HASANAT),
       AsyncStorage.getItem(STORAGE_KEYS.LAST_ACTIVITY_DATE),
-      AsyncStorage.getItem(STORAGE_KEYS.STREAK),
     ]);
 
     const newTotal = parseInt(totalHasanat || '0') + amount;
-    const newToday = parseInt(todayHasanat || '0') + amount;
     const today = getTodayString();
-    let newStreak = parseInt(streak || '0');
+    let newToday = parseInt(todayHasanat || '0') + amount;
 
-    if (newStreak === 0) {
-      newStreak = 1;
-    } else if (lastActivityDate !== today) {
-      // If last activity was yesterday, increment streak
-      const lastDate = new Date(lastActivityDate || '');
-      const yesterday = new Date();
-      yesterday.setDate(yesterday.getDate() - 1);
-      if (lastDate.toISOString().split('T')[0] === yesterday.toISOString().split('T')[0]) {
-        newStreak = newStreak + 1;
-      } else {
-        // If last activity was not yesterday, reset streak
-        newStreak = 1;
-      }
+    // Reset today's hasanat if it's a new day
+    if (lastActivityDate !== today) {
+      newToday = amount; // Start fresh for new day
     }
+
+    // Update streak (this handles the streak logic properly)
+    const streakResult = await updateStreak();
+    const newStreak = streakResult ? streakResult.streak : 0;
 
     await Promise.all([
       AsyncStorage.setItem(STORAGE_KEYS.TOTAL_HASANAT, newTotal.toString()),
       AsyncStorage.setItem(STORAGE_KEYS.TODAY_HASANAT, newToday.toString()),
       AsyncStorage.setItem(STORAGE_KEYS.LAST_ACTIVITY_DATE, today),
-      AsyncStorage.setItem(STORAGE_KEYS.STREAK, newStreak.toString()),
     ]);
 
     console.log('[store.js] addHasanat:', { amount, newTotal, newToday, today, newStreak });
@@ -167,34 +175,52 @@ export const getCurrentStreak = async () => {
 // Update streak independently of hasanat (for completing any card)
 export const updateStreak = async () => {
   try {
-    const [lastActivityDate, streak] = await Promise.all([
+    const [lastActivityDate, streak, streakUpdatedToday] = await Promise.all([
       AsyncStorage.getItem(STORAGE_KEYS.LAST_ACTIVITY_DATE),
       AsyncStorage.getItem(STORAGE_KEYS.STREAK),
+      AsyncStorage.getItem(STORAGE_KEYS.STREAK_UPDATED_TODAY),
     ]);
 
     const today = getTodayString();
     let newStreak = parseInt(streak || '0');
 
+    // Don't update streak if already updated today
+    if (streakUpdatedToday === today) {
+      console.log('[updateStreak] Streak already updated today, current streak:', newStreak);
+      return { streak: newStreak };
+    }
+
     if (lastActivityDate !== today) {
-      // If last activity was yesterday, increment streak
-      const lastDate = new Date(lastActivityDate || '');
-      const yesterday = new Date();
-      yesterday.setDate(yesterday.getDate() - 1);
-      if (lastDate.toISOString().split('T')[0] === yesterday.toISOString().split('T')[0]) {
+      // Check if this is a new day
+      if (!lastActivityDate) {
+        // First time ever
+        newStreak = 1;
+      } else if (isConsecutiveDay(lastActivityDate, today)) {
+        // Consecutive day - increment streak
         newStreak = newStreak + 1;
       } else {
-        // If last activity was not yesterday, reset streak
+        // Gap in days - reset streak to 1
         newStreak = 1;
       }
 
       await Promise.all([
         AsyncStorage.setItem(STORAGE_KEYS.LAST_ACTIVITY_DATE, today),
         AsyncStorage.setItem(STORAGE_KEYS.STREAK, newStreak.toString()),
+        AsyncStorage.setItem(STORAGE_KEYS.STREAK_UPDATED_TODAY, today),
       ]);
+
+      console.log('[updateStreak] Streak updated:', {
+        lastActivityDate,
+        today,
+        newStreak,
+        isConsecutive: lastActivityDate ? isConsecutiveDay(lastActivityDate, today) : false
+      });
 
       return { streak: newStreak };
     }
 
+    // Same day - just mark as updated
+    await AsyncStorage.setItem(STORAGE_KEYS.STREAK_UPDATED_TODAY, today);
     return { streak: newStreak };
   } catch (error) {
     console.error('Error updating streak:', error);

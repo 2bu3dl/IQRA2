@@ -297,8 +297,7 @@ const MemorizationScreen = ({ route, navigation }) => {
       return;
     }
     // Only run heavy logic for ayah cards
-    const shouldUpdateStreak = true;
-    if (shouldUpdateStreak) updateStreak().catch(console.error);
+    // Note: Streak will be updated when hasanat is added, no need to call separately
     const hasanat = flashcards[currentAyahIndex]?.text.length * 10;
     sessionHasanat.current += hasanat;
     setRewardAmount(hasanat);
@@ -349,11 +348,7 @@ const MemorizationScreen = ({ route, navigation }) => {
   };
 
   async function handleFinishSurah() {
-    try {
-      await updateStreak();
-    } catch (error) {
-      console.error('[MemorizationScreen] Error updating streak on reward finish:', error);
-    }
+    // Add hasanat (this will also update streak automatically)
     addHasanat(sessionHasanat.current);
     sessionHasanat.current = 0;
     navigation.navigate('Home', { refresh: true });
@@ -504,12 +499,6 @@ const MemorizationScreen = ({ route, navigation }) => {
         <TouchableOpacity
           style={styles.homeButton}
               onPress={async () => {
-                // Update streak when leaving the screen
-                try {
-                  await updateStreak();
-                } catch (error) {
-                  console.error('[MemorizationScreen] Error updating streak on home press:', error);
-                }
                 // Explicitly save current position
                 try {
                   console.log('[DEBUG] About to save position - surah.name:', surah.name, 'currentAyahIndex:', currentAyahIndex);
@@ -806,12 +795,6 @@ const MemorizationScreen = ({ route, navigation }) => {
             onPress={async () => {
               ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true });
               if (currentAyahIndex === 0) {
-                // Update streak when going back to surah list
-                try {
-                  await updateStreak();
-                } catch (error) {
-                  console.error('[MemorizationScreen] Error updating streak on back press:', error);
-                }
                 navigation.navigate('SurahList');
               } else {
                 handlePrevious();
