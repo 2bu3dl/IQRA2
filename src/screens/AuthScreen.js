@@ -8,6 +8,8 @@ import {
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
+  ImageBackground,
+  SafeAreaView,
 } from 'react-native';
 import { useAuth } from '../utils/authContext';
 import { useLanguage } from '../utils/languageContext';
@@ -96,162 +98,274 @@ const AuthScreen = ({ navigation, onClose, isModal = false }) => {
 
   if (showForgotPassword) {
     return (
-      <KeyboardAvoidingView 
-        style={isModal ? { flex: 1, width: '100%' } : styles.container} 
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      >
-        <ScrollView contentContainerStyle={isModal ? { flexGrow: 1, justifyContent: 'center', paddingVertical: 20 } : styles.scrollContainer}>
-          <View style={styles.headerContainer}>
-            <Text variant="h1" style={styles.title}>
-              {t('reset_password')}
-            </Text>
-            <Text variant="body1" style={styles.subtitle}>
-              {t('reset_password_instruction')}
-            </Text>
-          </View>
+      <View style={{ flex: 1, backgroundColor: '#000' }}>
+        <ImageBackground
+          source={require('../assets/IQRA2background.png')}
+          style={styles.background}
+          imageStyle={{ opacity: 0.2 }}
+        >
+          <SafeAreaView style={[styles.container, { backgroundColor: 'transparent' }]}>
+            <View style={styles.cardModalOverlay}>
+              <View style={styles.cardModalBackdrop} />
+              <View style={styles.cardModalContainer}>
+                <View style={styles.cardModalContent}>
+                  <View style={styles.cardModalHeader}>
+                    <Text variant="h1" style={styles.cardModalTitle}>
+                      {t('reset_password')}
+                    </Text>
+                    <Text variant="body1" style={styles.cardModalSubtitle}>
+                      {t('reset_password_instruction')}
+                    </Text>
+                  </View>
 
-          <Card style={styles.formCard}>
-            <TextInput
-              style={[styles.input, { textAlign: language === 'ar' ? 'right' : 'left' }]}
-              placeholder={t('email')}
-              placeholderTextColor={COLORS.textSecondary}
-              value={email}
-              onChangeText={setEmail}
-              keyboardType="email-address"
-              autoCapitalize="none"
-              autoCorrect={false}
-            />
+                  <View style={styles.cardModalForm}>
+                    <TextInput
+                      style={[styles.cardModalInput, { textAlign: language === 'ar' ? 'right' : 'left' }]}
+                      placeholder={t('email')}
+                      placeholderTextColor="rgba(255,255,255,0.6)"
+                      value={email}
+                      onChangeText={setEmail}
+                      keyboardType="email-address"
+                      autoCapitalize="none"
+                      autoCorrect={false}
+                    />
 
-            <View style={styles.buttonContainer}>
-              <Button
-                title={loading ? t('sending') : t('send_reset_email')}
-                onPress={handleForgotPassword}
-                style={styles.primaryButton}
-                disabled={loading}
-              />
-              
-              <TouchableOpacity
-                style={styles.linkButton}
-                onPress={() => setShowForgotPassword(false)}
-              >
-                <Text variant="body2" style={styles.linkText}>
-                  {t('back_to_login')}
-                </Text>
-              </TouchableOpacity>
+                    <View style={styles.buttonContainer}>
+                      <Button
+                        title={loading ? t('sending') : t('send_reset_email')}
+                        onPress={handleForgotPassword}
+                        style={styles.cardModalPrimaryButton}
+                        disabled={loading}
+                      />
+                      
+                      <TouchableOpacity
+                        style={styles.linkButton}
+                        onPress={() => setShowForgotPassword(false)}
+                      >
+                        <Text variant="body2" style={styles.cardModalLinkText}>
+                          {t('back_to_login')}
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                </View>
+              </View>
             </View>
-          </Card>
-        </ScrollView>
-      </KeyboardAvoidingView>
+          </SafeAreaView>
+        </ImageBackground>
+      </View>
     );
   }
 
   return (
-    <KeyboardAvoidingView 
-      style={isModal ? { flex: 1, width: '100%' } : styles.container} 
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
-      <ScrollView contentContainerStyle={isModal ? { flexGrow: 1, justifyContent: 'center', paddingVertical: 20 } : styles.scrollContainer}>
-        <View style={styles.headerContainer}>
-          <Text variant="h1" style={styles.title}>
-            {isLogin ? t('welcome_back') : t('create_account')}
-          </Text>
-          <Text variant="body1" style={styles.subtitle}>
-            {isLogin ? t('login_subtitle') : t('register_subtitle')}
-          </Text>
-        </View>
+    <View style={{ flex: 1, backgroundColor: '#000' }}>
+      <ImageBackground
+        source={require('../assets/IQRA2background.png')}
+        style={styles.background}
+        imageStyle={{ opacity: 0.2 }}
+      >
+        <SafeAreaView style={[styles.container, { backgroundColor: 'transparent' }]}>
+          <View style={styles.cardModalOverlay}>
+            <View style={styles.cardModalBackdrop} />
+            <View style={styles.cardModalContainer}>
+              <View style={styles.cardModalContent}>
+                <View style={styles.cardModalHeader}>
+                  <Text variant="h1" style={styles.cardModalTitle}>
+                    {isLogin ? t('welcome_back') : t('create_account')}
+                  </Text>
+                  <Text variant="body1" style={styles.cardModalSubtitle}>
+                    {isLogin ? t('login_subtitle') : t('register_subtitle')}
+                  </Text>
+                </View>
 
-        <Card style={styles.formCard}>
-          <TextInput
-            style={[styles.input, { textAlign: language === 'ar' ? 'right' : 'left' }]}
-            placeholder={t('email')}
-            placeholderTextColor={COLORS.textSecondary}
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            autoCorrect={false}
-          />
+                <View style={styles.cardModalForm}>
+                  <TextInput
+                    style={[styles.cardModalInput, { textAlign: language === 'ar' ? 'right' : 'left' }]}
+                    placeholder={t('email')}
+                    placeholderTextColor="rgba(255,255,255,0.6)"
+                    value={email}
+                    onChangeText={setEmail}
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                  />
 
-          <TextInput
-            style={[styles.input, { textAlign: language === 'ar' ? 'right' : 'left' }]}
-            placeholder={t('password')}
-            placeholderTextColor={COLORS.textSecondary}
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-            autoCapitalize="none"
-          />
+                  <TextInput
+                    style={[styles.cardModalInput, { textAlign: language === 'ar' ? 'right' : 'left' }]}
+                    placeholder={t('password')}
+                    placeholderTextColor="rgba(255,255,255,0.6)"
+                    value={password}
+                    onChangeText={setPassword}
+                    secureTextEntry
+                    autoCapitalize="none"
+                  />
 
-          {!isLogin && (
-            <TextInput
-              style={[styles.input, { textAlign: language === 'ar' ? 'right' : 'left' }]}
-              placeholder={t('confirm_password')}
-              placeholderTextColor={COLORS.textSecondary}
-              value={confirmPassword}
-              onChangeText={setConfirmPassword}
-              secureTextEntry
-              autoCapitalize="none"
-            />
-          )}
+                  {!isLogin && (
+                    <TextInput
+                      style={[styles.cardModalInput, { textAlign: language === 'ar' ? 'right' : 'left' }]}
+                      placeholder={t('confirm_password')}
+                      placeholderTextColor="rgba(255,255,255,0.6)"
+                      value={confirmPassword}
+                      onChangeText={setConfirmPassword}
+                      secureTextEntry
+                      autoCapitalize="none"
+                    />
+                  )}
 
-          <View style={styles.buttonContainer}>
-            <Button
-              title={loading ? t('processing') : (isLogin ? t('login') : t('register'))}
-              onPress={handleAuth}
-              style={styles.primaryButton}
-              disabled={loading}
-            />
-            
-            {isLogin && (
-              <TouchableOpacity
-                style={styles.linkButton}
-                onPress={() => setShowForgotPassword(true)}
-              >
-                <Text variant="body2" style={styles.linkText}>
-                  {t('forgot_password')}
-                </Text>
-              </TouchableOpacity>
-            )}
-            
-            <TouchableOpacity
-              style={styles.linkButton}
-              onPress={() => setIsLogin(!isLogin)}
-            >
-              <Text variant="body2" style={styles.linkText}>
-                {isLogin ? t('need_account') : t('have_account')}
-              </Text>
-            </TouchableOpacity>
+                  <View style={styles.buttonContainer}>
+                    <Button
+                      title={loading ? t('processing') : (isLogin ? t('login') : t('register'))}
+                      onPress={handleAuth}
+                      style={styles.cardModalPrimaryButton}
+                      disabled={loading}
+                    />
+                    
+                    {isLogin && (
+                      <TouchableOpacity
+                        style={styles.linkButton}
+                        onPress={() => setShowForgotPassword(true)}
+                      >
+                        <Text variant="body2" style={styles.cardModalLinkText}>
+                          {t('forgot_password')}
+                        </Text>
+                      </TouchableOpacity>
+                    )}
+                    
+                    <TouchableOpacity
+                      style={styles.linkButton}
+                      onPress={() => setIsLogin(!isLogin)}
+                    >
+                      <Text variant="body2" style={styles.cardModalLinkText}>
+                        {isLogin ? t('need_account') : t('have_account')}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+
+                  {loading && (
+                    <ActivityIndicator 
+                      size="large" 
+                      color="#FFFFFF" 
+                      style={styles.loader}
+                    />
+                  )}
+                </View>
+
+                <TouchableOpacity
+                  style={styles.cardModalSkipButton}
+                  onPress={() => {
+                    if (isModal && onClose) {
+                      onClose();
+                    } else {
+                      navigation.navigate('Home');
+                    }
+                  }}
+                >
+                  <Text variant="body2" style={styles.cardModalSkipText}>
+                    {t('continue_without_account')}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
           </View>
-
-          {loading && (
-            <ActivityIndicator 
-              size="large" 
-              color={COLORS.primary} 
-              style={styles.loader}
-            />
-          )}
-        </Card>
-
-        <TouchableOpacity
-          style={styles.skipButton}
-          onPress={() => {
-            if (isModal && onClose) {
-              onClose();
-            } else {
-              navigation.navigate('Home');
-            }
-          }}
-        >
-          <Text variant="body2" style={styles.skipText}>
-            {t('continue_without_account')}
-          </Text>
-        </TouchableOpacity>
-      </ScrollView>
-    </KeyboardAvoidingView>
+        </SafeAreaView>
+      </ImageBackground>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
+  // Background styles
+  background: {
+    flex: 1,
+  },
+  container: {
+    flex: 1,
+  },
+  
+  // Card Modal styles
+  cardModalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  cardModalBackdrop: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+  cardModalContainer: {
+    width: '85%',
+    maxWidth: 400,
+    backgroundColor: 'transparent',
+    borderRadius: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.5,
+    shadowRadius: 20,
+    elevation: 20,
+    padding: 30,
+    borderWidth: 1,
+    borderColor: 'rgba(255,165,0,0.3)',
+  },
+  cardModalContent: {
+    alignItems: 'center',
+  },
+  cardModalHeader: {
+    alignItems: 'center',
+    marginBottom: 30,
+  },
+  cardModalTitle: {
+    color: '#FFA500',
+    marginBottom: 8,
+    textAlign: 'center',
+    fontSize: 28,
+    fontWeight: 'bold',
+    fontFamily: 'Montserrat-Bold',
+  },
+  cardModalSubtitle: {
+    color: '#CCCCCC',
+    textAlign: 'center',
+    paddingHorizontal: 20,
+    fontFamily: 'Montserrat-Regular',
+  },
+  cardModalForm: {
+    width: '100%',
+    marginBottom: 20,
+  },
+  cardModalInput: {
+    borderWidth: 1,
+    borderColor: 'rgba(255,165,0,0.5)',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+    fontSize: 16,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    color: '#FFFFFF',
+    fontFamily: 'Montserrat-Regular',
+  },
+  cardModalPrimaryButton: {
+    marginBottom: 16,
+    backgroundColor: '#33694e',
+  },
+  cardModalLinkText: {
+    color: '#FFA500',
+    textDecorationLine: 'underline',
+    fontFamily: 'Montserrat-Regular',
+  },
+  cardModalSkipButton: {
+    alignItems: 'center',
+    paddingVertical: 16,
+  },
+  cardModalSkipText: {
+    color: '#CCCCCC',
+    textDecorationLine: 'underline',
+    fontFamily: 'Montserrat-Regular',
+  },
+  
+  // Original styles (kept for reference)
   container: {
     flex: 1,
     backgroundColor: COLORS.background,

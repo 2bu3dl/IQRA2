@@ -86,6 +86,7 @@ const HomeScreen = ({ navigation, route }) => {
   const [settingsVisible, setSettingsVisible] = useState(false);
   const [introVisible, setIntroVisible] = useState(false);
   const [resetting, setResetting] = useState(false);
+  const [confirmResetVisible, setConfirmResetVisible] = useState(false);
 
     const loadScreenData = async () => {
       const loadedData = await loadData();
@@ -694,14 +695,10 @@ const HomeScreen = ({ navigation, route }) => {
                 onPressIn={() => ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true })}
               />
               <TouchableOpacity
-                onPress={async () => {
+                onPress={() => {
                   ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true });
-                  setResetting(true);
-                  await resetProgress();
-                  setResetting(false);
                   setSettingsVisible(false);
-                  const loadedData = await loadData();
-                  setData(loadedData);
+                  setConfirmResetVisible(true);
                 }}
                 style={{ 
                   backgroundColor: 'rgba(220,20,60,0.9)', 
@@ -744,6 +741,62 @@ const HomeScreen = ({ navigation, route }) => {
                   }}
                   onPressIn={() => ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true })}
               />
+              </View>
+            </View>
+          </View>
+        </Modal>
+
+        {/* Reset Confirmation Modal */}
+        <Modal
+          visible={confirmResetVisible}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setConfirmResetVisible(false)}
+        >
+          <View style={styles.confirmModalOverlay}>
+            <View style={styles.confirmModalBackdrop} />
+            <View style={styles.confirmModalContainer}>
+              <View style={styles.confirmModalContent}>
+                <View style={styles.confirmModalHeader}>
+                  <Text style={styles.confirmModalTitle}>
+                    {t('confirm_reset_title')}
+                  </Text>
+                  <Text style={styles.confirmModalSubtitle}>
+                    {t('confirm_reset_message')}
+                  </Text>
+                </View>
+
+                <View style={styles.confirmModalButtons}>
+                  <TouchableOpacity
+                    style={styles.confirmModalCancelButton}
+                    onPress={() => {
+                      ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true });
+                      setConfirmResetVisible(false);
+                    }}
+                  >
+                    <Text style={styles.confirmModalCancelText}>
+                      {t('cancel')}
+                    </Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={styles.confirmModalConfirmButton}
+                    onPress={async () => {
+                      ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true });
+                      setResetting(true);
+                      setConfirmResetVisible(false);
+                      await resetProgress();
+                      setResetting(false);
+                      const loadedData = await loadData();
+                      setData(loadedData);
+                    }}
+                    disabled={resetting}
+                  >
+                    <Text style={styles.confirmModalConfirmText}>
+                      {resetting ? t('resetting') : t('confirm_reset')}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
               </View>
             </View>
           </View>
@@ -917,6 +970,101 @@ const styles = StyleSheet.create({
     width: 120,
     height: 120,
     marginBottom: 16,
+  },
+  // Confirmation Modal Styles
+  confirmModalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  confirmModalBackdrop: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+  },
+  confirmModalContainer: {
+    width: '85%',
+    maxWidth: 400,
+    backgroundColor: 'rgba(0,0,0,0.9)',
+    borderRadius: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.5,
+    shadowRadius: 20,
+    elevation: 20,
+    padding: 30,
+    borderWidth: 3,
+    borderColor: 'rgba(255,165,0,0.6)',
+  },
+  confirmModalContent: {
+    alignItems: 'center',
+  },
+  confirmModalHeader: {
+    alignItems: 'center',
+    marginBottom: 30,
+  },
+  confirmModalTitle: {
+    color: '#FFA500',
+    marginBottom: 8,
+    textAlign: 'center',
+    fontSize: 24,
+    fontWeight: 'bold',
+    fontFamily: 'Montserrat-Bold',
+  },
+  confirmModalSubtitle: {
+    color: '#CCCCCC',
+    textAlign: 'center',
+    paddingHorizontal: 20,
+    fontFamily: 'Montserrat-Regular',
+    fontSize: 14,
+  },
+  confirmModalButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+    gap: 15,
+  },
+  confirmModalCancelButton: {
+    flex: 1,
+    backgroundColor: 'rgba(128,128,128,0.3)',
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.2)',
+  },
+  confirmModalCancelText: {
+    color: '#CCCCCC',
+    fontSize: 16,
+    fontWeight: '600',
+    fontFamily: 'Montserrat-Regular',
+    textAlign: 'center',
+  },
+  confirmModalConfirmButton: {
+    flex: 1,
+    backgroundColor: 'rgba(220,20,60,0.9)',
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.5,
+    shadowRadius: 6,
+    elevation: 8,
+  },
+  confirmModalConfirmText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
+    fontFamily: 'Montserrat-Regular',
+    textAlign: 'center',
   },
 });
 
