@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, SafeAreaView, Image, ImageBackground, Modal, TouchableOpacity, Dimensions, Alert, TextInput } from 'react-native';
+import { useAuth } from '../utils/authContext';
 import { COLORS as BASE_COLORS, SIZES, FONTS } from '../utils/theme';
 import Text from '../components/Text';
 import Button from '../components/Button';
@@ -9,7 +10,6 @@ import { syncProgressData } from '../utils/cloudStore';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useLanguage } from '../utils/languageContext';
-import { useAuth } from '../utils/authContext';
 import telemetryService from '../utils/telemetry';
 import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 import watchConnectivity from '../utils/watchConnectivity';
@@ -777,74 +777,264 @@ const HomeScreen = ({ navigation, route }) => {
               </View>
               <View style={styles.authModalBody}>
                 <View style={{ flex: 1, width: '100%', justifyContent: 'center', paddingHorizontal: 10 }}>
-                  <Text style={{ color: '#FFFFFF', fontSize: 22, textAlign: 'center', marginBottom: 20, fontWeight: 'bold' }}>
-                    {t('welcome_back')}
-                  </Text>
-                  <Text style={{ color: '#CCCCCC', fontSize: 15, textAlign: 'center', marginBottom: 45 }}>
-                    {t('login_subtitle')}
-                  </Text>
-                  
-                  <View style={{ marginBottom: 35 }}>
-                    <TextInput
-                      style={{
-                        borderWidth: 1,
-                        borderColor: 'rgba(255,255,255,0.3)',
-                        borderRadius: 8,
-                        padding: 18,
-                        fontSize: 16,
-                        backgroundColor: 'rgba(255,255,255,0.1)',
-                        color: '#FFFFFF',
-                        marginBottom: 30,
-                        height: 55,
-                      }}
-                      placeholder={t('email')}
-                      placeholderTextColor="rgba(255,255,255,0.6)"
-                      keyboardType="email-address"
-                      autoCapitalize="none"
-                      autoCorrect={false}
-                    />
+                  {/* State for auth mode */}
+                  {(() => {
+                    const [isLogin, setIsLogin] = useState(true);
+                    const [email, setEmail] = useState('');
+                    const [password, setPassword] = useState('');
+                    const [confirmPassword, setConfirmPassword] = useState('');
+                    const [showForgotPassword, setShowForgotPassword] = useState(false);
+                    const [loading, setLoading] = useState(false);
                     
-                    <TextInput
-                      style={{
-                        borderWidth: 1,
-                        borderColor: 'rgba(255,255,255,0.3)',
-                        borderRadius: 8,
-                        padding: 18,
-                        fontSize: 16,
-                        backgroundColor: 'rgba(255,255,255,0.1)',
-                        color: '#FFFFFF',
-                        marginBottom: 35,
-                        height: 55,
-                      }}
-                      placeholder={t('password')}
-                      placeholderTextColor="rgba(255,255,255,0.6)"
-                      secureTextEntry
-                      autoCapitalize="none"
-                    />
-                  </View>
-                  
-                  <Button
-                    title={t('login')}
-                    onPress={() => {
-                      // Handle login logic here
-                      setAuthVisible(false);
-                    }}
-                    style={{
-                      backgroundColor: '#33694e',
-                      marginBottom: 25,
-                      paddingVertical: 18,
-                      height: 55,
-                    }}
-                  />
-                  
-                  <TouchableOpacity
-                    style={{ alignItems: 'center', paddingVertical: 20 }}
-                    onPress={() => setAuthVisible(false)}
-                  >
-                    <Text style={{ color: '#CCCCCC', textDecorationLine: 'underline', fontSize: 15 }}>
-                      {t('continue_without_account')}
-                    </Text>
-                  </TouchableOpacity>
+                    const { login, register, resetPassword } = useAuth();
+                    
+                    const validateEmail = (email) => {
+                      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                      return emailRegex.test(email);
+                    };
+                    
+                    const handleAuth = async () => {
+                      if (!email.trim() || !password.trim()) {
+                        Alert.alert(t('error'), t('please_fill_all_fields'));
+                        return;
+                      }
+                      
+                      if (!validateEmail(email.trim())) {
+                        Alert.alert(t('error'), t('invalid_email_format'));
+                        return;
+                      }
+                      
+                      if (password.length < 6) {
+                        Alert.alert(t('error'), t('password_min_length'));
+                        return;
+                      }
+                      
+                      if (!isLogin && password !== confirmPassword) {
+                        Alert.alert(t('error'), t('passwords_dont_match'));
+                        return;
+                      }
+                      
+                      setLoading(true);
+                      try {
+                        let result;
+                        if (isLogin) {
+                          result = await login(email.trim(), password);
+                        } else {
+                          result = await register(email.trim(), password);
+                        }
+                        
+                        if (result.success) {
+                          Alert.alert(t('success'), isLogin ? t('login_successful') : t('registration_successful'));
+                          setAuthVisible(false);
+                        } else {
+                          Alert.alert(t('error'), result.error);
+                        }
+                      } catch (error) {
+                        Alert.alert(t('error'), t('auth_failed'));
+                      } finally {
+                        setLoading(false);
+                      }
+                    };
+                    
+                    const handleForgotPassword = async () => {
+                      if (!email.trim()) {
+                        Alert.alert(t('error'), t('enter_email_for_reset'));
+                        return;
+                      }
+                      
+                      if (!validateEmail(email.trim())) {
+                        Alert.alert(t('error'), t('invalid_email_format'));
+                        return;
+                      }
+                      
+                      setLoading(true);
+                      try {
+                        const result = await resetPassword(email.trim());
+                        if (result.success) {
+                          Alert.alert(t('success'), t('reset_email_sent'));
+                          setShowForgotPassword(false);
+                        } else {
+                          Alert.alert(t('error'), result.error);
+                        }
+                      } catch (error) {
+                        Alert.alert(t('error'), t('reset_failed'));
+                      } finally {
+                        setLoading(false);
+                      }
+                    };
+                    
+                    if (showForgotPassword) {
+                      return (
+                        <View style={{ flex: 1, justifyContent: 'center' }}>
+                          <Text style={{ color: '#FFFFFF', fontSize: 22, textAlign: 'center', marginBottom: 20, fontWeight: 'bold' }}>
+                            {t('reset_password')}
+                          </Text>
+                          <Text style={{ color: '#CCCCCC', fontSize: 15, textAlign: 'center', marginBottom: 45 }}>
+                            {t('reset_password_instruction')}
+                          </Text>
+                          
+                          <TextInput
+                            style={{
+                              borderWidth: 1,
+                              borderColor: 'rgba(255,255,255,0.3)',
+                              borderRadius: 8,
+                              padding: 18,
+                              fontSize: 16,
+                              backgroundColor: 'rgba(255,255,255,0.1)',
+                              color: '#FFFFFF',
+                              marginBottom: 30,
+                              height: 55,
+                            }}
+                            placeholder={t('email')}
+                            placeholderTextColor="rgba(255,255,255,0.6)"
+                            value={email}
+                            onChangeText={setEmail}
+                            keyboardType="email-address"
+                            autoCapitalize="none"
+                            autoCorrect={false}
+                          />
+                          
+                          <Button
+                            title={loading ? t('sending') : t('send_reset_email')}
+                            onPress={handleForgotPassword}
+                            style={{
+                              backgroundColor: '#33694e',
+                              marginBottom: 20,
+                              paddingVertical: 18,
+                              height: 55,
+                            }}
+                            disabled={loading}
+                          />
+                          
+                          <TouchableOpacity
+                            style={{ alignItems: 'center', paddingVertical: 15 }}
+                            onPress={() => setShowForgotPassword(false)}
+                          >
+                            <Text style={{ color: '#CCCCCC', textDecorationLine: 'underline', fontSize: 15 }}>
+                              {t('back_to_login')}
+                            </Text>
+                          </TouchableOpacity>
+                        </View>
+                      );
+                    }
+                    
+                    return (
+                      <View style={{ flex: 1, justifyContent: 'center' }}>
+                        <Text style={{ color: '#FFFFFF', fontSize: 22, textAlign: 'center', marginBottom: 20, fontWeight: 'bold' }}>
+                          {isLogin ? t('welcome_back') : t('create_account')}
+                        </Text>
+                        <Text style={{ color: '#CCCCCC', fontSize: 15, textAlign: 'center', marginBottom: 45 }}>
+                          {isLogin ? t('login_subtitle') : t('register_subtitle')}
+                        </Text>
+                        
+                        <View style={{ marginBottom: 35 }}>
+                          <TextInput
+                            style={{
+                              borderWidth: 1,
+                              borderColor: 'rgba(255,255,255,0.3)',
+                              borderRadius: 8,
+                              padding: 18,
+                              fontSize: 16,
+                              backgroundColor: 'rgba(255,255,255,0.1)',
+                              color: '#FFFFFF',
+                              marginBottom: 30,
+                              height: 55,
+                            }}
+                            placeholder={t('email')}
+                            placeholderTextColor="rgba(255,255,255,0.6)"
+                            value={email}
+                            onChangeText={setEmail}
+                            keyboardType="email-address"
+                            autoCapitalize="none"
+                            autoCorrect={false}
+                          />
+                          
+                          <TextInput
+                            style={{
+                              borderWidth: 1,
+                              borderColor: 'rgba(255,255,255,0.3)',
+                              borderRadius: 8,
+                              padding: 18,
+                              fontSize: 16,
+                              backgroundColor: 'rgba(255,255,255,0.1)',
+                              color: '#FFFFFF',
+                              marginBottom: 30,
+                              height: 55,
+                            }}
+                            placeholder={t('password')}
+                            placeholderTextColor="rgba(255,255,255,0.6)"
+                            value={password}
+                            onChangeText={setPassword}
+                            secureTextEntry
+                            autoCapitalize="none"
+                          />
+                          
+                          {!isLogin && (
+                            <TextInput
+                              style={{
+                                borderWidth: 1,
+                                borderColor: 'rgba(255,255,255,0.3)',
+                                borderRadius: 8,
+                                padding: 18,
+                                fontSize: 16,
+                                backgroundColor: 'rgba(255,255,255,0.1)',
+                                color: '#FFFFFF',
+                                marginBottom: 35,
+                                height: 55,
+                              }}
+                              placeholder={t('confirm_password')}
+                              placeholderTextColor="rgba(255,255,255,0.6)"
+                              value={confirmPassword}
+                              onChangeText={setConfirmPassword}
+                              secureTextEntry
+                              autoCapitalize="none"
+                            />
+                          )}
+                        </View>
+                        
+                        <Button
+                          title={loading ? t('processing') : (isLogin ? t('login') : t('register'))}
+                          onPress={handleAuth}
+                          style={{
+                            backgroundColor: '#33694e',
+                            marginBottom: 20,
+                            paddingVertical: 18,
+                            height: 55,
+                          }}
+                          disabled={loading}
+                        />
+                        
+                        {isLogin && (
+                          <TouchableOpacity
+                            style={{ alignItems: 'center', paddingVertical: 10 }}
+                            onPress={() => setShowForgotPassword(true)}
+                          >
+                            <Text style={{ color: '#CCCCCC', textDecorationLine: 'underline', fontSize: 14 }}>
+                              {t('forgot_password')}
+                            </Text>
+                          </TouchableOpacity>
+                        )}
+                        
+                        <TouchableOpacity
+                          style={{ alignItems: 'center', paddingVertical: 10 }}
+                          onPress={() => setIsLogin(!isLogin)}
+                        >
+                          <Text style={{ color: '#CCCCCC', textDecorationLine: 'underline', fontSize: 14 }}>
+                            {isLogin ? t('need_account') : t('have_account')}
+                          </Text>
+                        </TouchableOpacity>
+                        
+                        <TouchableOpacity
+                          style={{ alignItems: 'center', paddingVertical: 20 }}
+                          onPress={() => setAuthVisible(false)}
+                        >
+                          <Text style={{ color: '#CCCCCC', textDecorationLine: 'underline', fontSize: 15 }}>
+                            {t('continue_without_account')}
+                          </Text>
+                        </TouchableOpacity>
+                      </View>
+                    );
+                  })()}
                 </View>
               </View>
             </View>
