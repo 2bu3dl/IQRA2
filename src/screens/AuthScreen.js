@@ -97,10 +97,10 @@ const AuthScreen = ({ navigation, onClose, isModal = false }) => {
   if (showForgotPassword) {
     return (
       <KeyboardAvoidingView 
-        style={isModal ? { flex: 1 } : styles.container} 
+        style={isModal ? { flex: 1, width: '100%' } : styles.container} 
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-        <ScrollView contentContainerStyle={isModal ? { flexGrow: 1, justifyContent: 'center' } : styles.scrollContainer}>
+        <ScrollView contentContainerStyle={isModal ? { flexGrow: 1, justifyContent: 'center', paddingVertical: 20 } : styles.scrollContainer}>
           <View style={styles.headerContainer}>
             <Text variant="h1" style={styles.title}>
               {t('reset_password')}
@@ -147,10 +147,10 @@ const AuthScreen = ({ navigation, onClose, isModal = false }) => {
 
   return (
     <KeyboardAvoidingView 
-      style={isModal ? { flex: 1 } : styles.container} 
+      style={isModal ? { flex: 1, width: '100%' } : styles.container} 
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <ScrollView contentContainerStyle={isModal ? { flexGrow: 1, justifyContent: 'center' } : styles.scrollContainer}>
+      <ScrollView contentContainerStyle={isModal ? { flexGrow: 1, justifyContent: 'center', paddingVertical: 20 } : styles.scrollContainer}>
         <View style={styles.headerContainer}>
           <Text variant="h1" style={styles.title}>
             {isLogin ? t('welcome_back') : t('create_account')}

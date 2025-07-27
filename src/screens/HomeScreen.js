@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, SafeAreaView, Image, ImageBackground, Modal, TouchableOpacity, Dimensions, Alert } from 'react-native';
+import { View, StyleSheet, SafeAreaView, Image, ImageBackground, Modal, TouchableOpacity, Dimensions, Alert, TextInput } from 'react-native';
 import { COLORS as BASE_COLORS, SIZES, FONTS } from '../utils/theme';
 import Text from '../components/Text';
 import Button from '../components/Button';
@@ -776,11 +776,72 @@ const HomeScreen = ({ navigation, route }) => {
                 </TouchableOpacity>
               </View>
               <View style={styles.authModalBody}>
-                <AuthScreen 
-                  navigation={navigation}
-                  onClose={() => setAuthVisible(false)}
-                  isModal={true}
-                />
+                <View style={{ flex: 1, width: '100%', justifyContent: 'center' }}>
+                  <Text style={{ color: '#FFFFFF', fontSize: 18, textAlign: 'center', marginBottom: 20 }}>
+                    {t('welcome_back')}
+                  </Text>
+                  <Text style={{ color: '#CCCCCC', fontSize: 14, textAlign: 'center', marginBottom: 30 }}>
+                    {t('login_subtitle')}
+                  </Text>
+                  
+                  <View style={{ marginBottom: 15 }}>
+                    <TextInput
+                      style={{
+                        borderWidth: 1,
+                        borderColor: 'rgba(255,255,255,0.3)',
+                        borderRadius: 8,
+                        padding: 12,
+                        fontSize: 16,
+                        backgroundColor: 'rgba(255,255,255,0.1)',
+                        color: '#FFFFFF',
+                        marginBottom: 15,
+                      }}
+                      placeholder={t('email')}
+                      placeholderTextColor="rgba(255,255,255,0.6)"
+                      keyboardType="email-address"
+                      autoCapitalize="none"
+                      autoCorrect={false}
+                    />
+                    
+                    <TextInput
+                      style={{
+                        borderWidth: 1,
+                        borderColor: 'rgba(255,255,255,0.3)',
+                        borderRadius: 8,
+                        padding: 12,
+                        fontSize: 16,
+                        backgroundColor: 'rgba(255,255,255,0.1)',
+                        color: '#FFFFFF',
+                        marginBottom: 20,
+                      }}
+                      placeholder={t('password')}
+                      placeholderTextColor="rgba(255,255,255,0.6)"
+                      secureTextEntry
+                      autoCapitalize="none"
+                    />
+                  </View>
+                  
+                  <Button
+                    title={t('login')}
+                    onPress={() => {
+                      // Handle login logic here
+                      setAuthVisible(false);
+                    }}
+                    style={{
+                      backgroundColor: '#33694e',
+                      marginBottom: 15,
+                    }}
+                  />
+                  
+                  <TouchableOpacity
+                    style={{ alignItems: 'center', paddingVertical: 10 }}
+                    onPress={() => setAuthVisible(false)}
+                  >
+                    <Text style={{ color: '#CCCCCC', textDecorationLine: 'underline' }}>
+                      {t('continue_without_account')}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
               </View>
             </View>
           </View>
