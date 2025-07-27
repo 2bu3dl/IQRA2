@@ -118,5 +118,4 @@ dependencies {
     }
 }
 
-// Add Google Services plugin at the bottom
-apply plugin: 'com.google.gms.google-services'
+// Google Services plugin removed - using Supabase instead
