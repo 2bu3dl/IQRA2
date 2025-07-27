@@ -84,7 +84,6 @@ const HomeScreen = ({ navigation, route }) => {
     memorizedAyaat: 0,
   });
   const [settingsVisible, setSettingsVisible] = useState(false);
-  const [authVisible, setAuthVisible] = useState(false);
   const [introVisible, setIntroVisible] = useState(false);
   const [resetting, setResetting] = useState(false);
 
@@ -649,7 +648,7 @@ const HomeScreen = ({ navigation, route }) => {
                   onPress={() => {
                     ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true });
                     setSettingsVisible(false);
-                    setAuthVisible(true);
+                    navigation.navigate('Auth');
                   }}
                   style={{ 
                     backgroundColor: '#D3D3D3',
@@ -755,22 +754,7 @@ const HomeScreen = ({ navigation, route }) => {
               </SafeAreaView>
       </ImageBackground>
       
-      {/* Auth Modal */}
-      <Modal
-        visible={authVisible}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setAuthVisible(false)}
-      >
-        <View style={styles.authModalOverlay}>
-          <View style={styles.authModalContent}>
-            <AuthScreen 
-              isModal={true}
-              onClose={() => setAuthVisible(false)}
-            />
-          </View>
-        </View>
-      </Modal>
+
     </View>
   );
 };
@@ -903,24 +887,7 @@ const styles = StyleSheet.create({
     width: '80%',
     alignItems: 'center',
   },
-  authModalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.6)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  authModalContent: {
-    backgroundColor: 'rgba(64,64,64,0.95)',
-    borderRadius: 20,
-    width: '90%',
-    maxHeight: '85%',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.5,
-    shadowRadius: 20,
-    elevation: 20,
-  },
+
 
   arabicText: {
     fontSize: 18,
