@@ -759,12 +759,23 @@ const HomeScreen = ({ navigation, route }) => {
         <Modal
           visible={authVisible}
           transparent
-          animationType="fade"
+          animationType="slide"
           onRequestClose={() => setAuthVisible(false)}
         >
-          <View style={styles.modalOverlay}>
-            <View style={[styles.modalContent, { backgroundColor: 'rgba(64,64,64,0.95)', maxHeight: '80%' }]}>
-              <View style={{ width: '100%', padding: 20 }}>
+          <View style={styles.authModalOverlay}>
+            <View style={styles.authModalContent}>
+              <View style={styles.authModalHeader}>
+                <Text variant="h2" style={styles.authModalTitle}>
+                  {t('account')}
+                </Text>
+                <TouchableOpacity
+                  style={styles.authCloseButton}
+                  onPress={() => setAuthVisible(false)}
+                >
+                  <Text style={styles.authCloseButtonText}>✕</Text>
+                </TouchableOpacity>
+              </View>
+              <View style={styles.authModalBody}>
                 <AuthScreen 
                   navigation={navigation}
                   onClose={() => setAuthVisible(false)}
@@ -907,6 +918,55 @@ const styles = StyleSheet.create({
     borderRadius: 35,
     width: '80%',
     alignItems: 'center',
+  },
+  authModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  authModalContent: {
+    backgroundColor: 'rgba(64,64,64,0.95)',
+    borderRadius: 20,
+    width: '90%',
+    maxHeight: '85%',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.5,
+    shadowRadius: 20,
+    elevation: 20,
+  },
+  authModalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255,255,255,0.2)',
+  },
+  authModalTitle: {
+    color: '#FFFFFF',
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  authCloseButton: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  authCloseButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  authModalBody: {
+    flex: 1,
+    padding: 20,
   },
   arabicText: {
     fontSize: 18,

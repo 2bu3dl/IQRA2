@@ -152,14 +152,6 @@ const AuthScreen = ({ navigation, onClose, isModal = false }) => {
     >
       <ScrollView contentContainerStyle={isModal ? { flexGrow: 1, justifyContent: 'center' } : styles.scrollContainer}>
         <View style={styles.headerContainer}>
-          {isModal && (
-            <TouchableOpacity
-              style={styles.closeButton}
-              onPress={onClose}
-            >
-              <Text style={styles.closeButtonText}>✕</Text>
-            </TouchableOpacity>
-          )}
           <Text variant="h1" style={styles.title}>
             {isLogin ? t('welcome_back') : t('create_account')}
           </Text>
@@ -323,23 +315,7 @@ const styles = StyleSheet.create({
   loader: {
     marginTop: 16,
   },
-  closeButton: {
-    position: 'absolute',
-    top: -10,
-    right: -10,
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(255,255,255,0.2)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 1,
-  },
-  closeButtonText: {
-    color: COLORS.white,
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
+
 });
 
 export default AuthScreen; 
