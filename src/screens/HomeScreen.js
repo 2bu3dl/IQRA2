@@ -763,12 +763,14 @@ const HomeScreen = ({ navigation, route }) => {
           onRequestClose={() => setAuthVisible(false)}
         >
           <View style={styles.modalOverlay}>
-            <View style={[styles.modalContent, { backgroundColor: 'rgba(64,64,64,0.95)' }]}>
-              <AuthScreen 
-                navigation={navigation}
-                onClose={() => setAuthVisible(false)}
-                isModal={true}
-              />
+            <View style={[styles.modalContent, { backgroundColor: 'rgba(64,64,64,0.95)', maxHeight: '80%' }]}>
+              <View style={{ width: '100%', padding: 20 }}>
+                <AuthScreen 
+                  navigation={navigation}
+                  onClose={() => setAuthVisible(false)}
+                  isModal={true}
+                />
+              </View>
             </View>
           </View>
         </Modal>

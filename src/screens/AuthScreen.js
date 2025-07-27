@@ -97,10 +97,10 @@ const AuthScreen = ({ navigation, onClose, isModal = false }) => {
   if (showForgotPassword) {
     return (
       <KeyboardAvoidingView 
-        style={styles.container} 
+        style={isModal ? { flex: 1 } : styles.container} 
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-        <ScrollView contentContainerStyle={styles.scrollContainer}>
+        <ScrollView contentContainerStyle={isModal ? { flexGrow: 1, justifyContent: 'center' } : styles.scrollContainer}>
           <View style={styles.headerContainer}>
             <Text variant="h1" style={styles.title}>
               {t('reset_password')}
@@ -147,10 +147,10 @@ const AuthScreen = ({ navigation, onClose, isModal = false }) => {
 
   return (
     <KeyboardAvoidingView 
-      style={styles.container} 
+      style={isModal ? { flex: 1 } : styles.container} 
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
+      <ScrollView contentContainerStyle={isModal ? { flexGrow: 1, justifyContent: 'center' } : styles.scrollContainer}>
         <View style={styles.headerContainer}>
           {isModal && (
             <TouchableOpacity
@@ -272,6 +272,7 @@ const styles = StyleSheet.create({
   headerContainer: {
     alignItems: 'center',
     marginBottom: 32,
+    position: 'relative',
   },
   title: {
     color: COLORS.primary,
@@ -324,8 +325,8 @@ const styles = StyleSheet.create({
   },
   closeButton: {
     position: 'absolute',
-    top: 0,
-    right: 0,
+    top: -10,
+    right: -10,
     width: 40,
     height: 40,
     borderRadius: 20,
