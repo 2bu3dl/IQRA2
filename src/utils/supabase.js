@@ -3,18 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 const supabaseUrl = 'https://baimixtdewflnnyudhwz.supabase.co';
 const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJhaW1peHRkZXdmbG5ueXVkaHd6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM2MjIwMTcsImV4cCI6MjA2OTE5ODAxN30.vXIW8HICOhsMO0bWk59PFLWmn8aKhFUUk25llLp4jSc';
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    autoRefreshToken: true,
-    persistSession: true,
-    detectSessionInUrl: false
-  },
-  global: {
-    headers: {
-      'X-Client-Info': 'supabase-js-react-native'
-    }
-  }
-});
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 // Helper functions for user progress
 export const saveUserProgress = async (userId, progressData) => {
