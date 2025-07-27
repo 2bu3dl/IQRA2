@@ -13,6 +13,7 @@ import { useAuth } from '../utils/authContext';
 import telemetryService from '../utils/telemetry';
 import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 import watchConnectivity from '../utils/watchConnectivity';
+import AuthScreen from './AuthScreen';
 
 const COLORS = { ...BASE_COLORS, primary: '#6BA368', accent: '#FFD700' };
 
@@ -81,6 +82,7 @@ const HomeScreen = ({ navigation, route }) => {
     memorizedAyaat: 0,
   });
   const [settingsVisible, setSettingsVisible] = useState(false);
+  const [authVisible, setAuthVisible] = useState(false);
   const [introVisible, setIntroVisible] = useState(false);
   const [resetting, setResetting] = useState(false);
 
@@ -652,7 +654,7 @@ const HomeScreen = ({ navigation, route }) => {
                   onPress={() => {
                     ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true });
                     setSettingsVisible(false);
-                    navigation.navigate('Auth');
+                    setAuthVisible(true);
                   }}
                   style={{ 
                     backgroundColor: '#D3D3D3',
@@ -749,6 +751,24 @@ const HomeScreen = ({ navigation, route }) => {
                   onPressIn={() => ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true })}
               />
               </View>
+            </View>
+          </View>
+        </Modal>
+
+        {/* Auth Modal */}
+        <Modal
+          visible={authVisible}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setAuthVisible(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={[styles.modalContent, { backgroundColor: 'rgba(64,64,64,0.95)' }]}>
+              <AuthScreen 
+                navigation={navigation}
+                onClose={() => setAuthVisible(false)}
+                isModal={true}
+              />
             </View>
           </View>
         </Modal>

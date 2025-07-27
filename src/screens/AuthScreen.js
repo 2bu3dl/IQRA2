@@ -17,7 +17,7 @@ import Card from '../components/Card';
 import { COLORS, SIZES, FONTS } from '../utils/theme';
 import { TextInput } from 'react-native';
 
-const AuthScreen = ({ navigation }) => {
+const AuthScreen = ({ navigation, onClose, isModal = false }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -68,6 +68,9 @@ const AuthScreen = ({ navigation }) => {
         t('success'), 
         isLogin ? t('login_successful') : t('registration_successful')
       );
+      if (isModal && onClose) {
+        onClose();
+      }
     }
   };
 
@@ -149,6 +152,14 @@ const AuthScreen = ({ navigation }) => {
     >
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <View style={styles.headerContainer}>
+          {isModal && (
+            <TouchableOpacity
+              style={styles.closeButton}
+              onPress={onClose}
+            >
+              <Text style={styles.closeButtonText}>✕</Text>
+            </TouchableOpacity>
+          )}
           <Text variant="h1" style={styles.title}>
             {isLogin ? t('welcome_back') : t('create_account')}
           </Text>
@@ -231,7 +242,13 @@ const AuthScreen = ({ navigation }) => {
 
         <TouchableOpacity
           style={styles.skipButton}
-          onPress={() => navigation.navigate('Home')}
+          onPress={() => {
+            if (isModal && onClose) {
+              onClose();
+            } else {
+              navigation.navigate('Home');
+            }
+          }}
         >
           <Text variant="body2" style={styles.skipText}>
             {t('continue_without_account')}
@@ -304,6 +321,23 @@ const styles = StyleSheet.create({
   },
   loader: {
     marginTop: 16,
+  },
+  closeButton: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1,
+  },
+  closeButtonText: {
+    color: COLORS.white,
+    fontSize: 18,
+    fontWeight: 'bold',
   },
 });
 
