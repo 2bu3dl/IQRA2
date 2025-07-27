@@ -776,25 +776,25 @@ const HomeScreen = ({ navigation, route }) => {
                 </TouchableOpacity>
               </View>
               <View style={styles.authModalBody}>
-                <View style={{ flex: 1, width: '100%', justifyContent: 'center' }}>
-                  <Text style={{ color: '#FFFFFF', fontSize: 18, textAlign: 'center', marginBottom: 20 }}>
+                <View style={{ flex: 1, width: '100%', justifyContent: 'center', paddingHorizontal: 10 }}>
+                  <Text style={{ color: '#FFFFFF', fontSize: 20, textAlign: 'center', marginBottom: 15, fontWeight: 'bold' }}>
                     {t('welcome_back')}
                   </Text>
-                  <Text style={{ color: '#CCCCCC', fontSize: 14, textAlign: 'center', marginBottom: 30 }}>
+                  <Text style={{ color: '#CCCCCC', fontSize: 14, textAlign: 'center', marginBottom: 35 }}>
                     {t('login_subtitle')}
                   </Text>
                   
-                  <View style={{ marginBottom: 15 }}>
+                  <View style={{ marginBottom: 25 }}>
                     <TextInput
                       style={{
                         borderWidth: 1,
                         borderColor: 'rgba(255,255,255,0.3)',
                         borderRadius: 8,
-                        padding: 12,
+                        padding: 15,
                         fontSize: 16,
                         backgroundColor: 'rgba(255,255,255,0.1)',
                         color: '#FFFFFF',
-                        marginBottom: 15,
+                        marginBottom: 20,
                       }}
                       placeholder={t('email')}
                       placeholderTextColor="rgba(255,255,255,0.6)"
@@ -808,11 +808,11 @@ const HomeScreen = ({ navigation, route }) => {
                         borderWidth: 1,
                         borderColor: 'rgba(255,255,255,0.3)',
                         borderRadius: 8,
-                        padding: 12,
+                        padding: 15,
                         fontSize: 16,
                         backgroundColor: 'rgba(255,255,255,0.1)',
                         color: '#FFFFFF',
-                        marginBottom: 20,
+                        marginBottom: 25,
                       }}
                       placeholder={t('password')}
                       placeholderTextColor="rgba(255,255,255,0.6)"
@@ -829,15 +829,16 @@ const HomeScreen = ({ navigation, route }) => {
                     }}
                     style={{
                       backgroundColor: '#33694e',
-                      marginBottom: 15,
+                      marginBottom: 20,
+                      paddingVertical: 15,
                     }}
                   />
                   
                   <TouchableOpacity
-                    style={{ alignItems: 'center', paddingVertical: 10 }}
+                    style={{ alignItems: 'center', paddingVertical: 15 }}
                     onPress={() => setAuthVisible(false)}
                   >
-                    <Text style={{ color: '#CCCCCC', textDecorationLine: 'underline' }}>
+                    <Text style={{ color: '#CCCCCC', textDecorationLine: 'underline', fontSize: 14 }}>
                       {t('continue_without_account')}
                     </Text>
                   </TouchableOpacity>
