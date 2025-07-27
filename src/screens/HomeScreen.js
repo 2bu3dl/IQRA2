@@ -5,9 +5,11 @@ import Text from '../components/Text';
 import Button from '../components/Button';
 import Card from '../components/Card';
 import { loadData, resetProgress } from '../utils/store';
+import { syncProgressData } from '../utils/cloudStore';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useLanguage } from '../utils/languageContext';
+import { useAuth } from '../utils/authContext';
 import telemetryService from '../utils/telemetry';
 import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 import watchConnectivity from '../utils/watchConnectivity';
@@ -54,6 +56,7 @@ const formatStreakNumber = (num) => {
 
 const HomeScreen = ({ navigation, route }) => {
   const { language, changeLanguage, t } = useLanguage();
+  const { user, logout, isAuthenticated } = useAuth();
   
   // Get screen dimensions for responsive layout
   const { width, height } = Dimensions.get('window');
@@ -113,6 +116,21 @@ const HomeScreen = ({ navigation, route }) => {
       loadScreenData();
     }
   }, [route.params?.refresh]);
+
+  // Auto-sync when user logs in/out
+  useEffect(() => {
+    if (isAuthenticated) {
+      console.log('[HomeScreen] User logged in, syncing progress...');
+      syncProgressData().then(result => {
+        if (result.success) {
+          console.log('[HomeScreen] Auto-sync successful');
+          loadScreenData(); // Reload data after sync
+        }
+      }).catch(error => {
+        console.error('[HomeScreen] Auto-sync failed:', error);
+      });
+    }
+  }, [isAuthenticated]);
 
 
 
@@ -568,28 +586,90 @@ const HomeScreen = ({ navigation, route }) => {
               </View>
               
               {/* Account Section */}
-              <Button
-                title={t('account')}
-                onPress={() => {
-                  ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true });
-                  setSettingsVisible(false);
-                  navigation.navigate('Auth');
-                }}
-                style={{ 
-                  backgroundColor: '#D3D3D3',
-                  marginBottom: 16,
-                  shadowColor: '#000',
-                  shadowOffset: { width: 0, height: 4 },
-                  shadowOpacity: 0.5,
-                  shadowRadius: 6,
-                  elevation: 8,
-                }}
-                textStyle={{
-                  color: '#2F2F2F',
-                  fontWeight: 'bold',
-                }}
-                onPressIn={() => ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true })}
-              />
+              {isAuthenticated ? (
+                <View style={{ marginBottom: 16 }}>
+                  <Text variant="body2" style={{ 
+                    color: '#CCCCCC', 
+                    marginBottom: 12,
+                    textAlign: 'center'
+                  }}>
+                    {t('logged_in_as')} {user?.email}
+                  </Text>
+                  
+                  <View style={{ flexDirection: 'row', gap: 8, marginBottom: 8 }}>
+                    <Button
+                      title={t('sync_progress')}
+                      onPress={async () => {
+                        ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true });
+                        try {
+                          const result = await syncProgressData();
+                          if (result.success) {
+                            Alert.alert(t('success'), t('sync_successful'));
+                            const loadedData = await loadData();
+                            setData(loadedData);
+                          } else {
+                            Alert.alert(t('error'), t('sync_failed'));
+                          }
+                        } catch (error) {
+                          Alert.alert(t('error'), t('sync_failed'));
+                        }
+                      }}
+                      style={{ 
+                        backgroundColor: '#33694e', 
+                        flex: 1,
+                        shadowColor: '#000',
+                        shadowOffset: { width: 0, height: 4 },
+                        shadowOpacity: 0.5,
+                        shadowRadius: 6,
+                        elevation: 8,
+                      }}
+                    />
+                    
+                    <Button
+                      title={t('logout')}
+                      onPress={async () => {
+                        ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true });
+                        const result = await logout();
+                        if (result.success) {
+                          Alert.alert(t('success'), t('logout') + ' ' + t('success').toLowerCase());
+                        }
+                      }}
+                      style={{ 
+                        backgroundColor: 'rgba(220,20,60,0.7)', 
+                        flex: 1,
+                        shadowColor: '#000',
+                        shadowOffset: { width: 0, height: 4 },
+                        shadowOpacity: 0.5,
+                        shadowRadius: 6,
+                        elevation: 8,
+                      }}
+                    />
+                  </View>
+                </View>
+              ) : (
+                <Button
+                  title={t('account')}
+                  onPress={() => {
+                    ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true });
+                    setSettingsVisible(false);
+                    navigation.navigate('Auth');
+                  }}
+                  style={{ 
+                    backgroundColor: '#D3D3D3',
+                    marginBottom: 16,
+                    shadowColor: '#000',
+                    shadowOffset: { width: 0, height: 4 },
+                    shadowOpacity: 0.5,
+                    shadowRadius: 6,
+                    elevation: 8,
+                  }}
+                  textStyle={{
+                    color: '#2F2F2F',
+                    fontWeight: 'bold',
+                  }}
+                  onPressIn={() => ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true })}
+                />
+              )}
               
               <Button
                 title={t('reset_today')}

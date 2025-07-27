@@ -1,61 +1,53 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import { Alert } from 'react-native';
-
-// Try to import Firebase auth, but handle gracefully if it fails
-let auth = null;
-try {
-  auth = require('@react-native-firebase/auth').default;
-} catch (error) {
-  console.warn('[AuthContext] Firebase not available:', error.message);
-}
+import { supabase } from './supabase';
 
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [initializing, setInitializing] = useState(true);
 
   // Handle user state changes
-  const onAuthStateChanged = (user) => {
-    console.log('[Auth] User state changed:', user?.email || 'No user');
-    setUser(user);
-    if (initializing) setInitializing(false);
+  const onAuthStateChange = (event, session) => {
+    console.log('[Auth] User state changed:', session?.user?.email || 'No user');
+    setUser(session?.user || null);
     setLoading(false);
   };
 
   useEffect(() => {
-    if (!auth) {
-      console.log('[Auth] Firebase not available, skipping auth state listener');
-      setInitializing(false);
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user || null);
       setLoading(false);
-      return;
-    }
-    
-    const subscriber = auth().onAuthStateChanged(onAuthStateChanged);
-    return subscriber; // unsubscribe on unmount
-  }, [initializing]);
+    });
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(onAuthStateChange);
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   // Login with email/password
   const login = async (email, password) => {
-    if (!auth) {
-      return { success: false, error: 'Firebase not available. Please check your configuration.' };
-    }
-    
     try {
       setLoading(true);
-      const result = await auth().signInWithEmailAndPassword(email, password);
-      console.log('[Auth] Login successful:', result.user.email);
-      return { success: true, user: result.user };
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+
+      if (error) throw error;
+      
+      console.log('[Auth] Login successful:', data.user.email);
+      return { success: true, user: data.user };
     } catch (error) {
       console.error('[Auth] Login error:', error);
       let message = 'Login failed';
-      if (error.code === 'auth/user-not-found') {
-        message = 'No account found with this email';
-      } else if (error.code === 'auth/wrong-password') {
-        message = 'Incorrect password';
-      } else if (error.code === 'auth/invalid-email') {
-        message = 'Invalid email address';
+      if (error.message.includes('Invalid login credentials')) {
+        message = 'Invalid email or password';
+      } else if (error.message.includes('Email not confirmed')) {
+        message = 'Please check your email and confirm your account';
       }
       return { success: false, error: message };
     } finally {
@@ -65,24 +57,24 @@ export const AuthProvider = ({ children }) => {
 
   // Register new user
   const register = async (email, password) => {
-    if (!auth) {
-      return { success: false, error: 'Firebase not available. Please check your configuration.' };
-    }
-    
     try {
       setLoading(true);
-      const result = await auth().createUserWithEmailAndPassword(email, password);
-      console.log('[Auth] Registration successful:', result.user.email);
-      return { success: true, user: result.user };
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password
+      });
+
+      if (error) throw error;
+      
+      console.log('[Auth] Registration successful:', data.user.email);
+      return { success: true, user: data.user };
     } catch (error) {
       console.error('[Auth] Registration error:', error);
       let message = 'Registration failed';
-      if (error.code === 'auth/email-already-in-use') {
+      if (error.message.includes('User already registered')) {
         message = 'Email is already registered';
-      } else if (error.code === 'auth/weak-password') {
+      } else if (error.message.includes('Password should be at least')) {
         message = 'Password is too weak';
-      } else if (error.code === 'auth/invalid-email') {
-        message = 'Invalid email address';
       }
       return { success: false, error: message };
     } finally {
@@ -92,12 +84,10 @@ export const AuthProvider = ({ children }) => {
 
   // Logout
   const logout = async () => {
-    if (!auth) {
-      return { success: false, error: 'Firebase not available. Please check your configuration.' };
-    }
-    
     try {
-      await auth().signOut();
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      
       console.log('[Auth] Logout successful');
       return { success: true };
     } catch (error) {
@@ -108,17 +98,15 @@ export const AuthProvider = ({ children }) => {
 
   // Send password reset email
   const resetPassword = async (email) => {
-    if (!auth) {
-      return { success: false, error: 'Firebase not available. Please check your configuration.' };
-    }
-    
     try {
-      await auth().sendPasswordResetEmail(email);
+      const { error } = await supabase.auth.resetPasswordForEmail(email);
+      if (error) throw error;
+      
       return { success: true };
     } catch (error) {
       console.error('[Auth] Password reset error:', error);
       let message = 'Password reset failed';
-      if (error.code === 'auth/user-not-found') {
+      if (error.message.includes('User not found')) {
         message = 'No account found with this email';
       }
       return { success: false, error: message };
@@ -132,7 +120,7 @@ export const AuthProvider = ({ children }) => {
     register,
     logout,
     resetPassword,
-    isAuthenticated: !!user,
+    isAuthenticated: !!user
   };
 
   return (
@@ -142,7 +130,6 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
-// Custom hook to use auth context
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {

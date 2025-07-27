@@ -11,7 +11,7 @@ import {
 import { getTranslationSources, getCurrentTranslation, loadAllTranslations } from '../utils/translations';
 import { theme } from '../utils/theme';
 import { useLanguage } from '../utils/languageContext';
-import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
+import HapticFeedback from 'react-native-haptic-feedback';
 
 const ALL_KEYS = ['sahih', 'yusufali', 'maududi', 'hilali'];
 
@@ -77,7 +77,7 @@ const TranslationModal = ({ visible, onClose, currentSurah, currentAyah, onAyahC
         <View style={styles.modalContainer}>
           <View style={styles.header}>
             <Text style={styles.title}>{t('translation')}</Text>
-            <TouchableOpacity onPress={onClose} onPressIn={() => ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true })} style={styles.closeButton}>
+            <TouchableOpacity onPress={onClose} onPressIn={() => HapticFeedback.trigger('selection', { enableVibrateFallback: true })} style={styles.closeButton}>
               <Text style={styles.closeButtonText}>✕</Text>
             </TouchableOpacity>
           </View>
@@ -107,16 +107,16 @@ const TranslationModal = ({ visible, onClose, currentSurah, currentAyah, onAyahC
             <TouchableOpacity
               style={[styles.ayahNavButton, isFirstAyah && { opacity: 0.5 }]}
               disabled={isFirstAyah}
-              onPress={() => { ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true }); onAyahChange('prev'); }}
-              onPressIn={() => ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true })}
+              onPress={() => { HapticFeedback.trigger('selection', { enableVibrateFallback: true }); onAyahChange('prev'); }}
+              onPressIn={() => HapticFeedback.trigger('selection', { enableVibrateFallback: true })}
             >
               <Text style={styles.ayahNavButtonText}>{t('previous')}</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={[styles.ayahNavButton, isLastAyah && { opacity: 0.5 }]}
               disabled={isLastAyah}
-              onPress={() => { ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true }); onAyahChange('next'); }}
-              onPressIn={() => ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true })}
+              onPress={() => { HapticFeedback.trigger('selection', { enableVibrateFallback: true }); onAyahChange('next'); }}
+              onPressIn={() => HapticFeedback.trigger('selection', { enableVibrateFallback: true })}
             >
               <Text style={styles.ayahNavButtonText}>{t('next')}</Text>
             </TouchableOpacity>
@@ -128,8 +128,8 @@ const TranslationModal = ({ visible, onClose, currentSurah, currentAyah, onAyahC
               <TouchableOpacity
                 key={key}
                 style={styles.sourceButton}
-                onPress={() => { ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true }); handleSourceChange(key); }}
-                onPressIn={() => ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true })}
+                onPress={() => { HapticFeedback.trigger('selection', { enableVibrateFallback: true }); handleSourceChange(key); }}
+                onPressIn={() => HapticFeedback.trigger('selection', { enableVibrateFallback: true })}
               >
                 <Text style={styles.sourceButtonText}>
                   {translationSources[key]}
