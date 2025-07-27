@@ -12,7 +12,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useLanguage } from '../utils/languageContext';
 import telemetryService from '../utils/telemetry';
 import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
-import watchConnectivity from '../utils/watchConnectivity';
+
 import AuthScreen from './AuthScreen';
 
 const COLORS = { ...BASE_COLORS, primary: '#6BA368', accent: '#FFD700' };
@@ -89,13 +89,6 @@ const HomeScreen = ({ navigation, route }) => {
     const loadScreenData = async () => {
       const loadedData = await loadData();
       setData(loadedData);
-      
-      // Sync data with Apple Watch
-      try {
-        await watchConnectivity.syncUserProgress(loadedData);
-      } catch (error) {
-        console.log('Apple Watch not available or sync failed:', error.message);
-      }
     };
 
   useEffect(() => {
