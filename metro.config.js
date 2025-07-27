@@ -10,6 +10,8 @@ const config = {
   resolver: {
     assetExts: ['png', 'jpg', 'jpeg', 'gif', 'webp', 'ttf', 'otf', 'woff', 'woff2', 'mp3', 'wav', 'aac', 'm4a'],
     sourceExts: ['js', 'jsx', 'ts', 'tsx', 'json'],
+    resolverMainFields: ['react-native', 'browser', 'main'],
+    platforms: ['ios', 'android', 'native', 'web'],
   },
   transformer: {
     getTransformOptions: async () => ({
@@ -19,6 +21,9 @@ const config = {
       },
     }),
   },
+  watchFolders: [
+    require('path').resolve(__dirname, 'node_modules'),
+  ],
 };
 
 module.exports = mergeConfig(getDefaultConfig(__dirname), config);
