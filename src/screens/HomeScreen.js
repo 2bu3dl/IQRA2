@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, SafeAreaView, Image, ImageBackground, Modal, TouchableOpacity, Dimensions } from 'react-native';
+import { View, StyleSheet, SafeAreaView, Image, ImageBackground, Modal, TouchableOpacity, Dimensions, Alert } from 'react-native';
 import { COLORS as BASE_COLORS, SIZES, FONTS } from '../utils/theme';
 import Text from '../components/Text';
 import Button from '../components/Button';
@@ -113,6 +113,8 @@ const HomeScreen = ({ navigation, route }) => {
       loadScreenData();
     }
   }, [route.params?.refresh]);
+
+
 
   // Calculate percentage
   const progressPercentage = data.totalAyaat > 0 ? Math.round((data.memorizedAyaat / data.totalAyaat) * 100) : 0;
@@ -565,6 +567,30 @@ const HomeScreen = ({ navigation, route }) => {
                 />
               </View>
               
+              {/* Account Section */}
+              <Button
+                title={t('account')}
+                onPress={() => {
+                  ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true });
+                  setSettingsVisible(false);
+                  navigation.navigate('Auth');
+                }}
+                style={{ 
+                  backgroundColor: '#D3D3D3',
+                  marginBottom: 16,
+                  shadowColor: '#000',
+                  shadowOffset: { width: 0, height: 4 },
+                  shadowOpacity: 0.5,
+                  shadowRadius: 6,
+                  elevation: 8,
+                }}
+                textStyle={{
+                  color: '#2F2F2F',
+                  fontWeight: 'bold',
+                }}
+                onPressIn={() => ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true })}
+              />
+              
               <Button
                 title={t('reset_today')}
                 onPress={async () => {
@@ -591,8 +617,7 @@ const HomeScreen = ({ navigation, route }) => {
                 disabled={resetting}
                 onPressIn={() => ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true })}
               />
-              <Button
-                title={resetting ? t('resetting') : t('reset_all')}
+              <TouchableOpacity
                 onPress={async () => {
                   ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true });
                   setResetting(true);
@@ -610,10 +635,25 @@ const HomeScreen = ({ navigation, route }) => {
                   shadowOpacity: 0.5,
                   shadowRadius: 6,
                   elevation: 8,
+                  paddingVertical: 16,
+                  paddingHorizontal: 24,
+                  borderRadius: 12,
+                  alignItems: 'center',
+                  justifyContent: 'center',
                 }}
                 disabled={resetting}
                 onPressIn={() => ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true })}
-              />
+              >
+                <Text style={{ color: '#FFFFFF', fontSize: 16, fontWeight: '600', textAlign: 'center' }}>
+                  {resetting ? t('resetting') : (
+                    language === 'en' ? (
+                      <>
+                        Reset <Text style={{ fontWeight: 'bold' }}>ALL</Text> Progress
+                      </>
+                    ) : t('reset_all')
+                  )}
+                </Text>
+              </TouchableOpacity>
               <View style={{ marginTop: 16 }}>
               <Button
                   title={t('close')}
@@ -754,8 +794,9 @@ const styles = StyleSheet.create({
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'center',
+    justifyContent: 'flex-end',
     alignItems: 'center',
+    paddingBottom: 80,
   },
   modalContent: {
     backgroundColor: COLORS.white,

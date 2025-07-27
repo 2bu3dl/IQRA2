@@ -117,3 +117,6 @@ dependencies {
         implementation jscFlavor
     }
 }
+
+// Add Google Services plugin at the bottom
+apply plugin: 'com.google.gms.google-services'

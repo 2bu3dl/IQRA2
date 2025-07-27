@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "288780696246",
+    "project_id": "iqra2-26c6c",
+    "storage_bucket": "iqra2-26c6c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:288780696246:android:2b22a7218abab6cb74c417",
+        "android_client_info": {
+          "package_name": "com.iqra2"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBCw3C8omX47hzwb9_ejz7WB5wnIrNXD7M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

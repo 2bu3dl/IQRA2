@@ -1,6 +1,13 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
-import auth from '@react-native-firebase/auth';
 import { Alert } from 'react-native';
+
+// Try to import Firebase auth, but handle gracefully if it fails
+let auth = null;
+try {
+  auth = require('@react-native-firebase/auth').default;
+} catch (error) {
+  console.warn('[AuthContext] Firebase not available:', error.message);
+}
 
 export const AuthContext = createContext();
 
@@ -18,12 +25,23 @@ export const AuthProvider = ({ children }) => {
   };
 
   useEffect(() => {
+    if (!auth) {
+      console.log('[Auth] Firebase not available, skipping auth state listener');
+      setInitializing(false);
+      setLoading(false);
+      return;
+    }
+    
     const subscriber = auth().onAuthStateChanged(onAuthStateChanged);
     return subscriber; // unsubscribe on unmount
   }, [initializing]);
 
   // Login with email/password
   const login = async (email, password) => {
+    if (!auth) {
+      return { success: false, error: 'Firebase not available. Please check your configuration.' };
+    }
+    
     try {
       setLoading(true);
       const result = await auth().signInWithEmailAndPassword(email, password);
@@ -47,6 +65,10 @@ export const AuthProvider = ({ children }) => {
 
   // Register new user
   const register = async (email, password) => {
+    if (!auth) {
+      return { success: false, error: 'Firebase not available. Please check your configuration.' };
+    }
+    
     try {
       setLoading(true);
       const result = await auth().createUserWithEmailAndPassword(email, password);
@@ -70,6 +92,10 @@ export const AuthProvider = ({ children }) => {
 
   // Logout
   const logout = async () => {
+    if (!auth) {
+      return { success: false, error: 'Firebase not available. Please check your configuration.' };
+    }
+    
     try {
       await auth().signOut();
       console.log('[Auth] Logout successful');
@@ -82,6 +108,10 @@ export const AuthProvider = ({ children }) => {
 
   // Send password reset email
   const resetPassword = async (email) => {
+    if (!auth) {
+      return { success: false, error: 'Firebase not available. Please check your configuration.' };
+    }
+    
     try {
       await auth().sendPasswordResetEmail(email);
       return { success: true };

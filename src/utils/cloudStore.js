@@ -1,9 +1,22 @@
-import firestore from '@react-native-firebase/firestore';
-import auth from '@react-native-firebase/auth';
 import { loadData as loadLocalData, saveCurrentPosition as saveLocalPosition } from './store';
+
+// Try to import Firebase modules, but handle gracefully if they fail
+let firestore = null;
+let auth = null;
+try {
+  firestore = require('@react-native-firebase/firestore').default;
+  auth = require('@react-native-firebase/auth').default;
+} catch (error) {
+  console.warn('[CloudStore] Firebase not available:', error.message);
+}
 
 // Save user progress to Firestore
 export const saveProgressToCloud = async (progressData) => {
+  if (!firestore || !auth) {
+    console.log('[CloudStore] Firebase not available, skipping cloud save');
+    return { success: false, error: 'Firebase not available' };
+  }
+  
   try {
     const user = auth().currentUser;
     if (!user) {
@@ -39,6 +52,11 @@ export const saveProgressToCloud = async (progressData) => {
 
 // Load user progress from Firestore
 export const loadProgressFromCloud = async () => {
+  if (!firestore || !auth) {
+    console.log('[CloudStore] Firebase not available, cannot load from cloud');
+    return { success: false, error: 'Firebase not available' };
+  }
+  
   try {
     const user = auth().currentUser;
     if (!user) {
@@ -67,6 +85,11 @@ export const loadProgressFromCloud = async () => {
 
 // Sync local data with cloud (merge strategy)
 export const syncProgressData = async () => {
+  if (!firestore || !auth) {
+    console.log('[CloudStore] Firebase not available, skipping sync');
+    return { success: false, error: 'Firebase not available' };
+  }
+  
   try {
     const user = auth().currentUser;
     if (!user) {
@@ -152,6 +175,11 @@ const mergeArrays = (arr1, arr2) => {
 
 // Auto-sync function (call this when user completes actions)
 export const autoSync = async (progressData) => {
+  if (!auth) {
+    console.log('[CloudStore] Firebase not available, skipping auto-sync');
+    return;
+  }
+  
   const user = auth().currentUser;
   if (user) {
     // Save to cloud in background (don't block UI)
@@ -163,6 +191,11 @@ export const autoSync = async (progressData) => {
 
 // Initialize user's cloud data on first login
 export const initializeUserCloudData = async () => {
+  if (!firestore || !auth) {
+    console.log('[CloudStore] Firebase not available, cannot initialize user data');
+    return { success: false, error: 'Firebase not available' };
+  }
+  
   try {
     const user = auth().currentUser;
     if (!user) return { success: false, error: 'Not authenticated' };
