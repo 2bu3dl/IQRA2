@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Modal, Animated, StyleSheet, TouchableWithoutFeedback } from 'react-native';
+import { View, Modal, Animated, StyleSheet, TouchableWithoutFeedback, TouchableOpacity } from 'react-native';
 import Text from './Text';
 import Button from './Button';
 import { COLORS, SIZES } from '../utils/theme';
@@ -240,17 +240,22 @@ const AnimatedRewardModal = ({
       animationType="none"
       onRequestClose={onClose}
     >
-      <TouchableWithoutFeedback onPress={skipAnimation}>
-        <View style={styles.modalOverlay}>
-          <Animated.View 
-            style={[
-              styles.modalContent, 
-              { 
-                transform: [{ scale: scaleAnim }],
-                opacity: opacityAnim
-              }
-            ]}
-          >
+      <TouchableOpacity 
+        style={styles.modalOverlay}
+        activeOpacity={1}
+        onPress={onClose}
+      >
+        <TouchableOpacity 
+          style={[
+            styles.modalContent, 
+            { 
+              transform: [{ scale: scaleAnim }],
+              opacity: opacityAnim
+            }
+          ]}
+          activeOpacity={1}
+          onPress={(e) => e.stopPropagation()}
+        >
             {renderCalculationStep()}
             {calculationComplete && (
               <Animated.View 
@@ -273,9 +278,8 @@ const AnimatedRewardModal = ({
                 </View>
               </Animated.View>
             )}
-          </Animated.View>
-        </View>
-      </TouchableWithoutFeedback>
+        </TouchableOpacity>
+      </TouchableOpacity>
     </Modal>
   );
 };

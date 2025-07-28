@@ -525,8 +525,16 @@ const HomeScreen = ({ navigation, route }) => {
           animationType="fade"
           onRequestClose={() => setSettingsVisible(false)}
         >
-          <View style={styles.modalOverlay}>
-            <View style={[styles.modalContent, { backgroundColor: 'rgba(64,64,64,0.95)' }]}>
+          <TouchableOpacity 
+            style={styles.modalOverlay}
+            activeOpacity={1}
+            onPress={() => setSettingsVisible(false)}
+          >
+            <TouchableOpacity 
+              style={[styles.modalContent, { backgroundColor: 'rgba(64,64,64,0.95)' }]}
+              activeOpacity={1}
+              onPress={(e) => e.stopPropagation()}
+            >
               <Text variant="h2" style={{ 
                 marginBottom: 24, 
                 textDecorationLine: 'underline', 
@@ -742,8 +750,8 @@ const HomeScreen = ({ navigation, route }) => {
                   onPressIn={() => ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true })}
               />
               </View>
-            </View>
-          </View>
+            </TouchableOpacity>
+          </TouchableOpacity>
         </Modal>
 
         {/* Reset Confirmation Modal */}
@@ -753,9 +761,17 @@ const HomeScreen = ({ navigation, route }) => {
           animationType="fade"
           onRequestClose={() => setConfirmResetVisible(false)}
         >
-          <View style={styles.confirmModalOverlay}>
+          <TouchableOpacity 
+            style={styles.confirmModalOverlay}
+            activeOpacity={1}
+            onPress={() => setConfirmResetVisible(false)}
+          >
             <View style={styles.confirmModalBackdrop} />
-            <View style={styles.confirmModalContainer}>
+            <TouchableOpacity 
+              style={styles.confirmModalContainer}
+              activeOpacity={1}
+              onPress={(e) => e.stopPropagation()}
+            >
               <View style={styles.confirmModalContent}>
                 <View style={styles.confirmModalHeader}>
                   <Text style={styles.confirmModalTitle}>
@@ -798,8 +814,8 @@ const HomeScreen = ({ navigation, route }) => {
                   </TouchableOpacity>
                 </View>
               </View>
-            </View>
-          </View>
+            </TouchableOpacity>
+          </TouchableOpacity>
         </Modal>
 
         {/* Auth Modal */}

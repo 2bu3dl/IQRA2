@@ -8,8 +8,9 @@ import ProgressBarOrig from '../components/ProgressBar';
 import TranslationModal from '../components/TranslationModal';
 import StreakAnimation from '../components/StreakAnimation';
 import AnimatedRewardModal from '../components/AnimatedRewardModal';
+import BookmarkModal from '../components/BookmarkModal';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { addHasanat, updateMemorizedAyahs, updateStreak, getCurrentStreak, loadData, saveCurrentPosition, saveLastPosition } from '../utils/store';
+import { addHasanat, updateMemorizedAyahs, updateStreak, getCurrentStreak, loadData, saveCurrentPosition, saveLastPosition, toggleBookmark, isBookmarked, isAyahInAnyList } from '../utils/store';
 import { getSurahAyaatWithTransliteration, getAllSurahs } from '../utils/quranData';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useLanguage } from '../utils/languageContext';
@@ -17,7 +18,7 @@ import audioPlayer from '../utils/audioPlayer';
 import telemetryService from '../utils/telemetry';
 import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 import Slider from '@react-native-community/slider';
-// import Svg, { Circle } from 'react-native-svg'; // Uncomment if using react-native-svg
+import Svg, { Polygon } from 'react-native-svg';
 
 const COLORS = { ...BASE_COLORS, primary: '#6BA368', accent: '#FFD700' };
 
@@ -31,7 +32,7 @@ const MemorizationScreen = ({ route, navigation }) => {
     if (language !== 'ar') return num.toString();
     return num.toString().replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]);
   };
-  const { surah, resumeFromIndex } = route.params;
+  const { surah, resumeFromIndex, targetAyah } = route.params;
   const surahNumber = surah.id || surah.surah || 1;
 
 
@@ -65,6 +66,8 @@ const MemorizationScreen = ({ route, navigation }) => {
   const spinAnim = useRef(new Animated.Value(0)).current;
   const [ayahFontSize, setAyahFontSize] = useState(40);
   const [isBoldFont, setIsBoldFont] = useState(false);
+  const [isCurrentAyahBookmarked, setIsCurrentAyahBookmarked] = useState(false);
+  const [showBookmarkModal, setShowBookmarkModal] = useState(false);
 
   const allSurahs = getAllSurahs();
   const currentSurahIndex = allSurahs.findIndex(s => s.surah === surahNumber);
@@ -95,6 +98,19 @@ const MemorizationScreen = ({ route, navigation }) => {
     }
     fetchAyaat();
   }, [surahNumber]);
+
+  // Check bookmark status when current ayah changes
+  React.useEffect(() => {
+    const checkBookmarkStatus = async () => {
+      if (flashcards && flashcards[currentAyahIndex]?.type === 'ayah') {
+        const ayahNumber = flashcards.slice(0, currentAyahIndex + 1).filter(a => a.type === 'ayah').length;
+        const inAnyList = await isAyahInAnyList(surah.name, ayahNumber);
+        setIsCurrentAyahBookmarked(inAnyList);
+      }
+    };
+    
+    checkBookmarkStatus();
+  }, [currentAyahIndex, ayaat, surah.name]);
 
   // Initialize previous streak on component mount and after reset
   React.useEffect(() => {
@@ -195,6 +211,32 @@ const MemorizationScreen = ({ route, navigation }) => {
       }
     }
   }, [flashcards, resumeFromIndex]);
+
+  // Handle navigation to specific ayah from Lists tab
+  React.useEffect(() => {
+    if (targetAyah && flashcards.length > 0) {
+      // Find the flashcard index for the target ayah
+      let ayahCount = 0;
+      let targetIndex = 0;
+      
+      for (let i = 0; i < flashcards.length; i++) {
+        if (flashcards[i].type === 'ayah') {
+          ayahCount++;
+          if (ayahCount === targetAyah) {
+            targetIndex = i;
+            break;
+          }
+        }
+      }
+      
+      if (targetIndex > 0) {
+        console.log('[MemorizationScreen] Navigating to target ayah:', targetAyah, 'at index:', targetIndex);
+        setCurrentAyahIndex(targetIndex);
+        setIsTextHidden(false);
+        flashcardsLoaded.current = true;
+      }
+    }
+  }, [flashcards, targetAyah]);
       
   // Add this after currentAyahIndex and surah are defined
   React.useEffect(() => {
@@ -479,6 +521,35 @@ const MemorizationScreen = ({ route, navigation }) => {
     }
   };
 
+  const handleBookmarkToggle = async () => {
+    ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true });
+    
+    // Immediately update the visual state
+    setIsCurrentAyahBookmarked(!isCurrentAyahBookmarked);
+    
+    setShowBookmarkModal(true);
+  };
+
+  const handleBookmarkModalClose = async () => {
+    setShowBookmarkModal(false);
+    
+    // Refresh bookmark status after modal closes
+    if (flashcards && flashcards[currentAyahIndex]?.type === 'ayah') {
+      const ayahNumber = flashcards.slice(0, currentAyahIndex + 1).filter(a => a.type === 'ayah').length;
+      const inAnyList = await isAyahInAnyList(surah.name, ayahNumber);
+      setIsCurrentAyahBookmarked(inAnyList);
+    }
+  };
+
+  const handleBookmarkChange = async () => {
+    // Refresh bookmark status after modal changes
+    if (flashcards && flashcards[currentAyahIndex]?.type === 'ayah') {
+      const ayahNumber = flashcards.slice(0, currentAyahIndex + 1).filter(a => a.type === 'ayah').length;
+      const inAnyList = await isAyahInAnyList(surah.name, ayahNumber);
+      setIsCurrentAyahBookmarked(inAnyList);
+    }
+  };
+
   const spin = spinAnim.interpolate({
     inputRange: [0, 1],
     outputRange: ['0deg', '360deg'],
@@ -675,34 +746,120 @@ const MemorizationScreen = ({ route, navigation }) => {
             </View>
             {/* Button row below flashcard */}
             {flashcards && flashcards[currentAyahIndex] && ((flashcards[currentAyahIndex]?.type === 'ayah') || 
-              (flashcards[currentAyahIndex]?.type === 'bismillah' && surahNumber === 1)) && (
-          <View style={styles.buttonRow}>
-            {/* Settings Button */}
-            <TouchableOpacity
-              style={styles.settingsButton}
-              onPress={() => setShowSettingsModal(true)}
-            >
-              <View style={{
-                borderWidth: 2,
-                borderColor: 'rgba(165,115,36,0.8)',
-                borderRadius: 12,
-                padding: 6,
-                shadowColor: '#000',
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.1,
-                shadowRadius: 4,
-                elevation: 3,
-              }}>
-                <Image 
-                  source={require('../assets/app_icons/slider.png')} 
-                  style={{ width: 28, height: 28, tintColor: '#F5E6C8' }}
-                  resizeMode="contain"
-                />
-              </View>
-            </TouchableOpacity>
-            
-            {/* Audio Button with Reciter Preference */}
-            <View style={{ position: 'relative', alignItems: 'center', justifyContent: 'center' }}>
+              (flashcards[currentAyahIndex]?.type === 'bismillah' && surahNumber === 1)) && 
+              flashcards[currentAyahIndex]?.type !== 'istiadhah' && (
+                      <View style={styles.buttonRow}>
+              {/* Settings Button - Left Edge */}
+              <TouchableOpacity
+                style={styles.settingsButton}
+                onPress={() => setShowSettingsModal(true)}
+              >
+                <View style={{
+                  borderWidth: 2,
+                  borderColor: '#5b7f67',
+                  borderRadius: 12,
+                  padding: 6,
+                  shadowColor: '#000',
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.1,
+                  shadowRadius: 4,
+                  elevation: 3,
+                }}>
+                  <Image 
+                    source={require('../assets/app_icons/slider.png')} 
+                    style={{ width: 28, height: 28, tintColor: '#F5E6C8' }}
+                    resizeMode="contain"
+                  />
+                </View>
+              </TouchableOpacity>
+              
+              {/* First Placeholder Button - Next to Settings */}
+              <TouchableOpacity
+                style={styles.placeholderButton}
+                onPress={() => {
+                  ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true });
+                  // TODO: Add guidance and instructions functionality
+                }}
+              >
+                <View style={{
+                  borderWidth: 2,
+                  borderColor: 'rgba(165,115,36,0.8)',
+                  borderRadius: 12,
+                  padding: 6,
+                  shadowColor: '#000',
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.1,
+                  shadowRadius: 4,
+                  elevation: 3,
+                }}>
+                  <Ionicons 
+                    name="help-circle-outline" 
+                    size={28} 
+                    color="#F5E6C8" 
+                  />
+                </View>
+              </TouchableOpacity>
+
+              {/* Hide/Reveal Button - Center */}
+              <TouchableOpacity
+                style={[styles.revealButtonNew, {
+                  backgroundColor: isTextHidden ? '#F5E6C8' : 'rgba(245, 230, 200, 0.7)',
+                  padding: SIZES.medium,
+                  width: 120,
+                  minHeight: 40,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRadius: 12,
+                  borderWidth: 2,
+                  borderColor: 'rgba(165,115,36,0.8)',
+                  flex: 1,
+                  marginHorizontal: SIZES.large,
+                }]}
+                onPress={() => {
+                  ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true });
+                  handleRevealToggle();
+                }}
+              >
+                <Text variant="body1" color="primary" style={[styles.revealButtonText, { 
+                  fontSize: isTextHidden ? 16 : 18,
+                  color: isTextHidden ? COLORS.primary : '#333333',
+                  fontWeight: 'bold',
+                  textAlign: 'center',
+                }]}>
+                  {isTextHidden ? t('reveal') : t('hide')}
+                </Text>
+              </TouchableOpacity>
+
+              {/* Second Placeholder Button - Next to Hide/Reveal */}
+              <TouchableOpacity
+                style={styles.voiceRecordingButton}
+                onPress={() => {
+                  // Placeholder for voice recording functionality
+                  ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true });
+                }}
+                disabled={showReward}
+              >
+                <View style={{
+                  borderWidth: 2,
+                  borderColor: 'rgba(165,115,36,0.8)',
+                  borderRadius: 12,
+                  padding: 6,
+                  shadowColor: '#000',
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.1,
+                  shadowRadius: 4,
+                  elevation: 3,
+                }}>
+                  <Ionicons 
+                    name="mic-outline" 
+                    size={28} 
+                    color="#F5E6C8" 
+                  />
+                </View>
+              </TouchableOpacity>
+              
+              {/* Audio Button - Right Edge */}
+              <View style={{ position: 'relative', alignItems: 'center', justifyContent: 'center' }}>
                 {/* Spinning ring */}
                 {isRepeating && (
                   <Animated.View
@@ -758,33 +915,6 @@ const MemorizationScreen = ({ route, navigation }) => {
                   </View>
                 </Pressable>
               </View>
-            {/* Centered: Reveal/Hide Button */}
-            <TouchableOpacity
-              style={[styles.revealButtonNew, {
-                backgroundColor: isTextHidden ? '#F5E6C8' : 'rgba(245, 230, 200, 0.7)',
-                padding: SIZES.medium,
-                width: 160,
-                minHeight: 40,
-                alignItems: 'center',
-                justifyContent: 'center',
-                position: 'absolute',
-                left: '50%',
-                transform: [{ translateX: -60 }],
-              }]}
-              onPress={() => {
-                ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true });
-                handleRevealToggle();
-              }}
-            >
-              <Text variant="body1" color="primary" style={[styles.revealButtonText, { 
-                fontSize: isTextHidden ? 18 : 22,
-                color: isTextHidden ? COLORS.primary : '#333333',
-                fontWeight: isTextHidden ? 'bold' : 'bold',
-                textAlign: 'center',
-              }]}>
-                {isTextHidden ? t('reveal') : t('hide')}
-              </Text>
-            </TouchableOpacity>
           </View>
         )}
         
@@ -803,8 +933,27 @@ const MemorizationScreen = ({ route, navigation }) => {
             disabled={showReward}
             style={[styles.navButton, { backgroundColor: '#5b7f67' }]}
           />
+          
+          {/* Bookmark Button - Between Previous and Next - Only show on ayaat */}
+          {flashcards && flashcards[currentAyahIndex] && flashcards[currentAyahIndex]?.type === 'ayah' && (
+            <TouchableOpacity
+              style={styles.bookmarkButton}
+              onPress={handleBookmarkToggle}
+              disabled={showReward}
+            >
+                              <Svg width={32} height={32} viewBox="0 0 24 24">
+                  <Polygon
+                    points="12,2 20,6 20,18 12,22 4,18 4,6"
+                    fill={isCurrentAyahBookmarked ? '#5b7f67' : 'none'}
+                    stroke={isCurrentAyahBookmarked ? '#5b7f67' : 'rgba(165,115,36,0.8)'}
+                    strokeWidth="1.5"
+                  />
+                </Svg>
+            </TouchableOpacity>
+          )}
+          
           <Button
-                            title={currentAyahIndex === 0 ? t('start') : (flashcards && currentAyahIndex === flashcards.length - 1 ? t('finish') : t('next'))}
+            title={currentAyahIndex === 0 ? t('start') : (flashcards && currentAyahIndex === flashcards.length - 1 ? t('finish') : t('next'))}
             onPress={async () => {
               ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true });
               handleNext();
@@ -821,8 +970,16 @@ const MemorizationScreen = ({ route, navigation }) => {
         animationType="fade"
         onRequestClose={() => setShowGoToModal(false)}
       >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
+        <TouchableOpacity 
+          style={styles.modalOverlay}
+          activeOpacity={1}
+          onPress={() => setShowGoToModal(false)}
+        >
+          <TouchableOpacity 
+            style={styles.modalContent}
+            activeOpacity={1}
+            onPress={(e) => e.stopPropagation()}
+          >
             <Text variant="h2" style={{ marginBottom: 16, color: 'rgba(64, 64, 64, 0.9)' }}>{t('navigation')}</Text>
             
             {/* Search Input */}
@@ -991,8 +1148,8 @@ const MemorizationScreen = ({ route, navigation }) => {
               }}
               style={{ backgroundColor: 'rgba(96, 96, 96, 0.9)', marginTop: 16, width: '90%' }}
             />
-          </View>
-        </View>
+          </TouchableOpacity>
+        </TouchableOpacity>
       </Modal>
 
       {/* Animated Reward Modal */}
@@ -1047,11 +1204,23 @@ const MemorizationScreen = ({ route, navigation }) => {
         animationType="fade"
         onRequestClose={() => setShowStreakAnimation(false)}
       >
-        <StreakAnimation
-          visible={showStreakAnimation}
-          newStreak={newStreak}
-          onAnimationComplete={handleStreakAnimationComplete}
-              />
+        <TouchableOpacity 
+          style={styles.modalOverlay}
+          activeOpacity={1}
+          onPress={() => setShowStreakAnimation(false)}
+        >
+          <TouchableOpacity 
+            style={styles.modalContent}
+            activeOpacity={1}
+            onPress={(e) => e.stopPropagation()}
+          >
+            <StreakAnimation
+              visible={showStreakAnimation}
+              newStreak={newStreak}
+              onAnimationComplete={handleStreakAnimationComplete}
+            />
+          </TouchableOpacity>
+        </TouchableOpacity>
       </Modal>
 
       {/* Settings Modal */}
@@ -1061,8 +1230,16 @@ const MemorizationScreen = ({ route, navigation }) => {
         animationType="fade"
         onRequestClose={() => setShowSettingsModal(false)}
       >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
+        <TouchableOpacity 
+          style={styles.modalOverlay}
+          activeOpacity={1}
+          onPress={() => setShowSettingsModal(false)}
+        >
+          <TouchableOpacity 
+            style={styles.modalContent}
+            activeOpacity={1}
+            onPress={(e) => e.stopPropagation()}
+          >
             {/* Close X button at top right */}
             <TouchableOpacity
               style={{
@@ -1135,8 +1312,8 @@ const MemorizationScreen = ({ route, navigation }) => {
                 {isBoldFont ? 'BOLD' : 'Regular'}
               </Text>
             </TouchableOpacity>
-          </View>
-        </View>
+          </TouchableOpacity>
+        </TouchableOpacity>
       </Modal>
 
           {/* Translation Modal */}
@@ -1172,6 +1349,16 @@ const MemorizationScreen = ({ route, navigation }) => {
 
           {/* Reciter Selection Modal */}
           {/* Removed as per edit hint */}
+
+          {/* Bookmark Modal */}
+          <BookmarkModal
+            visible={showBookmarkModal}
+            onClose={handleBookmarkModalClose}
+            surahName={surah.name}
+            surahNumber={surahNumber}
+            ayahNumber={flashcards && flashcards[currentAyahIndex]?.type === 'ayah' ? flashcards.slice(0, currentAyahIndex + 1).filter(a => a.type === 'ayah').length : null}
+            onBookmarkChange={handleBookmarkChange}
+          />
     </SafeAreaView>
       </ImageBackground>
     </View>
@@ -1380,7 +1567,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: SIZES.medium,
-    paddingHorizontal: SIZES.medium,
+    paddingHorizontal: SIZES.large,
     position: 'relative',
   },
   settingsButton: {
@@ -1469,7 +1656,20 @@ const styles = StyleSheet.create({
   navigationOverlay: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'center',
     marginTop: SIZES.large,
+    paddingHorizontal: SIZES.large,
+  },
+  bookmarkButton: {
+    padding: 0,
+    marginHorizontal: 10,
+  },
+  voiceRecordingButton: {
+    padding: 8,
+    marginLeft: 1,
+  },
+  placeholderButton: {
+    marginLeft: SIZES.large,
   },
   audioSettingsIcon: {
     position: 'absolute',

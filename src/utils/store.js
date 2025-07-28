@@ -10,6 +10,9 @@ const STORAGE_KEYS = {
   MEMORIZED_AYAHS: 'memorized_ayahs',
   LAST_POSITION: 'last_position',
   STREAK_UPDATED_TODAY: 'streak_updated_today',
+  BOOKMARKED_AYAHS: 'bookmarked_ayahs',
+  CUSTOM_LISTS: 'custom_lists',
+  CUSTOM_LIST_AYAHS: 'custom_list_ayahs',
 };
 
 // Calculate total ayaat in the Qur'an
@@ -348,5 +351,233 @@ export const loadLastPosition = async () => {
   } catch (error) {
     console.error('Error loading last position:', error);
     return null;
+  }
+};
+
+// Bookmark functions
+export const toggleBookmark = async (surahName, surahNumber, ayahNumber) => {
+  try {
+    const bookmarkedAyahs = await AsyncStorage.getItem(STORAGE_KEYS.BOOKMARKED_AYAHS);
+    let bookmarks = bookmarkedAyahs ? JSON.parse(bookmarkedAyahs) : {};
+    
+    const bookmarkKey = `${surahName}_${ayahNumber}`;
+    const isBookmarked = bookmarks[bookmarkKey];
+    
+    if (isBookmarked) {
+      // Remove bookmark
+      delete bookmarks[bookmarkKey];
+    } else {
+      // Add bookmark
+      bookmarks[bookmarkKey] = {
+        surahName,
+        surahNumber,
+        ayahNumber,
+        timestamp: Date.now()
+      };
+    }
+    
+    await AsyncStorage.setItem(STORAGE_KEYS.BOOKMARKED_AYAHS, JSON.stringify(bookmarks));
+    return !isBookmarked; // Return new bookmark state
+  } catch (error) {
+    console.error('[Store] Error toggling bookmark:', error);
+    return false;
+  }
+};
+
+export const isBookmarked = async (surahName, ayahNumber) => {
+  try {
+    const bookmarkedAyahs = await AsyncStorage.getItem(STORAGE_KEYS.BOOKMARKED_AYAHS);
+    const bookmarks = bookmarkedAyahs ? JSON.parse(bookmarkedAyahs) : {};
+    const bookmarkKey = `${surahName}_${ayahNumber}`;
+    return !!bookmarks[bookmarkKey];
+  } catch (error) {
+    console.error('[Store] Error checking bookmark status:', error);
+    return false;
+  }
+};
+
+export const getBookmarkedSurahs = async () => {
+  try {
+    const bookmarkedAyahs = await AsyncStorage.getItem(STORAGE_KEYS.BOOKMARKED_AYAHS);
+    const bookmarks = bookmarkedAyahs ? JSON.parse(bookmarkedAyahs) : {};
+    
+    // Group bookmarks by surah
+    const surahBookmarks = {};
+    Object.values(bookmarks).forEach(bookmark => {
+      const { surahName, surahNumber } = bookmark;
+      if (!surahBookmarks[surahName]) {
+        surahBookmarks[surahName] = {
+          surahName,
+          surahNumber,
+          bookmarkedAyaat: []
+        };
+      }
+      surahBookmarks[surahName].bookmarkedAyaat.push(bookmark.ayahNumber);
+    });
+    
+    return Object.values(surahBookmarks);
+  } catch (error) {
+    console.error('[Store] Error getting bookmarked surahs:', error);
+    return [];
+  }
+};
+
+// Custom Lists Functions
+export const getCustomLists = async () => {
+  try {
+    const customListsStr = await AsyncStorage.getItem(STORAGE_KEYS.CUSTOM_LISTS);
+    const customLists = customListsStr ? JSON.parse(customListsStr) : ['Favorites'];
+    return customLists;
+  } catch (error) {
+    console.error('[Store] Error getting custom lists:', error);
+    return ['Favorites'];
+  }
+};
+
+export const addCustomList = async (listName) => {
+  try {
+    const customLists = await getCustomLists();
+    if (!customLists.includes(listName)) {
+      customLists.push(listName);
+      await AsyncStorage.setItem(STORAGE_KEYS.CUSTOM_LISTS, JSON.stringify(customLists));
+    }
+    return customLists;
+  } catch (error) {
+    console.error('[Store] Error adding custom list:', error);
+    return [];
+  }
+};
+
+export const removeCustomList = async (listName) => {
+  try {
+    const customLists = await getCustomLists();
+    const filteredLists = customLists.filter(list => list !== listName);
+    await AsyncStorage.setItem(STORAGE_KEYS.CUSTOM_LISTS, JSON.stringify(filteredLists));
+    
+    // Remove all ayahs from this list
+    const listAyahsStr = await AsyncStorage.getItem(STORAGE_KEYS.CUSTOM_LIST_AYAHS);
+    const listAyahs = listAyahsStr ? JSON.parse(listAyahsStr) : {};
+    delete listAyahs[listName];
+    await AsyncStorage.setItem(STORAGE_KEYS.CUSTOM_LIST_AYAHS, JSON.stringify(listAyahs));
+    
+    return filteredLists;
+  } catch (error) {
+    console.error('[Store] Error removing custom list:', error);
+    return [];
+  }
+};
+
+export const addAyahToList = async (listName, surahName, surahNumber, ayahNumber) => {
+  try {
+    const listAyahsStr = await AsyncStorage.getItem(STORAGE_KEYS.CUSTOM_LIST_AYAHS);
+    const listAyahs = listAyahsStr ? JSON.parse(listAyahsStr) : {};
+    
+    if (!listAyahs[listName]) {
+      listAyahs[listName] = [];
+    }
+    
+    const ayahKey = `${surahName}_${ayahNumber}`;
+    const existingIndex = listAyahs[listName].findIndex(ayah => 
+      ayah.surahName === surahName && ayah.ayahNumber === ayahNumber
+    );
+    
+    if (existingIndex === -1) {
+      listAyahs[listName].push({
+        surahName,
+        surahNumber,
+        ayahNumber,
+        timestamp: Date.now()
+      });
+    }
+    
+    await AsyncStorage.setItem(STORAGE_KEYS.CUSTOM_LIST_AYAHS, JSON.stringify(listAyahs));
+    return true;
+  } catch (error) {
+    console.error('[Store] Error adding ayah to list:', error);
+    return false;
+  }
+};
+
+export const removeAyahFromList = async (listName, surahName, ayahNumber) => {
+  try {
+    const listAyahsStr = await AsyncStorage.getItem(STORAGE_KEYS.CUSTOM_LIST_AYAHS);
+    const listAyahs = listAyahsStr ? JSON.parse(listAyahsStr) : {};
+    
+    if (listAyahs[listName]) {
+      listAyahs[listName] = listAyahs[listName].filter(ayah => 
+        !(ayah.surahName === surahName && ayah.ayahNumber === ayahNumber)
+      );
+      await AsyncStorage.setItem(STORAGE_KEYS.CUSTOM_LIST_AYAHS, JSON.stringify(listAyahs));
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('[Store] Error removing ayah from list:', error);
+    return false;
+  }
+};
+
+export const isAyahInList = async (listName, surahName, ayahNumber) => {
+  try {
+    const listAyahsStr = await AsyncStorage.getItem(STORAGE_KEYS.CUSTOM_LIST_AYAHS);
+    const listAyahs = listAyahsStr ? JSON.parse(listAyahsStr) : {};
+    
+    if (!listAyahs[listName]) return false;
+    
+    return listAyahs[listName].some(ayah => 
+      ayah.surahName === surahName && ayah.ayahNumber === ayahNumber
+    );
+  } catch (error) {
+    console.error('[Store] Error checking if ayah is in list:', error);
+    return false;
+  }
+};
+
+export const getListSurahs = async (listName) => {
+  try {
+    const listAyahsStr = await AsyncStorage.getItem(STORAGE_KEYS.CUSTOM_LIST_AYAHS);
+    const listAyahs = listAyahsStr ? JSON.parse(listAyahsStr) : {};
+    
+    if (!listAyahs[listName]) return [];
+    
+    // Group ayahs by surah
+    const surahGroups = {};
+    listAyahs[listName].forEach(ayah => {
+      const { surahName, surahNumber } = ayah;
+      if (!surahGroups[surahName]) {
+        surahGroups[surahName] = {
+          surahName,
+          surahNumber,
+          bookmarkedAyaat: []
+        };
+      }
+      surahGroups[surahName].bookmarkedAyaat.push(ayah.ayahNumber);
+    });
+    
+    return Object.values(surahGroups);
+  } catch (error) {
+    console.error('[Store] Error getting list surahs:', error);
+    return [];
+  }
+}; 
+
+export const isAyahInAnyList = async (surahName, ayahNumber) => {
+  try {
+    const listAyahsStr = await AsyncStorage.getItem(STORAGE_KEYS.CUSTOM_LIST_AYAHS);
+    const listAyahs = listAyahsStr ? JSON.parse(listAyahsStr) : {};
+    
+    // Check if ayah exists in any list
+    for (const listName in listAyahs) {
+      if (listAyahs[listName].some(ayah => 
+        ayah.surahName === surahName && ayah.ayahNumber === ayahNumber
+      )) {
+        return true;
+      }
+    }
+    
+    return false;
+  } catch (error) {
+    console.error('[Store] Error checking if ayah is in any list:', error);
+    return false;
   }
 }; 

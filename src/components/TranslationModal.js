@@ -73,8 +73,16 @@ const TranslationModal = ({ visible, onClose, currentSurah, currentAyah, onAyahC
       transparent={true}
       onRequestClose={onClose}
     >
-      <View style={styles.overlay}>
-        <View style={styles.modalContainer}>
+      <TouchableOpacity 
+        style={styles.overlay}
+        activeOpacity={1}
+        onPress={onClose}
+      >
+        <TouchableOpacity 
+          style={styles.modalContainer}
+          activeOpacity={1}
+          onPress={(e) => e.stopPropagation()}
+        >
           <View style={styles.header}>
             <Text style={styles.title}>{t('translation')}</Text>
             <TouchableOpacity onPress={onClose} onPressIn={() => HapticFeedback.trigger('selection', { enableVibrateFallback: true })} style={styles.closeButton}>
@@ -137,8 +145,8 @@ const TranslationModal = ({ visible, onClose, currentSurah, currentAyah, onAyahC
               </TouchableOpacity>
             ))}
           </View>
-        </View>
-      </View>
+        </TouchableOpacity>
+      </TouchableOpacity>
     </Modal>
   );
 };

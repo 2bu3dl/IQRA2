@@ -25,8 +25,16 @@ const ReciterSelectionModal = ({
       animationType="fade"
       onRequestClose={onClose}
     >
-      <View style={styles.overlay}>
-        <View style={styles.modalContainer}>
+      <TouchableOpacity 
+        style={styles.overlay}
+        activeOpacity={1}
+        onPress={onClose}
+      >
+        <TouchableOpacity 
+          style={styles.modalContainer}
+          activeOpacity={1}
+          onPress={(e) => e.stopPropagation()}
+        >
           <View style={styles.header}>
             <Text variant="h3" style={styles.title}>
               {language === 'ar' ? 'اختر القارئ' : 'Choose Reciter'}
@@ -65,8 +73,8 @@ const ReciterSelectionModal = ({
               </TouchableOpacity>
             ))}
           </ScrollView>
-        </View>
-      </View>
+        </TouchableOpacity>
+      </TouchableOpacity>
     </Modal>
   );
 };

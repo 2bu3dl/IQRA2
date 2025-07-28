@@ -21,7 +21,7 @@ import { COLORS as BASE_COLORS, SIZES, FONTS } from '../utils/theme';
 import Text from '../components/Text';
 import Card from '../components/Card';
 import ProgressBar from '../components/ProgressBar';
-import { loadData, saveCurrentPosition, loadLastPosition } from '../utils/store';
+import { loadData, saveCurrentPosition, loadLastPosition, getCustomLists, getListSurahs } from '../utils/store';
 import { getAllSurahs } from '../utils/quranData';
 
 const COLORS = { ...BASE_COLORS, primary: '#33694e', accent: '#FFD700' };
@@ -283,59 +283,127 @@ const SurahListScreen = ({ navigation, route }) => {
     }
   };
 
+  // Function to animate tabs when selection changes
+  const animateTabs = (selectedTabId) => {
+    const animations = tabs.map((tab, index) => {
+      const isSelected = tab.id === selectedTabId;
+      const distance = Math.abs(index - selectedTabId);
+      const maxDistance = Math.max(selectedTabId, tabs.length - 1 - selectedTabId);
+      
+      // Calculate animation value based on distance from selected tab
+      const animationValue = isSelected ? 1 : Math.max(0, 1 - (distance / maxDistance) * 0.4);
+      
+      return Animated.timing(tabAnimations[index], {
+        toValue: animationValue,
+        duration: 500,
+        useNativeDriver: false,
+      });
+    });
+    
+    Animated.parallel(animations).start();
+  };
+
   // Tab data
   const tabs = [
     { id: 0, titleKey: 'surah' },
     { id: 1, titleKey: 'juz' },
-    { id: 2, titleKey: 'categories' }
+    { id: 2, titleKey: 'categories' },
+    { id: 3, titleKey: 'bookmarks' }
   ];
+
+  // Animated values for tab animations
+  const tabAnimations = useRef(tabs.map(() => new Animated.Value(0))).current;
+
+  // Initialize animations on mount
+  useEffect(() => {
+    animateTabs(activeTab);
+  }, []);
 
   const renderTabBar = () => (
     <View style={styles.tabBar}>
-      {tabs.map((tab) => {
+      {tabs.map((tab, index) => {
+        const isSelected = activeTab === tab.id;
+        const animationValue = tabAnimations[index];
+        
         return (
-          <TouchableOpacity
+          <Animated.View
             key={tab.id}
             style={[
               styles.tabButton,
-              activeTab === tab.id && styles.activeTabButton
-            ]}
-                          onPress={() => {
-              ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true });
-              
-              if (isJuzMode) {
-                // Handle special actions when in Juz mode
-                if (tab.id === 0) {
-                  // Tapping "Surah" acts like "All Surahs" button
-                  clearJuzFilter();
-                } else if (tab.id === 1) {
-                  // Tapping "Juz" goes back to Juz selection
-                  clearJuzFilter();
-                  setActiveTab(1);
-                } else if (tab.id === 2) {
-                  // Tapping "Categories" goes to categories
-                  clearJuzFilter();
-                  setActiveTab(2);
-                }
-              } else {
-                // Normal tab switching or return to previous Juz
-                if (tab.id === 0 && activeTab === 0 && previousJuzFilter.isActive) {
-                  // Tapping Surah tab again when already on it - return to previous Juz
-                  returnToPreviousJuz();
-                } else {
-                  setActiveTab(tab.id);
-                }
+              activeTab === tab.id && styles.activeTabButton,
+              language === 'ar' && { marginHorizontal: 4 },
+              {
+                transform: [
+                  {
+                    scale: animationValue.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [0.7, 1.15],
+                    })
+                  },
+                  {
+                    translateX: animationValue.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [isSelected ? 0 : (index < activeTab ? -18 : 18), 0],
+                    })
+                  }
+                ],
+                opacity: animationValue.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [0.5, 1],
+                })
               }
-            }}
+            ]}
           >
-            <RNText style={[
-              styles.tabText,
-              activeTab === tab.id && styles.activeTabText
-            ]}>
-              {t(tab.titleKey)}
-              {tab.id === 0 && isJuzMode && ' ⬢'} {/* Use hexagon instead of sparkle */}
-            </RNText>
-          </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                styles.tabButtonInner,
+                language === 'ar' && {
+                  paddingVertical: 4,
+                  paddingHorizontal: SIZES.extraSmall,
+                }
+              ]}
+              onPress={() => {
+                ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true });
+                
+                if (isJuzMode) {
+                  // Handle special actions when in Juz mode
+                  if (tab.id === 0) {
+                    // Tapping "Surah" acts like "All Surahs" button
+                    clearJuzFilter();
+                    animateTabs(0);
+                  } else if (tab.id === 1) {
+                    // Tapping "Juz" goes back to Juz selection
+                    clearJuzFilter();
+                    setActiveTab(1);
+                    animateTabs(1);
+                  } else if (tab.id === 2) {
+                    // Tapping "Categories" goes to categories
+                    clearJuzFilter();
+                    setActiveTab(2);
+                    animateTabs(2);
+                  }
+                } else {
+                  // Normal tab switching or return to previous Juz
+                  if (tab.id === 0 && activeTab === 0 && previousJuzFilter.isActive) {
+                    // Tapping Surah tab again when already on it - return to previous Juz
+                    returnToPreviousJuz();
+                  } else {
+                    setActiveTab(tab.id);
+                    animateTabs(tab.id);
+                  }
+                }
+              }}
+            >
+              <RNText style={[
+                styles.tabText,
+                activeTab === tab.id && styles.activeTabText,
+                language === 'ar' && { fontSize: 10 }
+              ]}>
+                {t(tab.titleKey)}
+                {tab.id === 0 && isJuzMode && ' ⬢'} {/* Use hexagon instead of sparkle */}
+              </RNText>
+            </TouchableOpacity>
+          </Animated.View>
         );
       })}
     </View>
@@ -349,6 +417,8 @@ const SurahListScreen = ({ navigation, route }) => {
         return <JuzWheelTab navigation={navigation} setJuzFilter={setJuzFilter} setPreviousJuzFilter={setPreviousJuzFilter} setActiveTab={setActiveTab} setSearchText={setSearchText} language={language} />;
       case 2:
         return <ThemesTab navigation={navigation} />;
+              case 3:
+          return <ListsTab navigation={navigation} route={route} searchText={searchText} />;
       default:
         return <AllSurahsTab navigation={navigation} route={route} searchText={searchText} isJuzMode={isJuzMode} juzData={juzData} />;
     }
@@ -370,7 +440,7 @@ const SurahListScreen = ({ navigation, route }) => {
                   // Juz mode header
                   <>
                     <RNText variant="h1" style={[
-                      { fontFamily: 'KFGQPC Uthman Taha Naskh', fontSize: 40, fontWeight: 'bold', color: '#F5E6C8', marginTop: 30, marginBottom: 8, textShadowColor: '#000', textShadowOffset: { width: 1, height: 1 }, textShadowRadius: 3 }
+                      { fontFamily: 'KFGQPC Uthman Taha Naskh', fontSize: 40, fontWeight: 'bold', color: '#F5E6C8', marginTop: 50, marginBottom: 8, textShadowColor: '#000', textShadowOffset: { width: 1, height: 1 }, textShadowRadius: 3 }
                     ]}>{juzTitle}</RNText>
                     <RNText variant="body1" style={[
                       { fontFamily: language === 'ar' ? 'KFGQPC Uthman Taha Naskh' : 'Montserrat-Regular', fontSize: 16, color: '#CCCCCC', textAlign: 'center', marginBottom: 16 }
@@ -384,7 +454,7 @@ const SurahListScreen = ({ navigation, route }) => {
                       fontSize: 40, // Make all titles consistently larger
                       fontWeight: 'bold', 
                       color: '#F5E6C8', 
-                      marginTop: 30, // Brought down more
+                      marginTop: 50, // Brought down more
                       marginBottom: 16, 
                       textShadowColor: '#000', 
                       textShadowOffset: { width: 1, height: 1 }, 
@@ -397,13 +467,13 @@ const SurahListScreen = ({ navigation, route }) => {
                   <>
                     <RNText variant="h1" style={[FONTS.h1.getFont(language), styles.titleText, { 
                       color: '#F5E6C8', 
-                      marginTop: 30, // Brought down more
+                      marginTop: 50, // Brought down more
                       paddingTop: language === 'ar' ? 4 : 0,
                       fontSize: 40 // Make all titles larger and consistent
                     }]}>
                       {language === 'ar' ? 
-                        (activeTab === 0 ? 'السور' : activeTab === 1 ? 'الجزء' : 'الفئات') : 
-                        (activeTab === 0 ? 'Surahs' : activeTab === 1 ? 'Juz' : 'Categories')
+                        (activeTab === 0 ? 'السور' : activeTab === 1 ? 'الجزء' : activeTab === 2 ? 'المواضيع' : 'الآيات المحفوظة') : 
+                        (activeTab === 0 ? 'Surahs' : activeTab === 1 ? 'Juz' : activeTab === 2 ? 'Topics' : 'Saved Ayaat')
                       }
                     </RNText>
                     {activeTab === 0 && (
@@ -536,8 +606,9 @@ const SurahListScreen = ({ navigation, route }) => {
                   width: 36, 
                   height: 36, 
                   tintColor: 'rgba(165,115,36,1.0)',
-                  marginLeft: 12,
-                  transform: [{ rotate: '-90deg' }],
+                  marginLeft: language === 'ar' ? 0 : 12,
+                  marginRight: language === 'ar' ? 12 : 0,
+                  transform: [{ rotate: language === 'ar' ? '90deg' : '-90deg' }],
                 }}
                 resizeMode="contain"
               />
@@ -953,7 +1024,8 @@ const AllSurahsTab = ({ navigation, route, searchText, isJuzMode, juzData }) => 
                       textAlign: 'right', 
                       flex: 1,
                       writingDirection: 'rtl',
-                      includeFontPadding: false
+                      includeFontPadding: false,
+                      textAlignVertical: 'center'
                     }
                   : [FONTS.h3.getFont(language), { color: isSelected ? COLORS.primary : '#F5E6C8', textAlign: 'left', fontSize: 22 }], // Increased English size too
               ]} lang={language === 'ar' ? 'ar' : undefined}>
@@ -981,7 +1053,7 @@ const AllSurahsTab = ({ navigation, route, searchText, isJuzMode, juzData }) => 
                     } : {}
                   ]}>
                     {toArabicNumber(item.memorizedAyahs)}
-                  </RNText> {t('ayaat_memorized')}
+                  </RNText> <RNText style={{ color: 'rgba(255, 255, 255, 0.6)' }}>{t('ayaat_memorized')}</RNText>
                 </>
               ) : (
                 <>
@@ -994,7 +1066,7 @@ const AllSurahsTab = ({ navigation, route, searchText, isJuzMode, juzData }) => 
                   ]}>
                     {toArabicNumber(item.memorizedAyahs)}
                   </RNText>
-                  /<RNText style={{ color: 'rgba(255, 255, 255, 0.6)' }}>{toArabicNumber(item.totalAyahs)}</RNText> {t('ayaat_memorized')}
+                  <RNText style={{ color: 'rgba(255, 255, 255, 0.6)' }}>/</RNText><RNText style={{ color: 'rgba(255, 255, 255, 0.6)' }}>{toArabicNumber(item.totalAyahs)}</RNText> <RNText style={{ color: 'rgba(255, 255, 255, 0.6)' }}>{t('ayaat_memorized')}</RNText>
                 </>
               )}
             </RNText>
@@ -1095,6 +1167,12 @@ const AllSurahsTab = ({ navigation, route, searchText, isJuzMode, juzData }) => 
 const JuzWheelTab = ({ navigation, setJuzFilter, setPreviousJuzFilter, setActiveTab, setSearchText, language }) => {
   const { t } = useLanguage();
   const [selectedJuz, setSelectedJuz] = useState(30); // Start at 30 by default
+  
+  // Helper to convert numbers to Arabic-Indic if needed
+  const toArabicNumber = (num) => {
+    if (language !== 'ar') return num.toString();
+    return num.toString().replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]);
+  };
   const panResponder = useRef(null);
   const [containerLayout, setContainerLayout] = useState({ width: 300, height: 300 });
   const lastHapticTime = useRef(0); // Add reference to track last haptic feedback time
@@ -1273,7 +1351,7 @@ const JuzWheelTab = ({ navigation, setJuzFilter, setPreviousJuzFilter, setActive
           onPress={handleJuzPress}
         >
           <RNText style={[styles.juzNumber, { fontFamily: language === 'ar' ? 'KFGQPC Uthman Taha Naskh Bold' : 'Montserrat-Bold' }]}>
-            {selectedJuz}
+            {language === 'ar' ? toArabicNumber(selectedJuz) : selectedJuz}
           </RNText>
           <RNText style={[styles.juzLabel, { fontFamily: language === 'ar' ? 'KFGQPC Uthman Taha Naskh' : 'Montserrat-Regular' }]}>
             {language === 'ar' ? 'اضغط للدخول' : 'Tap to Enter'}
@@ -1285,7 +1363,7 @@ const JuzWheelTab = ({ navigation, setJuzFilter, setPreviousJuzFilter, setActive
         {language === 'ar' 
           ? <>
               <RNText>الجزء </RNText>
-              <RNText style={{ color: '#F5E6C8', fontWeight: 'bold' }}>{selectedJuz}</RNText>
+              <RNText style={{ color: '#F5E6C8', fontWeight: 'bold' }}>{toArabicNumber(selectedJuz)}</RNText>
               <RNText> من القرآن الكريم</RNText>
             </>
           : <>
@@ -1466,16 +1544,15 @@ const ThemesTab = ({ navigation }) => {
     <View style={styles.themesTabContent}>
       {/* Search bar for themes - positioned absolutely like Surah tab */}
       <View style={[styles.themeSearchContainer, {
-        top: language === 'ar' ? 60 : 40 // Brought up search bar in categories tab
+        top: language === 'ar' ? 80 : 60 // Brought down search bar in categories tab
       }]}>
         <View style={[styles.themeSearchInputContainer, {
           backgroundColor: isSearchFocused ? 'rgba(245, 230, 200, 0.15)' : 'rgba(245, 230, 200, 0.1)'
         }]}>
-          <Ionicons 
-            name="search" 
-            size={20} 
-            color="rgba(165, 115, 36, 0.8)" 
-            style={{ marginRight: SIZES.small }}
+          <Image 
+            source={require('../assets/app_icons/search.png')} 
+            style={{ width: 20, height: 20, tintColor: 'rgba(165,115,36,0.8)', marginRight: SIZES.small }}
+            resizeMode="contain"
           />
           <TextInput
             style={[styles.themeSearchInput, { 
@@ -1528,6 +1605,225 @@ const ThemesTab = ({ navigation }) => {
       {renderCategoriesScrollBar()}
     </View>
   );
+};
+
+// Lists Tab Component
+const ListsTab = ({ navigation, route, searchText }) => {
+  const { language, t } = useLanguage();
+  const [customLists, setCustomLists] = useState([]);
+  const [selectedList, setSelectedList] = useState('Favorites');
+  const [listSurahs, setListSurahs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showDropdown, setShowDropdown] = useState(false);
+  
+  // Helper to convert numbers to Arabic-Indic if needed
+  const toArabicNumber = (num) => {
+    if (language !== 'ar') return num.toString();
+    return num.toString().replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]);
+  };
+
+  // Load custom lists
+  useEffect(() => {
+    const loadCustomLists = async () => {
+      try {
+        const lists = await getCustomLists();
+        setCustomLists(lists);
+        if (lists.length > 0) {
+          setSelectedList(lists[0]);
+        }
+      } catch (error) {
+        console.error('[ListsTab] Error loading custom lists:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    loadCustomLists();
+  }, []);
+
+  // Load individual ayahs for selected list
+  useEffect(() => {
+    const loadListAyahs = async () => {
+      try {
+        const surahs = await getListSurahs(selectedList);
+        // Flatten surahs into individual ayahs
+        const allAyahs = [];
+        surahs.forEach(surah => {
+          surah.bookmarkedAyaat.forEach(ayahNumber => {
+            allAyahs.push({
+              surahName: surah.surahName,
+              surahNumber: surah.surahNumber,
+              ayahNumber: ayahNumber,
+              id: `${surah.surahNumber}_${ayahNumber}`
+            });
+          });
+        });
+        setListSurahs(allAyahs);
+      } catch (error) {
+        console.error('[ListsTab] Error loading list ayahs:', error);
+      }
+    };
+    
+    if (selectedList) {
+      loadListAyahs();
+    }
+  }, [selectedList]);
+
+  // Filter ayahs based on search
+  const filteredAyahs = useMemo(() => {
+    if (!searchText.trim()) return listSurahs;
+    
+    return listSurahs.filter(ayah => {
+      const surahName = language === 'ar' ? t(`surah_${ayah.surahNumber}`) : ayah.surahName;
+      return surahName.toLowerCase().includes(searchText.toLowerCase()) ||
+             ayah.ayahNumber.toString().includes(searchText);
+    });
+  }, [listSurahs, searchText, language, t]);
+
+  const renderAyah = ({ item, index }) => (
+    <TouchableOpacity
+      style={styles.ayahCard}
+      onPress={() => {
+        ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true });
+        // Navigate to specific ayah
+        navigation.navigate('Memorization', {
+          surah: { id: item.surahNumber, name: item.surahName },
+          resumeFromIndex: 0,
+          targetAyah: item.ayahNumber
+        });
+      }}
+      activeOpacity={0.8}
+    >
+      <View style={styles.ayahInfo}>
+        <View style={[
+          styles.ayahHeader,
+          language === 'ar' && { flexDirection: 'row-reverse' }
+        ]}>
+          <RNText style={[styles.surahNumber, {
+            fontFamily: language === 'ar' ? 'KFGQPC Uthman Taha Naskh Bold' : 'Montserrat-Bold'
+          }]}>
+            {toArabicNumber(item.surahNumber)}
+          </RNText>
+          <RNText style={[styles.surahName, {
+            fontFamily: language === 'ar' ? 'KFGQPC Uthman Taha Naskh Bold' : 'Montserrat-Bold'
+          }]}>
+            {language === 'ar' ? t(`surah_${item.surahNumber}`) : item.surahName}
+          </RNText>
+        </View>
+        
+        <View style={styles.ayahDetails}>
+          <RNText style={[styles.ayahNumber, {
+            fontFamily: language === 'ar' ? 'KFGQPC Uthman Taha Naskh' : 'Montserrat-Regular'
+          }]}>
+            {language === 'ar' ? 
+              `الآية ${toArabicNumber(item.ayahNumber)}` : 
+              `Ayah ${item.ayahNumber}`
+            }
+          </RNText>
+        </View>
+      </View>
+    </TouchableOpacity>
+  );
+
+  const renderListSelector = () => (
+    <View style={styles.dropdownContainer}>
+      {/* Select List Label */}
+      <RNText style={[
+        styles.selectListLabel,
+        language === 'ar' && { 
+          marginTop: SIZES.extraLarge * 2,
+          textAlign: 'left',
+          fontSize: 18
+        }
+      ]}>
+        {language === 'ar' ? 'اختر القائمة' : 'Select List'}
+      </RNText>
+      
+      <TouchableOpacity
+        style={styles.dropdownButton}
+        onPress={() => setShowDropdown(!showDropdown)}
+        activeOpacity={0.8}
+      >
+        <RNText style={styles.dropdownButtonText}>
+          {selectedList}
+        </RNText>
+      </TouchableOpacity>
+    
+      {showDropdown && (
+        <ScrollView 
+          style={styles.dropdownList}
+          showsVerticalScrollIndicator={customLists.length > 4}
+          nestedScrollEnabled={true}
+          indicatorStyle="white"
+        >
+          {customLists.map((listName) => (
+            <TouchableOpacity
+              key={listName}
+              style={[
+                styles.dropdownItem,
+                selectedList === listName && styles.selectedDropdownItem
+              ]}
+              onPress={() => {
+                setSelectedList(listName);
+                setShowDropdown(false);
+              }}
+              activeOpacity={0.8}
+            >
+              <RNText style={[
+                styles.dropdownItemText,
+                selectedList === listName && styles.selectedDropdownItemText
+              ]}>
+                {listName}
+              </RNText>
+              {selectedList === listName && (
+                <RNText style={styles.checkmark}>✓</RNText>
+              )}
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      )}
+    </View>
+  );
+
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <RNText style={styles.loadingText}>
+          {language === 'ar' ? 'جاري التحميل...' : 'Loading...'}
+        </RNText>
+      </View>
+    );
+  }
+
+  return (
+    <View style={styles.bookmarksTabContent}>
+      {renderListSelector()}
+      
+      <FlatList
+        data={filteredAyahs}
+        renderItem={renderAyah}
+        keyExtractor={(item) => `list_${selectedList}_${item.id}`}
+        contentContainerStyle={styles.bookmarksList}
+                        showsVerticalScrollIndicator={true}
+                        ListEmptyComponent={() => (
+                          <View style={styles.emptyBookmarks}>
+                            <RNText style={styles.emptyBookmarksText}>
+                              {language === 'ar' ?
+                                'لا توجد آيات محفوظة في هذه القائمة' :
+                                'No saved ayahs in this list'
+                              }
+                            </RNText>
+                            <RNText style={styles.emptyBookmarksSubtext}>
+                              {language === 'ar' ?
+                                'اضغط على أيقونة الإشارة المرجعية في شاشة الحفظ لحفظ الآيات' :
+                                'Tap the bookmark icon in memorization screen to save ayahs'
+                              }
+                            </RNText>
+                          </View>
+                        )}
+                      />
+                    </View>
+                  );
 };
 
 const styles = StyleSheet.create({
@@ -1776,10 +2072,17 @@ const styles = StyleSheet.create({
     borderRadius: SIZES.small,
     backgroundColor: 'rgba(0, 0, 0, 0.3)', // Thinner, slightly transparent black
     transform: [{ scale: 1 }], // Default scale
+    marginHorizontal: 8, // Add spacing between tabs
+  },
+  tabButtonInner: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+    height: '100%',
   },
   activeTabButton: {
     backgroundColor: 'rgba(165,115,36,0.8)',
-    transform: [{ scale: 1.1 }], // Make selected tab larger
+                    transform: [{ scale: 1.3 }], // Make selected tab larger
   },
   tabText: {
     color: '#999',
@@ -2204,7 +2507,189 @@ const styles = StyleSheet.create({
   categoriesScrollView: {
     flex: 1,
   },
-
+  // Bookmarks Tab Styles
+  bookmarksTabContent: {
+    flex: 1,
+    backgroundColor: 'transparent',
+  },
+  bookmarksList: {
+    padding: SIZES.medium,
+    paddingTop: SIZES.small,
+    paddingBottom: SIZES.extraLarge * 12,
+  },
+  bookmarkInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: SIZES.small,
+  },
+  bookmarkCount: {
+    fontSize: 14,
+    color: '#CCCCCC',
+    marginLeft: SIZES.small,
+  },
+  emptyBookmarks: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: SIZES.large,
+  },
+  emptyBookmarksText: {
+    fontFamily: 'KFGQPC Uthman Taha Naskh',
+    fontSize: 20,
+    color: '#CCCCCC',
+    textAlign: 'center',
+    marginTop: SIZES.medium,
+  },
+  emptyBookmarksSubtext: {
+    fontFamily: 'KFGQPC Uthman Taha Naskh',
+    fontSize: 14,
+    color: '#999999',
+    textAlign: 'center',
+    marginTop: SIZES.small,
+    paddingHorizontal: SIZES.large,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+                  loadingText: {
+                  fontFamily: 'KFGQPC Uthman Taha Naskh',
+                  fontSize: 18,
+                  color: '#CCCCCC',
+                  textAlign: 'center',
+                },
+                bookmarksHeader: {
+                  paddingHorizontal: SIZES.medium,
+                  paddingTop: SIZES.large,
+                  paddingBottom: SIZES.medium,
+                },
+                bookmarksTitle: {
+                  fontFamily: 'KFGQPC Uthman Taha Naskh Bold',
+                  fontSize: 24,
+                  color: '#F5E6C8',
+                  textAlign: 'center',
+                },
+                themesHeader: {
+                  paddingHorizontal: SIZES.medium,
+                  paddingTop: SIZES.large,
+                  paddingBottom: SIZES.medium,
+                },
+                themesTitle: {
+                  fontFamily: 'KFGQPC Uthman Taha Naskh Bold',
+                  fontSize: 24,
+                  color: '#F5E6C8',
+                  textAlign: 'center',
+                },
+                dropdownContainer: {
+                  paddingHorizontal: SIZES.medium,
+                  paddingVertical: SIZES.small,
+                  paddingTop: SIZES.extraLarge *2,
+                  zIndex: 1000,
+                },
+                dropdownButton: {
+                  flexDirection: 'row',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                  borderRadius: SIZES.small,
+                  paddingHorizontal: SIZES.medium,
+                  paddingVertical: SIZES.small,
+                  borderWidth: 1,
+                  borderColor: 'rgba(245, 230, 200, 0.3)',
+                },
+                dropdownButtonText: {
+                  fontFamily: 'KFGQPC Uthman Taha Naskh',
+                  fontSize: 16,
+                  color: '#F5E6C8',
+                  fontWeight: 'bold',
+                },
+                dropdownList: {
+                  backgroundColor: 'rgba(0, 0, 0, 0.9)',
+                  borderRadius: SIZES.small,
+                  marginTop: 4,
+                  borderWidth: 1,
+                  borderColor: 'rgba(245, 230, 200, 0.3)',
+                  maxHeight: 200,
+                  overflow: 'hidden',
+                },
+                dropdownItem: {
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  paddingHorizontal: SIZES.medium,
+                  paddingVertical: SIZES.small,
+                  borderBottomWidth: 1,
+                  borderBottomColor: 'rgba(245, 230, 200, 0.1)',
+                  minHeight: 44,
+                },
+                selectedDropdownItem: {
+                  backgroundColor: 'rgba(91, 127, 103, 0.3)',
+                },
+                dropdownItemText: {
+                  fontFamily: 'KFGQPC Uthman Taha Naskh',
+                  fontSize: 16,
+                  color: '#F5E6C8',
+                },
+                selectedDropdownItemText: {
+                  color: '#5b7f67',
+                  fontWeight: 'bold',
+                },
+                selectListLabel: {
+                  fontFamily: 'KFGQPC Uthman Taha Naskh',
+                  fontSize: 16,
+                  color: '#C0C0C0',
+                  marginBottom: SIZES.small,
+                  marginTop: SIZES.medium,
+                  textShadowColor: '#000',
+                  textShadowOffset: { width: 1, height: 1 },
+                  textShadowRadius: 2,
+                },
+                checkmark: {
+                  fontFamily: 'KFGQPC Uthman Taha Naskh',
+                  fontSize: 16,
+                  color: '#5b7f67',
+                  marginLeft: SIZES.small,
+                },
+  ayahCard: {
+    marginBottom: SIZES.medium,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    borderColor: 'rgba(165,115,36,0.8)',
+    borderWidth: 1,
+    borderRadius: SIZES.small,
+    overflow: 'hidden',
+    marginHorizontal: SIZES.medium,
+    padding: SIZES.medium,
+  },
+  ayahInfo: {
+    flex: 1,
+  },
+  ayahHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: SIZES.small,
+  },
+  surahNumber: {
+    fontFamily: 'KFGQPC Uthman Taha Naskh',
+    fontSize: 18,
+    color: '#CCCCCC',
+  },
+  surahName: {
+    fontFamily: 'KFGQPC Uthman Taha Naskh',
+    fontSize: 16,
+    color: '#F5E6C8',
+  },
+  ayahDetails: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  ayahNumber: {
+    fontFamily: 'KFGQPC Uthman Taha Naskh',
+    fontSize: 14,
+    color: '#CCCCCC',
+  },
 });
 
 export default SurahListScreen; 
