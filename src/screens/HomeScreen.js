@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, SafeAreaView, Image, ImageBackground, Modal, TouchableOpacity, Dimensions, Alert, TextInput } from 'react-native';
+import React, { useEffect, useState, useRef } from 'react';
+import { View, StyleSheet, SafeAreaView, Image, ImageBackground, Modal, TouchableOpacity, Dimensions, Alert, TextInput, Animated, ScrollView } from 'react-native';
 import { useAuth } from '../utils/authContext';
 import { COLORS as BASE_COLORS, SIZES, FONTS } from '../utils/theme';
 import Text from '../components/Text';
@@ -85,6 +85,9 @@ const HomeScreen = ({ navigation, route }) => {
   });
   const [settingsVisible, setSettingsVisible] = useState(false);
   const [introVisible, setIntroVisible] = useState(false);
+  const [infoVisible, setInfoVisible] = useState(false);
+  const [infoActiveTab, setInfoActiveTab] = useState('numerals'); // 'numerals' or 'tajweed'
+  const [duaVisible, setDuaVisible] = useState(false);
   const [resetting, setResetting] = useState(false);
   const [confirmResetVisible, setConfirmResetVisible] = useState(false);
 
@@ -144,7 +147,7 @@ const HomeScreen = ({ navigation, route }) => {
       <SafeAreaView style={[styles.container, { backgroundColor: 'transparent' }]}>
         <View style={styles.header}>
           <View style={styles.logoContainer}>
-            <TouchableOpacity style={styles.introButton} onPress={() => setIntroVisible(true)} onPressIn={() => ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true })}>
+            <TouchableOpacity style={styles.introButton} onPress={() => setInfoVisible(true)} onPressIn={() => ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true })}>
               <View style={{
                 borderWidth: 2,
                 borderColor: '#5b7f67',
@@ -163,18 +166,43 @@ const HomeScreen = ({ navigation, route }) => {
                 />
               </View>
             </TouchableOpacity>
-            <View style={[styles.logoTextContainer, {
+            {(() => {
+              const [logoPressed, setLogoPressed] = useState(false);
+              
+              return (
+                <Animated.View style={[styles.logoTextContainer, {
               shadowColor: '#fae29f',
               shadowOffset: { width: 0, height: 0 },
-              shadowOpacity: 0.3,
-              shadowRadius: 8,
-              elevation: 6,
-            }]}>
+                  shadowOpacity: logoPressed ? 0.6 : 0.3,
+                  shadowRadius: logoPressed ? 16 : 8,
+                  elevation: logoPressed ? 12 : 6,
+                }]}>
+                  <TouchableOpacity
+                    style={{
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      padding: 10,
+                    }}
+                    onPress={() => {
+                      telemetryService.trackUserInteraction('button_click', { 
+                        button: 'Logo - Intro Modal',
+                        screen: 'Home'
+                      });
+                      ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true });
+                      setIntroVisible(true);
+                    }}
+                    onPressIn={() => setLogoPressed(true)}
+                    onPressOut={() => setLogoPressed(false)}
+                    activeOpacity={0.8}
+                  >
               <Image 
                 source={language === 'ar' ? require('../assets/IQRA2iconArabicoctagon.png') : require('../assets/IQRA2iconoctagon.png')} 
                 style={[styles.logo]} 
               />
-            </View>
+                  </TouchableOpacity>
+                </Animated.View>
+              );
+            })()}
             <TouchableOpacity style={styles.settingsButton} onPress={() => setSettingsVisible(true)} onPressIn={() => ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true })}>
               <View style={{
                 borderWidth: 2,
@@ -198,12 +226,46 @@ const HomeScreen = ({ navigation, route }) => {
           <View style={styles.customDivider}>
             <View style={styles.dividerLine} />
             <View style={styles.dividerGap}>
-              <Text style={[styles.arabicText, {
-                color: '#F0D8A0',
-                textShadowColor: '#fae29f',
-                textShadowOffset: { width: 0, height: 0 },
-                textShadowRadius: 3,
-              }]} allowFontScaling={false} lang="ar">اللَّهُمَّ اجْعَلْنَا مِنْ أَهْلِ الْقُرْآن</Text>
+              {(() => {
+                const [duaTextPressed, setDuaTextPressed] = useState(false);
+                
+                return (
+                  <Animated.View style={{
+                    shadowColor: '#fae29f',
+                    shadowOffset: { width: 0, height: 0 },
+                    shadowOpacity: duaTextPressed ? 0.6 : 0.3,
+                    shadowRadius: duaTextPressed ? 16 : 8,
+                    elevation: duaTextPressed ? 12 : 6,
+                  }}>
+                    <TouchableOpacity
+                      style={{
+                        padding: 10,
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                      onPress={() => {
+                        telemetryService.trackUserInteraction('button_click', { 
+                          button: 'Dua Text - Duas Modal',
+                          screen: 'Home'
+                        });
+                        ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true });
+                        setDuaVisible(true);
+                      }}
+                      onPressIn={() => setDuaTextPressed(true)}
+                      onPressOut={() => setDuaTextPressed(false)}
+                      activeOpacity={0.8}
+                    >
+                      <Text style={[styles.arabicText, {
+                        color: '#F0D8A0',
+                        textShadowColor: '#fae29f',
+                        textShadowOffset: { width: 0, height: 0 },
+                        textShadowRadius: 3,
+                        width: 240,
+                      }]} allowFontScaling={false} lang="ar">اللَّهُمَّ اجْعَلْنَا مِنْ أَهْلِ الْقُرْآن</Text>
+                    </TouchableOpacity>
+                  </Animated.View>
+                );
+              })()}
             </View>
             <View style={styles.dividerLine} />
           </View>
@@ -213,7 +275,7 @@ const HomeScreen = ({ navigation, route }) => {
           <View style={{
             flexDirection: 'row',
             justifyContent: 'space-around',
-            marginTop: 25, // Fine-tune button position
+            marginTop: -10, // Moved up from 10 to -10
             marginBottom: 20,
             position: 'relative',
             zIndex: 1,
@@ -221,9 +283,35 @@ const HomeScreen = ({ navigation, route }) => {
           }}>
             {(() => {
               const [pressed, setPressed] = useState(false);
+              const glowAnimation = useRef(new Animated.Value(0)).current;
+              
+              // Fire-like glow animation
+              useEffect(() => {
+                const animateGlow = () => {
+                  Animated.sequence([
+                    Animated.timing(glowAnimation, {
+                      toValue: 1,
+                      duration: 2000,
+                      useNativeDriver: false,
+                    }),
+                    Animated.timing(glowAnimation, {
+                      toValue: 0.2,
+                      duration: 1500,
+                      useNativeDriver: false,
+                    })
+                  ]).start(() => animateGlow());
+                };
+                
+                animateGlow();
+                
+                return () => {
+                  glowAnimation.stopAnimation();
+                };
+              }, []);
+              
               return (
-                <TouchableOpacity
-                  style={[{
+                <Animated.View
+                  style={{
                     flex: 1,
                     marginHorizontal: SIZES.small,
                     padding: SIZES.large,
@@ -233,14 +321,35 @@ const HomeScreen = ({ navigation, route }) => {
                     borderRadius: SIZES.base,
                     shadowColor: '#fae29f',
                     shadowOffset: { width: 0, height: 0 },
-                    shadowOpacity: pressed ? 0.9 : 0.2,
-                    shadowRadius: pressed ? 24 : 8,
-                    elevation: pressed ? 18 : 6,
+                    shadowOpacity: glowAnimation.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [0.2, 0.9],
+                    }),
+                    shadowRadius: glowAnimation.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [8, 24],
+                    }),
+                    elevation: glowAnimation.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [6, 18],
+                    }),
                     flexDirection: 'column',
                     position: 'relative',
                     zIndex: 2,
                     height: 120
-                  }]}
+                  }}
+                >
+                  <TouchableOpacity
+                    style={{
+                      flex: 1,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      backgroundColor: 'transparent',
+                      borderRadius: SIZES.base,
+                      flexDirection: 'column',
+                      width: '100%',
+                      height: '100%'
+                    }}
                   onPress={() => {
                     telemetryService.trackUserInteraction('button_click', { 
                       button: 'Start Memorization',
@@ -285,13 +394,14 @@ const HomeScreen = ({ navigation, route }) => {
                     }]}>{t('quran_memorize')}</Text>
                   </View>
                 </TouchableOpacity>
+                </Animated.View>
               );
             })()}
           </View>
 
           <Card variant="elevated" style={{
             marginBottom: isSmallScreen ? -30 : -50,
-            marginTop: isSmallScreen ? 40 : (isMediumScreen ? 50 : 60),
+            marginTop: isSmallScreen ? 20 : (isMediumScreen ? 25 : 30), // Reduced from 40/50/60 to 20/25/30
             backgroundColor: 'rgba(128,128,128,0.3)',
             borderColor: 'rgba(165,115,36,0.8)',
             borderWidth: 1,
@@ -384,7 +494,7 @@ const HomeScreen = ({ navigation, route }) => {
             flexDirection: 'row',
             justifyContent: 'space-around',
             marginBottom: SIZES.medium,
-            marginTop: isSmallScreen ? 40 : (isMediumScreen ? 60 : 80),
+            marginTop: isSmallScreen ? 30 : (isMediumScreen ? 35 : 60), // Reduced from 40/60/80 to 20/30/40
             position: 'relative',
             zIndex: 1
           }}>
@@ -453,11 +563,13 @@ const HomeScreen = ({ navigation, route }) => {
             animationType="fade"
             onRequestClose={() => setIntroVisible(false)}
           >
-            <View style={styles.modalOverlay}>
+            <View style={[styles.modalOverlay, { justifyContent: 'flex-start', paddingTop: 50 }]}>
               <View style={[styles.modalContent, { 
                 minHeight: 500,
                 justifyContent: 'center',
-                paddingVertical: 40
+                paddingVertical: 40,
+                marginTop: 17,
+                backgroundColor: 'rgba(192,192,192,0.95)',
               }]}>
                 <View style={[styles.logoTextContainer, {
                   shadowColor: '#fae29f',
@@ -509,15 +621,451 @@ const HomeScreen = ({ navigation, route }) => {
                 }}>
                   {t('intro_description')}
                 </Text>
-                <Button
-                  title={t('bismillah')}
+                {(() => {
+                  const [bismillahPressed, setBismillahPressed] = useState(false);
+                  
+                  return (
+                    <Animated.View style={{
+                      shadowColor: '#fae29f',
+                      shadowOffset: { width: 0, height: 0 },
+                      shadowOpacity: bismillahPressed ? 0.8 : 0.3,
+                      shadowRadius: bismillahPressed ? 20 : 8,
+                      elevation: bismillahPressed ? 15 : 6,
+                    }}>
+                      <TouchableOpacity
+                        style={{
+                          backgroundColor: '#33694e',
+                          paddingVertical: 16,
+                          paddingHorizontal: 32,
+                          borderRadius: 12,
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          borderWidth: 2,
+                          borderColor: bismillahPressed ? '#fae29f' : 'rgba(165,115,36,0.6)',
+                        }}
                   onPress={() => setIntroVisible(false)}
-                  style={{ backgroundColor: '#33694e' }}
-                  onPressIn={() => ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true })}
-                />
+                        onPressIn={() => { 
+                          setBismillahPressed(true); 
+                          ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true }); 
+                        }}
+                        onPressOut={() => setBismillahPressed(false)}
+                        activeOpacity={0.8}
+                      >
+                        <Text style={{
+                          color: '#F5E6C8',
+                          fontSize: 18,
+                          fontWeight: 'bold',
+                          textShadowColor: '#000',
+                          textShadowOffset: { width: 0, height: 1 },
+                          textShadowRadius: 2,
+                        }}>
+                          {t('bismillah')}
+                        </Text>
+                      </TouchableOpacity>
+                    </Animated.View>
+                  );
+                })()}
               </View>
             </View>
           </Modal>
+
+        <Modal
+          visible={infoVisible}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setInfoVisible(false)}
+        >
+                      <View style={[styles.modalOverlay, { justifyContent: 'flex-start', paddingTop: 200 }]}>
+              <View style={[styles.modalContent, { 
+                minHeight: 600,
+                maxHeight: '80%',
+                justifyContent: 'flex-start',
+                paddingVertical: 40,
+                marginTop: 17,
+                backgroundColor: 'rgba(64,64,64,0.95)',
+                borderColor: 'rgba(165,115,36,0.8)',
+                borderWidth: 2,
+              }]}>
+              <Text variant="h2" style={{ 
+                marginBottom: 24, 
+                marginTop: -20, 
+                color: '#F5E6C8',
+                fontSize: 28,
+                fontWeight: 'bold',
+                textShadowColor: '#000',
+                textShadowOffset: { width: 0, height: 1 },
+                textShadowRadius: 2,
+              }}>Info</Text>
+              
+              {/* Tab Buttons */}
+              <View style={{ flexDirection: 'row', marginBottom: 24, gap: 8 }}>
+                <Button
+                  title="Translit"
+                  onPress={() => { 
+                    ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true }); 
+                    setInfoActiveTab('numerals'); 
+                  }}
+                  style={{ 
+                    backgroundColor: infoActiveTab === 'numerals' ? '#33694e' : 'rgba(128,128,128,0.6)', 
+                    flex: 1,
+                    marginRight: 4,
+                    shadowColor: '#000',
+                    shadowOffset: { width: 0, height: 4 },
+                    shadowOpacity: 0.5,
+                    shadowRadius: 6,
+                    elevation: 8,
+                  }}
+                />
+                <Button
+                  title="Tajweed"
+                  onPress={() => { 
+                    ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true }); 
+                    setInfoActiveTab('tajweed'); 
+                  }}
+                  style={{ 
+                    backgroundColor: infoActiveTab === 'tajweed' ? '#33694e' : 'rgba(128,128,128,0.6)', 
+                    flex: 1,
+                    marginLeft: 4,
+                    shadowColor: '#000',
+                    shadowOffset: { width: 0, height: 4 },
+                    shadowOpacity: 0.5,
+                    shadowRadius: 6,
+                    elevation: 8,
+                  }}
+                />
+              </View>
+              
+              {/* Scrollable Tab Content */}
+              <ScrollView 
+                style={{ flex: 1 }} 
+                showsVerticalScrollIndicator={true}
+                contentContainerStyle={{ paddingBottom: 20 }}
+              >
+                {infoActiveTab === 'numerals' ? (
+                  <View style={{ flex: 1 }}>
+                    <Text variant="h3" style={{ 
+                      marginBottom: 16, 
+                      color: '#5b7f67', 
+                      fontWeight: 'bold',
+                      textAlign: 'center',
+                      textShadowColor: '#000',
+                      textShadowOffset: { width: 0, height: 1 },
+                      textShadowRadius: 1,
+                    }}>Transliteration Guide</Text>
+                    <View style={{ backgroundColor: 'rgba(128,128,128,0.2)', borderRadius: 12, padding: 16, marginBottom: 16 }}>
+                      <Text style={{ color: '#CCCCCC', fontSize: 16, lineHeight: 24, marginBottom: 12 }}>
+                        Arabic letters are represented using English characters and numbers. Here's the complete guide:
+                      </Text>
+                      <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 16 }}>
+                        {[
+                          { arabic: 'ع', english: '3', description: 'Ayn' },
+                          { arabic: 'ح', english: '7', description: 'Haa' },
+                          { arabic: 'خ', english: '5', description: 'Khaa' },
+                          { arabic: 'غ', english: '8', description: 'Ghayn' },
+                          { arabic: 'ط', english: '6', description: 'Taa' },
+                          { arabic: 'ص', english: '9', description: 'Saad' },
+                          { arabic: 'ض', english: '4', description: 'Daad' },
+                          { arabic: 'ث', english: 'th', description: 'Thaa' },
+                          { arabic: 'ذ', english: 'dh', description: 'Dhaal' },
+                          { arabic: 'ظ', english: 'th', description: 'Thaa' },
+                          { arabic: 'ش', english: 'sh', description: 'Sheen' },
+                          { arabic: 'ج', english: 'j', description: 'Jeem' },
+                          { arabic: 'ق', english: 'q', description: 'Qaaf' },
+                          { arabic: 'ك', english: 'k', description: 'Kaaf' },
+                          { arabic: 'ل', english: 'l', description: 'Laam' },
+                          { arabic: 'م', english: 'm', description: 'Meem' },
+                          { arabic: 'ن', english: 'n', description: 'Noon' },
+                          { arabic: 'ه', english: 'h', description: 'Haa' },
+                          { arabic: 'و', english: 'w', description: 'Waw' },
+                          { arabic: 'ي', english: 'y', description: 'Yaa' },
+                          { arabic: 'ب', english: 'b', description: 'Baa' },
+                          { arabic: 'ت', english: 't', description: 'Taa' },
+                          { arabic: 'د', english: 'd', description: 'Daal' },
+                          { arabic: 'ر', english: 'r', description: 'Raa' },
+                          { arabic: 'ز', english: 'z', description: 'Zay' },
+                          { arabic: 'س', english: 's', description: 'Seen' },
+                          { arabic: 'ف', english: 'f', description: 'Faa' },
+                          { arabic: 'ق', english: 'q', description: 'Qaaf' },
+                          { arabic: 'ك', english: 'k', description: 'Kaaf' },
+                          { arabic: 'ل', english: 'l', description: 'Laam' },
+                          { arabic: 'م', english: 'm', description: 'Meem' },
+                          { arabic: 'ن', english: 'n', description: 'Noon' },
+                          { arabic: 'ه', english: 'h', description: 'Haa' },
+                          { arabic: 'و', english: 'w', description: 'Waw' },
+                          { arabic: 'ي', english: 'y', description: 'Yaa' },
+                          { arabic: 'أ', english: 'a', description: 'Alif' },
+                          { arabic: 'إ', english: 'i', description: 'Alif' },
+                          { arabic: 'آ', english: 'aa', description: 'Alif' },
+                          { arabic: 'ا', english: 'a', description: 'Alif' },
+                          { arabic: 'ة', english: 'ah', description: 'Taa Marbouta' },
+                          { arabic: 'ى', english: 'a', description: 'Alif Maqsura' },
+                        ].map((letter, index) => (
+                          <View key={index} style={{ 
+                            backgroundColor: 'rgba(51,105,78,0.2)', 
+                            borderRadius: 8, 
+                            padding: 12, 
+                            alignItems: 'center',
+                            minWidth: 80,
+                            marginBottom: 8,
+                            borderColor: 'rgba(165,115,36,0.3)',
+                            borderWidth: 1,
+                            shadowColor: '#000',
+                            shadowOffset: { width: 0, height: 2 },
+                            shadowOpacity: 0.3,
+                            shadowRadius: 4,
+                            elevation: 4,
+                          }}>
+                            <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#fae29f', marginBottom: 4, textShadowColor: '#000', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 1 }}>
+                              {letter.arabic}
+                            </Text>
+                            <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#5b7f67', marginBottom: 2 }}>
+                              {letter.english}
+                            </Text>
+                            <Text style={{ fontSize: 12, color: '#CCCCCC', textAlign: 'center' }}>
+                              {letter.description}
+                            </Text>
+                          </View>
+                        ))}
+                      </View>
+                    </View>
+                  </View>
+                ) : (
+                  <View style={{ flex: 1 }}>
+                    <Text variant="h3" style={{ 
+                      marginBottom: 16, 
+                      color: '#5b7f67', 
+                      fontWeight: 'bold',
+                      textAlign: 'center',
+                      textShadowColor: '#000',
+                      textShadowOffset: { width: 0, height: 1 },
+                      textShadowRadius: 1,
+                    }}>Tajweed Guide</Text>
+                    <View style={{ backgroundColor: 'rgba(128,128,128,0.2)', borderRadius: 12, padding: 16 }}>
+                      <Text style={{ color: '#CCCCCC', fontSize: 16, lineHeight: 24, marginBottom: 16 }}>
+                        Tajweed rules help ensure proper pronunciation when reciting the Quran. Here are the key rules:
+                      </Text>
+                      <View style={{ gap: 12 }}>
+                        {[
+                          { term: 'Ghunnah', description: 'Nasalization - holding the sound in the nose for 2 counts when ن or م has sukoon', symbol: 'ن' },
+                          { term: 'Idghaam', description: 'Merging - when ن has sukoon and is followed by ي ر م ل و ن, the ن is merged into the next letter', symbol: 'د' },
+                          { term: 'Ikhfaa', description: 'Hiding - when ن has sukoon and is followed by ت ث ج د ذ ز س ش ص ض ط ظ ف ق ك, the ن is hidden', symbol: 'خ' },
+                          { term: 'Qalqalah', description: 'Bouncing - ق ط ب ج د letters are pronounced with a bouncing sound when they have sukoon', symbol: 'ق' },
+                          { term: 'Madd', description: 'Elongation - vowels are held for their proper duration (2, 4, or 6 counts)', symbol: 'م' },
+                        ].map((rule, index) => (
+                          <View key={index} style={{ 
+                            backgroundColor: 'rgba(51,105,78,0.2)', 
+                            borderRadius: 8, 
+                            padding: 12,
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            borderColor: 'rgba(165,115,36,0.3)',
+                            borderWidth: 1,
+                            shadowColor: '#000',
+                            shadowOffset: { width: 0, height: 2 },
+                            shadowOpacity: 0.3,
+                            shadowRadius: 4,
+                            elevation: 4,
+                          }}>
+                            <View style={{ 
+                              backgroundColor: '#33694e', 
+                              borderRadius: 20, 
+                              width: 40, 
+                              height: 40, 
+                              alignItems: 'center', 
+                              justifyContent: 'center',
+                              marginRight: 12,
+                              shadowColor: '#000',
+                              shadowOffset: { width: 0, height: 2 },
+                              shadowOpacity: 0.3,
+                              shadowRadius: 4,
+                              elevation: 4,
+                            }}>
+                              <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#fff' }}>
+                                {rule.symbol}
+                              </Text>
+                            </View>
+                            <View style={{ flex: 1 }}>
+                              <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#fae29f', marginBottom: 4, textShadowColor: '#000', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 1 }}>
+                                {rule.term}
+                              </Text>
+                              <Text style={{ fontSize: 14, color: '#CCCCCC', lineHeight: 20 }}>
+                                {rule.description}
+                              </Text>
+                            </View>
+                          </View>
+                        ))}
+                      </View>
+                    </View>
+                  </View>
+                )}
+              </ScrollView>
+              
+              <Button
+                title={t('close')}
+                onPress={() => setInfoVisible(false)}
+                style={{ backgroundColor: '#33694e', marginTop: 20 }}
+              />
+              </View>
+            </View>
+          </Modal>
+
+        <Modal
+          visible={duaVisible}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setDuaVisible(false)}
+        >
+          <TouchableOpacity 
+            style={[styles.modalOverlay, { justifyContent: 'flex-start', paddingTop: 200 }]}
+            activeOpacity={1}
+            onPress={() => setDuaVisible(false)}
+          >
+            <TouchableOpacity 
+              style={[styles.modalContent, { 
+                minHeight: 600,
+                maxHeight: '80%',
+                justifyContent: 'flex-start',
+                paddingVertical: 40,
+                marginTop: 17,
+                backgroundColor: 'rgba(64,64,64,0.95)',
+                borderColor: 'rgba(165,115,36,0.8)',
+                borderWidth: 2,
+              }]}
+              activeOpacity={1}
+              onPress={(e) => e.stopPropagation()}
+            >
+              <Text variant="h2" style={{ 
+                marginBottom: 24, 
+                marginTop: -20, 
+                color: '#F5E6C8',
+                fontSize: 28,
+                fontWeight: 'bold',
+                textShadowColor: '#000',
+                textShadowOffset: { width: 0, height: 1 },
+                textShadowRadius: 2,
+              }}>Du'as</Text>
+              
+              <ScrollView 
+                style={{ flex: 1, maxHeight: 400 }} 
+                showsVerticalScrollIndicator={true}
+                contentContainerStyle={{ paddingBottom: 20 }}
+                nestedScrollEnabled={true}
+              >
+                <View style={{ flex: 1 }}>
+                  <Text variant="h3" style={{ 
+                    marginBottom: 16, 
+                    color: '#5b7f67', 
+                    fontWeight: 'bold',
+                    textAlign: 'center',
+                    textShadowColor: '#000',
+                    textShadowOffset: { width: 0, height: 1 },
+                    textShadowRadius: 1,
+                  }}>Daily Du'as</Text>
+                  <View style={{ backgroundColor: 'rgba(128,128,128,0.2)', borderRadius: 12, padding: 16, marginBottom: 16 }}>
+                    <Text style={{ color: '#CCCCCC', fontSize: 16, lineHeight: 24, marginBottom: 16 }}>
+                      Beautiful du'as to recite daily for guidance and blessings.
+                    </Text>
+                    <View style={{ gap: 16 }}>
+                      {[
+                        { 
+                          title: 'Before Reading Quran',
+                          arabic: 'أَعُوذُ بِاللَّهِ مِنَ الشَّيْطَانِ الرَّجِيمِ',
+                          transliteration: 'A\'udhu billahi minash-shaytaanir-rajeem',
+                          translation: 'I seek refuge with Allah from the accursed devil',
+                          category: 'Protection'
+                        },
+                        { 
+                          title: 'Before Starting',
+                          arabic: 'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ',
+                          transliteration: 'Bismillahir-Rahmanir-Raheem',
+                          translation: 'In the name of Allah, the Most Gracious, the Most Merciful',
+                          category: 'Beginning'
+                        },
+                        { 
+                          title: 'For Knowledge',
+                          arabic: 'رَبِّ زِدْنِي عِلْمًا',
+                          transliteration: 'Rabbi zidni ilma',
+                          translation: 'My Lord, increase me in knowledge',
+                          category: 'Knowledge'
+                        },
+                        { 
+                          title: 'For Guidance',
+                          arabic: 'رَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً وَفِي الْآخِرَةِ حَسَنَةً وَقِنَا عَذَابَ النَّارِ',
+                          transliteration: 'Rabbana atina fid-dunya hasanatan wa fil-akhirati hasanatan wa qina \'adhaban-nar',
+                          translation: 'Our Lord, grant us good in this world and good in the Hereafter and protect us from the punishment of the Fire',
+                          category: 'Guidance'
+                        },
+                        { 
+                          title: 'For Forgiveness',
+                          arabic: 'رَبِّ اغْفِرْ لِي وَتُبْ عَلَيَّ إِنَّكَ أَنْتَ التَّوَّابُ الرَّحِيمُ',
+                          transliteration: 'Rabbi-ghfir li wa tub \'alayya innaka antat-tawwabur-raheem',
+                          translation: 'My Lord, forgive me and accept my repentance, for You are the Ever-Accepting of repentance, the Most Merciful',
+                          category: 'Forgiveness'
+                        },
+                        { 
+                          title: 'For Success',
+                          arabic: 'حَسْبِيَ اللَّهُ لَا إِلَهَ إِلَّا هُوَ عَلَيْهِ تَوَكَّلْتُ وَهُوَ رَبُّ الْعَرْشِ الْعَظِيمِ',
+                          transliteration: 'Hasbiyallahu la ilaha illa huwa \'alayhi tawakkaltu wa huwa rabbul-\'arshil-\'adheem',
+                          translation: 'Sufficient for me is Allah; there is no deity except Him. On Him I have relied, and He is the Lord of the Great Throne',
+                          category: 'Trust'
+                        }
+                      ].map((dua, index) => (
+                        <View key={index} style={{ 
+                          backgroundColor: 'rgba(51,105,78,0.2)', 
+                          borderRadius: 12, 
+                          padding: 16,
+                          borderColor: 'rgba(165,115,36,0.3)',
+                          borderWidth: 1,
+                          shadowColor: '#000',
+                          shadowOffset: { width: 0, height: 2 },
+                          shadowOpacity: 0.3,
+                          shadowRadius: 4,
+                          elevation: 4,
+                        }}>
+                          <View style={{ 
+                            backgroundColor: '#33694e', 
+                            borderRadius: 8, 
+                            paddingHorizontal: 12,
+                            paddingVertical: 6,
+                            alignSelf: 'center',
+                            marginBottom: 12,
+                            shadowColor: '#000',
+                            shadowOffset: { width: 0, height: 2 },
+                            shadowOpacity: 0.3,
+                            shadowRadius: 4,
+                            elevation: 4,
+                          }}>
+                            <Text style={{ fontSize: 12, fontWeight: 'bold', color: '#fff' }}>
+                              {dua.category}
+                            </Text>
+                          </View>
+                          <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#fae29f', marginBottom: 8, textShadowColor: '#000', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 1, textAlign: 'center' }}>
+                            {dua.title}
+                          </Text>
+                          <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#7a9c82', marginBottom: 8, textAlign: 'center', lineHeight: 32, fontFamily: 'UthmanTN_v2-0' }}>
+                            {dua.arabic}
+                          </Text>
+                          <Text style={{ fontSize: 14, color: '#CCCCCC', marginBottom: 6, fontStyle: 'italic' }}>
+                            {dua.transliteration}
+                          </Text>
+                          <Text style={{ fontSize: 14, color: '#CCCCCC', lineHeight: 20 }}>
+                            {dua.translation}
+                          </Text>
+                        </View>
+                      ))}
+                    </View>
+                  </View>
+                </View>
+              </ScrollView>
+              
+              <Button
+                title="Ameen"
+                onPress={() => setDuaVisible(false)}
+                style={{ backgroundColor: '#33694e', marginTop: 20 }}
+              />
+            </TouchableOpacity>
+          </TouchableOpacity>
+        </Modal>
 
         <Modal
           visible={settingsVisible}
@@ -571,7 +1119,6 @@ const HomeScreen = ({ navigation, route }) => {
                     shadowRadius: 6,
                     elevation: 8,
                   }}
-                  onPressIn={() => ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true })}
                 />
                 <Button
                   title={t('arabic_button')}
@@ -586,7 +1133,6 @@ const HomeScreen = ({ navigation, route }) => {
                     shadowRadius: 6,
                     elevation: 8,
                   }}
-                  onPressIn={() => ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true })}
                 />
               </View>
               
@@ -700,7 +1246,6 @@ const HomeScreen = ({ navigation, route }) => {
                   elevation: 8,
                 }}
                 disabled={resetting}
-                onPressIn={() => ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true })}
               />
               <TouchableOpacity
                 onPress={() => {
@@ -747,7 +1292,6 @@ const HomeScreen = ({ navigation, route }) => {
                     shadowRadius: 6,
                     elevation: 8,
                   }}
-                  onPressIn={() => ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true })}
               />
               </View>
             </TouchableOpacity>
@@ -959,19 +1503,20 @@ const styles = StyleSheet.create({
 
 
   arabicText: {
-    fontSize: 18,
+    fontSize: 22,
     fontWeight: 'bold',
     color: COLORS.accent,
     marginTop: 0,
     textAlign: 'center',
     fontFamily: 'UthmanTN_v2-0',
     writingDirection: 'rtl',
+    lineHeight: 32,
   },
   customDivider: {
     flexDirection: 'row',
     alignItems: 'center',
     width: '100%',
-    marginTop: SIZES.small,
+    marginTop: -20, // Reduced from SIZES.small to move up
   },
   dividerLine: {
     flex: 1,
