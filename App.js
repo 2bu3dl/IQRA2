@@ -60,6 +60,7 @@ function App() {
                 fontWeight: 'bold',
               },
               headerShown: false,
+              animation: 'none',
             }}>
             <Stack.Screen name="Home" component={HomeScreen} />
             <Stack.Screen name="SurahList" component={SurahListScreen} />

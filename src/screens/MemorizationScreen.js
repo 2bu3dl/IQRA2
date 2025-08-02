@@ -19,6 +19,8 @@ import telemetryService from '../utils/telemetry';
 import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 import Slider from '@react-native-community/slider';
 import Svg, { Polygon } from 'react-native-svg';
+import HighlightedArabicText from '../components/HighlightedArabicText';
+import { getAyahMetadata, getSpecialCardMetadata } from '../utils/audioMetadata';
 
 const COLORS = { ...BASE_COLORS, primary: '#6BA368', accent: '#FFD700' };
 
@@ -68,6 +70,9 @@ const MemorizationScreen = ({ route, navigation }) => {
   const [isBoldFont, setIsBoldFont] = useState(false);
   const [isCurrentAyahBookmarked, setIsCurrentAyahBookmarked] = useState(false);
   const [showBookmarkModal, setShowBookmarkModal] = useState(false);
+  const [currentWordIndex, setCurrentWordIndex] = useState(-1);
+  const [currentAudioTime, setCurrentAudioTime] = useState(0);
+  const [currentAudioMetadata, setCurrentAudioMetadata] = useState(null);
 
   const allSurahs = getAllSurahs();
   const currentSurahIndex = allSurahs.findIndex(s => s.surah === surahNumber);
@@ -99,6 +104,19 @@ const MemorizationScreen = ({ route, navigation }) => {
     fetchAyaat();
   }, [surahNumber]);
 
+  // Set up highlighting callback
+  React.useEffect(() => {
+    const unsubscribe = audioPlayer.onHighlightingUpdate((currentWord, currentTime) => {
+      console.log('[MemorizationScreen] Highlighting update:', currentWord?.text, 'at time:', currentTime);
+      setCurrentWordIndex(currentWord?.index || -1);
+      setCurrentAudioTime(currentTime);
+    });
+
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
+  }, []);
+
   // Check bookmark status when current ayah changes
   React.useEffect(() => {
     const checkBookmarkStatus = async () => {
@@ -111,6 +129,13 @@ const MemorizationScreen = ({ route, navigation }) => {
     
     checkBookmarkStatus();
   }, [currentAyahIndex, ayaat, surah.name]);
+
+  // Reset highlighting state when ayah changes
+  React.useEffect(() => {
+    setCurrentWordIndex(-1);
+    setCurrentAudioTime(0);
+    setCurrentAudioMetadata(null);
+  }, [currentAyahIndex]);
 
   // Initialize previous streak on component mount and after reset
   React.useEffect(() => {
@@ -355,13 +380,16 @@ const MemorizationScreen = ({ route, navigation }) => {
   const handlePrevious = async () => {
     await audioPlayer.stopAudio();
     setIsAudioPlaying(false);
-    if (currentAyahIndex > 0 && ayaat && ayaat.length > 0) {
-      setCurrentAyahIndex(currentAyahIndex - 1);
-      // Reveal text by default for ayah and bismillah cards
-      const prevCard = ayaat[currentAyahIndex - 1];
-      if (prevCard?.type === 'ayah' || prevCard?.type === 'bismillah') {
+    if (currentAyahIndex > 0) {
+      const newIndex = currentAyahIndex - 1;
+      setCurrentAyahIndex(newIndex);
+      // Only reveal special cards (bismillah and isti3aadhah)
+      // Official ayaat should be hidden when navigating back
+      const prevCard = flashcards?.[newIndex];
+      if (prevCard?.type === 'bismillah' || prevCard?.type === 'istiadhah') {
         setIsTextHidden(false);
       } else {
+        // Hide all other cards including official ayaat
         setIsTextHidden(true);
       }
     }
@@ -462,6 +490,8 @@ const MemorizationScreen = ({ route, navigation }) => {
     if (status.isPlaying) {
       await audioPlayer.pauseAudio();
       setIsAudioPlaying(false);
+      setCurrentWordIndex(-1);
+      setCurrentAudioTime(0);
     } else {
       // Play current ayah
       const currentFlashcard = flashcards[currentAyahIndex];
@@ -472,7 +502,15 @@ const MemorizationScreen = ({ route, navigation }) => {
         }
         const audioSource = getAyahAudioUri(surahNumber, ayahNumber);
         if (audioSource) {
-          await audioPlayer.playAudio(audioSource);
+                  // Get metadata for highlighting
+        let metadata = getAyahMetadata(surahNumber, ayahNumber);
+        if (!metadata) {
+          // Try to get metadata for special cards
+          metadata = getSpecialCardMetadata(currentFlashcard.type);
+        }
+        setCurrentAudioMetadata(metadata);
+          
+          await audioPlayer.playAudio(audioSource, metadata);
           setIsAudioPlaying(true);
         }
       }
@@ -689,27 +727,42 @@ const MemorizationScreen = ({ route, navigation }) => {
             */}
         <Animated.View style={[styles.flashcard, { opacity: fadeAnim, transform: [{ scale: scaleAnim }] }] }>
                 <Card variant="elevated" style={[styles.card, { flex: 1 }]}> 
-                  <ScrollView style={styles.ayahScroll} contentContainerStyle={styles.ayahScrollContent} showsVerticalScrollIndicator={true}>
-            <Text
-              variant="h2"
-              style={[styles.arabicText, { 
-                fontFamily: isBoldFont ? 'KFGQPC Uthman Taha Naskh Bold' : 'KFGQPC Uthman Taha Naskh', 
-                fontSize: ayahFontSize, 
-                textAlign: 'center', 
-                alignSelf: 'center', 
-                writingDirection: 'rtl',
-                textAlignVertical: 'center',
-                includeFontPadding: false,
-                textAlign: 'center'
-              }]}
-              align="center"
-              allowFontScaling={false}
-              lang="ar"
-            >
-              {isTextHidden
-                ? (flashcards[currentAyahIndex]?.text ? '⬡'.repeat(Math.min(44, Math.ceil(flashcards[currentAyahIndex]?.text.length / 2))) : '')
-                : flashcards[currentAyahIndex]?.text}
-            </Text>
+                  <ScrollView style={styles.ayahScroll} contentContainerStyle={styles.ayahScrollContent} showsVerticalScrollIndicator={true} bounces={false}>
+            {isTextHidden ? (
+              <Text
+                variant="h2"
+                style={[styles.arabicText, { 
+                  fontFamily: isBoldFont ? 'KFGQPC Uthman Taha Naskh Bold' : 'KFGQPC Uthman Taha Naskh', 
+                  fontSize: ayahFontSize, 
+                  textAlign: 'center', 
+                  alignSelf: 'center', 
+                  writingDirection: 'rtl',
+                  textAlignVertical: 'center',
+                  includeFontPadding: false
+                }]}
+                align="center"
+                allowFontScaling={false}
+                lang="ar"
+              >
+                {flashcards[currentAyahIndex]?.text ? '⬡'.repeat(Math.min(44, Math.ceil(flashcards[currentAyahIndex]?.text.length / 2))) : ''}
+              </Text>
+            ) : (
+              <HighlightedArabicText
+                text={flashcards[currentAyahIndex]?.text || ''}
+                metadata={currentAudioMetadata}
+                isPlaying={isAudioPlaying}
+                currentTime={currentAudioTime}
+                fontSize={ayahFontSize}
+                isBoldFont={isBoldFont}
+                style={[styles.arabicText, { 
+                  textAlign: 'center', 
+                  alignSelf: 'center', 
+                  writingDirection: 'rtl',
+                  textAlignVertical: 'center',
+                  includeFontPadding: false
+                }]}
+              />
+            )}
             {/* Show transliteration only when text is not hidden and not in Arabic mode */}
             {!isTextHidden && language === 'en' && (
               <Text
@@ -1615,7 +1668,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     flexGrow: 1,
-    paddingVertical: 20,
+    paddingVertical: 60,
+    minHeight: 400,
   },
   surahNavButton: {
     backgroundColor: 'rgba(51, 105, 78, 1)',

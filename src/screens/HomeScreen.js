@@ -88,8 +88,12 @@ const HomeScreen = ({ navigation, route }) => {
   const [infoVisible, setInfoVisible] = useState(false);
   const [infoActiveTab, setInfoActiveTab] = useState('numerals'); // 'numerals' or 'tajweed'
   const [duaVisible, setDuaVisible] = useState(false);
+  const [duaExpanded, setDuaExpanded] = useState(false);
+  const [duaButtonPressed, setDuaButtonPressed] = useState(false);
+  const [currentDuaIndex, setCurrentDuaIndex] = useState(0);
   const [resetting, setResetting] = useState(false);
   const [confirmResetVisible, setConfirmResetVisible] = useState(false);
+  const [memorizeButtonHeld, setMemorizeButtonHeld] = useState(false);
 
     const loadScreenData = async () => {
       const loadedData = await loadData();
@@ -105,6 +109,7 @@ const HomeScreen = ({ navigation, route }) => {
     // Refresh data when screen comes into focus
     const unsubscribe = navigation.addListener('focus', () => {
       loadScreenData();
+      setMemorizeButtonHeld(false); // Reset button state when returning to home
       telemetryService.trackAppUsage('screen_focus', { screen: 'Home' });
     });
     return unsubscribe;
@@ -255,13 +260,13 @@ const HomeScreen = ({ navigation, route }) => {
                       onPressOut={() => setDuaTextPressed(false)}
                       activeOpacity={0.8}
                     >
-                      <Text style={[styles.arabicText, {
-                        color: '#F0D8A0',
-                        textShadowColor: '#fae29f',
-                        textShadowOffset: { width: 0, height: 0 },
-                        textShadowRadius: 3,
+              <Text style={[styles.arabicText, {
+                color: '#F0D8A0',
+                textShadowColor: '#fae29f',
+                textShadowOffset: { width: 0, height: 0 },
+                textShadowRadius: 3,
                         width: 240,
-                      }]} allowFontScaling={false} lang="ar">اللَّهُمَّ اجْعَلْنَا مِنْ أَهْلِ الْقُرْآن</Text>
+              }]} allowFontScaling={false} lang="ar">اللَّهُمَّ اجْعَلْنَا مِنْ أَهْلِ الْقُرْآن</Text>
                     </TouchableOpacity>
                   </Animated.View>
                 );
@@ -357,11 +362,29 @@ const HomeScreen = ({ navigation, route }) => {
                     });
                     navigation.navigate('SurahList');
                   }}
-                  onPressIn={() => { setPressed(true); ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true }); }}
-                  onPressOut={() => setPressed(false)}
+                  onPressIn={() => { 
+                    setPressed(true); 
+                    setMemorizeButtonHeld(true);
+                    ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true }); 
+                  }}
+                  onPressOut={() => { 
+                    setPressed(false); 
+                    // Reset the text change if the press wasn't completed
+                    // We'll use a small delay to check if navigation happened
+                    setTimeout(() => {
+                      // If we're still on the home screen, the press wasn't completed
+                      if (navigation.isFocused()) {
+                        setMemorizeButtonHeld(false);
+                      }
+                    }, 50);
+                  }}
                   activeOpacity={1}
                 >
-                  <View style={styles.buttonIconContainer}>
+                  <View style={[styles.buttonIconContainer, {
+                    shadowRadius: memorizeButtonHeld ? 40 : 35,
+                    shadowOpacity: memorizeButtonHeld ? 8.5 : 5.0,
+                    elevation: memorizeButtonHeld ? 25 : 15,
+                  }]}>
                     <Image source={require('../assets/openQuran.png')} style={[styles.buttonIcon, { width: 45, height: 45 }]} resizeMode="contain" />
                   </View>
                   <View style={{ 
@@ -380,18 +403,18 @@ const HomeScreen = ({ navigation, route }) => {
                     minHeight: language === 'ar' ? 80 : 60
                   }}>
                     <Text style={[{
-                      marginTop: language === 'ar' ? 4 : SIZES.small,
+                      marginTop: language === 'ar' ? 4 : 0,
                       textAlign: 'center',
                       color: '#fae29f', 
                       width: '100%', 
                       fontWeight: 'bold', 
-                      fontSize: 22, 
+                      fontSize: memorizeButtonHeld ? 26 : 22, 
                       textShadowColor: '#fae29f', 
                       textShadowOffset: { width: 0, height: 0 }, 
                       textShadowRadius: 4,
                       lineHeight: language === 'ar' ? 36 : 26,
                       fontFamily: 'Montserrat-Bold'
-                    }]}>{t('quran_memorize')}</Text>
+                    }]}>{memorizeButtonHeld ? t('b2ithnAllah') : t('quran_memorize')}</Text>
                   </View>
                 </TouchableOpacity>
                 </Animated.View>
@@ -675,12 +698,12 @@ const HomeScreen = ({ navigation, route }) => {
           animationType="fade"
           onRequestClose={() => setInfoVisible(false)}
         >
-                      <View style={[styles.modalOverlay, { justifyContent: 'flex-start', paddingTop: 200 }]}>
+                      <View style={[styles.modalOverlay, { justifyContent: 'flex-end', paddingBottom: 20 }]}>
               <View style={[styles.modalContent, { 
-                minHeight: 600,
-                maxHeight: '80%',
+                minHeight: 550,
+                maxHeight: '75%',
                 justifyContent: 'flex-start',
-                paddingVertical: 40,
+                paddingVertical: 30,
                 marginTop: 17,
                 backgroundColor: 'rgba(64,64,64,0.95)',
                 borderColor: 'rgba(165,115,36,0.8)',
@@ -688,7 +711,7 @@ const HomeScreen = ({ navigation, route }) => {
               }]}>
               <Text variant="h2" style={{ 
                 marginBottom: 24, 
-                marginTop: -20, 
+                marginTop: -30, 
                 color: '#F5E6C8',
                 fontSize: 28,
                 fontWeight: 'bold',
@@ -745,7 +768,7 @@ const HomeScreen = ({ navigation, route }) => {
                   <View style={{ flex: 1 }}>
                     <Text variant="h3" style={{ 
                       marginBottom: 16, 
-                      color: '#5b7f67', 
+                      color: 'rgba(165,115,36,0.8)', 
                       fontWeight: 'bold',
                       textAlign: 'center',
                       textShadowColor: '#000',
@@ -833,7 +856,7 @@ const HomeScreen = ({ navigation, route }) => {
                   <View style={{ flex: 1 }}>
                     <Text variant="h3" style={{ 
                       marginBottom: 16, 
-                      color: '#5b7f67', 
+                      color: 'rgba(165,115,36,0.8)', 
                       fontWeight: 'bold',
                       textAlign: 'center',
                       textShadowColor: '#000',
@@ -903,8 +926,8 @@ const HomeScreen = ({ navigation, route }) => {
               <Button
                 title={t('close')}
                 onPress={() => setInfoVisible(false)}
-                style={{ backgroundColor: '#33694e', marginTop: 20 }}
-              />
+                style={{ backgroundColor: '#33694e', marginTop: 15 }}
+                />
               </View>
             </View>
           </Modal>
@@ -916,14 +939,14 @@ const HomeScreen = ({ navigation, route }) => {
           onRequestClose={() => setDuaVisible(false)}
         >
           <TouchableOpacity 
-            style={[styles.modalOverlay, { justifyContent: 'flex-start', paddingTop: 200 }]}
+            style={[styles.modalOverlay, { justifyContent: 'flex-end', paddingBottom: 50 }]}
             activeOpacity={1}
-            onPress={() => setDuaVisible(false)}
+            onPress={() => { setDuaVisible(false); setDuaExpanded(false); setDuaButtonPressed(false); setCurrentDuaIndex(0); }}
           >
             <TouchableOpacity 
               style={[styles.modalContent, { 
-                minHeight: 600,
-                maxHeight: '80%',
+                minHeight: 700,
+                maxHeight: '95%',
                 justifyContent: 'flex-start',
                 paddingVertical: 40,
                 marginTop: 17,
@@ -936,136 +959,215 @@ const HomeScreen = ({ navigation, route }) => {
             >
               <Text variant="h2" style={{ 
                 marginBottom: 24, 
-                marginTop: -20, 
+                marginTop: -10, 
                 color: '#F5E6C8',
                 fontSize: 28,
                 fontWeight: 'bold',
                 textShadowColor: '#000',
                 textShadowOffset: { width: 0, height: 1 },
                 textShadowRadius: 2,
-              }}>Du'as</Text>
+              }}>Da3awaat</Text>
               
-              <ScrollView 
-                style={{ flex: 1, maxHeight: 400 }} 
-                showsVerticalScrollIndicator={true}
-                contentContainerStyle={{ paddingBottom: 20 }}
-                nestedScrollEnabled={true}
-              >
-                <View style={{ flex: 1 }}>
-                  <Text variant="h3" style={{ 
-                    marginBottom: 16, 
-                    color: '#5b7f67', 
-                    fontWeight: 'bold',
-                    textAlign: 'center',
-                    textShadowColor: '#000',
-                    textShadowOffset: { width: 0, height: 1 },
-                    textShadowRadius: 1,
-                  }}>Daily Du'as</Text>
-                  <View style={{ backgroundColor: 'rgba(128,128,128,0.2)', borderRadius: 12, padding: 16, marginBottom: 16 }}>
-                    <Text style={{ color: '#CCCCCC', fontSize: 16, lineHeight: 24, marginBottom: 16 }}>
-                      Beautiful du'as to recite daily for guidance and blessings.
-                    </Text>
-                    <View style={{ gap: 16 }}>
-                      {[
-                        { 
-                          title: 'Before Reading Quran',
-                          arabic: 'أَعُوذُ بِاللَّهِ مِنَ الشَّيْطَانِ الرَّجِيمِ',
-                          transliteration: 'A\'udhu billahi minash-shaytaanir-rajeem',
-                          translation: 'I seek refuge with Allah from the accursed devil',
-                          category: 'Protection'
-                        },
-                        { 
-                          title: 'Before Starting',
-                          arabic: 'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ',
-                          transliteration: 'Bismillahir-Rahmanir-Raheem',
-                          translation: 'In the name of Allah, the Most Gracious, the Most Merciful',
-                          category: 'Beginning'
-                        },
-                        { 
-                          title: 'For Knowledge',
-                          arabic: 'رَبِّ زِدْنِي عِلْمًا',
-                          transliteration: 'Rabbi zidni ilma',
-                          translation: 'My Lord, increase me in knowledge',
-                          category: 'Knowledge'
-                        },
-                        { 
-                          title: 'For Guidance',
-                          arabic: 'رَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً وَفِي الْآخِرَةِ حَسَنَةً وَقِنَا عَذَابَ النَّارِ',
-                          transliteration: 'Rabbana atina fid-dunya hasanatan wa fil-akhirati hasanatan wa qina \'adhaban-nar',
-                          translation: 'Our Lord, grant us good in this world and good in the Hereafter and protect us from the punishment of the Fire',
-                          category: 'Guidance'
-                        },
-                        { 
-                          title: 'For Forgiveness',
-                          arabic: 'رَبِّ اغْفِرْ لِي وَتُبْ عَلَيَّ إِنَّكَ أَنْتَ التَّوَّابُ الرَّحِيمُ',
-                          transliteration: 'Rabbi-ghfir li wa tub \'alayya innaka antat-tawwabur-raheem',
-                          translation: 'My Lord, forgive me and accept my repentance, for You are the Ever-Accepting of repentance, the Most Merciful',
-                          category: 'Forgiveness'
-                        },
-                        { 
-                          title: 'For Success',
-                          arabic: 'حَسْبِيَ اللَّهُ لَا إِلَهَ إِلَّا هُوَ عَلَيْهِ تَوَكَّلْتُ وَهُوَ رَبُّ الْعَرْشِ الْعَظِيمِ',
-                          transliteration: 'Hasbiyallahu la ilaha illa huwa \'alayhi tawakkaltu wa huwa rabbul-\'arshil-\'adheem',
-                          translation: 'Sufficient for me is Allah; there is no deity except Him. On Him I have relied, and He is the Lord of the Great Throne',
-                          category: 'Trust'
-                        }
-                      ].map((dua, index) => (
-                        <View key={index} style={{ 
-                          backgroundColor: 'rgba(51,105,78,0.2)', 
-                          borderRadius: 12, 
-                          padding: 16,
-                          borderColor: 'rgba(165,115,36,0.3)',
-                          borderWidth: 1,
+              <View style={{ flex: 1, justifyContent: 'center' }}>
+                <View style={{ backgroundColor: 'rgba(128,128,128,0.2)', borderRadius: 12, padding: 16, marginBottom: 16 }}>
+                  {(() => {
+                    const duas = [
+                      { 
+                        title: 'Before Reading Qur2an',
+                        arabic: 'اللَّهُمَّ اجْعَلْنَا مِنْ أَهْلِ الْقُرْآن',
+                        transliteration: 'Allahumma-j\'alna min ahlil-Quran',
+                        translation: 'O Allah, make us among the people of the Quran',
+                        category: 'Qur2an'
+                      },
+                      { 
+                        title: 'Before Starting',
+                        arabic: 'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ',
+                        transliteration: 'Bismillahir-Rahmanir-Raheem',
+                        translation: 'In the name of Allah, the Most Gracious, the Most Merciful',
+                        category: 'Beginning'
+                      },
+                      { 
+                        title: 'For Knowledge',
+                        arabic: 'رَبِّ زِدْنِي عِلْمًا',
+                        transliteration: 'Rabbi zidni ilma',
+                        translation: 'My Lord, increase me in knowledge',
+                        category: 'Knowledge'
+                      },
+                      { 
+                        title: 'For Guidance',
+                        arabic: 'رَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً وَفِي الْآخِرَةِ حَسَنَةً وَقِنَا عَذَابَ النَّارِ',
+                        transliteration: 'Rabbana atina fid-dunya hasanatan wa fil-akhirati hasanatan wa qina \'adhaban-nar',
+                        translation: 'Our Lord, grant us good in this world and good in the Hereafter and protect us from the punishment of the Fire',
+                        category: 'Guidance'
+                      },
+                      { 
+                        title: 'For Forgiveness',
+                        arabic: 'رَبِّ اغْفِرْ لِي وَتُبْ عَلَيَّ إِنَّكَ أَنْتَ التَّوَّابُ الرَّحِيمُ',
+                        transliteration: 'Rabbi-ghfir li wa tub \'alayya innaka antat-tawwabur-raheem',
+                        translation: 'My Lord, forgive me and accept my repentance, for You are the Ever-Accepting of repentance, the Most Merciful',
+                        category: 'Forgiveness'
+                      },
+                      { 
+                        title: 'For Success',
+                        arabic: 'حَسْبِيَ اللَّهُ لَا إِلَهَ إِلَّا هُوَ عَلَيْهِ تَوَكَّلْتُ وَهُوَ رَبُّ الْعَرْشِ الْعَظِيمِ',
+                        transliteration: 'Hasbiyallahu la ilaha illa huwa \'alayhi tawakkaltu wa huwa rabbul-\'arshil-\'adheem',
+                        translation: 'Sufficient for me is Allah; there is no deity except Him. On Him I have relied, and He is the Lord of the Great Throne',
+                        category: 'Trust'
+                      }
+                    ];
+                    
+                    const currentDua = duas[currentDuaIndex];
+                    
+                    return (
+                      <View key={currentDuaIndex} style={{ 
+                        backgroundColor: 'rgba(51,105,78,0.2)', 
+                        borderRadius: 12, 
+                        padding: 20,
+                        marginBottom: 10,
+                        borderColor: 'rgba(165,115,36,0.3)',
+                        borderWidth: 1,
+                        shadowColor: '#000',
+                        shadowOffset: { width: 0, height: 2 },
+                        shadowOpacity: 0.3,
+                        shadowRadius: 4,
+                        elevation: 4,
+                      }}>
+                        <View style={{ 
+                          backgroundColor: '#33694e', 
+                          borderRadius: 8, 
+                          paddingHorizontal: 12,
+                          paddingVertical: 6,
+                          alignSelf: 'center',
+                          marginBottom: 12,
                           shadowColor: '#000',
                           shadowOffset: { width: 0, height: 2 },
                           shadowOpacity: 0.3,
                           shadowRadius: 4,
                           elevation: 4,
                         }}>
-                          <View style={{ 
-                            backgroundColor: '#33694e', 
-                            borderRadius: 8, 
-                            paddingHorizontal: 12,
-                            paddingVertical: 6,
-                            alignSelf: 'center',
-                            marginBottom: 12,
-                            shadowColor: '#000',
-                            shadowOffset: { width: 0, height: 2 },
-                            shadowOpacity: 0.3,
-                            shadowRadius: 4,
-                            elevation: 4,
-                          }}>
-                            <Text style={{ fontSize: 12, fontWeight: 'bold', color: '#fff' }}>
-                              {dua.category}
-                            </Text>
-                          </View>
-                          <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#fae29f', marginBottom: 8, textShadowColor: '#000', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 1, textAlign: 'center' }}>
-                            {dua.title}
-                          </Text>
-                          <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#7a9c82', marginBottom: 8, textAlign: 'center', lineHeight: 32, fontFamily: 'UthmanTN_v2-0' }}>
-                            {dua.arabic}
-                          </Text>
-                          <Text style={{ fontSize: 14, color: '#CCCCCC', marginBottom: 6, fontStyle: 'italic' }}>
-                            {dua.transliteration}
-                          </Text>
-                          <Text style={{ fontSize: 14, color: '#CCCCCC', lineHeight: 20 }}>
-                            {dua.translation}
+                          <Text style={{ fontSize: 12, fontWeight: 'bold', color: '#fff' }}>
+                            {currentDua.category}
                           </Text>
                         </View>
-                      ))}
-                    </View>
-                  </View>
+                        <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#fae29f', marginBottom: 8, textShadowColor: '#000', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 1, textAlign: 'center' }}>
+                          {currentDua.title}
+                        </Text>
+                        <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#7a9c82', marginBottom: 8, textAlign: 'center', lineHeight: 32, fontFamily: 'UthmanTN_v2-0' }}>
+                          {currentDua.arabic}
+                        </Text>
+                                                  <Text style={{ fontSize: 14, color: '#999999', marginBottom: 6, fontStyle: 'italic' }}>
+                            {currentDua.transliteration}
+                          </Text>
+                        <Text style={{ fontSize: 14, color: '#CCCCCC', lineHeight: 20, marginBottom: 10 }}>
+                          {currentDua.translation}
+                        </Text>
+                      </View>
+                    );
+                  })()}
                 </View>
-              </ScrollView>
+              </View>
               
-              <Button
-                title="Ameen"
-                onPress={() => setDuaVisible(false)}
-                style={{ backgroundColor: '#33694e', marginTop: 20 }}
-              />
+              {/* Fixed Bottom Navigation */}
+              <View style={{ 
+                position: 'absolute', 
+                bottom: 80, 
+                left: 0, 
+                right: 0, 
+                paddingHorizontal: 40 
+              }}>
+                {/* Pagination Dots */}
+                <View style={{ 
+                  flexDirection: 'row', 
+                  justifyContent: 'center', 
+                  alignItems: 'center',
+                  marginBottom: 30 
+                }}>
+                  {Array.from({ length: 6 }, (_, index) => (
+                    <TouchableOpacity
+                      key={index}
+                      onPress={() => setCurrentDuaIndex(index)}
+                      style={{
+                        width: 12,
+                        height: 12,
+                        borderRadius: 6,
+                        backgroundColor: currentDuaIndex === index ? '#33694e' : 'rgba(165,115,36,0.3)',
+                        marginHorizontal: 6,
+                      }}
+                    />
+                  ))}
+                </View>
+              </View>
+              
+              
+              
+              <View style={{ 
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginTop: 20,
+                paddingHorizontal: 20,
+                height: 50
+              }}>
+                {/* Left side - Back button or empty space */}
+                <View style={{ width: 140, alignItems: 'flex-start' }}>
+                  {currentDuaIndex > 0 && (
+                    <TouchableOpacity
+                      onPress={() => setCurrentDuaIndex(currentDuaIndex - 1)}
+                      style={{
+                        paddingHorizontal: 16,
+                        paddingVertical: 10,
+                        backgroundColor: 'rgba(165,115,36,0.3)',
+                        borderRadius: 8,
+                        minWidth: 80,
+                        alignItems: 'center',
+                      }}
+                    >
+                      <Text style={{ color: '#fae29f', fontSize: 14, fontWeight: 'bold' }}>Back</Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
+                
+                {/* Center - Ameen button always here */}
+                <View style={{ flex: 1, alignItems: 'center' }}>
+                  <TouchableOpacity
+                    onPress={() => { setDuaVisible(false); setDuaExpanded(false); setDuaButtonPressed(false); setCurrentDuaIndex(0); }}
+                    style={{
+                      paddingHorizontal: 20,
+                      paddingVertical: 12,
+                      backgroundColor: '#33694e',
+                      borderRadius: 8,
+                      minWidth: 100,
+                      alignItems: 'center',
+                    }}
+                  >
+                    <Text style={{ color: '#fae29f', fontSize: 16, fontWeight: 'bold' }}>
+                      Ameen
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+                
+                {/* Right side - Next button or empty space */}
+                <View style={{ width: 140, alignItems: 'flex-end' }}>
+                  {currentDuaIndex < 5 && (
+                    <TouchableOpacity
+                      onPress={() => setCurrentDuaIndex(currentDuaIndex + 1)}
+                      style={{
+                        paddingHorizontal: 16,
+                        paddingVertical: 10,
+                        backgroundColor: 'rgba(165,115,36,0.3)',
+                        borderRadius: 8,
+                        minWidth: 80,
+                        alignItems: 'center',
+                      }}
+                    >
+                      <Text style={{ color: '#fae29f', fontSize: 14, fontWeight: 'bold' }}>Next</Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
+              </View>
             </TouchableOpacity>
           </TouchableOpacity>
-        </Modal>
+          </Modal>
 
         <Modal
           visible={settingsVisible}
@@ -1074,12 +1176,15 @@ const HomeScreen = ({ navigation, route }) => {
           onRequestClose={() => setSettingsVisible(false)}
         >
           <TouchableOpacity 
-            style={styles.modalOverlay}
+            style={[styles.modalOverlay, { justifyContent: 'flex-end', paddingBottom: 20 }]}
             activeOpacity={1}
             onPress={() => setSettingsVisible(false)}
           >
             <TouchableOpacity 
-              style={[styles.modalContent, { backgroundColor: 'rgba(64,64,64,0.95)' }]}
+              style={[styles.modalContent, { 
+                backgroundColor: 'rgba(64,64,64,0.95)',
+                paddingTop: SIZES.large * 1.35, // Reduced by 7%
+              }]}
               activeOpacity={1}
               onPress={(e) => e.stopPropagation()}
             >

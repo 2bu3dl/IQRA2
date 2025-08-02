@@ -7,6 +7,10 @@ class AudioPlayer {
     this.isPlaying = false;
     this.currentAyah = null;
     this.isInitialized = false;
+    this.highlightingInterval = null;
+    this.playbackStartTime = null;
+    this.currentMetadata = null;
+    this.highlightingCallbacks = [];
   }
 
   async initialize() {
@@ -33,7 +37,7 @@ class AudioPlayer {
     }
   }
 
-  async playAudio(audioSource) {
+  async playAudio(audioSource, metadata = null) {
     try {
       // Initialize if not already done
       await this.initialize();
@@ -46,6 +50,8 @@ class AudioPlayer {
       // Set playing state
       this.isPlaying = true;
       this.currentAyah = audioSource;
+      this.currentMetadata = metadata;
+      this.playbackStartTime = Date.now();
       
       // Add the track to the queue
       await TrackPlayer.add({
@@ -60,6 +66,11 @@ class AudioPlayer {
       
       console.log('[AudioPlayer] Audio playback started');
       
+      // Start highlighting timer if metadata is provided
+      if (metadata && metadata.words) {
+        this.startHighlightingTimer();
+      }
+      
       // Set up event listener for completion
       TrackPlayer.addEventListener(Event.PlaybackTrackChanged, async (event) => {
         if (event.nextTrack === null) {
@@ -67,6 +78,7 @@ class AudioPlayer {
           console.log('[AudioPlayer] Audio playback completed');
           this.isPlaying = false;
           this.currentAyah = null;
+          this.stopHighlightingTimer();
         }
       });
       
@@ -75,6 +87,7 @@ class AudioPlayer {
       console.error('[AudioPlayer] Error playing audio:', error);
       this.isPlaying = false;
       this.currentAyah = null;
+      this.stopHighlightingTimer();
       return false;
     }
   }
@@ -86,6 +99,7 @@ class AudioPlayer {
         await TrackPlayer.reset();
         this.isPlaying = false;
         this.currentAyah = null;
+        this.stopHighlightingTimer();
         console.log('[AudioPlayer] Audio stopped');
       }
     } catch (error) {
@@ -133,9 +147,58 @@ class AudioPlayer {
     }
   }
 
+  startHighlightingTimer() {
+    if (this.highlightingInterval) {
+      clearInterval(this.highlightingInterval);
+    }
+    
+    this.highlightingInterval = setInterval(() => {
+      if (this.isPlaying && this.currentMetadata && this.playbackStartTime) {
+        const currentTime = (Date.now() - this.playbackStartTime) / 1000;
+        
+        // Find current word based on time
+        const currentWord = this.currentMetadata.words.find(word => 
+          currentTime >= word.startTime && currentTime <= word.endTime
+        );
+        
+        // Notify all callbacks
+        this.highlightingCallbacks.forEach(callback => {
+          callback(currentWord, currentTime);
+        });
+      }
+    }, 100); // Update every 100ms
+  }
+  
+  stopHighlightingTimer() {
+    if (this.highlightingInterval) {
+      clearInterval(this.highlightingInterval);
+      this.highlightingInterval = null;
+    }
+    this.playbackStartTime = null;
+    this.currentMetadata = null;
+  }
+  
+  onHighlightingUpdate(callback) {
+    this.highlightingCallbacks.push(callback);
+    return () => {
+      const index = this.highlightingCallbacks.indexOf(callback);
+      if (index > -1) {
+        this.highlightingCallbacks.splice(index, 1);
+      }
+    };
+  }
+  
+  getCurrentTime() {
+    if (this.playbackStartTime && this.isPlaying) {
+      return (Date.now() - this.playbackStartTime) / 1000;
+    }
+    return 0;
+  }
+  
   cleanup() {
     this.stopAudio();
-    // Removed TrackPlayer.destroy() as it does not exist in v2
+    this.stopHighlightingTimer();
+    this.highlightingCallbacks = [];
   }
 }
 

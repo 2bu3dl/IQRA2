@@ -969,6 +969,9 @@ const AllSurahsTab = ({ navigation, route, searchText, isJuzMode, juzData }) => 
     
     return (
       <View style={[
+        {
+          marginBottom: 4,
+        },
         isCompleted && {
           shadowColor: '#fae29f',
           shadowOffset: { width: 0, height: 0 },
@@ -977,7 +980,6 @@ const AllSurahsTab = ({ navigation, route, searchText, isJuzMode, juzData }) => 
           elevation: 5,
           borderRadius: SIZES.small,
           marginHorizontal: SIZES.medium,
-          marginBottom: SIZES.medium,
         }
       ]}>
         <TouchableOpacity
@@ -1871,7 +1873,7 @@ const styles = StyleSheet.create({
     paddingBottom: SIZES.extraLarge * 12, // Increased significantly more for proper tab clearance
   },
   surahCard: {
-    marginBottom: SIZES.medium,
+    marginBottom: 4,
     backgroundColor: 'rgba(0, 0, 0, 0.93)',
     borderColor: 'rgba(165,115,36,0.8)',
     borderWidth: 1,
