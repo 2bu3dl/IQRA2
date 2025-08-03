@@ -14,6 +14,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useLanguage } from '../utils/languageContext';
 import audioRecorder from '../utils/audioRecorder';
+import sharingService from '../utils/sharingService';
 
 const RecordingsModal = ({ 
   visible, 
@@ -198,23 +199,181 @@ const RecordingsModal = ({
     }
   };
 
-  const handleShareSelected = () => {
+  const handleShareSelected = async () => {
     if (selectedRecordings.length === 0) {
       Alert.alert('No Recordings Selected', 'Please select recordings to share.');
       return;
     }
 
-    Alert.alert(
-      'Share Recordings',
-      'Choose sharing method:',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'AirDrop', onPress: () => console.log('Share via AirDrop') },
-        { text: 'Messages', onPress: () => console.log('Share via Messages') },
-        { text: 'Mail', onPress: () => console.log('Share via Mail') },
-        { text: 'Files App', onPress: () => console.log('Share via Files App') },
-      ]
+    // Get the selected recordings with their metadata
+    const selectedRecordingsData = recordings.filter(recording => 
+      selectedRecordings.includes(recording.uri)
     );
+
+    if (selectedRecordingsData.length === 0) {
+      Alert.alert('Error', 'Selected recordings not found.');
+      return;
+    }
+
+    // If only one recording is selected, show sharing options
+    if (selectedRecordingsData.length === 1) {
+      const recording = selectedRecordingsData[0];
+      
+      Alert.alert(
+        'Share Recording',
+        `Share "${recording.name || 'Recording'}" via:`,
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { 
+            text: 'Share Sheet', 
+            onPress: async () => {
+              try {
+                await sharingService.shareSingleRecording(
+                  recording.uri,
+                  recording.name || 'Recording',
+                  safeSurahName,
+                  safeAyahNumber
+                );
+              } catch (error) {
+                console.error('Error sharing recording:', error);
+                Alert.alert('Sharing Error', 'Failed to share recording.');
+              }
+            }
+          },
+          { 
+            text: 'AirDrop', 
+            onPress: async () => {
+              try {
+                await sharingService.shareToSpecificApp(
+                  recording.uri,
+                  recording.name || 'Recording',
+                  safeSurahName,
+                  safeAyahNumber,
+                  'airdrop'
+                );
+              } catch (error) {
+                console.error('Error sharing via AirDrop:', error);
+                Alert.alert('AirDrop Error', 'Failed to share via AirDrop.');
+              }
+            }
+          },
+          { 
+            text: 'Messages', 
+            onPress: async () => {
+              try {
+                await sharingService.shareToSpecificApp(
+                  recording.uri,
+                  recording.name || 'Recording',
+                  safeSurahName,
+                  safeAyahNumber,
+                  'messages'
+                );
+              } catch (error) {
+                console.error('Error sharing via Messages:', error);
+                Alert.alert('Messages Error', 'Failed to share via Messages.');
+              }
+            }
+          },
+          { 
+            text: 'Mail', 
+            onPress: async () => {
+              try {
+                await sharingService.shareToSpecificApp(
+                  recording.uri,
+                  recording.name || 'Recording',
+                  safeSurahName,
+                  safeAyahNumber,
+                  'mail'
+                );
+              } catch (error) {
+                console.error('Error sharing via Mail:', error);
+                Alert.alert('Mail Error', 'Failed to share via Mail.');
+              }
+            }
+          },
+          { 
+            text: 'WhatsApp', 
+            onPress: async () => {
+              try {
+                await sharingService.shareToSpecificApp(
+                  recording.uri,
+                  recording.name || 'Recording',
+                  safeSurahName,
+                  safeAyahNumber,
+                  'whatsapp'
+                );
+              } catch (error) {
+                console.error('Error sharing via WhatsApp:', error);
+                Alert.alert('WhatsApp Error', 'Failed to share via WhatsApp.');
+              }
+            }
+          },
+          { 
+            text: 'Telegram', 
+            onPress: async () => {
+              try {
+                await sharingService.shareToSpecificApp(
+                  recording.uri,
+                  recording.name || 'Recording',
+                  safeSurahName,
+                  safeAyahNumber,
+                  'telegram'
+                );
+              } catch (error) {
+                console.error('Error sharing via Telegram:', error);
+                Alert.alert('Telegram Error', 'Failed to share via Telegram.');
+              }
+            }
+          }
+        ]
+      );
+    } else {
+      // Multiple recordings selected - share them one by one
+      Alert.alert(
+        'Share Multiple Recordings',
+        `Share ${selectedRecordingsData.length} recordings via:`,
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { 
+            text: 'Share All', 
+            onPress: async () => {
+              try {
+                const fileUris = selectedRecordingsData.map(r => r.uri);
+                const fileNames = selectedRecordingsData.map(r => r.name || 'Recording');
+                
+                await sharingService.shareMultipleRecordings(
+                  fileUris,
+                  fileNames,
+                  safeSurahName,
+                  safeAyahNumber
+                );
+              } catch (error) {
+                console.error('Error sharing recordings:', error);
+                Alert.alert('Sharing Error', 'Failed to share recordings.');
+              }
+            }
+          },
+          { 
+            text: 'Share Individually', 
+            onPress: async () => {
+              try {
+                for (const recording of selectedRecordingsData) {
+                  await sharingService.shareSingleRecording(
+                    recording.uri,
+                    recording.name || 'Recording',
+                    safeSurahName,
+                    safeAyahNumber
+                  );
+                }
+              } catch (error) {
+                console.error('Error sharing recordings:', error);
+                Alert.alert('Sharing Error', 'Failed to share recordings.');
+              }
+            }
+          }
+        ]
+      );
+    }
   };
 
   const handleDeleteSelected = () => {
@@ -613,6 +772,8 @@ const RecordingsModal = ({
                       Share
                     </Text>
                   </TouchableOpacity>
+
+
                 </View>
               </View>
             )}

@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { View, StyleSheet, SafeAreaView, Image, ImageBackground, Modal, TouchableOpacity, Dimensions, Alert, TextInput, Animated, ScrollView } from 'react-native';
+import { View, StyleSheet, SafeAreaView, Image, ImageBackground, Modal, TouchableOpacity, Dimensions, Alert, TextInput, Animated, ScrollView, FlatList } from 'react-native';
 import { useAuth } from '../utils/authContext';
 import { COLORS as BASE_COLORS, SIZES, FONTS } from '../utils/theme';
 import Text from '../components/Text';
@@ -94,8 +94,25 @@ const HomeScreen = ({ navigation, route }) => {
   const [resetting, setResetting] = useState(false);
   const [confirmResetVisible, setConfirmResetVisible] = useState(false);
   const [memorizeButtonHeld, setMemorizeButtonHeld] = useState(false);
+    const [currentPage, setCurrentPage] = useState(1);
+  const [progressModalVisible, setProgressModalVisible] = useState(false);
+  const [hasanatModalVisible, setHasanatModalVisible] = useState(false);
+  const [streakModalVisible, setStreakModalVisible] = useState(false);
+  const flatListRef = useRef(null);
 
-    const loadScreenData = async () => {
+  // Scroll to default page on mount
+  useEffect(() => {
+    if (flatListRef.current) {
+      setTimeout(() => {
+        flatListRef.current.scrollToIndex({
+          index: 1,
+          animated: false
+        });
+      }, 100);
+    }
+  }, []);
+
+  const loadScreenData = async () => {
       const loadedData = await loadData();
       setData(loadedData);
     };
@@ -280,7 +297,7 @@ const HomeScreen = ({ navigation, route }) => {
           <View style={{
             flexDirection: 'row',
             justifyContent: 'space-around',
-            marginTop: -10, // Moved up from 10 to -10
+            marginTop: -20, // Moved up from -10 to -20
             marginBottom: 20,
             position: 'relative',
             zIndex: 1,
@@ -319,7 +336,7 @@ const HomeScreen = ({ navigation, route }) => {
                   style={{
                     flex: 1,
                     marginHorizontal: SIZES.small,
-                    padding: SIZES.large,
+                    padding: SIZES.medium,
                     alignItems: 'center',
                     justifyContent: 'center',
                     backgroundColor: 'transparent',
@@ -422,162 +439,599 @@ const HomeScreen = ({ navigation, route }) => {
             })()}
           </View>
 
-          <Card variant="elevated" style={{
-            marginBottom: isSmallScreen ? -30 : -50,
-            marginTop: isSmallScreen ? 20 : (isMediumScreen ? 25 : 30), // Reduced from 40/50/60 to 20/25/30
-            backgroundColor: 'rgba(128,128,128,0.3)',
-            borderColor: 'rgba(165,115,36,0.8)',
-            borderWidth: 1,
-            padding: SIZES.medium,
-            shadowColor: '#000000',
-            shadowOffset: { width: 4, height: 4 },
-            shadowOpacity: 0.6,
-            shadowRadius: 6,
-            elevation: 8,
-            height: isSmallScreen ? 140 : 160
-          }}>
-              <View style={{ alignItems: 'center' }}>
-                <View style={{ borderBottomWidth: 2, borderBottomColor: 'rgba(51,51,51,0.6)', paddingBottom: 4, marginBottom: 12 }}>
-                  <Text variant="h2" style={[FONTS.h2.getFont(language), { 
-                    textAlign: 'center', 
-                    color: '#5b7f67', 
-                    fontWeight: 'bold',
-                    textShadowColor: '#000000',
-                    textShadowOffset: { width: 0, height: 1 },
-                    textShadowRadius: 3,
-                    shadowColor: '#000',
-                    shadowOffset: { width: 0, height: 1 },
-                    shadowOpacity: 0.3,
-                    shadowRadius: 3,
-                  }]}>{t('memorization_progress')}</Text>
-                </View>
-              </View>
-              <Text variant="body1" style={{ marginBottom: SIZES.small, textAlign: 'center' }}>
-                <Text style={{ 
-                  color: '#f5c860', 
-                  fontWeight: 'bold',
-                  textShadowColor: '#fae29f',
-                  textShadowOffset: { width: 0, height: 0 },
-                  textShadowRadius: 2,
-                }}>{toArabicNumber(data.memorizedAyaat)}</Text> <Text style={{ color: '#CCCCCC' }}>{t('out_of_ayaat')}</Text> <Text style={{ color: '#F5E6C8', fontWeight: 'bold' }}>{toArabicNumber(data.totalAyaat)}</Text> <Text style={{ color: '#CCCCCC' }}>{t('ayaat_memorized')}</Text>
-            </Text>
-            <View style={styles.progressBar}>
-              <View style={[
-                styles.progressFill, 
-                { 
-                  width: `${progressPercentage}%`,
-                  backgroundColor: progressPercentage === 100 ? '#fae29f' : '#33694e',
-                  ...(progressPercentage === 100 && {
-                    shadowColor: '#fae29f',
-                    shadowOffset: { width: 0, height: 0 },
-                    shadowOpacity: 1.0,
-                    shadowRadius: 15,
-                    elevation: 12,
-                  })
-                }
-              ]} />
-            </View>
-            <Text variant="body2" color="textSecondary" style={{ 
-              marginTop: 8, 
-              textAlign: 'center',
-              color: '#F5E6C8',
-              fontSize: progressPercentage === 100 ? 18 : 16,
-              ...(progressPercentage === 100 && {
-                textShadowColor: '#fae29f',
-                textShadowOffset: { width: 0, height: 0 },
-                textShadowRadius: 8,
-                fontWeight: 'bold',
-              })
-            }}>
-              {progressPercentage === 100 ? (
-                <>
-                  <Text style={{ 
-                    fontWeight: 'bold',
-                    color: '#fae29f',
-                    textShadowColor: '#fae29f',
-                    textShadowOffset: { width: 0, height: 0 },
-                    textShadowRadius: 8,
-                  }}>100%</Text> {t('completed')}
-                </>
-              ) : (
-                <>
-                  <Text style={{ 
-                    fontWeight: 'bold',
-                    color: '#fae29f',
-                    textShadowColor: '#fae29f',
-                    textShadowOffset: { width: 0, height: 0 },
-                    textShadowRadius: 2,
-                  }}>{toArabicNumber(progressPercentage)}%</Text> {t('complete')}
-                </>
-              )}
-            </Text>
-          </Card>
 
-          <View style={{
-            flexDirection: 'row',
-            justifyContent: 'space-around',
-            marginBottom: SIZES.medium,
-            marginTop: isSmallScreen ? 30 : (isMediumScreen ? 35 : 60), // Reduced from 40/60/80 to 20/30/40
-            position: 'relative',
-            zIndex: 1
-          }}>
-            <Card style={{
-              flex: 1,
-              padding: SIZES.medium,
-              backgroundColor: 'rgba(128,128,128,0.3)',
-              borderColor: 'rgba(165,115,36,0.8)',
-              borderWidth: 1,
-              borderRadius: SIZES.base,
-              alignItems: 'center',
-              justifyContent: 'center',
-              shadowColor: '#000000',
-              shadowOffset: { width: 4, height: 4 },
-              shadowOpacity: 0.6,
-              shadowRadius: 6,
-              elevation: 8,
-              height: isSmallScreen ? 150 : 180
-            }}>
-                <Text variant="h3" style={{ textAlign: 'center', color: '#CCCCCC' }}>{t('hasanat_gains')}</Text>
-                <View style={{ backgroundColor: 'rgba(0,0,0,0.75)', borderRadius: 8, paddingHorizontal: 16, paddingVertical: 8, alignSelf: 'center', marginVertical: 8 }}>
-                  <Text variant="h1" style={{ 
-                    color: 'rgba(245,200,96,0.8)', 
-                    fontWeight: 'bold', 
-                    textAlign: 'center', 
-                    fontSize: formatLargeNumber(data.totalHasanat).fontSize,
-                    textShadowColor: '#fae29f',
-                    textShadowOffset: { width: 0, height: 0 },
-                    textShadowRadius: 2,
-                  }}>{toArabicNumber(formatLargeNumber(data.totalHasanat).text)}</Text>
-                </View>
-                <Text variant="body2" color="textSecondary" style={{ textAlign: 'center' }}>+{toArabicNumber(formatLargeNumber(data.todayHasanat).text)} {t('today_hasanat')}</Text>
-                <Text variant="body2" style={{ textAlign: 'center', color: '#F5E6C8', marginTop: 8, marginBottom: 4 }}>{t('insha2allah')}</Text>
-            </Card>
-            <Card style={{
-              flex: 1,
-              padding: SIZES.medium,
-              backgroundColor: 'rgba(128,128,128,0.3)',
-              borderColor: 'rgba(165,115,36,0.8)',
-              borderWidth: 1,
-              borderRadius: SIZES.base,
-              alignItems: 'center',
-              justifyContent: 'center',
-              shadowColor: '#000000',
-              shadowOffset: { width: 4, height: 4 },
-              shadowOpacity: 0.6,
-              shadowRadius: 6,
-              elevation: 8,
-              height: isSmallScreen ? 150 : 180
-            }}>
-                <View style={{ marginTop: 8 }}>
-                    <Text variant="h3" style={{ textAlign: 'center', color: '#CCCCCC', marginTop: 0 }}>{t('streak')}</Text>
-                    <View style={{ backgroundColor: 'rgba(0,0,0,0.75)', borderRadius: 8, paddingHorizontal: 16, paddingVertical: 8, alignSelf: 'center', marginVertical: 8, alignItems: 'center', justifyContent: 'center' }}>
-                      <Text variant="h1" style={{ color: '#5b7f67', textAlign: 'center', fontWeight: 'bold', fontSize: formatStreakNumber(data.streak).fontSize, lineHeight: formatStreakNumber(data.streak).fontSize * 1.2 }}>{toArabicNumber(formatStreakNumber(data.streak).text)}</Text>
+
+          <FlatList
+            ref={flatListRef}
+            data={[
+              {
+                id: 'saved_content',
+                content: (
+                  <View style={{
+                    marginTop: isSmallScreen ? 20 : (isMediumScreen ? 25 : 30),
+                    marginBottom: SIZES.medium,
+                    flex: 1,
+                    paddingHorizontal: SIZES.small,
+                  }}>
+                    {/* Saved Content Header */}
+                    <View style={{
+                      alignItems: 'center',
+                      marginBottom: SIZES.small,
+                    }}>
+                      <Text variant="h2" style={{
+                        textAlign: 'center',
+                        color: '#5b7f67',
+                        fontWeight: 'bold',
+                        fontSize: 20,
+                        marginBottom: 6,
+                        textShadowColor: '#000000',
+                        textShadowOffset: { width: 0, height: 1 },
+                        textShadowRadius: 2,
+                      }}>
+                        Saved Content
+                      </Text>
+                      <Text style={{
+                        textAlign: 'center',
+                        color: '#CCCCCC',
+                        fontSize: 12,
+                      }}>
+                        Your saved ayaat and recordings
+                      </Text>
                     </View>
-                    <Text variant="body2" color="textSecondary" style={{ textAlign: 'center' }}>{t('days')}</Text>
-                    <Text variant="body2" style={{ textAlign: 'center', color: '#F5E6C8', marginTop: 8, marginBottom: 4 }}>{t('masha2allah')}</Text>
-                </View>
-            </Card>
-          </View>
+
+                    {/* Two Column Layout */}
+                    <View style={{
+                      flexDirection: 'row',
+                      justifyContent: 'space-between',
+                      gap: 8,
+                    }}>
+                      {/* Saved Ayaat */}
+                      <TouchableOpacity
+                        style={{
+                          flex: 0.48,
+                          backgroundColor: 'rgba(128,128,128,0.3)',
+                          borderColor: 'rgba(165,115,36,0.8)',
+                          borderWidth: 1,
+                          borderRadius: SIZES.base,
+                          padding: SIZES.small,
+                          shadowColor: '#000000',
+                          shadowOffset: { width: 4, height: 4 },
+                          shadowOpacity: 0.6,
+                          shadowRadius: 6,
+                          elevation: 8,
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          minHeight: 120,
+                        }}
+                        onPress={() => {
+                          ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true });
+                          Alert.alert('Saved Ayaat', 'This would open your saved ayaat');
+                        }}
+                      >
+                        <Text style={{
+                          textAlign: 'center',
+                          color: '#5b7f67',
+                          fontWeight: 'bold',
+                          fontSize: 16,
+                          marginBottom: 8,
+                        }}>
+                          📖 Saved Ayaat
+                        </Text>
+                        <Text style={{
+                          textAlign: 'center',
+                          color: '#F5E6C8',
+                          fontSize: 14,
+                          marginBottom: 4,
+                        }}>
+                          12 saved
+                        </Text>
+                        <Text style={{
+                          textAlign: 'center',
+                          color: '#CCCCCC',
+                          fontSize: 12,
+                        }}>
+                          Tap to view
+                        </Text>
+                      </TouchableOpacity>
+
+                      {/* Recitation Recordings */}
+                      <TouchableOpacity
+                        style={{
+                          flex: 0.48,
+                          backgroundColor: 'rgba(128,128,128,0.3)',
+                          borderColor: 'rgba(165,115,36,0.8)',
+                          borderWidth: 1,
+                          borderRadius: SIZES.base,
+                          padding: SIZES.small,
+                          shadowColor: '#000000',
+                          shadowOffset: { width: 4, height: 4 },
+                          shadowOpacity: 0.6,
+                          shadowRadius: 6,
+                          elevation: 8,
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          minHeight: 120,
+                        }}
+                        onPress={() => {
+                          ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true });
+                          Alert.alert('Recordings', 'This would open your recordings');
+                        }}
+                      >
+                        <Text style={{
+                          textAlign: 'center',
+                          color: '#5b7f67',
+                          fontWeight: 'bold',
+                          fontSize: 16,
+                          marginBottom: 8,
+                        }}>
+                          🎤 Recordings
+                        </Text>
+                        <Text style={{
+                          textAlign: 'center',
+                          color: '#F5E6C8',
+                          fontSize: 14,
+                          marginBottom: 4,
+                        }}>
+                          8 recordings
+                        </Text>
+                        <Text style={{
+                          textAlign: 'center',
+                          color: '#CCCCCC',
+                          fontSize: 12,
+                        }}>
+                          Tap to view
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                )
+              },
+              {
+                id: 'stats',
+                content: (
+                  <View style={{
+                    marginTop: isSmallScreen ? 5 : (isMediumScreen ? 10 : 15),
+                    marginBottom: 40,
+                    alignItems: 'center',
+                    width: '100%'
+                  }}>
+                    {/* Progress Card */}
+                    <TouchableOpacity
+                      style={{ width: '100%', alignItems: 'center' }}
+                      onPress={() => {
+                        ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true });
+                        setProgressModalVisible(true);
+                      }}
+                      activeOpacity={0.9}
+                    >
+                      <Card variant="elevated" style={{
+                        marginBottom: 0,
+                        backgroundColor: 'rgba(128,128,128,0.3)',
+                        borderColor: 'rgba(165,115,36,0.8)',
+                        borderWidth: 1,
+                        padding: SIZES.small,
+                        shadowColor: '#000000',
+                        shadowOffset: { width: 4, height: 4 },
+                        shadowOpacity: 0.6,
+                        shadowRadius: 6,
+                        elevation: 8,
+                        height: isSmallScreen ? 130 : 150,
+                        alignSelf: 'center',
+                        width: '80%'
+                      }}>
+                        <View style={{ alignItems: 'center' }}>
+                          <View style={{ borderBottomWidth: 2, borderBottomColor: 'rgba(51,51,51,0.6)', paddingBottom: 4, marginBottom: 12 }}>
+                                                        <Text variant="h2" style={[FONTS.h2.getFont(language), {
+                              textAlign: 'center',
+                              color: '#5b7f67',
+                              fontWeight: 'bold',
+                              fontSize: 22,
+                              textShadowColor: '#000000',
+                              textShadowOffset: { width: 0, height: 1 },
+                              textShadowRadius: 3,
+                              shadowColor: '#000',
+                              shadowOffset: { width: 0, height: 1 },
+                              shadowOpacity: 0.3,
+                              shadowRadius: 3,
+                            }]}>{t('memorization_progress')}</Text>
+                          </View>
+                        </View>
+                        <Text variant="body1" style={{ marginBottom: SIZES.small, textAlign: 'center' }}>
+                          <Text style={{ 
+                            color: '#f5c860', 
+                            fontWeight: 'bold',
+                            textShadowColor: '#fae29f',
+                            textShadowOffset: { width: 0, height: 0 },
+                            textShadowRadius: 2,
+                          }}>{toArabicNumber(data.memorizedAyaat)}</Text> <Text style={{ color: '#CCCCCC' }}>{t('out_of_ayaat')}</Text> <Text style={{ color: '#F5E6C8', fontWeight: 'bold' }}>{toArabicNumber(data.totalAyaat)}</Text> <Text style={{ color: '#CCCCCC' }}>{t('ayaat_memorized')}</Text>
+                        </Text>
+                        <View style={styles.progressBar}>
+                          <View style={[
+                            styles.progressFill, 
+                            { 
+                              width: `${progressPercentage}%`,
+                              backgroundColor: progressPercentage === 100 ? '#fae29f' : '#33694e',
+                              ...(progressPercentage === 100 && {
+                                shadowColor: '#fae29f',
+                                shadowOffset: { width: 0, height: 0 },
+                                shadowOpacity: 1.0,
+                                shadowRadius: 15,
+                                elevation: 12,
+                              })
+                            }
+                          ]} />
+                        </View>
+                                                  <Text variant="body2" color="textSecondary" style={{
+                            marginTop: 4,
+                            textAlign: 'center',
+                            color: '#F5E6C8',
+                            fontSize: progressPercentage === 100 ? 18 : 16,
+                            ...(progressPercentage === 100 && {
+                              textShadowColor: '#fae29f',
+                              textShadowOffset: { width: 0, height: 0 },
+                              textShadowRadius: 8,
+                              fontWeight: 'bold',
+                            })
+                          }}>
+                          {progressPercentage === 100 ? (
+                            <>
+                              <Text style={{ 
+                                fontWeight: 'bold',
+                                color: '#fae29f',
+                                textShadowColor: '#fae29f',
+                                textShadowOffset: { width: 0, height: 0 },
+                                textShadowRadius: 8,
+                              }}>100%</Text> {t('completed')}
+                            </>
+                          ) : (
+                            <>
+                              <Text style={{ 
+                                fontWeight: 'bold',
+                                color: '#fae29f',
+                                textShadowColor: '#fae29f',
+                                textShadowOffset: { width: 0, height: 0 },
+                                textShadowRadius: 2,
+                              }}>{toArabicNumber(progressPercentage)}%</Text> {t('complete')}
+                            </>
+                          )}
+                        </Text>
+                      </Card>
+                    </TouchableOpacity>
+
+                    {/* Stats Grid */}
+                    <View style={{
+                      flexDirection: 'row',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      position: 'relative',
+                      zIndex: 1,
+                      width: '80%'
+                    }}>
+                      <Card style={{
+                        flex: 0.50,
+                        padding: 8,
+                        backgroundColor: 'rgba(128,128,128,0.3)',
+                        borderColor: 'rgba(165,115,36,0.8)',
+                        borderWidth: 1,
+                        borderRadius: SIZES.base,
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        shadowColor: '#000000',
+                        shadowOffset: { width: 4, height: 4 },
+                        shadowOpacity: 0.6,
+                        shadowRadius: 6,
+                        elevation: 8,
+                        height: isSmallScreen ? 120 : 140,
+                        marginHorizontal: 0
+                      }}>
+                        <TouchableOpacity
+                          onPress={() => {
+                            ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true });
+                            setHasanatModalVisible(true);
+                          }}
+                          activeOpacity={0.9}
+                          style={{ width: '100%', height: '100%', alignItems: 'center', justifyContent: 'center' }}
+                        >
+                          <Text variant="h3" style={{ textAlign: 'center', color: '#CCCCCC', fontSize: 16, marginTop: 10 }}>{t('hasanat_gains')}</Text>
+                          <View style={{ backgroundColor: 'rgba(0,0,0,0.75)', borderRadius: 8, paddingHorizontal: 16, paddingVertical: 8, alignSelf: 'center', marginVertical: 8 }}>
+                            <Text variant="h1" style={{ 
+                              color: 'rgba(245,200,96,0.8)', 
+                              fontWeight: 'bold', 
+                              textAlign: 'center', 
+                              fontSize: formatLargeNumber(data.totalHasanat).fontSize,
+                              textShadowColor: '#fae29f',
+                              textShadowOffset: { width: 0, height: 0 },
+                              textShadowRadius: 2,
+                            }}>{toArabicNumber(formatLargeNumber(data.totalHasanat).text)}</Text>
+                          </View>
+                          <Text variant="body2" color="textSecondary" style={{ textAlign: 'center' }}>+{toArabicNumber(formatLargeNumber(data.todayHasanat).text)} {t('today_hasanat')}</Text>
+                          <Text variant="body2" style={{ textAlign: 'center', color: '#F5E6C8', marginTop: 4, marginBottom: 2 }}>{t('insha2allah')}</Text>
+                        </TouchableOpacity>
+                      </Card>
+                      <Card style={{
+                        flex: 0.50,
+                        padding: 8,
+                        backgroundColor: 'rgba(128,128,128,0.3)',
+                        borderColor: 'rgba(165,115,36,0.8)',
+                        borderWidth: 1,
+                        borderRadius: SIZES.base,
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        shadowColor: '#000000',
+                        shadowOffset: { width: 4, height: 4 },
+                        shadowOpacity: 0.6,
+                        shadowRadius: 6,
+                        elevation: 8,
+                        height: isSmallScreen ? 120 : 140,
+                        marginHorizontal: 0
+                      }}>
+                        <TouchableOpacity
+                          onPress={() => {
+                            ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true });
+                            setStreakModalVisible(true);
+                          }}
+                          activeOpacity={0.9}
+                          style={{ width: '100%', height: '100%', alignItems: 'center', justifyContent: 'center' }}
+                        >
+                          <View style={{ marginTop: 8 }}>
+                              <Text variant="h3" style={{ textAlign: 'center', color: '#CCCCCC', marginTop: 10, fontSize: 16 }}>{t('streak')}</Text>
+                              <View style={{ backgroundColor: 'rgba(0,0,0,0.75)', borderRadius: 8, paddingHorizontal: 16, paddingVertical: 8, alignSelf: 'center', marginVertical: 8, alignItems: 'center', justifyContent: 'center' }}>
+                                <Text variant="h1" style={{ color: '#5b7f67', textAlign: 'center', fontWeight: 'bold', fontSize: formatStreakNumber(data.streak).fontSize, lineHeight: formatStreakNumber(data.streak).fontSize * 1.2 }}>{toArabicNumber(formatStreakNumber(data.streak).text)}</Text>
+                              </View>
+                                                              <Text variant="body2" color="textSecondary" style={{ textAlign: 'center', marginTop: -4 }}>{t('days')}</Text>
+                                                             <Text variant="body2" style={{ textAlign: 'center', color: '#F5E6C8', marginTop: 1, marginBottom: 10 }}>{t('masha2allah')}</Text>
+                          </View>
+                        </TouchableOpacity>
+                      </Card>
+                    </View>
+                  </View>
+                )
+              },
+              {
+                id: 'leaderboard',
+                content: (
+                  <View style={{
+                    marginTop: isSmallScreen ? 20 : (isMediumScreen ? 25 : 30),
+                    marginBottom: SIZES.medium,
+                    flex: 1,
+                    paddingHorizontal: SIZES.small,
+                  }}>
+                                                             {/* Leaderboards Header */}
+                     <View style={{
+                       alignItems: 'center',
+                       marginBottom: SIZES.small,
+                     }}>
+                       <Text variant="h2" style={{
+                         textAlign: 'center',
+                         color: '#5b7f67',
+                         fontWeight: 'bold',
+                         fontSize: 20,
+                         marginBottom: 6,
+                         textShadowColor: '#000000',
+                         textShadowOffset: { width: 0, height: 1 },
+                         textShadowRadius: 2,
+                       }}>
+                         Leaderboards
+                       </Text>
+                       <Text style={{
+                         textAlign: 'center',
+                         color: '#CCCCCC',
+                         fontSize: 12,
+                       }}>
+                         Tap to view full leaderboards
+                       </Text>
+                     </View>
+
+                     {/* Two Column Leaderboards */}
+                     <View style={{
+                       flexDirection: 'row',
+                       justifyContent: 'space-between',
+                       gap: 8,
+                     }}>
+                       {/* Memorization Leaderboard */}
+                       <TouchableOpacity
+                         style={{
+                           flex: 0.48,
+                           backgroundColor: 'rgba(128,128,128,0.3)',
+                           borderColor: 'rgba(165,115,36,0.8)',
+                           borderWidth: 1,
+                           borderRadius: SIZES.base,
+                           padding: SIZES.small,
+                           shadowColor: '#000000',
+                           shadowOffset: { width: 4, height: 4 },
+                           shadowOpacity: 0.6,
+                           shadowRadius: 6,
+                           elevation: 8,
+                         }}
+                         onPress={() => {
+                           ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true });
+                           Alert.alert('Memorization Leaderboard', 'This would open the full memorization leaderboard page');
+                         }}
+                       >
+                         <Text style={{
+                           textAlign: 'center',
+                           color: '#5b7f67',
+                           fontWeight: 'bold',
+                           fontSize: 16,
+                           marginBottom: 8,
+                         }}>
+                           Top Memorizers
+                         </Text>
+                         {/* Top 3 Preview */}
+                         <View style={{ marginBottom: SIZES.small }}>
+                           {[
+                             { rank: 1, name: 'Ahmad Al-Rashid', ayaat: 2456, hasanat: '2.3M', medal: '🥇' },
+                             { rank: 2, name: 'Fatima Zahra', ayaat: 2103, hasanat: '1.9M', medal: '🥈' },
+                             { rank: 3, name: 'Omar Khalil', ayaat: 1876, hasanat: '1.6M', medal: '🥉' },
+                           ].map((user, index) => (
+                             <View key={index} style={{
+                               flexDirection: 'row',
+                               alignItems: 'center',
+                               paddingVertical: 4,
+                               borderBottomWidth: index < 2 ? 1 : 0,
+                               borderBottomColor: 'rgba(165,115,36,0.3)',
+                             }}>
+                               <View style={{
+                                 width: 20,
+                                 alignItems: 'center',
+                                 marginRight: 8,
+                               }}>
+                                 <Text style={{ fontSize: 14 }}>{user.medal}</Text>
+                               </View>
+                               <View style={{ flex: 1 }}>
+                                 <Text style={{
+                                   color: '#F5E6C8',
+                                   fontWeight: 'bold',
+                                   fontSize: 12,
+                                 }}>
+                                   {user.name}
+                                 </Text>
+                                 <Text style={{
+                                   color: '#CCCCCC',
+                                   fontSize: 10,
+                                 }}>
+                                   {user.ayaat} ayaat
+                                 </Text>
+                               </View>
+                             </View>
+                           ))}
+                         </View>
+                       </TouchableOpacity>
+
+                       {/* Streak Leaderboard */}
+                       <TouchableOpacity
+                         style={{
+                           flex: 0.48,
+                           backgroundColor: 'rgba(128,128,128,0.3)',
+                           borderColor: 'rgba(165,115,36,0.8)',
+                           borderWidth: 1,
+                           borderRadius: SIZES.base,
+                           padding: SIZES.small,
+                           shadowColor: '#000000',
+                           shadowOffset: { width: 4, height: 4 },
+                           shadowOpacity: 0.6,
+                           shadowRadius: 6,
+                           elevation: 8,
+                         }}
+                         onPress={() => {
+                           ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true });
+                           Alert.alert('Streak Leaderboard', 'This would open the full streak leaderboard page');
+                         }}
+                       >
+                         <Text style={{
+                           textAlign: 'center',
+                           color: '#5b7f67',
+                           fontWeight: 'bold',
+                           fontSize: 16,
+                           marginBottom: 8,
+                         }}>
+                           Daily Streaks
+                         </Text>
+                         {/* Top 3 Preview */}
+                         <View style={{ marginBottom: SIZES.small }}>
+                           {[
+                             { rank: 1, name: 'Yusuf Al-Hamid', streak: 156, medal: '🔥' },
+                             { rank: 2, name: 'Aisha Bint Ali', streak: 134, medal: '🔥' },
+                             { rank: 3, name: 'Khalid Ibn Walid', streak: 98, medal: '🔥' },
+                           ].map((user, index) => (
+                             <View key={index} style={{
+                               flexDirection: 'row',
+                               alignItems: 'center',
+                               paddingVertical: 4,
+                               borderBottomWidth: index < 2 ? 1 : 0,
+                               borderBottomColor: 'rgba(165,115,36,0.3)',
+                             }}>
+                               <View style={{
+                                 width: 20,
+                                 alignItems: 'center',
+                                 marginRight: 8,
+                               }}>
+                                 <Text style={{ fontSize: 14 }}>{user.medal}</Text>
+                               </View>
+                               <View style={{ flex: 1 }}>
+                                 <Text style={{
+                                   color: '#F5E6C8',
+                                   fontWeight: 'bold',
+                                   fontSize: 12,
+                                 }}>
+                                   {user.name}
+                                 </Text>
+                                 <Text style={{
+                                   color: '#CCCCCC',
+                                   fontSize: 10,
+                                 }}>
+                                   {user.streak} days
+                                 </Text>
+                               </View>
+                             </View>
+                           ))}
+                         </View>
+                       </TouchableOpacity>
+                     </View>
+                  </View>
+                )
+              }
+            ]}
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            bounces={false}
+            decelerationRate="fast"
+            snapToInterval={Dimensions.get('window').width}
+            snapToAlignment="start"
+            onMomentumScrollEnd={(event) => {
+              const pageIndex = Math.round(event.nativeEvent.contentOffset.x / Dimensions.get('window').width);
+              setCurrentPage(pageIndex);
+            }}
+            renderItem={({ item }) => (
+              <View style={{ 
+                width: Dimensions.get('window').width,
+                overflow: 'hidden',
+                height: '100%'
+              }}>
+                {item.content}
+              </View>
+            )}
+            keyExtractor={(item) => item.id}
+            style={{ flex: 1 }}
+            contentContainerStyle={{ flexGrow: 1 }}
+            getItemLayout={(data, index) => ({
+              length: Dimensions.get('window').width,
+              offset: Dimensions.get('window').width * index,
+              index,
+            })}
+           />
+           
+           {/* Page Indicators */}
+           <View style={{
+             flexDirection: 'row',
+             justifyContent: 'center',
+             alignItems: 'center',
+             marginTop: 30,
+             marginBottom: 10
+           }}>
+             <View style={{
+               width: 8,
+               height: 8,
+               borderRadius: 4,
+               backgroundColor: currentPage === 0 ? '#5b7f67' : 'rgba(165,115,36,0.8)',
+               marginHorizontal: 4
+             }} />
+             <View style={{
+               width: 8,
+               height: 8,
+               borderRadius: 4,
+               backgroundColor: currentPage === 1 ? '#5b7f67' : 'rgba(165,115,36,0.8)',
+               marginHorizontal: 4
+             }} />
+             <View style={{
+               width: 8,
+               height: 8,
+               borderRadius: 4,
+               backgroundColor: currentPage === 2 ? '#5b7f67' : 'rgba(165,115,36,0.8)',
+               marginHorizontal: 4
+             }} />
+           </View>
         </View>
 
           <Modal
@@ -1467,6 +1921,563 @@ const HomeScreen = ({ navigation, route }) => {
                   </TouchableOpacity>
                 </View>
               </View>
+            </TouchableOpacity>
+          </TouchableOpacity>
+        </Modal>
+
+        {/* Progress History Modal */}
+        <Modal
+          visible={progressModalVisible}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setProgressModalVisible(false)}
+        >
+          <TouchableOpacity 
+            style={[styles.modalOverlay, { justifyContent: 'center', paddingVertical: 20 }]}
+            activeOpacity={1}
+            onPress={() => setProgressModalVisible(false)}
+          >
+            <TouchableOpacity 
+              style={[styles.modalContent, { 
+                minHeight: 600,
+                maxHeight: '85%',
+                justifyContent: 'flex-start',
+                paddingVertical: 30,
+                marginTop: 17,
+                backgroundColor: 'rgba(64,64,64,0.95)',
+                borderColor: 'rgba(165,115,36,0.8)',
+                borderWidth: 2,
+              }]}
+              activeOpacity={1}
+              onPress={() => {}}
+            >
+              <Text variant="h2" style={{ 
+                marginBottom: 24, 
+                marginTop: -30, 
+                color: '#F5E6C8',
+                fontSize: 28,
+                fontWeight: 'bold',
+                textShadowColor: '#000',
+                textShadowOffset: { width: 0, height: 1 },
+                textShadowRadius: 2,
+              }}>Memorization History</Text>
+              
+              {/* Calendar View */}
+              <View style={{ marginBottom: 24 }}>
+                <Text style={{
+                  color: '#5b7f67',
+                  fontSize: 18,
+                  fontWeight: 'bold',
+                  marginBottom: 12,
+                  textAlign: 'center'
+                }}>
+                  📅 Progress Calendar
+                </Text>
+                <View style={{
+                  backgroundColor: 'rgba(128,128,128,0.3)',
+                  borderRadius: 12,
+                  padding: 16,
+                  borderColor: 'rgba(165,115,36,0.8)',
+                  borderWidth: 1,
+                }}>
+                  {/* Calendar Grid */}
+                  <View style={{
+                    flexDirection: 'row',
+                    flexWrap: 'wrap',
+                    justifyContent: 'space-between',
+                  }}>
+                    {Array.from({ length: 30 }, (_, i) => (
+                      <View key={i} style={{
+                        width: 20,
+                        height: 20,
+                        margin: 2,
+                        borderRadius: 10,
+                        backgroundColor: Math.random() > 0.3 ? '#5b7f67' : 'rgba(128,128,128,0.5)',
+                        borderWidth: 1,
+                        borderColor: 'rgba(165,115,36,0.8)',
+                      }} />
+                    ))}
+                  </View>
+                  <Text style={{
+                    color: '#CCCCCC',
+                    fontSize: 12,
+                    textAlign: 'center',
+                    marginTop: 8
+                  }}>
+                    Green dots = Days completed
+                  </Text>
+                </View>
+              </View>
+
+              {/* Goal Setting */}
+              <View style={{ marginBottom: 24 }}>
+                <Text style={{
+                  color: '#5b7f67',
+                  fontSize: 18,
+                  fontWeight: 'bold',
+                  marginBottom: 12,
+                  textAlign: 'center'
+                }}>
+                  🎯 Set Daily Goals
+                </Text>
+                <View style={{
+                  backgroundColor: 'rgba(128,128,128,0.3)',
+                  borderRadius: 12,
+                  padding: 16,
+                  borderColor: 'rgba(165,115,36,0.8)',
+                  borderWidth: 1,
+                }}>
+                  <Text style={{
+                    color: '#F5E6C8',
+                    fontSize: 14,
+                    fontWeight: 'bold',
+                    marginBottom: 8,
+                    textAlign: 'center'
+                  }}>
+                    Ayaat/Day → Days Needed
+                  </Text>
+                  <ScrollView style={{ maxHeight: 200 }}>
+                    {[
+                      { ayaat: 1, days: 6236 },
+                      { ayaat: 2, days: 3118 },
+                      { ayaat: 3, days: 2079 },
+                      { ayaat: 4, days: 1559 },
+                      { ayaat: 5, days: 1248 },
+                      { ayaat: 6, days: 1040 },
+                      { ayaat: 7, days: 891 },
+                      { ayaat: 8, days: 780 },
+                      { ayaat: 9, days: 693 },
+                      { ayaat: 10, days: 624 },
+                      { ayaat: 20, days: 312 }
+                    ].map((goal, index) => (
+                      <View key={index} style={{
+                        flexDirection: 'row',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        paddingVertical: 6,
+                        borderBottomWidth: index < 10 ? 1 : 0,
+                        borderBottomColor: 'rgba(165,115,36,0.3)',
+                      }}>
+                        <Text style={{
+                          color: '#F5E6C8',
+                          fontSize: 14,
+                          fontWeight: 'bold',
+                        }}>
+                          {goal.ayaat} ayaat/day
+                        </Text>
+                        <Text style={{
+                          color: '#CCCCCC',
+                          fontSize: 14,
+                        }}>
+                          {goal.days.toLocaleString()} days
+                        </Text>
+                      </View>
+                    ))}
+                  </ScrollView>
+                </View>
+              </View>
+
+              {/* Close Button */}
+              <TouchableOpacity
+                style={{
+                  backgroundColor: '#5b7f67',
+                  paddingVertical: 12,
+                  paddingHorizontal: 24,
+                  borderRadius: 8,
+                  alignItems: 'center',
+                  shadowColor: '#000',
+                  shadowOffset: { width: 0, height: 4 },
+                  shadowOpacity: 0.5,
+                  shadowRadius: 6,
+                  elevation: 8,
+                }}
+                onPress={() => {
+                  ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true });
+                  setProgressModalVisible(false);
+                }}
+              >
+                <Text style={{
+                  color: '#FFFFFF',
+                  fontSize: 16,
+                  fontWeight: 'bold',
+                }}>
+                  Close
+                </Text>
+              </TouchableOpacity>
+            </TouchableOpacity>
+          </TouchableOpacity>
+        </Modal>
+
+        {/* Hasanat Gains Modal */}
+        <Modal
+          visible={hasanatModalVisible}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setHasanatModalVisible(false)}
+        >
+          <TouchableOpacity 
+            style={[styles.modalOverlay, { justifyContent: 'center', paddingVertical: 20 }]}
+            activeOpacity={1}
+            onPress={() => setHasanatModalVisible(false)}
+          >
+            <TouchableOpacity 
+              style={[styles.modalContent, { 
+                minHeight: 600,
+                maxHeight: '85%',
+                justifyContent: 'flex-start',
+                paddingVertical: 30,
+                marginTop: 17,
+                backgroundColor: 'rgba(64,64,64,0.95)',
+                borderColor: 'rgba(165,115,36,0.8)',
+                borderWidth: 2,
+              }]}
+              activeOpacity={1}
+              onPress={() => {}}
+            >
+              <Text variant="h2" style={{ 
+                marginBottom: 24, 
+                marginTop: -30, 
+                color: '#F5E6C8',
+                fontSize: 28,
+                fontWeight: 'bold',
+                textShadowColor: '#000',
+                textShadowOffset: { width: 0, height: 1 },
+                textShadowRadius: 2,
+              }}>Hasanat Gains</Text>
+              
+              {/* Weekly Chart */}
+              <View style={{ marginBottom: 24 }}>
+                <Text style={{
+                  color: '#5b7f67',
+                  fontSize: 18,
+                  fontWeight: 'bold',
+                  marginBottom: 12,
+                  textAlign: 'center'
+                }}>
+                  📈 Weekly Progress
+                </Text>
+                <View style={{
+                  backgroundColor: 'rgba(128,128,128,0.3)',
+                  borderRadius: 12,
+                  padding: 16,
+                  borderColor: 'rgba(165,115,36,0.8)',
+                  borderWidth: 1,
+                  height: 150,
+                  justifyContent: 'center',
+                }}>
+                  {/* Simple Line Chart */}
+                  <View style={{
+                    flexDirection: 'row',
+                    alignItems: 'flex-end',
+                    justifyContent: 'space-between',
+                    height: 100,
+                    paddingHorizontal: 10,
+                  }}>
+                    {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day, index) => (
+                      <View key={day} style={{ alignItems: 'center' }}>
+                        <View style={{
+                          width: 20,
+                          height: Math.random() * 80 + 20,
+                          backgroundColor: '#5b7f67',
+                          borderRadius: 4,
+                          marginBottom: 8,
+                        }} />
+                        <Text style={{
+                          color: '#CCCCCC',
+                          fontSize: 12,
+                        }}>
+                          {day}
+                        </Text>
+                      </View>
+                    ))}
+                  </View>
+                </View>
+              </View>
+
+              {/* Monthly Chart */}
+              <View style={{ marginBottom: 24 }}>
+                <Text style={{
+                  color: '#5b7f67',
+                  fontSize: 18,
+                  fontWeight: 'bold',
+                  marginBottom: 12,
+                  textAlign: 'center'
+                }}>
+                  📊 Monthly Overview
+                </Text>
+                <View style={{
+                  backgroundColor: 'rgba(128,128,128,0.3)',
+                  borderRadius: 12,
+                  padding: 16,
+                  borderColor: 'rgba(165,115,36,0.8)',
+                  borderWidth: 1,
+                  height: 150,
+                  justifyContent: 'center',
+                }}>
+                  {/* Monthly Bar Chart */}
+                  <View style={{
+                    flexDirection: 'row',
+                    alignItems: 'flex-end',
+                    justifyContent: 'space-between',
+                    height: 100,
+                    paddingHorizontal: 10,
+                  }}>
+                    {['W1', 'W2', 'W3', 'W4'].map((week, index) => (
+                      <View key={week} style={{ alignItems: 'center' }}>
+                        <View style={{
+                          width: 25,
+                          height: Math.random() * 60 + 30,
+                          backgroundColor: 'rgba(245,200,96,0.8)',
+                          borderRadius: 4,
+                          marginBottom: 8,
+                        }} />
+                        <Text style={{
+                          color: '#CCCCCC',
+                          fontSize: 12,
+                        }}>
+                          {week}
+                        </Text>
+                      </View>
+                    ))}
+                  </View>
+                </View>
+              </View>
+
+              {/* Close Button */}
+              <TouchableOpacity
+                style={{
+                  backgroundColor: '#5b7f67',
+                  paddingVertical: 12,
+                  paddingHorizontal: 24,
+                  borderRadius: 8,
+                  alignItems: 'center',
+                  shadowColor: '#000',
+                  shadowOffset: { width: 0, height: 4 },
+                  shadowOpacity: 0.5,
+                  shadowRadius: 6,
+                  elevation: 8,
+                }}
+                onPress={() => {
+                  ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true });
+                  setHasanatModalVisible(false);
+                }}
+              >
+                <Text style={{
+                  color: '#FFFFFF',
+                  fontSize: 16,
+                  fontWeight: 'bold',
+                }}>
+                  Close
+                </Text>
+              </TouchableOpacity>
+            </TouchableOpacity>
+          </TouchableOpacity>
+        </Modal>
+
+        {/* Streak Modal */}
+        <Modal
+          visible={streakModalVisible}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setStreakModalVisible(false)}
+        >
+          <TouchableOpacity 
+            style={[styles.modalOverlay, { justifyContent: 'center', paddingVertical: 20 }]}
+            activeOpacity={1}
+            onPress={() => setStreakModalVisible(false)}
+          >
+            <TouchableOpacity 
+              style={[styles.modalContent, { 
+                minHeight: 600,
+                maxHeight: '85%',
+                justifyContent: 'flex-start',
+                paddingVertical: 30,
+                marginTop: 17,
+                backgroundColor: 'rgba(64,64,64,0.95)',
+                borderColor: 'rgba(165,115,36,0.8)',
+                borderWidth: 2,
+              }]}
+              activeOpacity={1}
+              onPress={() => {}}
+            >
+              <Text variant="h2" style={{ 
+                marginBottom: 24, 
+                marginTop: -30, 
+                color: '#F5E6C8',
+                fontSize: 28,
+                fontWeight: 'bold',
+                textShadowColor: '#000',
+                textShadowOffset: { width: 0, height: 1 },
+                textShadowRadius: 2,
+              }}>Daily Streaks</Text>
+              
+              {/* Weekly Streak */}
+              <View style={{ marginBottom: 24 }}>
+                <Text style={{
+                  color: '#5b7f67',
+                  fontSize: 18,
+                  fontWeight: 'bold',
+                  marginBottom: 12,
+                  textAlign: 'center'
+                }}>
+                  🔥 Weekly Streak
+                </Text>
+                <View style={{
+                  backgroundColor: 'rgba(128,128,128,0.3)',
+                  borderRadius: 12,
+                  padding: 16,
+                  borderColor: 'rgba(165,115,36,0.8)',
+                  borderWidth: 1,
+                }}>
+                  <View style={{
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                  }}>
+                    {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day, index) => (
+                      <View key={day} style={{ alignItems: 'center' }}>
+                        <View style={{
+                          width: 30,
+                          height: 30,
+                          borderRadius: 15,
+                          backgroundColor: Math.random() > 0.2 ? '#5b7f67' : 'rgba(128,128,128,0.5)',
+                          borderWidth: 2,
+                          borderColor: 'rgba(165,115,36,0.8)',
+                          marginBottom: 8,
+                        }} />
+                        <Text style={{
+                          color: '#CCCCCC',
+                          fontSize: 12,
+                        }}>
+                          {day}
+                        </Text>
+                      </View>
+                    ))}
+                  </View>
+                </View>
+              </View>
+
+              {/* Monthly Streak */}
+              <View style={{ marginBottom: 24 }}>
+                <Text style={{
+                  color: '#5b7f67',
+                  fontSize: 18,
+                  fontWeight: 'bold',
+                  marginBottom: 12,
+                  textAlign: 'center'
+                }}>
+                  📅 Monthly Progress
+                </Text>
+                <View style={{
+                  backgroundColor: 'rgba(128,128,128,0.3)',
+                  borderRadius: 12,
+                  padding: 16,
+                  borderColor: 'rgba(165,115,36,0.8)',
+                  borderWidth: 1,
+                }}>
+                  {/* Calendar Grid */}
+                  <View style={{
+                    flexDirection: 'row',
+                    flexWrap: 'wrap',
+                    justifyContent: 'space-between',
+                  }}>
+                    {Array.from({ length: 30 }, (_, i) => (
+                      <View key={i} style={{
+                        width: 18,
+                        height: 18,
+                        margin: 1,
+                        borderRadius: 9,
+                        backgroundColor: Math.random() > 0.3 ? '#5b7f67' : 'rgba(128,128,128,0.5)',
+                        borderWidth: 1,
+                        borderColor: 'rgba(165,115,36,0.8)',
+                      }} />
+                    ))}
+                  </View>
+                  <Text style={{
+                    color: '#CCCCCC',
+                    fontSize: 12,
+                    textAlign: 'center',
+                    marginTop: 8
+                  }}>
+                    Green dots = Days with activity
+                  </Text>
+                </View>
+              </View>
+
+              {/* Yearly Stats */}
+              <View style={{ marginBottom: 24 }}>
+                <Text style={{
+                  color: '#5b7f67',
+                  fontSize: 18,
+                  fontWeight: 'bold',
+                  marginBottom: 12,
+                  textAlign: 'center'
+                }}>
+                  📊 Yearly Overview
+                </Text>
+                <View style={{
+                  backgroundColor: 'rgba(128,128,128,0.3)',
+                  borderRadius: 12,
+                  padding: 16,
+                  borderColor: 'rgba(165,115,36,0.8)',
+                  borderWidth: 1,
+                }}>
+                  <View style={{
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: 8,
+                  }}>
+                    <Text style={{ color: '#F5E6C8', fontSize: 14 }}>Current Streak:</Text>
+                    <Text style={{ color: '#5b7f67', fontSize: 16, fontWeight: 'bold' }}>156 days</Text>
+                  </View>
+                  <View style={{
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: 8,
+                  }}>
+                    <Text style={{ color: '#F5E6C8', fontSize: 14 }}>Longest Streak:</Text>
+                    <Text style={{ color: '#5b7f67', fontSize: 16, fontWeight: 'bold' }}>234 days</Text>
+                  </View>
+                  <View style={{
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                  }}>
+                    <Text style={{ color: '#F5E6C8', fontSize: 14 }}>Total Active Days:</Text>
+                    <Text style={{ color: '#5b7f67', fontSize: 16, fontWeight: 'bold' }}>298 days</Text>
+                  </View>
+                </View>
+              </View>
+
+              {/* Close Button */}
+              <TouchableOpacity
+                style={{
+                  backgroundColor: '#5b7f67',
+                  paddingVertical: 12,
+                  paddingHorizontal: 24,
+                  borderRadius: 8,
+                  alignItems: 'center',
+                  shadowColor: '#000',
+                  shadowOffset: { width: 0, height: 4 },
+                  shadowOpacity: 0.5,
+                  shadowRadius: 6,
+                  elevation: 8,
+                }}
+                onPress={() => {
+                  ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true });
+                  setStreakModalVisible(false);
+                }}
+              >
+                <Text style={{
+                  color: '#FFFFFF',
+                  fontSize: 16,
+                  fontWeight: 'bold',
+                }}>
+                  Close
+                </Text>
+              </TouchableOpacity>
             </TouchableOpacity>
           </TouchableOpacity>
         </Modal>
