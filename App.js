@@ -4,7 +4,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { COLORS } from './src/utils/theme';
 import { LanguageProvider } from './src/utils/languageContext';
 import { AuthProvider } from './src/utils/authContext';
-import { Linking } from 'react-native';
+import { Linking, LogBox } from 'react-native';
 import { supabase } from './src/utils/supabase';
 
 // Import screens
@@ -16,6 +16,13 @@ import AuthScreen from './src/screens/AuthScreen';
 const Stack = createNativeStackNavigator();
 
 function App() {
+  // Suppress legacy architecture warnings
+  LogBox.ignoreLogs([
+    'Warning: React Native is using the legacy architecture',
+    'Warning: The legacy architecture is deprecated',
+    'Warning: Please migrate to the new architecture',
+  ]);
+
   useEffect(() => {
     // Handle deep links for email confirmation
     const handleDeepLink = (url) => {

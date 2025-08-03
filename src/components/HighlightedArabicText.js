@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { View, StyleSheet } from 'react-native';
 import Text from './Text';
 
@@ -11,7 +11,7 @@ const HighlightedArabicText = ({
   isBoldFont = false,
   style = {} 
 }) => {
-  const [highlightedWords, setHighlightedWords] = useState(new Set());
+  const [highlightedIndex, setHighlightedIndex] = useState(-1);
 
   useEffect(() => {
     if (isPlaying && metadata && metadata.words) {
@@ -20,51 +20,36 @@ const HighlightedArabicText = ({
       );
       
       if (currentWord) {
-        setHighlightedWords(prev => new Set([...prev, currentWord.index]));
+        setHighlightedIndex(currentWord.index);
       }
     } else if (!isPlaying) {
       // Clear all highlights when audio stops
-      setHighlightedWords(new Set());
+      setHighlightedIndex(-1);
     }
   }, [currentTime, isPlaying, metadata]);
 
-  const renderWords = () => {
-    if (!metadata || !metadata.words) {
-      // Fallback to regular text if no metadata - split into words for consistent layout
-      const words = text.split(/\s+/).filter(word => word.length > 0);
-      return words.map((word, index) => (
-        <Text
-          key={index}
-          style={[
-            styles.arabicWord,
-            { 
-              fontSize, 
-              fontFamily: isBoldFont ? 'KFGQPC Uthman Taha Naskh Bold' : 'KFGQPC Uthman Taha Naskh',
-              lineHeight: fontSize * 1.5,
-              marginVertical: fontSize * 0.1
-            }
-          ]}
-          allowFontScaling={false}
-          lang="ar"
-        >
-          {word}
-        </Text>
-      ));
-    }
+  const wordsToRender = useMemo(() => {
+    return metadata && metadata.words ? metadata.words : 
+      text.split(/\s+/).filter(word => word.length > 0).map((word, index) => ({ text: word, index }));
+  }, [metadata, text]);
 
-    // For metadata text, also ensure consistent word-by-word layout
-    return metadata.words.map((word, index) => (
+  const baseWordStyle = useMemo(() => ({
+    fontSize: fontSize, 
+    fontFamily: isBoldFont ? 'KFGQPC Uthman Taha Naskh Bold' : 'KFGQPC Uthman Taha Naskh',
+    lineHeight: fontSize * 1.5,
+    marginVertical: fontSize * 0.1,
+    textAlign: 'center',
+    includeFontPadding: false,
+  }), [fontSize, isBoldFont]);
+
+  const renderWords = () => {
+    return wordsToRender.map((word, index) => (
       <Text
-        key={index}
+        key={`word-${index}-${word.text}`}
         style={[
-          styles.arabicWord,
-          { 
-            fontSize, 
-            fontFamily: isBoldFont ? 'KFGQPC Uthman Taha Naskh Bold' : 'KFGQPC Uthman Taha Naskh',
-            lineHeight: fontSize * 1.5,
-            marginVertical: fontSize * 0.1
-          },
-          highlightedWords.has(index) && styles.highlightedWord
+          styles.arabicWord, 
+          baseWordStyle,
+          { color: highlightedIndex === index ? '#FFA500' : '#5b7f67' }
         ]}
         allowFontScaling={false}
         lang="ar"
@@ -77,7 +62,8 @@ const HighlightedArabicText = ({
   return (
     <View style={[styles.container, style, { 
       paddingVertical: Math.max(20, fontSize * 0.5),
-      minHeight: Math.max(200, fontSize * 3)
+      minHeight: Math.max(200, fontSize * 3),
+      width: '100%'
     }]}>
       {renderWords()}
     </View>
@@ -105,12 +91,8 @@ const styles = StyleSheet.create({
     marginVertical: 4,
     writingDirection: 'rtl',
     includeFontPadding: false,
-    lineHeight: undefined,
   },
-  highlightedWord: {
-    color: '#FFA500',
-    fontWeight: 'bold',
-  },
+  // Removed highlightedWord style - color is handled inline
 });
 
 export default HighlightedArabicText; 

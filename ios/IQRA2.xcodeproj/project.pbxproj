@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 56;
+	objectVersion = 70;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -18,6 +18,8 @@
 		CE5CC92097EE4694873E4173 /* Montserrat-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 2F04E8AC4AD243DA8DBD43E4 /* Montserrat-Regular.ttf */; };
 		D040CBC6B347D9F9B9CEAE2D /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */; };
 		FD63C71DC90A4122A602EDE4 /* UthmanTNB_v2-0.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 78C94F5480BF404C80F4F382 /* UthmanTNB_v2-0.ttf */; };
+		FE6998932E3E90710066DE56 /* AudioRecorderModule.m in Sources */ = {isa = PBXBuildFile; fileRef = FE6998912E3E90710066DE56 /* AudioRecorderModule.m */; };
+		FE6998942E3E90710066DE56 /* AudioRecorderModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE6998922E3E90710066DE56 /* AudioRecorderModule.swift */; };
 		FE894A2C2E242CF00054180C /* 001001.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FATIHA_001 /* 001001.mp3 */; };
 		FE894A2D2E242CF00054180C /* 001002.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FATIHA_002 /* 001002.mp3 */; };
 		FE894A2E2E242CF00054180C /* 001003.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FATIHA_003 /* 001003.mp3 */; };
@@ -101,6 +103,9 @@
 		FE4B9BA62E2F00830080B3DC /* IQRA2Watch Extension Watch AppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "IQRA2Watch Extension Watch AppTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		FE4B9BB02E2F00830080B3DC /* IQRA2Watch Extension Watch AppUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "IQRA2Watch Extension Watch AppUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		FE4B9BC12E2F02690080B3DC /* IQRA2.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = IQRA2.entitlements; path = IQRA2/IQRA2.entitlements; sourceTree = "<group>"; };
+		FE6998912E3E90710066DE56 /* AudioRecorderModule.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AudioRecorderModule.m; sourceTree = "<group>"; };
+		FE6998922E3E90710066DE56 /* AudioRecorderModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioRecorderModule.swift; sourceTree = "<group>"; };
+		FE6998952E3E90B20066DE56 /* IQRA2-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "IQRA2-Bridging-Header.h"; sourceTree = "<group>"; };
 		FE9B98472E24C68600CE6688 /* 067025.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = 067025.mp3; path = ../src/assets/AlMulk_AlGhamdi/067025.mp3; sourceTree = "<group>"; };
 		FE9B98482E24C68600CE6688 /* 067017.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = 067017.mp3; path = ../src/assets/AlMulk_AlGhamdi/067017.mp3; sourceTree = "<group>"; };
 		FE9B98492E24C68600CE6688 /* 067021.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = 067021.mp3; path = ../src/assets/AlMulk_AlGhamdi/067021.mp3; sourceTree = "<group>"; };
@@ -134,39 +139,9 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		FE4B9B982E2F00810080B3DC /* IQRA2Watch Extension Watch App */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-			);
-			explicitFileTypes = {
-			};
-			explicitFolders = (
-			);
-			path = "IQRA2Watch Extension Watch App";
-			sourceTree = "<group>";
-		};
-		FE4B9BA92E2F00830080B3DC /* IQRA2Watch Extension Watch AppTests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-			);
-			explicitFileTypes = {
-			};
-			explicitFolders = (
-			);
-			path = "IQRA2Watch Extension Watch AppTests";
-			sourceTree = "<group>";
-		};
-		FE4B9BB32E2F00830080B3DC /* IQRA2Watch Extension Watch AppUITests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-			);
-			explicitFileTypes = {
-			};
-			explicitFolders = (
-			);
-			path = "IQRA2Watch Extension Watch AppUITests";
-			sourceTree = "<group>";
-		};
+		FE4B9B982E2F00810080B3DC /* IQRA2Watch Extension Watch App */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = "IQRA2Watch Extension Watch App"; sourceTree = "<group>"; };
+		FE4B9BA92E2F00830080B3DC /* IQRA2Watch Extension Watch AppTests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = "IQRA2Watch Extension Watch AppTests"; sourceTree = "<group>"; };
+		FE4B9BB32E2F00830080B3DC /* IQRA2Watch Extension Watch AppUITests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = "IQRA2Watch Extension Watch AppUITests"; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -234,6 +209,8 @@
 		83CBB9F61A601CBA00E9B192 = {
 			isa = PBXGroup;
 			children = (
+				FE6998912E3E90710066DE56 /* AudioRecorderModule.m */,
+				FE6998922E3E90710066DE56 /* AudioRecorderModule.swift */,
 				13B07FAE1A68108700A75B9A /* IQRA2 */,
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
 				FE4B9B982E2F00810080B3DC /* IQRA2Watch Extension Watch App */,
@@ -243,6 +220,7 @@
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
 				9CEE6281BA4F4614B78ED3C6 /* Resources */,
 				BBD78D7AC51CEA395F1C20DB /* Pods */,
+				FE6998952E3E90B20066DE56 /* IQRA2-Bridging-Header.h */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -413,7 +391,7 @@
 				LastUpgradeCheck = 1210;
 				TargetAttributes = {
 					13B07F861A680F5B00A75B9A = {
-						LastSwiftMigration = 1120;
+						LastSwiftMigration = 1620;
 					};
 					FE4B9B962E2F00810080B3DC = {
 						CreatedOnToolsVersion = 16.2;
@@ -589,6 +567,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FE6998932E3E90710066DE56 /* AudioRecorderModule.m in Sources */,
+				FE6998942E3E90710066DE56 /* AudioRecorderModule.swift in Sources */,
 				761780ED2CA45674006654EE /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -654,6 +634,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "org.reactjs.native.example.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = IQRA2;
+				SWIFT_OBJC_BRIDGING_HEADER = "IQRA2-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
@@ -683,6 +664,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "org.reactjs.native.example.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = IQRA2;
+				SWIFT_OBJC_BRIDGING_HEADER = "IQRA2-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
 			};
@@ -757,10 +739,7 @@
 					"-DFOLLY_CFG_NO_COROUTINES=1",
 					"-DFOLLY_HAVE_CLOCK_GETTIME=1",
 				);
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					" ",
-				);
+				OTHER_LDFLAGS = "$(inherited)  ";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) DEBUG";
@@ -829,10 +808,7 @@
 					"-DFOLLY_CFG_NO_COROUTINES=1",
 					"-DFOLLY_HAVE_CLOCK_GETTIME=1",
 				);
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					" ",
-				);
+				OTHER_LDFLAGS = "$(inherited)  ";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				USE_HERMES = false;

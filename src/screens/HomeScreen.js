@@ -698,7 +698,11 @@ const HomeScreen = ({ navigation, route }) => {
           animationType="fade"
           onRequestClose={() => setInfoVisible(false)}
         >
-                      <View style={[styles.modalOverlay, { justifyContent: 'flex-end', paddingBottom: 20 }]}>
+          <TouchableOpacity 
+            style={[styles.modalOverlay, { justifyContent: 'flex-end', paddingBottom: 20 }]}
+            activeOpacity={1}
+            onPress={() => setInfoVisible(false)}
+          >
               <View style={[styles.modalContent, { 
                 minHeight: 550,
                 maxHeight: '75%',
@@ -929,7 +933,7 @@ const HomeScreen = ({ navigation, route }) => {
                 style={{ backgroundColor: '#33694e', marginTop: 15 }}
                 />
               </View>
-            </View>
+            </TouchableOpacity>
           </Modal>
 
         <Modal

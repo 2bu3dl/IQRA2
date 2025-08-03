@@ -16,7 +16,7 @@ const config = {
   transformer: {
     getTransformOptions: async () => ({
       transform: {
-        experimentalImportSupport: false,
+        experimentalImportSupport: true,
         inlineRequires: true,
       },
     }),
@@ -24,6 +24,12 @@ const config = {
   watchFolders: [
     require('path').resolve(__dirname, 'node_modules'),
   ],
+  // Suppress legacy architecture warning
+  experimentalImportSupport: true,
+  suppressLegacyArchitectureWarning: true,
+  // Additional suppression options
+  __suppressLegacyArchitectureWarning: true,
+  suppressOldArchitectureWarning: true,
 };
 
 module.exports = mergeConfig(getDefaultConfig(__dirname), config);

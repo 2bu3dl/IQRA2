@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback, memo, useMemo, useEffect } from 'react';
+import React, { useState, useRef, memo, useMemo, useEffect } from 'react';
 import { View, StyleSheet, SafeAreaView, TouchableOpacity, Modal, Animated, Image, ScrollView, TextInput, ImageBackground, TouchableWithoutFeedback, Alert, Pressable, Easing, Platform } from 'react-native';
 import { COLORS as BASE_COLORS, SIZES, FONTS } from '../utils/theme';
 import Text from '../components/Text';
@@ -9,12 +9,16 @@ import TranslationModal from '../components/TranslationModal';
 import StreakAnimation from '../components/StreakAnimation';
 import AnimatedRewardModal from '../components/AnimatedRewardModal';
 import BookmarkModal from '../components/BookmarkModal';
+import RecordingsModal from '../components/RecordingsModal';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { addHasanat, updateMemorizedAyahs, updateStreak, getCurrentStreak, loadData, saveCurrentPosition, saveLastPosition, toggleBookmark, isBookmarked, isAyahInAnyList } from '../utils/store';
 import { getSurahAyaatWithTransliteration, getAllSurahs } from '../utils/quranData';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useLanguage } from '../utils/languageContext';
 import audioPlayer from '../utils/audioPlayer';
+import audioRecorder from '../utils/audioRecorder';
+import { testRecordingSetup, testAudioSetup } from '../utils/recordingTest';
+import { testNativeModule } from '../utils/testNativeModule';
 import telemetryService from '../utils/telemetry';
 import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 import Slider from '@react-native-community/slider';
@@ -73,6 +77,11 @@ const MemorizationScreen = ({ route, navigation }) => {
   const [currentWordIndex, setCurrentWordIndex] = useState(-1);
   const [currentAudioTime, setCurrentAudioTime] = useState(0);
   const [currentAudioMetadata, setCurrentAudioMetadata] = useState(null);
+  
+  // Recording state
+  const [isRecording, setIsRecording] = useState(false);
+  const [hasRecordings, setHasRecordings] = useState(false);
+  const [showRecordingsModal, setShowRecordingsModal] = useState(false);
 
   const allSurahs = getAllSurahs();
   const currentSurahIndex = allSurahs.findIndex(s => s.surah === surahNumber);
@@ -128,7 +137,8 @@ const MemorizationScreen = ({ route, navigation }) => {
     };
     
     checkBookmarkStatus();
-  }, [currentAyahIndex, ayaat, surah.name]);
+    checkRecordings();
+  }, [currentAyahIndex, ayaat, surah.name, flashcards]);
 
   // Reset highlighting state when ayah changes
   React.useEffect(() => {
@@ -161,6 +171,7 @@ const MemorizationScreen = ({ route, navigation }) => {
     // Cleanup audio when component unmounts
     return () => {
       audioPlayer.cleanup();
+      audioRecorder.cleanup();
     };
   }, []);
 
@@ -398,7 +409,8 @@ const MemorizationScreen = ({ route, navigation }) => {
   // Clean up timeout on unmount
   React.useEffect(() => {
     return () => {
-      if (rewardTimeout.current) clearTimeout(rewardTimeout.current);
+      const timeout = rewardTimeout.current;
+      if (timeout) clearTimeout(timeout);
     };
   }, []);
 
@@ -493,6 +505,12 @@ const MemorizationScreen = ({ route, navigation }) => {
       setCurrentWordIndex(-1);
       setCurrentAudioTime(0);
     } else {
+      // Check if recording is in progress before playing audio
+      if (isRecording) {
+        Alert.alert('Cannot Play Audio', 'Please stop the recording before playing audio recitation.');
+        return;
+      }
+      
       // Play current ayah
       const currentFlashcard = flashcards[currentAyahIndex];
       if (currentFlashcard && currentFlashcard.type === 'ayah') {
@@ -538,6 +556,12 @@ const MemorizationScreen = ({ route, navigation }) => {
   };
 
   const handleAudioButtonLongPress = async () => {
+    // Check if recording is in progress before playing audio
+    if (isRecording) {
+      Alert.alert('Cannot Play Audio', 'Please stop the recording before playing audio recitation.');
+      return;
+    }
+    
     // Two haptic feedbacks: one instant, one after 750ms
     ReactNativeHapticFeedback.trigger('impactMedium', { enableVibrateFallback: true });
     setTimeout(() => {
@@ -588,13 +612,208 @@ const MemorizationScreen = ({ route, navigation }) => {
     }
   };
 
+  // Recording functions
+  const checkRecordings = async () => {
+    if (flashcards && flashcards[currentAyahIndex]?.type === 'ayah') {
+      const ayahNumber = flashcards.slice(0, currentAyahIndex + 1).filter(a => a.type === 'ayah').length;
+      const recordings = await audioRecorder.loadRecordings(surah.name, ayahNumber);
+      setHasRecordings(recordings.length > 0);
+    }
+  };
+
+  const handleRecordingToggle = async () => {
+    try {
+      ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true });
+      
+      if (isRecording) {
+        // Stop recording
+        console.log('[MemorizationScreen] Stopping recording...');
+        await audioRecorder.stopRecording();
+        setIsRecording(false);
+        recordingPulseAnim.stopAnimation();
+        await checkRecordings();
+      } else if (hasRecordings) {
+        // If recordings exist, open the modal instead of starting new recording
+        setShowRecordingsModal(true);
+      } else {
+        // Check if audio is playing before starting recording
+        if (isAudioPlaying) {
+          Alert.alert('Cannot Record', 'Please stop the audio recitation before starting a recording.');
+          return;
+        }
+        
+        // Start recording only if no recordings exist
+        if (flashcards && flashcards[currentAyahIndex]?.type === 'ayah') {
+          const ayahNumber = flashcards.slice(0, currentAyahIndex + 1).filter(a => a.type === 'ayah').length;
+          console.log('[MemorizationScreen] Starting recording for ayah:', ayahNumber);
+          await audioRecorder.startRecording(surah.name, ayahNumber);
+          setIsRecording(true);
+          
+          // Start pulse animation
+          Animated.loop(
+            Animated.sequence([
+              Animated.timing(recordingPulseAnim, {
+                toValue: 1,
+                duration: 1000,
+                useNativeDriver: true,
+              }),
+              Animated.timing(recordingPulseAnim, {
+                toValue: 0,
+                duration: 1000,
+                useNativeDriver: true,
+              }),
+            ])
+          ).start();
+        } else {
+          Alert.alert('Cannot Record', 'Recording is only available for Quran ayahs.');
+        }
+      }
+    } catch (error) {
+      console.error('Error toggling recording:', error);
+      setIsRecording(false);
+      recordingPulseAnim.stopAnimation();
+      Alert.alert('Recording Error', `Failed to ${isRecording ? 'stop' : 'start'} recording. ${error.message}`);
+    }
+  };
+
+  const handleRecordingLongPress = async () => {
+    if (isRecording) {
+      // Reset recording
+      try {
+        ReactNativeHapticFeedback.trigger('impactMedium', { enableVibrateFallback: true });
+        await audioRecorder.stopRecording();
+        setIsRecording(false);
+        recordingPulseAnim.stopAnimation();
+        Alert.alert('Recording Reset', 'Recording has been reset');
+      } catch (error) {
+        console.error('Error resetting recording:', error);
+      }
+    } else if (hasRecordings) {
+      // Start new recording to add to existing list
+      try {
+        ReactNativeHapticFeedback.trigger('impactMedium', { enableVibrateFallback: true });
+        
+        if (isAudioPlaying) {
+          Alert.alert('Cannot Record', 'Please stop the audio recitation before starting a recording.');
+          return;
+        }
+        
+        if (flashcards && flashcards[currentAyahIndex]?.type === 'ayah') {
+          const ayahNumber = flashcards.slice(0, currentAyahIndex + 1).filter(a => a.type === 'ayah').length;
+          console.log('[MemorizationScreen] Starting new recording for ayah:', ayahNumber);
+          await audioRecorder.startRecording(surah.name, ayahNumber);
+          setIsRecording(true);
+          
+          // Start pulse animation
+          Animated.loop(
+            Animated.sequence([
+              Animated.timing(recordingPulseAnim, {
+                toValue: 1,
+                duration: 1000,
+                useNativeDriver: true,
+              }),
+              Animated.timing(recordingPulseAnim, {
+                toValue: 0,
+                duration: 1000,
+                useNativeDriver: true,
+              }),
+            ])
+          ).start();
+        } else {
+          Alert.alert('Cannot Record', 'Recording is only available for Quran ayahs.');
+        }
+      } catch (error) {
+        console.error('Error starting new recording:', error);
+        Alert.alert('Recording Error', `Failed to start recording. ${error.message}`);
+      }
+    } else {
+      // Show recordings modal (shouldn't happen if no recordings)
+      setShowRecordingsModal(true);
+    }
+  };
+
+  const handleRecordingsModalClose = () => {
+    setShowRecordingsModal(false);
+    checkRecordings();
+  };
+
+  const testRecordingFunctionality = async () => {
+    try {
+      console.log('[MemorizationScreen] Testing recording functionality...');
+      
+      // Test native module
+      const nativeTest = testNativeModule();
+      console.log('[MemorizationScreen] Native module test:', nativeTest);
+      
+      // Test file system
+      const fsTest = await testRecordingSetup();
+      console.log('[MemorizationScreen] File system test:', fsTest);
+      
+      // Test audio setup
+      const audioTest = await testAudioSetup();
+      console.log('[MemorizationScreen] Audio test:', audioTest);
+      
+      if (nativeTest && fsTest && audioTest) {
+        Alert.alert('Test Results', 'Recording functionality is working correctly!');
+      } else {
+        Alert.alert('Test Results', 'Some recording tests failed. Check console for details.');
+      }
+    } catch (error) {
+      console.error('[MemorizationScreen] Test failed:', error);
+      Alert.alert('Test Error', error.message);
+    }
+  };
+
   const spin = spinAnim.interpolate({
     inputRange: [0, 1],
     outputRange: ['0deg', '360deg'],
   });
 
+  // Recording pulse animation
+  const recordingPulseAnim = useRef(new Animated.Value(1)).current;
+  const recordingPulse = recordingPulseAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [1, 1.2],
+  });
+
   const fontCandidates = ['UthmanTN_v2-0', 'UthmanTN', 'KFGQPC Uthman Taha Naskh', 'Uthman Taha Naskh'];
   const fontFamily = fontCandidates[currentAyahIndex % fontCandidates.length];
+
+  // Monitor recording status to reset button state when recording ends
+  useEffect(() => {
+    let recordingCheckInterval;
+    
+    if (isRecording) {
+      recordingCheckInterval = setInterval(async () => {
+        try {
+          const status = await audioRecorder.getStatus();
+          if (!status.isRecording) {
+            // Recording has ended naturally
+            setIsRecording(false);
+            recordingPulseAnim.stopAnimation();
+            await checkRecordings(); // Refresh recordings list
+            if (recordingCheckInterval) {
+              clearInterval(recordingCheckInterval);
+            }
+          }
+        } catch (error) {
+          console.error('Error checking recording status:', error);
+          // If there's an error, assume recording ended
+          setIsRecording(false);
+          recordingPulseAnim.stopAnimation();
+          if (recordingCheckInterval) {
+            clearInterval(recordingCheckInterval);
+          }
+        }
+      }, 500);
+    }
+
+    return () => {
+      if (recordingCheckInterval) {
+        clearInterval(recordingCheckInterval);
+      }
+    };
+  }, [isRecording, recordingPulseAnim]);
 
   return (
     <View style={{ flex: 1, backgroundColor: '#000' }}>
@@ -725,7 +944,10 @@ const MemorizationScreen = ({ route, navigation }) => {
               </Text>
             </View>
             */}
-        <Animated.View style={[styles.flashcard, { opacity: fadeAnim, transform: [{ scale: scaleAnim }] }] }>
+        <Animated.View style={[styles.flashcard, { 
+          opacity: isAudioPlaying ? 1 : fadeAnim, 
+          transform: [{ scale: isAudioPlaying ? 1 : scaleAnim }] 
+        }]}>
                 <Card variant="elevated" style={[styles.card, { flex: 1 }]}> 
                   <ScrollView style={styles.ayahScroll} contentContainerStyle={styles.ayahScrollContent} showsVerticalScrollIndicator={true} bounces={false}>
             {isTextHidden ? (
@@ -763,7 +985,8 @@ const MemorizationScreen = ({ route, navigation }) => {
                 }]}
               />
             )}
-            {/* Show transliteration only when text is not hidden and not in Arabic mode */}
+            
+            {/* Show transliteration with fixed distance from Arabic text */}
             {!isTextHidden && language === 'en' && (
               <Text
                 variant="body2"
@@ -773,24 +996,26 @@ const MemorizationScreen = ({ route, navigation }) => {
                 {stripHtmlTags(flashcards[currentAyahIndex]?.transliteration || '')}
               </Text>
             )}
-                    {/* Show bismillah translation for bismillah card only in English mode */}
-                    {flashcards[currentAyahIndex]?.type === 'bismillah' && language === 'en' && (
-                      <Text
-                        variant="body2"
-                        style={[styles.transliterationText, { color: COLORS.primary, fontWeight: 'bold', marginTop: 8 }]}
-                        align="center"
-                      >
-                        {flashcards[currentAyahIndex]?.translation}
-                      </Text>
-                    )}
-                    {/* Show istiadhah translation for istiadhah card only in English mode */}
-                    {flashcards[currentAyahIndex]?.type === 'istiadhah' && language === 'en' && (
-                      <Text
-                        variant="body2"
-                        style={[styles.transliterationText, { color: '#5b7f67', fontWeight: 'bold', marginTop: 8 }]}
-                        align="center"
-                      >
-                        {flashcards[currentAyahIndex]?.translation}
+            
+            {/* Show bismillah translation for bismillah card only in English mode */}
+            {flashcards[currentAyahIndex]?.type === 'bismillah' && language === 'en' && (
+              <Text
+                variant="body2"
+                style={[styles.transliterationText, { color: COLORS.primary, fontWeight: 'bold', marginTop: 8 }]}
+                align="center"
+              >
+                {flashcards[currentAyahIndex]?.translation}
+              </Text>
+            )}
+            
+            {/* Show istiadhah translation for istiadhah card only in English mode */}
+            {flashcards[currentAyahIndex]?.type === 'istiadhah' && language === 'en' && (
+              <Text
+                variant="body2"
+                style={[styles.transliterationText, { color: '#5b7f67', fontWeight: 'bold', marginTop: 8 }]}
+                align="center"
+              >
+                {flashcards[currentAyahIndex]?.translation}
               </Text>
             )}
                   </ScrollView>
@@ -802,58 +1027,69 @@ const MemorizationScreen = ({ route, navigation }) => {
               (flashcards[currentAyahIndex]?.type === 'bismillah' && surahNumber === 1)) && 
               flashcards[currentAyahIndex]?.type !== 'istiadhah' && (
                       <View style={styles.buttonRow}>
-              {/* Settings Button - Left Edge */}
-              <TouchableOpacity
-                style={styles.settingsButton}
-                onPress={() => setShowSettingsModal(true)}
-              >
-                <View style={{
-                  borderWidth: 2,
-                  borderColor: '#5b7f67',
-                  borderRadius: 12,
-                  padding: 6,
-                  shadowColor: '#000',
-                  shadowOffset: { width: 0, height: 2 },
-                  shadowOpacity: 0.1,
-                  shadowRadius: 4,
-                  elevation: 3,
-                }}>
-                  <Image 
-                    source={require('../assets/app_icons/slider.png')} 
-                    style={{ width: 28, height: 28, tintColor: '#F5E6C8' }}
-                    resizeMode="contain"
-                  />
-                </View>
-              </TouchableOpacity>
-              
-              {/* First Placeholder Button - Next to Settings */}
-              <TouchableOpacity
-                style={styles.placeholderButton}
-                onPress={() => {
-                  ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true });
-                  // TODO: Add guidance and instructions functionality
-                }}
-              >
-                <View style={{
-                  borderWidth: 2,
-                  borderColor: 'rgba(165,115,36,0.8)',
-                  borderRadius: 12,
-                  padding: 6,
-                  shadowColor: '#000',
-                  shadowOffset: { width: 0, height: 2 },
-                  shadowOpacity: 0.1,
-                  shadowRadius: 4,
-                  elevation: 3,
-                }}>
-                  <Ionicons 
-                    name="help-circle-outline" 
-                    size={28} 
-                    color="#F5E6C8" 
-                  />
-                </View>
-              </TouchableOpacity>
+              {/* Left side buttons */}
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                {/* Settings Button */}
+                <TouchableOpacity
+                  style={styles.settingsButton}
+                  onPress={() => setShowSettingsModal(true)}
+                >
+                  <View style={{
+                    borderWidth: 2,
+                    borderColor: '#5b7f67',
+                    borderRadius: 12,
+                    padding: 6,
+                    shadowColor: '#000',
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.1,
+                    shadowRadius: 4,
+                    elevation: 3,
+                    width: 48,
+                    height: 48,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}>
+                    <Image 
+                      source={require('../assets/app_icons/slider.png')} 
+                      style={{ width: 28, height: 28, tintColor: '#F5E6C8' }}
+                      resizeMode="contain"
+                    />
+                  </View>
+                </TouchableOpacity>
+                
+                {/* Help Button */}
+                <TouchableOpacity
+                  style={[styles.placeholderButton, { marginLeft: 15 }]}
+                  onPress={() => {
+                    ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true });
+                    testRecordingFunctionality();
+                  }}
+                >
+                  <View style={{
+                    borderWidth: 2,
+                    borderColor: 'rgba(165,115,36,0.8)',
+                    borderRadius: 12,
+                    padding: 6,
+                    shadowColor: '#000',
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.1,
+                    shadowRadius: 4,
+                    elevation: 3,
+                    width: 48,
+                    height: 48,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}>
+                    <Ionicons 
+                      name="help-circle-outline" 
+                      size={28} 
+                      color="#F5E6C8" 
+                    />
+                  </View>
+                </TouchableOpacity>
+              </View>
 
-              {/* Hide/Reveal Button - Center */}
+              {/* Center Hide/Reveal Button */}
               <TouchableOpacity
                 style={[styles.revealButtonNew, {
                   backgroundColor: isTextHidden ? '#F5E6C8' : 'rgba(245, 230, 200, 0.7)',
@@ -864,9 +1100,8 @@ const MemorizationScreen = ({ route, navigation }) => {
                   justifyContent: 'center',
                   borderRadius: 12,
                   borderWidth: 2,
-                  borderColor: 'rgba(165,115,36,0.8)',
-                  flex: 1,
-                  marginHorizontal: SIZES.large,
+                  borderColor: isTextHidden ? 'rgba(165,115,36,0.8)' : '#5b7f67',
+                  marginHorizontal: 20,
                 }]}
                 onPress={() => {
                   ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true });
@@ -883,55 +1118,55 @@ const MemorizationScreen = ({ route, navigation }) => {
                 </Text>
               </TouchableOpacity>
 
-              {/* Second Placeholder Button - Next to Hide/Reveal */}
-              <TouchableOpacity
-                style={styles.voiceRecordingButton}
-                onPress={() => {
-                  // Placeholder for voice recording functionality
-                  ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true });
-                }}
-                disabled={showReward}
-              >
-                <View style={{
-                  borderWidth: 2,
-                  borderColor: 'rgba(165,115,36,0.8)',
-                  borderRadius: 12,
-                  padding: 6,
-                  shadowColor: '#000',
-                  shadowOffset: { width: 0, height: 2 },
-                  shadowOpacity: 0.1,
-                  shadowRadius: 4,
-                  elevation: 3,
+              {/* Right side buttons */}
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                {/* Voice Recording Button */}
+                <Animated.View style={{
+                  transform: [{ scale: isRecording ? recordingPulse : 1 }],
                 }}>
-                  <Ionicons 
-                    name="mic-outline" 
-                    size={28} 
-                    color="#F5E6C8" 
-                  />
-                </View>
-              </TouchableOpacity>
-              
-              {/* Audio Button - Right Edge */}
-              <View style={{ position: 'relative', alignItems: 'center', justifyContent: 'center' }}>
-                {/* Spinning ring */}
-                {isRepeating && (
-                  <Animated.View
-                    style={{
-                      position: 'absolute',
-                      width: 60,
-                      height: 60,
-                      borderRadius: 30,
-                      borderWidth: 3,
-                      borderColor: '#FFD700',
-                      borderStyle: 'solid',
-                      opacity: 1,
-                      transform: [{ rotate: spin }],
-                      zIndex: 1,
-                    }}
-                  />
-                )}
-                <Pressable
-                  style={styles.audioButton}
+                  <TouchableOpacity
+                    style={styles.voiceRecordingButton}
+                    onPress={handleRecordingToggle}
+                    onLongPress={handleRecordingLongPress}
+                    delayLongPress={500}
+                    disabled={showReward}
+                  >
+                                                <View style={{
+                              borderWidth: 2,
+                              borderColor: isRecording ? '#FF4444' : (hasRecordings ? 'rgba(165,115,36,0.8)' : 'rgba(165,115,36,0.8)'),
+                              borderRadius: 12,
+                              padding: 6,
+                              shadowColor: '#000',
+                              shadowOffset: { width: 0, height: 2 },
+                              shadowOpacity: 0.1,
+                              shadowRadius: 4,
+                              elevation: 3,
+                              width: 48,
+                              height: 48,
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              backgroundColor: hasRecordings ? 'rgba(165,115,36,0.8)' : 'transparent',
+                            }}>
+                      {isRecording ? (
+                        <Image 
+                          source={require('../assets/app_icons/mic-on.png')} 
+                          style={{ width: 28, height: 28, tintColor: '#FF4444' }}
+                          resizeMode="contain"
+                        />
+                                                    ) : (
+                                <Image 
+                                  source={require('../assets/app_icons/mic-off.png')} 
+                                  style={{ width: 28, height: 28, tintColor: hasRecordings ? '#F5E6C8' : 'rgba(165,115,36,0.8)' }}
+                                  resizeMode="contain"
+                                />
+                              )}
+                    </View>
+                  </TouchableOpacity>
+                </Animated.View>
+                
+                {/* Audio Button */}
+                <TouchableOpacity
+                  style={[styles.audioButton, { marginLeft: 15 }]}
                   onPress={handleAudioButtonPress}
                   onPressIn={() => ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true })}
                   onLongPress={async () => {
@@ -940,9 +1175,26 @@ const MemorizationScreen = ({ route, navigation }) => {
                   }}
                   delayLongPress={500}
                 >
+                  {/* Spinning ring */}
+                  {isRepeating && (
+                    <Animated.View
+                      style={{
+                        position: 'absolute',
+                        width: 60,
+                        height: 60,
+                        borderRadius: 30,
+                        borderWidth: 3,
+                        borderColor: '#FFD700',
+                        borderStyle: 'solid',
+                        opacity: 1,
+                        transform: [{ rotate: spin }],
+                        zIndex: 1,
+                      }}
+                    />
+                  )}
                   <View style={{
                     borderWidth: 2,
-                    borderColor: isAudioPlaying ? '#FFD700' : '#5b7f67',
+                    borderColor: isAudioPlaying ? '#5b7f67' : '#5b7f67',
                     borderRadius: 12,
                     padding: 6,
                     shadowColor: '#000',
@@ -954,19 +1206,19 @@ const MemorizationScreen = ({ route, navigation }) => {
                     height: 48,
                     alignItems: 'center',
                     justifyContent: 'center',
-                    backgroundColor: 'transparent',
+                    backgroundColor: isAudioPlaying ? '#5b7f67' : 'transparent',
                   }}>
                     <Image
                       source={require('../assets/app_icons/audio.png')}
                       style={{
                         width: 28,
                         height: 28,
-                        tintColor: isAudioPlaying ? '#FFD700' : '#F5E6C8',
+                        tintColor: isAudioPlaying ? '#FFFFFF' : '#F5E6C8',
                       }}
                       resizeMode="contain"
                     />
                   </View>
-                </Pressable>
+                </TouchableOpacity>
               </View>
           </View>
         )}
@@ -1412,6 +1664,15 @@ const MemorizationScreen = ({ route, navigation }) => {
             ayahNumber={flashcards && flashcards[currentAyahIndex]?.type === 'ayah' ? flashcards.slice(0, currentAyahIndex + 1).filter(a => a.type === 'ayah').length : null}
             onBookmarkChange={handleBookmarkChange}
           />
+
+          {/* Recordings Modal */}
+          <RecordingsModal
+            visible={showRecordingsModal}
+            onClose={handleRecordingsModalClose}
+            surahName={surah.name}
+            ayahNumber={flashcards && flashcards[currentAyahIndex]?.type === 'ayah' ? flashcards.slice(0, currentAyahIndex + 1).filter(a => a.type === 'ayah').length : null}
+            onRecordingChange={checkRecordings}
+          />
     </SafeAreaView>
       </ImageBackground>
     </View>
@@ -1510,7 +1771,8 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
     color: '#999999',
     fontSize: 20,
-    marginTop: 12,
+    marginTop: 20,
+    lineHeight: 32,
     backgroundColor: 'transparent',
   },
   goToButton: {
@@ -1618,7 +1880,7 @@ const styles = StyleSheet.create({
   buttonRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
     marginBottom: SIZES.medium,
     paddingHorizontal: SIZES.large,
     position: 'relative',
@@ -1719,11 +1981,10 @@ const styles = StyleSheet.create({
     marginHorizontal: 10,
   },
   voiceRecordingButton: {
-    padding: 8,
-    marginLeft: 1,
+    // No padding
   },
   placeholderButton: {
-    marginLeft: SIZES.large,
+    // No margins
   },
   audioSettingsIcon: {
     position: 'absolute',

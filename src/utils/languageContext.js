@@ -177,6 +177,14 @@ export const LanguageProvider = ({ children }) => {
       'search_ayah': 'Enter ayah number...',
       'istiadhah': 'Isti\'adhah',
       'ayah': 'Ayah',
+      
+      // Recording related
+          'recordings': 'Ayah Recitations',
+    'no_recordings': 'No recordings yet',
+      'recording_name': 'Recording name',
+      'delete_recording': 'Delete Recording',
+      'delete_recording_confirm': 'Are you sure you want to delete this recording?',
+      'delete': 'Delete',
       'audio_error': 'Audio Error',
       'audio_playback_error': 'There was an error playing the audio. Please try again.',
       'audio_not_available': 'Audio Not Available',
@@ -414,6 +422,14 @@ export const LanguageProvider = ({ children }) => {
       'search_ayah': 'أدخل رقم الآية...',
       'istiadhah': 'الاستعاذة',
       'ayah': 'آية',
+      
+      // Recording related
+      'recordings': 'تلاوات الآيات',
+      'no_recordings': 'لا توجد تسجيلات بعد',
+      'recording_name': 'اسم التسجيل',
+      'delete_recording': 'حذف التسجيل',
+      'delete_recording_confirm': 'هل أنت متأكد من أنك تريد حذف هذا التسجيل؟',
+      'delete': 'حذف',
       'audio_error': 'خطأ في الصوت',
       'audio_playback_error': 'حدث خطأ في تشغيل الصوت. يرجى المحاولة مرة أخرى.',
       'audio_not_available': 'الصوت غير متاح',
