@@ -12,10 +12,10 @@ import {
   PanResponder,
   StyleSheet,
   Animated,
+  Platform,
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useLanguage } from '../utils/languageContext';
-import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 import Svg, { Polygon, Line } from 'react-native-svg';
 import { COLORS as BASE_COLORS, SIZES, FONTS } from '../utils/theme';
 import Text from '../components/Text';
@@ -272,14 +272,14 @@ const SurahListScreen = ({ navigation, route }) => {
     setPreviousJuzFilter(juzFilter); // Save current Juz state before clearing
     setJuzFilter({ isActive: false });
     setSearchText(''); // Clear search when clearing filter
-    ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true });
+    // haptic feedback removed;
   };
 
   // Function to return to previous Juz
   const returnToPreviousJuz = () => {
     if (previousJuzFilter.isActive) {
       setJuzFilter(previousJuzFilter);
-      ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true });
+      // haptic feedback removed;
     }
   };
 
@@ -363,7 +363,7 @@ const SurahListScreen = ({ navigation, route }) => {
                 }
               ]}
               onPress={() => {
-                ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true });
+                // haptic feedback removed;
                 
                 if (isJuzMode) {
                   // Handle special actions when in Juz mode
@@ -495,7 +495,8 @@ const SurahListScreen = ({ navigation, route }) => {
               <View style={[styles.searchInputContainer, { 
                 backgroundColor: isSearchFocused ? 'rgba(245, 230, 200, 0.2)' : 'rgba(245, 230, 200, 0.15)', // Made even more transparent
                 flex: isJuzMode ? 1 : undefined,
-                marginRight: isJuzMode ? SIZES.small : 0
+                marginRight: isJuzMode ? SIZES.small : 0,
+                ...(Platform.OS === 'android' && { paddingVertical: SIZES.small / 4 })
               }]}>
                 <Image 
                   source={require('../assets/app_icons/search.png')} 
@@ -503,7 +504,13 @@ const SurahListScreen = ({ navigation, route }) => {
                   resizeMode="contain"
                 />
                 <TextInput
-                  style={[styles.searchInput, { fontFamily: 'KFGQPC Uthman Taha Naskh', fontWeight: isSearchFocused ? 'bold' : 'normal', textAlign: language === 'ar' ? 'right' : 'left', writingDirection: language === 'ar' ? 'rtl' : 'ltr' }]}
+                  style={[styles.searchInput, { 
+                    fontFamily: 'KFGQPC Uthman Taha Naskh', 
+                    fontWeight: isSearchFocused ? 'bold' : 'normal', 
+                    textAlign: language === 'ar' ? 'right' : 'left', 
+                    writingDirection: language === 'ar' ? 'rtl' : 'ltr',
+                    ...(Platform.OS === 'android' && { fontSize: 12 })
+                  }]}
                   placeholder={isJuzMode ? 
                     (language === 'ar' ? `البحث في ${juzTitle}...` : `Search in ${juzTitle}...`) : 
                     t('search_surahs')
@@ -553,7 +560,7 @@ const SurahListScreen = ({ navigation, route }) => {
             <TouchableOpacity
               style={styles.homeButton}
               onPress={() => {
-                ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true });
+                // haptic feedback removed;
                 navigation.navigate('Home');
               }}
             >
@@ -567,7 +574,7 @@ const SurahListScreen = ({ navigation, route }) => {
             <TouchableOpacity
               style={styles.continueButton}
               onPress={async () => {
-                ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true });
+                // haptic feedback removed;
                 
                 try {
                   // Load user's last position
@@ -1003,7 +1010,6 @@ const AllSurahsTab = ({ navigation, route, searchText, isJuzMode, juzData }) => 
             }
           ]}
           onPress={() => navigation.navigate('Memorization', { surah: item })}
-          onPressIn={() => ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true })}
           activeOpacity={0.8}
         >
       <View style={styles.surahInfo}>
@@ -1180,7 +1186,7 @@ const JuzWheelTab = ({ navigation, setJuzFilter, setPreviousJuzFilter, setActive
   const lastHapticTime = useRef(0); // Add reference to track last haptic feedback time
 
   const handleJuzPress = () => {
-    ReactNativeHapticFeedback.trigger('impactMedium', { enableVibrateFallback: true });
+    // haptic feedback removed;
     console.log(`Filtering to Juz ${selectedJuz}`);
     
     const juzData = JUZ_SURAH_MAPPING[selectedJuz];
@@ -1258,7 +1264,7 @@ const JuzWheelTab = ({ navigation, setJuzFilter, setPreviousJuzFilter, setActive
           setSelectedJuz(juzNumber);
           const now = Date.now();
           if (now - lastHapticTime.current > 50) { // Limit haptic feedback to every 50ms
-            ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true });
+            // haptic feedback removed;
             lastHapticTime.current = now;
           }
         }
@@ -1425,7 +1431,7 @@ const ThemesTab = ({ navigation }) => {
         selectedCategory?.id === category.id && styles.selectedCategoryCard
       ]}
       onPress={() => {
-        ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true });
+        // haptic feedback removed;
         setSelectedCategory(selectedCategory?.id === category.id ? null : category);
         setSelectedSubcategory(null);
       }}
@@ -1460,7 +1466,7 @@ const ThemesTab = ({ navigation }) => {
                 index === category.subcategories.length - 1 && { marginBottom: 0 }
               ]}
               onPress={() => {
-                ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true });
+                // haptic feedback removed;
                 setSelectedSubcategory(selectedSubcategory?.id === sub.id ? null : sub);
               }}
               activeOpacity={0.7}
@@ -1483,7 +1489,7 @@ const ThemesTab = ({ navigation }) => {
                 <TouchableOpacity
                   style={styles.exploreSubcategoryButton}
                   onPress={() => {
-                    ReactNativeHapticFeedback.trigger('impactMedium', { enableVibrateFallback: true });
+                    // haptic feedback removed;
                     // Navigate to first surah in this subcategory
                   navigation.navigate('Memorization', { 
                       surah: { id: sub.surahs[0] }
@@ -1549,18 +1555,20 @@ const ThemesTab = ({ navigation }) => {
         top: language === 'ar' ? 80 : 60 // Brought down search bar in categories tab
       }]}>
         <View style={[styles.themeSearchInputContainer, {
-          backgroundColor: isSearchFocused ? 'rgba(245, 230, 200, 0.15)' : 'rgba(245, 230, 200, 0.1)'
+          backgroundColor: isSearchFocused ? 'rgba(245, 230, 200, 0.15)' : 'rgba(245, 230, 200, 0.1)',
+                          ...(Platform.OS === 'android' && { paddingVertical: SIZES.small / 4 })
         }]}>
           <Image 
             source={require('../assets/app_icons/search.png')} 
             style={{ width: 20, height: 20, tintColor: 'rgba(165,115,36,0.8)', marginRight: SIZES.small }}
             resizeMode="contain"
           />
-          <TextInput
-            style={[styles.themeSearchInput, { 
+                    <TextInput
+            style={[styles.themeSearchInput, {
               fontFamily: language === 'ar' ? 'KFGQPC Uthman Taha Naskh' : 'Montserrat-Regular',
               textAlign: language === 'ar' ? 'right' : 'left',
-              writingDirection: language === 'ar' ? 'rtl' : 'ltr'
+              writingDirection: language === 'ar' ? 'rtl' : 'ltr',
+              ...(Platform.OS === 'android' && { fontSize: 12 })
             }]}
             placeholder={language === 'ar' ? 'ابحث في الفئات...' : 'Search through categories...'}
             placeholderTextColor="rgba(255, 255, 255, 0.5)"
@@ -1686,7 +1694,7 @@ const ListsTab = ({ navigation, route, searchText }) => {
     <TouchableOpacity
       style={styles.ayahCard}
       onPress={() => {
-        ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true });
+        // haptic feedback removed;
         // Navigate to specific ayah
         navigation.navigate('Memorization', {
           surah: { id: item.surahNumber, name: item.surahName },
@@ -1736,7 +1744,8 @@ const ListsTab = ({ navigation, route, searchText }) => {
           marginTop: SIZES.extraLarge * 2,
           textAlign: 'left',
           fontSize: 18
-        }
+        },
+        Platform.OS === 'android' && { marginTop: SIZES.extraLarge * 4 }
       ]}>
         {language === 'ar' ? 'اختر القائمة' : 'Select List'}
       </RNText>
@@ -2286,7 +2295,7 @@ const styles = StyleSheet.create({
     padding: SIZES.small,
   },
   categoriesList: {
-    paddingTop: 160, // Brought down first category box
+    paddingTop: Platform.OS === 'android' ? 200 : 160, // Brought down first category box
     paddingBottom: SIZES.extraLarge * 8, // Increased significantly more for proper tab clearance
     paddingHorizontal: SIZES.medium, // Add horizontal padding for proper spacing
   },
@@ -2586,7 +2595,7 @@ const styles = StyleSheet.create({
                 dropdownContainer: {
                   paddingHorizontal: SIZES.medium,
                   paddingVertical: SIZES.small,
-                  paddingTop: SIZES.extraLarge *2,
+                  paddingTop: Platform.OS === 'android' ? SIZES.extraLarge * 4 : SIZES.extraLarge * 2,
                   zIndex: 1000,
                 },
                 dropdownButton: {

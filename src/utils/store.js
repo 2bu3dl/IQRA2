@@ -64,7 +64,7 @@ const isConsecutiveDay = (dateStr1, dateStr2) => {
   const date1 = new Date(dateStr1);
   const date2 = new Date(dateStr2);
   const diffTime = Math.abs(date2 - date1);
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
   return diffDays === 1;
 };
 
@@ -89,7 +89,7 @@ export const loadData = async () => {
     const today = getTodayString();
     if (lastActivityDate !== today) {
       await AsyncStorage.setItem(STORAGE_KEYS.TODAY_HASANAT, '0');
-      await AsyncStorage.setItem(STORAGE_KEYS.LAST_ACTIVITY_DATE, today);
+      // Don't update last_activity_date here - only update it when there's actual activity
     }
 
     let parsedMemorizedAyahs;
@@ -152,7 +152,7 @@ export const addHasanat = async (amount) => {
     await Promise.all([
       AsyncStorage.setItem(STORAGE_KEYS.TOTAL_HASANAT, newTotal.toString()),
       AsyncStorage.setItem(STORAGE_KEYS.TODAY_HASANAT, newToday.toString()),
-      AsyncStorage.setItem(STORAGE_KEYS.LAST_ACTIVITY_DATE, today),
+      // Don't override last_activity_date here as updateStreak already handles it
     ]);
 
     console.log('[store.js] addHasanat:', { amount, newTotal, newToday, today, newStreak });
@@ -312,6 +312,7 @@ export const resetProgress = async () => {
       AsyncStorage.setItem(STORAGE_KEYS.LAST_ACTIVITY_DATE, yesterdayString),
       AsyncStorage.setItem(STORAGE_KEYS.STREAK, '0'),
       AsyncStorage.setItem(STORAGE_KEYS.MEMORIZED_AYAHS, JSON.stringify(initialState.memorizedAyahs)),
+      AsyncStorage.removeItem(STORAGE_KEYS.STREAK_UPDATED_TODAY),
     ]);
     return true;
   } catch (error) {

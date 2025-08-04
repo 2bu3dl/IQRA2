@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { View, StyleSheet, SafeAreaView, Image, ImageBackground, Modal, TouchableOpacity, Dimensions, Alert, TextInput, Animated, ScrollView, FlatList } from 'react-native';
+import { View, StyleSheet, SafeAreaView, Image, ImageBackground, Modal, TouchableOpacity, Dimensions, Alert, TextInput, Animated, ScrollView, FlatList, Platform } from 'react-native';
 import { useAuth } from '../utils/authContext';
 import { COLORS as BASE_COLORS, SIZES, FONTS } from '../utils/theme';
 import Text from '../components/Text';
@@ -11,27 +11,42 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useLanguage } from '../utils/languageContext';
 import telemetryService from '../utils/telemetry';
-import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
+import { hapticSelection } from '../utils/hapticFeedback';
 
 import AuthScreen from './AuthScreen';
 
 const COLORS = { ...BASE_COLORS, primary: '#6BA368', accent: '#FFD700' };
 
 const formatLargeNumber = (num) => {
-  if (num >= 1000000) {
+  if (num >= 1000000000) {
+    return {
+      text: (num / 1000000000).toFixed(1).replace(/\.0$/, '') + 'B',
+      fontSize: 18
+    };
+  } else if (num >= 10000000) {
     return {
       text: (num / 1000000).toFixed(1).replace(/\.0$/, '') + 'M',
-      fontSize: 24
+      fontSize: 20
+    };
+  } else if (num >= 1000000) {
+    return {
+      text: (num / 1000000).toFixed(1).replace(/\.0$/, '') + 'M',
+      fontSize: 22
     };
   } else if (num >= 100000) {
     return {
       text: num.toLocaleString(),
-      fontSize: 28
+      fontSize: 24
+    };
+  } else if (num >= 10000) {
+    return {
+      text: num.toLocaleString(),
+      fontSize: 26
     };
   } else {
     return {
       text: num.toLocaleString(),
-      fontSize: 32
+      fontSize: 28
     };
   }
 };
@@ -169,7 +184,7 @@ const HomeScreen = ({ navigation, route }) => {
       <SafeAreaView style={[styles.container, { backgroundColor: 'transparent' }]}>
         <View style={styles.header}>
           <View style={styles.logoContainer}>
-            <TouchableOpacity style={styles.introButton} onPress={() => setInfoVisible(true)} onPressIn={() => ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true })}>
+            <TouchableOpacity style={styles.introButton} onPress={() => setInfoVisible(true)} onPressIn={() => hapticSelection()}>
               <View style={{
                 borderWidth: 2,
                 borderColor: '#5b7f67',
@@ -210,7 +225,7 @@ const HomeScreen = ({ navigation, route }) => {
                         button: 'Logo - Intro Modal',
                         screen: 'Home'
                       });
-                      ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true });
+                      hapticSelection();
                       setIntroVisible(true);
                     }}
                     onPressIn={() => setLogoPressed(true)}
@@ -225,7 +240,7 @@ const HomeScreen = ({ navigation, route }) => {
                 </Animated.View>
               );
             })()}
-            <TouchableOpacity style={styles.settingsButton} onPress={() => setSettingsVisible(true)} onPressIn={() => ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true })}>
+            <TouchableOpacity style={styles.settingsButton} onPress={() => setSettingsVisible(true)} onPressIn={() => hapticSelection()}>
               <View style={{
                 borderWidth: 2,
                 borderColor: 'rgba(165,115,36,0.8)',
@@ -270,7 +285,7 @@ const HomeScreen = ({ navigation, route }) => {
                           button: 'Dua Text - Duas Modal',
                           screen: 'Home'
                         });
-                        ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true });
+                        hapticSelection();
                         setDuaVisible(true);
                       }}
                       onPressIn={() => setDuaTextPressed(true)}
@@ -297,38 +312,43 @@ const HomeScreen = ({ navigation, route }) => {
           <View style={{
             flexDirection: 'row',
             justifyContent: 'space-around',
-            marginTop: -20, // Moved up from -10 to -20
+            marginTop: Platform.OS === 'android' ? -40 : -20, // Moved up more for Android
             marginBottom: 20,
             position: 'relative',
             zIndex: 1,
-            height: 120 // Fixed height
+            height: Platform.OS === 'android' ? 180 : 120 // Fixed height
           }}>
             {(() => {
               const [pressed, setPressed] = useState(false);
               const glowAnimation = useRef(new Animated.Value(0)).current;
               
-              // Fire-like glow animation
+              // Glow animation for iOS only
               useEffect(() => {
-                const animateGlow = () => {
-                  Animated.sequence([
-                    Animated.timing(glowAnimation, {
-                      toValue: 1,
-                      duration: 2000,
-                      useNativeDriver: false,
-                    }),
-                    Animated.timing(glowAnimation, {
-                      toValue: 0.2,
-                      duration: 1500,
-                      useNativeDriver: false,
-                    })
-                  ]).start(() => animateGlow());
-                };
-                
-                animateGlow();
-                
-                return () => {
-                  glowAnimation.stopAnimation();
-                };
+                if (Platform.OS === 'ios') {
+                  const animateGlow = () => {
+                    const duration = 2000;
+                    const fadeDuration = 1500;
+                    
+                    Animated.sequence([
+                      Animated.timing(glowAnimation, {
+                        toValue: 1,
+                        duration: duration,
+                        useNativeDriver: false,
+                      }),
+                      Animated.timing(glowAnimation, {
+                        toValue: 0.2,
+                        duration: fadeDuration,
+                        useNativeDriver: false,
+                      })
+                    ]).start(() => animateGlow());
+                  };
+                  
+                  animateGlow();
+                  
+                  return () => {
+                    glowAnimation.stopAnimation();
+                  };
+                }
               }, []);
               
               return (
@@ -336,29 +356,31 @@ const HomeScreen = ({ navigation, route }) => {
                   style={{
                     flex: 1,
                     marginHorizontal: SIZES.small,
-                    padding: SIZES.medium,
+                    padding: Platform.OS === 'android' ? SIZES.extraLarge : SIZES.medium,
                     alignItems: 'center',
                     justifyContent: 'center',
                     backgroundColor: 'transparent',
                     borderRadius: SIZES.base,
                     shadowColor: '#fae29f',
                     shadowOffset: { width: 0, height: 0 },
-                    shadowOpacity: glowAnimation.interpolate({
-                      inputRange: [0, 1],
-                      outputRange: [0.2, 0.9],
-                    }),
-                    shadowRadius: glowAnimation.interpolate({
-                      inputRange: [0, 1],
-                      outputRange: [8, 24],
-                    }),
-                    elevation: glowAnimation.interpolate({
-                      inputRange: [0, 1],
-                      outputRange: [6, 18],
+                    ...(Platform.OS === 'ios' && {
+                      shadowOpacity: glowAnimation.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [0.2, 0.9],
+                      }),
+                      shadowRadius: glowAnimation.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [8, 24],
+                      }),
+                      elevation: glowAnimation.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [6, 18],
+                      }),
                     }),
                     flexDirection: 'column',
                     position: 'relative',
                     zIndex: 2,
-                    height: 120
+                    height: Platform.OS === 'android' ? 180 : 120
                   }}
                 >
                   <TouchableOpacity
@@ -382,7 +404,7 @@ const HomeScreen = ({ navigation, route }) => {
                   onPressIn={() => { 
                     setPressed(true); 
                     setMemorizeButtonHeld(true);
-                    ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true }); 
+                    hapticSelection(); 
                   }}
                   onPressOut={() => { 
                     setPressed(false); 
@@ -398,11 +420,11 @@ const HomeScreen = ({ navigation, route }) => {
                   activeOpacity={1}
                 >
                   <View style={[styles.buttonIconContainer, {
-                    shadowRadius: memorizeButtonHeld ? 40 : 35,
-                    shadowOpacity: memorizeButtonHeld ? 8.5 : 5.0,
-                    elevation: memorizeButtonHeld ? 25 : 15,
+                    shadowRadius: memorizeButtonHeld ? (Platform.OS === 'android' ? 12 : 40) : (Platform.OS === 'android' ? 8 : 35),
+                    shadowOpacity: memorizeButtonHeld ? (Platform.OS === 'android' ? 2.0 : 8.5) : (Platform.OS === 'android' ? 1.0 : 5.0),
+                    elevation: memorizeButtonHeld ? (Platform.OS === 'android' ? 8 : 25) : (Platform.OS === 'android' ? 5 : 15),
                   }]}>
-                    <Image source={require('../assets/openQuran.png')} style={[styles.buttonIcon, { width: 45, height: 45 }]} resizeMode="contain" />
+                    <Image source={require('../assets/openQuran.png')} style={[styles.buttonIcon, { width: Platform.OS === 'android' ? 52 : 45, height: Platform.OS === 'android' ? 52 : 45 }]} resizeMode="contain" />
                   </View>
                   <View style={{ 
                     backgroundColor: 'rgba(0,0,0,0.8)', 
@@ -414,9 +436,9 @@ const HomeScreen = ({ navigation, route }) => {
                     justifyContent: 'center', 
                     shadowColor: '#fae29f', 
                     shadowOffset: { width: 0, height: 0 }, 
-                    shadowOpacity: pressed ? 1.0 : 0.6, 
-                    shadowRadius: pressed ? 24 : 10, 
-                    elevation: pressed ? 20 : 8,
+                    shadowOpacity: pressed ? (Platform.OS === 'android' ? 0.4 : 1.0) : (Platform.OS === 'android' ? 0.2 : 0.6), 
+                    shadowRadius: pressed ? (Platform.OS === 'android' ? 8 : 24) : (Platform.OS === 'android' ? 4 : 10), 
+                    elevation: pressed ? (Platform.OS === 'android' ? 6 : 20) : (Platform.OS === 'android' ? 3 : 8),
                     minHeight: language === 'ar' ? 80 : 60
                   }}>
                     <Text style={[{
@@ -504,7 +526,7 @@ const HomeScreen = ({ navigation, route }) => {
                           minHeight: 120,
                         }}
                         onPress={() => {
-                          ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true });
+                          hapticSelection();
                           Alert.alert('Saved Ayaat', 'This would open your saved ayaat');
                         }}
                       >
@@ -553,7 +575,7 @@ const HomeScreen = ({ navigation, route }) => {
                           minHeight: 120,
                         }}
                         onPress={() => {
-                          ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true });
+                          hapticSelection();
                           Alert.alert('Recordings', 'This would open your recordings');
                         }}
                       >
@@ -593,13 +615,14 @@ const HomeScreen = ({ navigation, route }) => {
                     marginTop: isSmallScreen ? 5 : (isMediumScreen ? 10 : 15),
                     marginBottom: 40,
                     alignItems: 'center',
-                    width: '100%'
+                    width: '100%',
+                    marginLeft: -16
                   }}>
                     {/* Progress Card */}
                     <TouchableOpacity
                       style={{ width: '100%', alignItems: 'center' }}
                       onPress={() => {
-                        ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true });
+                        hapticSelection();
                         setProgressModalVisible(true);
                       }}
                       activeOpacity={0.9}
@@ -705,7 +728,8 @@ const HomeScreen = ({ navigation, route }) => {
                       alignItems: 'center',
                       position: 'relative',
                       zIndex: 1,
-                      width: '80%'
+                      width: '80%',
+                      marginTop: Platform.OS === 'android' ? SIZES.extraSmall : 0
                     }}>
                       <Card style={{
                         flex: 0.50,
@@ -726,7 +750,7 @@ const HomeScreen = ({ navigation, route }) => {
                       }}>
                         <TouchableOpacity
                           onPress={() => {
-                            ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true });
+                            hapticSelection();
                             setHasanatModalVisible(true);
                           }}
                           activeOpacity={0.9}
@@ -742,7 +766,7 @@ const HomeScreen = ({ navigation, route }) => {
                               textShadowColor: '#fae29f',
                               textShadowOffset: { width: 0, height: 0 },
                               textShadowRadius: 2,
-                            }}>{toArabicNumber(formatLargeNumber(data.totalHasanat).text)}</Text>
+                            }} numberOfLines={1} ellipsizeMode="tail">{toArabicNumber(formatLargeNumber(data.totalHasanat).text)}</Text>
                           </View>
                           <Text variant="body2" color="textSecondary" style={{ textAlign: 'center' }}>+{toArabicNumber(formatLargeNumber(data.todayHasanat).text)} {t('today_hasanat')}</Text>
                           <Text variant="body2" style={{ textAlign: 'center', color: '#F5E6C8', marginTop: 4, marginBottom: 2 }}>{t('insha2allah')}</Text>
@@ -767,7 +791,7 @@ const HomeScreen = ({ navigation, route }) => {
                       }}>
                         <TouchableOpacity
                           onPress={() => {
-                            ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true });
+                            hapticSelection();
                             setStreakModalVisible(true);
                           }}
                           activeOpacity={0.9}
@@ -776,7 +800,7 @@ const HomeScreen = ({ navigation, route }) => {
                           <View style={{ marginTop: 8 }}>
                               <Text variant="h3" style={{ textAlign: 'center', color: '#CCCCCC', marginTop: 10, fontSize: 16 }}>{t('streak')}</Text>
                               <View style={{ backgroundColor: 'rgba(0,0,0,0.75)', borderRadius: 8, paddingHorizontal: 16, paddingVertical: 8, alignSelf: 'center', marginVertical: 8, alignItems: 'center', justifyContent: 'center' }}>
-                                <Text variant="h1" style={{ color: '#5b7f67', textAlign: 'center', fontWeight: 'bold', fontSize: formatStreakNumber(data.streak).fontSize, lineHeight: formatStreakNumber(data.streak).fontSize * 1.2 }}>{toArabicNumber(formatStreakNumber(data.streak).text)}</Text>
+                                <Text variant="h1" style={{ color: '#5b7f67', textAlign: 'center', fontWeight: 'bold', fontSize: formatStreakNumber(data.streak).fontSize, lineHeight: formatStreakNumber(data.streak).fontSize * 1.2 }} numberOfLines={1} ellipsizeMode="tail">{toArabicNumber(formatStreakNumber(data.streak).text)}</Text>
                               </View>
                                                               <Text variant="body2" color="textSecondary" style={{ textAlign: 'center', marginTop: -4 }}>{t('days')}</Text>
                                                              <Text variant="body2" style={{ textAlign: 'center', color: '#F5E6C8', marginTop: 1, marginBottom: 10 }}>{t('masha2allah')}</Text>
@@ -844,7 +868,7 @@ const HomeScreen = ({ navigation, route }) => {
                            elevation: 8,
                          }}
                          onPress={() => {
-                           ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true });
+                           hapticSelection();
                            Alert.alert('Memorization Leaderboard', 'This would open the full memorization leaderboard page');
                          }}
                        >
@@ -914,7 +938,7 @@ const HomeScreen = ({ navigation, route }) => {
                            elevation: 8,
                          }}
                          onPress={() => {
-                           ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true });
+                           hapticSelection();
                            Alert.alert('Streak Leaderboard', 'This would open the full streak leaderboard page');
                          }}
                        >
@@ -1123,7 +1147,7 @@ const HomeScreen = ({ navigation, route }) => {
                   onPress={() => setIntroVisible(false)}
                         onPressIn={() => { 
                           setBismillahPressed(true); 
-                          ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true }); 
+                          hapticSelection(); 
                         }}
                         onPressOut={() => setBismillahPressed(false)}
                         activeOpacity={0.8}
@@ -1183,7 +1207,7 @@ const HomeScreen = ({ navigation, route }) => {
                 <Button
                   title="Translit"
                   onPress={() => { 
-                    ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true }); 
+                    hapticSelection(); 
                     setInfoActiveTab('numerals'); 
                   }}
                   style={{ 
@@ -1200,7 +1224,7 @@ const HomeScreen = ({ navigation, route }) => {
                 <Button
                   title="Tajweed"
                   onPress={() => { 
-                    ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true }); 
+                    hapticSelection(); 
                     setInfoActiveTab('tajweed'); 
                   }}
                   style={{ 
@@ -1671,7 +1695,7 @@ const HomeScreen = ({ navigation, route }) => {
               <View style={{ flexDirection: 'row', marginBottom: 32, gap: 8 }}>
                 <Button
                   title={t('english_button')}
-                  onPress={() => { ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true }); changeLanguage('en'); }}
+                  onPress={() => { hapticSelection(); changeLanguage('en'); }}
                   style={{ 
                     backgroundColor: language === 'en' ? '#33694e' : 'rgba(128,128,128,0.6)', 
                     flex: 1,
@@ -1685,7 +1709,7 @@ const HomeScreen = ({ navigation, route }) => {
                 />
                 <Button
                   title={t('arabic_button')}
-                  onPress={() => { ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true }); changeLanguage('ar'); }}
+                  onPress={() => { hapticSelection(); changeLanguage('ar'); }}
                   style={{ 
                     backgroundColor: language === 'ar' ? '#33694e' : 'rgba(128,128,128,0.6)', 
                     flex: 1,
@@ -1714,7 +1738,7 @@ const HomeScreen = ({ navigation, route }) => {
                     <Button
                       title={t('sync_progress')}
                       onPress={async () => {
-                        ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true });
+                        hapticSelection();
                         try {
                           const result = await syncProgressData();
                           if (result.success) {
@@ -1742,7 +1766,7 @@ const HomeScreen = ({ navigation, route }) => {
                     <Button
                       title={t('logout')}
                       onPress={async () => {
-                        ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true });
+                        hapticSelection();
                         const result = await logout();
                         if (result.success) {
                           Alert.alert(t('success'), t('logout') + ' ' + t('success').toLowerCase());
@@ -1764,7 +1788,7 @@ const HomeScreen = ({ navigation, route }) => {
                 <Button
                   title={t('account')}
                   onPress={() => {
-                    ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true });
+                    hapticSelection();
                     setSettingsVisible(false);
                     navigation.navigate('Auth');
                   }}
@@ -1781,19 +1805,31 @@ const HomeScreen = ({ navigation, route }) => {
                     color: '#2F2F2F',
                     fontWeight: 'bold',
                   }}
-                  onPressIn={() => ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true })}
+                  onPressIn={() => hapticSelection()}
                 />
               )}
               
               <Button
                 title={t('reset_today')}
                 onPress={async () => {
-                  ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true });
+                  hapticSelection();
                   setResetting(true);
                   // Reset only today's hasanat
                   const today = new Date().toISOString().split('T')[0];
+                  const currentTodayHasanat = await AsyncStorage.getItem('today_hasanat');
+                  const currentTotalHasanat = await AsyncStorage.getItem('total_hasanat');
+                  
+                  // Subtract today's hasanat from total
+                  const todayAmount = parseInt(currentTodayHasanat || '0');
+                  const totalAmount = parseInt(currentTotalHasanat || '0');
+                  const newTotal = Math.max(0, totalAmount - todayAmount);
+                  
                   await AsyncStorage.setItem('today_hasanat', '0');
-                  await AsyncStorage.setItem('last_activity_date', today);
+                  await AsyncStorage.setItem('total_hasanat', newTotal.toString());
+                  // Don't reset last_activity_date when only resetting today's hasanat
+                  // This preserves streak calculation
+                  // Also reset streak_updated_today to allow streak recalculation
+                  await AsyncStorage.removeItem('streak_updated_today');
                   setResetting(false);
                   setSettingsVisible(false);
                   const loadedData = await loadData();
@@ -1812,7 +1848,7 @@ const HomeScreen = ({ navigation, route }) => {
               />
               <TouchableOpacity
                 onPress={() => {
-                  ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true });
+                  hapticSelection();
                   setSettingsVisible(false);
                   setConfirmResetVisible(true);
                 }}
@@ -1831,7 +1867,7 @@ const HomeScreen = ({ navigation, route }) => {
                   justifyContent: 'center',
                 }}
                 disabled={resetting}
-                onPressIn={() => ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true })}
+                onPressIn={() => hapticSelection()}
               >
                 <Text style={{ color: '#FFFFFF', fontSize: 16, fontWeight: '600', textAlign: 'center' }}>
                   {resetting ? t('resetting') : (
@@ -1846,7 +1882,7 @@ const HomeScreen = ({ navigation, route }) => {
               <View style={{ marginTop: 16 }}>
               <Button
                   title={t('close')}
-                onPress={() => { ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true }); setSettingsVisible(false); }}
+                onPress={() => { hapticSelection(); setSettingsVisible(false); }}
                   style={{ 
                     backgroundColor: '#5b7f67',
                     shadowColor: '#000',
@@ -1893,7 +1929,7 @@ const HomeScreen = ({ navigation, route }) => {
                   <TouchableOpacity
                     style={styles.confirmModalCancelButton}
                     onPress={() => {
-                      ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true });
+                      hapticSelection();
                       setConfirmResetVisible(false);
                     }}
                   >
@@ -1905,7 +1941,7 @@ const HomeScreen = ({ navigation, route }) => {
                   <TouchableOpacity
                     style={styles.confirmModalConfirmButton}
                     onPress={async () => {
-                      ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true });
+                      hapticSelection();
                       setResetting(true);
                       setConfirmResetVisible(false);
                       await resetProgress();
@@ -2092,7 +2128,7 @@ const HomeScreen = ({ navigation, route }) => {
                   elevation: 8,
                 }}
                 onPress={() => {
-                  ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true });
+                  hapticSelection();
                   setProgressModalVisible(false);
                 }}
               >
@@ -2258,7 +2294,7 @@ const HomeScreen = ({ navigation, route }) => {
                   elevation: 8,
                 }}
                 onPress={() => {
-                  ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true });
+                  hapticSelection();
                   setHasanatModalVisible(false);
                 }}
               >
@@ -2466,7 +2502,7 @@ const HomeScreen = ({ navigation, route }) => {
                   elevation: 8,
                 }}
                 onPress={() => {
-                  ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true });
+                  hapticSelection();
                   setStreakModalVisible(false);
                 }}
               >
@@ -2517,6 +2553,12 @@ const styles = StyleSheet.create({
     width: 120,
     height: 120,
     borderRadius: 80,
+    ...(Platform.OS === 'ios' && {
+      shadowColor: '#fae29f',
+      shadowOffset: { width: 0, height: 0 },
+      shadowOpacity: 0.6,
+      shadowRadius: 12,
+    }),
   },
   introButton: {
     padding: SIZES.small,
@@ -2594,12 +2636,14 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   buttonIconContainer: {
-    padding: SIZES.small,
-    shadowColor: '#fae29f',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 1.0,
-    shadowRadius: 15,
-    elevation: 12,
+    padding: Platform.OS === 'android' ? SIZES.small : SIZES.small,
+    ...(Platform.OS === 'ios' && {
+      shadowColor: '#fae29f',
+      shadowOffset: { width: 0, height: 0 },
+      shadowOpacity: 1.0,
+      shadowRadius: 15,
+      elevation: 12,
+    }),
   },
   buttonIcon: {
     width: 35,

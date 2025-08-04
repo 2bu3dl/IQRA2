@@ -2,7 +2,7 @@ import React from 'react';
 import { TouchableOpacity, StyleSheet } from 'react-native';
 import { COLORS, SIZES } from '../utils/theme';
 import Text from './Text';
-import HapticFeedback from 'react-native-haptic-feedback';
+import { hapticSelection } from '../utils/hapticFeedback';
 
 const Button = ({
   title,
@@ -80,7 +80,7 @@ const Button = ({
       style={[getButtonStyle(), style]}
       onPress={onPress}
       onPressIn={() => {
-        HapticFeedback.trigger('selection', { enableVibrateFallback: true });
+        hapticSelection();
       }}
       disabled={disabled}>
       <Text style={[getTextStyle(), textStyle]}>{title}</Text>

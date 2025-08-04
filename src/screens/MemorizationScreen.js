@@ -20,7 +20,7 @@ import audioRecorder from '../utils/audioRecorder';
 import { testRecordingSetup, testAudioSetup } from '../utils/recordingTest';
 import { testNativeModule } from '../utils/testNativeModule';
 import telemetryService from '../utils/telemetry';
-import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
+import { triggerHaptic, hapticSelection, hapticImpactMedium } from '../utils/hapticFeedback';
 import Slider from '@react-native-community/slider';
 import Svg, { Polygon } from 'react-native-svg';
 import HighlightedArabicText from '../components/HighlightedArabicText';
@@ -38,8 +38,8 @@ const MemorizationScreen = ({ route, navigation }) => {
     if (language !== 'ar') return num.toString();
     return num.toString().replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]);
   };
-  const { surah, resumeFromIndex, targetAyah } = route.params;
-  const surahNumber = surah.id || surah.surah || 1;
+  const { surah, resumeFromIndex, targetAyah } = route.params || {};
+  const surahNumber = surah?.id || surah?.surah || 1;
 
 
 
@@ -131,14 +131,14 @@ const MemorizationScreen = ({ route, navigation }) => {
     const checkBookmarkStatus = async () => {
       if (flashcards && flashcards[currentAyahIndex]?.type === 'ayah') {
         const ayahNumber = flashcards.slice(0, currentAyahIndex + 1).filter(a => a.type === 'ayah').length;
-        const inAnyList = await isAyahInAnyList(surah.name, ayahNumber);
+        const inAnyList = await isAyahInAnyList(surah?.name || 'Al-Fatihah', ayahNumber);
         setIsCurrentAyahBookmarked(inAnyList);
       }
     };
     
     checkBookmarkStatus();
     checkRecordings();
-  }, [currentAyahIndex, ayaat, surah.name, flashcards]);
+        }, [currentAyahIndex, ayaat, surah?.name, flashcards]);
 
   // Reset highlighting state when ayah changes
   React.useEffect(() => {
@@ -277,7 +277,7 @@ const MemorizationScreen = ({ route, navigation }) => {
   // Add this after currentAyahIndex and surah are defined
   React.useEffect(() => {
     if (surah?.name && currentAyahIndex !== undefined && !isResuming.current && flashcardsLoaded.current) {
-      saveCurrentPosition(surah.name, currentAyahIndex);
+      saveCurrentPosition(surah?.name || 'Al-Fatihah', currentAyahIndex);
     }
   }, [surah?.name, currentAyahIndex]);
 
@@ -381,11 +381,11 @@ const MemorizationScreen = ({ route, navigation }) => {
     setRewardAmount(hasanat);
     setShowReward(true);
     const realAyahIndex = flashcards.slice(0, currentAyahIndex + 1).filter(a => a.type === 'ayah').length - 1;
-    updateMemorizedAyahs(surah.name, realAyahIndex).catch(console.error);
+            updateMemorizedAyahs(surah?.name || 'Al-Fatihah', realAyahIndex).catch(console.error);
     
     // Track telemetry
     telemetryService.trackHasanatEarned(hasanat, 'ayah_completion');
-    telemetryService.trackMemorizationProgress(surah.name, realAyahIndex + 1, ((realAyahIndex + 1) / ayaat.filter(a => a.type === 'ayah').length) * 100);
+          telemetryService.trackMemorizationProgress(surah?.name || 'Al-Fatihah', realAyahIndex + 1, ((realAyahIndex + 1) / ayaat.filter(a => a.type === 'ayah').length) * 100);
   };
 
   const handlePrevious = async () => {
@@ -563,9 +563,9 @@ const MemorizationScreen = ({ route, navigation }) => {
     }
     
     // Two haptic feedbacks: one instant, one after 750ms
-    ReactNativeHapticFeedback.trigger('impactMedium', { enableVibrateFallback: true });
+    hapticImpactMedium();
     setTimeout(() => {
-      ReactNativeHapticFeedback.trigger('impactMedium', { enableVibrateFallback: true });
+      hapticImpactMedium();
     }, 750);
     // Repeat: seek to start and play
     const currentFlashcard = flashcards[currentAyahIndex];
@@ -584,7 +584,7 @@ const MemorizationScreen = ({ route, navigation }) => {
   };
 
   const handleBookmarkToggle = async () => {
-    ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true });
+    hapticSelection();
     
     // Immediately update the visual state
     setIsCurrentAyahBookmarked(!isCurrentAyahBookmarked);
@@ -598,7 +598,7 @@ const MemorizationScreen = ({ route, navigation }) => {
     // Refresh bookmark status after modal closes
     if (flashcards && flashcards[currentAyahIndex]?.type === 'ayah') {
       const ayahNumber = flashcards.slice(0, currentAyahIndex + 1).filter(a => a.type === 'ayah').length;
-      const inAnyList = await isAyahInAnyList(surah.name, ayahNumber);
+      const inAnyList = await isAyahInAnyList(surah?.name || 'Al-Fatihah', ayahNumber);
       setIsCurrentAyahBookmarked(inAnyList);
     }
   };
@@ -607,7 +607,7 @@ const MemorizationScreen = ({ route, navigation }) => {
     // Refresh bookmark status after modal changes
     if (flashcards && flashcards[currentAyahIndex]?.type === 'ayah') {
       const ayahNumber = flashcards.slice(0, currentAyahIndex + 1).filter(a => a.type === 'ayah').length;
-      const inAnyList = await isAyahInAnyList(surah.name, ayahNumber);
+      const inAnyList = await isAyahInAnyList(surah?.name || 'Al-Fatihah', ayahNumber);
       setIsCurrentAyahBookmarked(inAnyList);
     }
   };
@@ -616,14 +616,14 @@ const MemorizationScreen = ({ route, navigation }) => {
   const checkRecordings = async () => {
     if (flashcards && flashcards[currentAyahIndex]?.type === 'ayah') {
       const ayahNumber = flashcards.slice(0, currentAyahIndex + 1).filter(a => a.type === 'ayah').length;
-      const recordings = await audioRecorder.loadRecordings(surah.name, ayahNumber);
+      const recordings = await audioRecorder.loadRecordings(surah?.name || 'Al-Fatihah', ayahNumber);
       setHasRecordings(recordings.length > 0);
     }
   };
 
   const handleRecordingToggle = async () => {
     try {
-      ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true });
+      hapticSelection();
       
       if (isRecording) {
         // Stop recording
@@ -646,7 +646,7 @@ const MemorizationScreen = ({ route, navigation }) => {
         if (flashcards && flashcards[currentAyahIndex]?.type === 'ayah') {
           const ayahNumber = flashcards.slice(0, currentAyahIndex + 1).filter(a => a.type === 'ayah').length;
           console.log('[MemorizationScreen] Starting recording for ayah:', ayahNumber);
-          await audioRecorder.startRecording(surah.name, ayahNumber);
+          await audioRecorder.startRecording(surah?.name || 'Al-Fatihah', ayahNumber);
           setIsRecording(true);
           
           // Start pulse animation
@@ -680,7 +680,7 @@ const MemorizationScreen = ({ route, navigation }) => {
     if (isRecording) {
       // Reset recording
       try {
-        ReactNativeHapticFeedback.trigger('impactMedium', { enableVibrateFallback: true });
+        hapticImpactMedium();
         await audioRecorder.stopRecording();
         setIsRecording(false);
         recordingPulseAnim.stopAnimation();
@@ -691,7 +691,7 @@ const MemorizationScreen = ({ route, navigation }) => {
     } else if (hasRecordings) {
       // Start new recording to add to existing list
       try {
-        ReactNativeHapticFeedback.trigger('impactMedium', { enableVibrateFallback: true });
+        hapticImpactMedium();
         
         if (isAudioPlaying) {
           Alert.alert('Cannot Record', 'Please stop the audio recitation before starting a recording.');
@@ -701,7 +701,7 @@ const MemorizationScreen = ({ route, navigation }) => {
         if (flashcards && flashcards[currentAyahIndex]?.type === 'ayah') {
           const ayahNumber = flashcards.slice(0, currentAyahIndex + 1).filter(a => a.type === 'ayah').length;
           console.log('[MemorizationScreen] Starting new recording for ayah:', ayahNumber);
-          await audioRecorder.startRecording(surah.name, ayahNumber);
+          await audioRecorder.startRecording(surah?.name || 'Al-Fatihah', ayahNumber);
           setIsRecording(true);
           
           // Start pulse animation
@@ -829,10 +829,10 @@ const MemorizationScreen = ({ route, navigation }) => {
               onPress={async () => {
                 // Explicitly save current position
                 try {
-                  console.log('[DEBUG] About to save position - surah.name:', surah.name, 'currentAyahIndex:', currentAyahIndex);
-                  await saveCurrentPosition(surah.name, currentAyahIndex);
-                  await saveLastPosition(surah.name, surahNumber, currentAyahIndex);
-                  console.log('[MemorizationScreen] Explicitly saved on Home:', surah.name, currentAyahIndex);
+                          console.log('[DEBUG] About to save position - surah.name:', surah?.name, 'currentAyahIndex:', currentAyahIndex);
+        await saveCurrentPosition(surah?.name || 'Al-Fatihah', currentAyahIndex);
+        await saveLastPosition(surah?.name || 'Al-Fatihah', surahNumber, currentAyahIndex);
+        console.log('[MemorizationScreen] Explicitly saved on Home:', surah?.name, currentAyahIndex);
                 } catch (error) {
                   console.error('[MemorizationScreen] Error saving current position on Home:', error);
                 }
@@ -940,7 +940,7 @@ const MemorizationScreen = ({ route, navigation }) => {
                     : [FONTS.h2.getFont(language), { color: '#5b7f67', textAlign: 'center', marginBottom: 8 }],
                 ]}
               >
-                {language === 'ar' ? t(`surah_${surahNumber}`) : cleanSurahName(surah.name)}
+                {language === 'ar' ? t(`surah_${surahNumber}`) : cleanSurahName(surah?.name || 'Al-Fatihah')}
               </Text>
             </View>
             */}
@@ -1061,7 +1061,7 @@ const MemorizationScreen = ({ route, navigation }) => {
                 <TouchableOpacity
                   style={[styles.placeholderButton, { marginLeft: 15 }]}
                   onPress={() => {
-                    ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true });
+                    hapticSelection();
                     testRecordingFunctionality();
                   }}
                 >
@@ -1104,7 +1104,7 @@ const MemorizationScreen = ({ route, navigation }) => {
                   marginHorizontal: 20,
                 }]}
                 onPress={() => {
-                  ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true });
+                  hapticSelection();
                   handleRevealToggle();
                 }}
               >
@@ -1168,9 +1168,9 @@ const MemorizationScreen = ({ route, navigation }) => {
                 <TouchableOpacity
                   style={[styles.audioButton, { marginLeft: 15 }]}
                   onPress={handleAudioButtonPress}
-                  onPressIn={() => ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true })}
+                  onPressIn={() => hapticSelection()}
                   onLongPress={async () => {
-                    ReactNativeHapticFeedback.trigger('impactMedium', { enableVibrateFallback: true });
+                    hapticImpactMedium();
                     await handleAudioButtonLongPress();
                   }}
                   delayLongPress={500}
@@ -1228,7 +1228,7 @@ const MemorizationScreen = ({ route, navigation }) => {
           <Button
             title={currentAyahIndex === 0 ? t('back') : t('previous')}
             onPress={async () => {
-              ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true });
+              hapticSelection();
               if (currentAyahIndex === 0) {
                 navigation.navigate('SurahList');
               } else {
@@ -1260,7 +1260,7 @@ const MemorizationScreen = ({ route, navigation }) => {
           <Button
             title={currentAyahIndex === 0 ? t('start') : (flashcards && currentAyahIndex === flashcards.length - 1 ? t('finish') : t('next'))}
             onPress={async () => {
-              ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true });
+              hapticSelection();
               handleNext();
             }}
             disabled={showReward}
@@ -1344,7 +1344,7 @@ const MemorizationScreen = ({ route, navigation }) => {
                         
                         // Save current position before navigating
                         try {
-                          await saveCurrentPosition(surah.name, currentAyahIndex);
+                          await saveCurrentPosition(surah?.name || 'Al-Fatihah', currentAyahIndex);
                         } catch (error) {
                           console.error('[MemorizationScreen] Error saving position before navigation:', error);
                         }
@@ -1389,7 +1389,7 @@ const MemorizationScreen = ({ route, navigation }) => {
                                `${t('ayah')} ${toArabicNumber(ayahNumber)}`}
                     </Text>
                           </View>
-                          {ayah.type === 'ayah' && memorizationData?.memorizedAyahs[surah.name]?.completedAyaat?.includes(ayahNumber) && (
+                          {ayah.type === 'ayah' && memorizationData?.memorizedAyahs[surah?.name]?.completedAyaat?.includes(ayahNumber) && (
                             <View style={styles.ayahDot} />
                           )}
                         </View>
@@ -1419,7 +1419,7 @@ const MemorizationScreen = ({ route, navigation }) => {
                         
                         // Save current position before navigating
                         try {
-                          await saveCurrentPosition(surah.name, currentAyahIndex);
+                          await saveCurrentPosition(surah?.name || 'Al-Fatihah', currentAyahIndex);
                         } catch (error) {
                           console.error('[MemorizationScreen] Error saving position before navigation:', error);
                         }
@@ -1659,7 +1659,7 @@ const MemorizationScreen = ({ route, navigation }) => {
           <BookmarkModal
             visible={showBookmarkModal}
             onClose={handleBookmarkModalClose}
-            surahName={surah.name}
+            surahName={surah?.name || 'Al-Fatihah'}
             surahNumber={surahNumber}
             ayahNumber={flashcards && flashcards[currentAyahIndex]?.type === 'ayah' ? flashcards.slice(0, currentAyahIndex + 1).filter(a => a.type === 'ayah').length : null}
             onBookmarkChange={handleBookmarkChange}
@@ -1669,7 +1669,7 @@ const MemorizationScreen = ({ route, navigation }) => {
           <RecordingsModal
             visible={showRecordingsModal}
             onClose={handleRecordingsModalClose}
-            surahName={surah.name}
+            surahName={surah?.name || 'Al-Fatihah'}
             ayahNumber={flashcards && flashcards[currentAyahIndex]?.type === 'ayah' ? flashcards.slice(0, currentAyahIndex + 1).filter(a => a.type === 'ayah').length : null}
             onRecordingChange={checkRecordings}
           />

@@ -11,7 +11,6 @@ import {
   Alert,
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 import { useLanguage } from '../utils/languageContext';
 import { COLORS, SIZES, FONTS } from '../utils/theme';
 import {
@@ -97,7 +96,7 @@ const BookmarkModal = ({
         setSelectedLists(prev => [...prev, listName]);
       }
       
-      ReactNativeHapticFeedback.trigger('selection', { enableVibrateFallback: true });
+      // haptic feedback removed;
       
       if (onBookmarkChange) {
         onBookmarkChange();
@@ -122,7 +121,7 @@ const BookmarkModal = ({
       await loadCustomLists();
       setNewListName('');
       setShowAddList(false);
-      ReactNativeHapticFeedback.trigger('success', { enableVibrateFallback: true });
+      // haptic feedback removed;
     } catch (error) {
       console.error('Error adding list:', error);
       Alert.alert(
@@ -162,7 +161,7 @@ const BookmarkModal = ({
               await removeCustomList(listName);
               await loadCustomLists();
               setSelectedLists(prev => prev.filter(name => name !== listName));
-              ReactNativeHapticFeedback.trigger('impactMedium', { enableVibrateFallback: true });
+              // haptic feedback removed;
             } catch (error) {
               console.error('Error removing list:', error);
               Alert.alert(

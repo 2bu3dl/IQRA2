@@ -254,7 +254,13 @@ const AnimatedRewardModal = ({
             }
           ]}
           activeOpacity={1}
-          onPress={(e) => e.stopPropagation()}
+          onPress={(e) => {
+            e.stopPropagation();
+            // Skip animation when modal content is tapped
+            if (currentStep < 3) {
+              skipAnimation();
+            }
+          }}
         >
             {renderCalculationStep()}
             {calculationComplete && (
