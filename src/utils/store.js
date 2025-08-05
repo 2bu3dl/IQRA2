@@ -300,20 +300,38 @@ export const saveCurrentPosition = async (surahName, flashcardIndex) => {
 };
 
 // Reset all progress
-export const resetProgress = async () => {
+export const resetProgress = async (includeRecordings = false) => {
   try {
     // Set last activity date to yesterday
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
     const yesterdayString = yesterday.toISOString().split('T')[0];
-    await Promise.all([
+    
+    const resetPromises = [
       AsyncStorage.setItem(STORAGE_KEYS.TOTAL_HASANAT, '0'),
       AsyncStorage.setItem(STORAGE_KEYS.TODAY_HASANAT, '0'),
       AsyncStorage.setItem(STORAGE_KEYS.LAST_ACTIVITY_DATE, yesterdayString),
       AsyncStorage.setItem(STORAGE_KEYS.STREAK, '0'),
       AsyncStorage.setItem(STORAGE_KEYS.MEMORIZED_AYAHS, JSON.stringify(initialState.memorizedAyahs)),
       AsyncStorage.removeItem(STORAGE_KEYS.STREAK_UPDATED_TODAY),
-    ]);
+    ];
+
+    // If includeRecordings is true, also clear all recording-related data
+    if (includeRecordings) {
+      // Get all keys and filter out recording-related ones
+      const allKeys = await AsyncStorage.getAllKeys();
+      const recordingKeys = allKeys.filter(key => 
+        key.startsWith('recording_') || 
+        key.startsWith('highlighted_') ||
+        key.includes('recording')
+      );
+      
+      if (recordingKeys.length > 0) {
+        resetPromises.push(AsyncStorage.multiRemove(recordingKeys));
+      }
+    }
+
+    await Promise.all(resetPromises);
     return true;
   } catch (error) {
     console.error('Error resetting progress:', error);

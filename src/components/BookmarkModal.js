@@ -13,6 +13,7 @@ import {
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useLanguage } from '../utils/languageContext';
 import { COLORS, SIZES, FONTS } from '../utils/theme';
+import { hapticSuccess } from '../utils/hapticFeedback';
 import {
   getCustomLists,
   addCustomList,
@@ -96,7 +97,7 @@ const BookmarkModal = ({
         setSelectedLists(prev => [...prev, listName]);
       }
       
-      // haptic feedback removed;
+      hapticSuccess();
       
       if (onBookmarkChange) {
         onBookmarkChange();
@@ -121,7 +122,7 @@ const BookmarkModal = ({
       await loadCustomLists();
       setNewListName('');
       setShowAddList(false);
-      // haptic feedback removed;
+      hapticSuccess();
     } catch (error) {
       console.error('Error adding list:', error);
       Alert.alert(
@@ -161,7 +162,7 @@ const BookmarkModal = ({
               await removeCustomList(listName);
               await loadCustomLists();
               setSelectedLists(prev => prev.filter(name => name !== listName));
-              // haptic feedback removed;
+              hapticSuccess();
             } catch (error) {
               console.error('Error removing list:', error);
               Alert.alert(

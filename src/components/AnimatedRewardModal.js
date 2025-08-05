@@ -3,13 +3,17 @@ import { View, Modal, Animated, StyleSheet, TouchableWithoutFeedback, TouchableO
 import Text from './Text';
 import Button from './Button';
 import { COLORS, SIZES } from '../utils/theme';
+import { hapticSelection, hapticImpactMedium } from '../utils/hapticFeedback';
 
 const AnimatedRewardModal = ({ 
   visible, 
   rewardAmount, 
   onClose, 
   onNext, 
+  onRecordFullSurah,
+  onSurahList,
   isLastAyah = false,
+  isFullSurah = false,
   language = 'en',
   toArabicNumber = (num) => num.toString()
 }) => {
@@ -32,19 +36,36 @@ const AnimatedRewardModal = ({
       setCalculationComplete(false);
       setLetterCount(0);
       
-      // Start entrance animation
-      Animated.parallel([
-        Animated.spring(scaleAnim, {
-          toValue: 1,
-          friction: 5,
-          useNativeDriver: true,
-        }),
-        Animated.timing(opacityAnim, {
-          toValue: 1,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-      ]).start();
+      // Start entrance animation - different for full surah
+      if (isFullSurah) {
+        // Full surah gets a slide-up from bottom entrance
+        Animated.parallel([
+          Animated.timing(scaleAnim, {
+            toValue: 1,
+            duration: 500,
+            useNativeDriver: true,
+          }),
+          Animated.timing(opacityAnim, {
+            toValue: 1,
+            duration: 600,
+            useNativeDriver: true,
+          }),
+        ]).start();
+      } else {
+        // Regular ayah animation
+        Animated.parallel([
+          Animated.spring(scaleAnim, {
+            toValue: 1,
+            friction: 5,
+            useNativeDriver: true,
+          }),
+          Animated.timing(opacityAnim, {
+            toValue: 1,
+            duration: 300,
+            useNativeDriver: true,
+          }),
+        ]).start();
+      }
 
       // Start calculation animation sequence
       startCalculationAnimation();
@@ -69,6 +90,7 @@ const AnimatedRewardModal = ({
 
   const skipAnimation = () => {
     clearAllTimeouts();
+    hapticImpactMedium(); // Haptic feedback for skipping
     // Immediately show the final result
     setCurrentStep(3);
     setCalculationComplete(true);
@@ -95,23 +117,35 @@ const AnimatedRewardModal = ({
   };
 
   const startCalculationAnimation = () => {
-    // Step 1: Show letter count calculation (immediately)
-    const letterCount = rewardAmount / 10;
-    setLetterCount(letterCount);
-    numberAnim.setValue(letterCount);
-
-    // Step 2: Show multiplication
-    timeoutsRef.current.push(setTimeout(() => {
-      setCurrentStep(2);
-      animateTextScale();
-    }, 800)); // So user sees letter count for a bit
-
-    // Step 3: Show result
-    timeoutsRef.current.push(setTimeout(() => {
+    if (isFullSurah) {
+      // For full surah, skip calculation animation and go straight to result
       setCurrentStep(3);
       setCalculationComplete(true);
+      setLetterCount(rewardAmount / 10);
       animateResult();
-    }, 1600));
+      hapticImpactMedium(); // Haptic feedback for final result
+    } else {
+      // Step 1: Show letter count calculation (immediately)
+      const letterCount = rewardAmount / 10;
+      setLetterCount(letterCount);
+      numberAnim.setValue(letterCount);
+      hapticSelection(); // Haptic feedback for initial appearance
+
+      // Step 2: Show multiplication
+      timeoutsRef.current.push(setTimeout(() => {
+        setCurrentStep(2);
+        animateTextScale();
+        hapticSelection(); // Haptic feedback for multiplication phase
+      }, 800)); // So user sees letter count for a bit
+
+      // Step 3: Show result
+      timeoutsRef.current.push(setTimeout(() => {
+        setCurrentStep(3);
+        setCalculationComplete(true);
+        animateResult();
+        hapticImpactMedium(); // Stronger haptic feedback for final result
+      }, 1600));
+    }
   };
 
   const animateNumber = (from, to, duration) => {
@@ -155,7 +189,13 @@ const AnimatedRewardModal = ({
       <View style={styles.modalContentInner}>
         {/* Masha'Allah title - always visible at top */}
         <Animated.View style={{ opacity: opacityAnim }}>
-          <Text variant="h2" style={[styles.title, { fontFamily: 'Montserrat-Bold' }]}>
+          <Text variant="h2" style={[
+            styles.title, 
+            { 
+              fontFamily: 'Montserrat-Bold',
+              color: isFullSurah ? '#F5E6C8' : '#33694e', // Parchment color for full surah
+            }
+          ]}>
             {language === 'ar' ? 'ماشاء الله' : 'Masha\'Allah'}
           </Text>
         </Animated.View>
@@ -204,26 +244,49 @@ const AnimatedRewardModal = ({
         {currentStep === 3 && (
           <View style={styles.resultContainer}>
             <Animated.View style={{ opacity: resultAnim, transform: [{ scale: resultAnim }] }}>
-              <Text variant="body1" style={styles.resultText}>
+              <Text variant="body1" style={[
+                styles.resultText,
+                { fontSize: 20, fontWeight: 'bold' }
+              ]}>
                 {language === 'ar' ? (
                   <>
                     لقد كسبت{' '}
-                    <Text style={styles.rewardNumber}>
+                    <Text style={[
+                      styles.rewardNumber, 
+                      { 
+                        fontSize: 24, 
+                        fontWeight: 'bold',
+                        color: isFullSurah ? '#F5E6C8' : 'rgba(165,115,36,0.8)' // Parchment color for full surah
+                      }
+                    ]}>
                       {toArabicNumber(rewardAmount)}
                     </Text>
-                    {' '}حسنة لهذه الآية!
+                    {' '}حسنة لهذه {isFullSurah ? 'السورة' : 'الآية'}!
                   </>
                 ) : (
                   <>
                     You've earned{' '}
-                    <Text style={styles.rewardNumber}>
+                    <Text style={[
+                      styles.rewardNumber, 
+                      { 
+                        fontSize: 24, 
+                        fontWeight: 'bold',
+                        color: isFullSurah ? '#F5E6C8' : 'rgba(165,115,36,0.8)' // Parchment color for full surah
+                      }
+                    ]}>
                       {toArabicNumber(rewardAmount)}
                     </Text>
-                    {' '}7asanat for this Ayah!
+                    {' '}7asanat for this {isFullSurah ? 'Surah' : 'Ayah'}!
                   </>
                 )}
               </Text>
-              <Text variant="body2" style={styles.inshaAllahText}>
+              <Text variant="body2" style={[
+                styles.inshaAllahText,
+                { 
+                  color: '#999999', // Lighter gray
+                  fontSize: 18 // Larger font size
+                }
+              ]}>
                 {language === 'ar' ? 'إن شاء الله' : 'Insha\'Allah'}
               </Text>
             </Animated.View>
@@ -240,17 +303,21 @@ const AnimatedRewardModal = ({
       animationType="none"
       onRequestClose={onClose}
     >
-      <TouchableOpacity 
-        style={styles.modalOverlay}
-        activeOpacity={1}
-        onPress={onClose}
-      >
+              <TouchableOpacity 
+          style={[
+            styles.modalOverlay,
+            isFullSurah && { justifyContent: 'flex-end' }
+          ]}
+          activeOpacity={1}
+          onPress={onClose}
+        >
         <TouchableOpacity 
           style={[
             styles.modalContent, 
             { 
               transform: [{ scale: scaleAnim }],
-              opacity: opacityAnim
+              opacity: opacityAnim,
+              backgroundColor: isFullSurah ? '#5b7f67' : '#F5E6C8', // Green background for full surah (matching surah recitations modal)
             }
           ]}
           activeOpacity={1}
@@ -268,19 +335,44 @@ const AnimatedRewardModal = ({
                 style={[styles.buttonContainer, { opacity: resultAnim }]}
               >
                 <View style={styles.rewardButtonRow}>
-                  <Button
-                    title={language === 'ar' ? 'مراجعة' : 'Revise'}
-                    onPress={onClose}
-                    style={[styles.rewardButton, { backgroundColor: '#5b7f67', marginRight: 8 }]}
-                  />
-                  <Button
-                    title={isLastAyah 
-                      ? (language === 'ar' ? 'السورة التالية' : 'Next Surah') 
-                      : (language === 'ar' ? 'الآية التالية' : 'Next Ayah')
-                    }
-                    onPress={onNext}
-                    style={[styles.rewardButton, { backgroundColor: '#5b7f67' }]}
-                  />
+                  {isFullSurah ? (
+                    <>
+                      <Button
+                        title={language === 'ar' ? 'قائمة السور' : 'Surah List'}
+                        onPress={onSurahList}
+                        style={[styles.rewardButton, { backgroundColor: '#F5E6C8', marginRight: 8 }]}
+                        textStyle={{ color: '#2D5016', fontWeight: 'bold' }}
+                      />
+                      <Button
+                        title={language === 'ar' ? 'تسجيل السورة كاملة' : 'Record Full Surah'}
+                        onPress={onRecordFullSurah}
+                        style={[styles.rewardButton, { backgroundColor: '#F5E6C8', marginRight: 8 }]}
+                        textStyle={{ color: '#2D5016', fontWeight: 'bold' }}
+                      />
+                      <Button
+                        title={language === 'ar' ? 'السورة التالية' : 'Next Surah'}
+                        onPress={onNext}
+                        style={[styles.rewardButton, { backgroundColor: '#F5E6C8' }]}
+                        textStyle={{ color: '#2D5016', fontWeight: 'bold' }}
+                      />
+                    </>
+                  ) : (
+                    <>
+                      <Button
+                        title={language === 'ar' ? 'مراجعة' : 'Revise'}
+                        onPress={onClose}
+                        style={[styles.rewardButton, { backgroundColor: '#5b7f67', marginRight: 8 }]}
+                      />
+                      <Button
+                        title={isLastAyah 
+                          ? (language === 'ar' ? 'متابعة' : 'Continue') 
+                          : (language === 'ar' ? 'الآية التالية' : 'Next Ayah')
+                        }
+                        onPress={onNext}
+                        style={[styles.rewardButton, { backgroundColor: '#5b7f67' }]}
+                      />
+                    </>
+                  )}
                 </View>
               </Animated.View>
             )}
@@ -298,7 +390,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   modalContent: {
-    backgroundColor: '#F5E6C8',
+    backgroundColor: '#F5E6C8', // Default parchment color
     borderRadius: SIZES.base,
     padding: SIZES.large,
     alignItems: 'center',
@@ -382,6 +474,16 @@ const styles = StyleSheet.create({
   },
   rewardButton: {
     flex: 1,
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 3,
   },
 });
 

@@ -1,3 +1,5 @@
+// Temporarily commented out due to missing React Native dependencies
+/*
 import Foundation
 import AVFoundation
 import React
@@ -367,4 +369,5 @@ extension AudioRecorderModule: AVAudioPlayerDelegate {
     isPlaying = false
     audioPlayer = nil
   }
-} 
+}
+*/ 

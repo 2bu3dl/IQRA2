@@ -1,3 +1,5 @@
+// Temporarily commented out due to missing React Native dependencies
+/*
 #import <React/RCTBridgeModule.h>
 #import <React/RCTEventEmitter.h>
 
@@ -38,4 +40,5 @@ RCT_EXTERN_METHOD(loadRecordings:(NSString *)surahName
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 
-@end 
+@end
+*/ 

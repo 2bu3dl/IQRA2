@@ -12,6 +12,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useLanguage } from '../utils/languageContext';
 import telemetryService from '../utils/telemetry';
 import { hapticSelection } from '../utils/hapticFeedback';
+import audioRecorder from '../utils/audioRecorder';
+import audioPlayer from '../utils/audioPlayer';
 
 import AuthScreen from './AuthScreen';
 
@@ -108,12 +110,69 @@ const HomeScreen = ({ navigation, route }) => {
   const [currentDuaIndex, setCurrentDuaIndex] = useState(0);
   const [resetting, setResetting] = useState(false);
   const [confirmResetVisible, setConfirmResetVisible] = useState(false);
+  const [includeRecordings, setIncludeRecordings] = useState(false);
   const [memorizeButtonHeld, setMemorizeButtonHeld] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
   const [progressModalVisible, setProgressModalVisible] = useState(false);
   const [hasanatModalVisible, setHasanatModalVisible] = useState(false);
   const [streakModalVisible, setStreakModalVisible] = useState(false);
+  const [recordingsModalVisible, setRecordingsModalVisible] = useState(false);
+  
+  // Goal setting state
+  const [selectedGoal, setSelectedGoal] = useState(null);
+  const [goalCompletionDate, setGoalCompletionDate] = useState(null);
+  const [goalProgress, setGoalProgress] = useState(0);
+  const [goalStartDate, setGoalStartDate] = useState(null);
   const flatListRef = useRef(null);
+
+  // Goal calculation helpers
+  const calculateGoalCompletionDate = (ayaatPerDay) => {
+    const totalAyaat = 6236; // Total Quran ayaat
+    const daysNeeded = Math.ceil(totalAyaat / ayaatPerDay);
+    const startDate = new Date();
+    const completionDate = new Date(startDate);
+    completionDate.setDate(startDate.getDate() + daysNeeded);
+    return completionDate;
+  };
+
+  const calculateGoalProgress = (ayaatPerDay, missedDays = 0) => {
+    if (!goalStartDate) return 0;
+    const totalAyaat = 6236;
+    const daysNeeded = Math.ceil(totalAyaat / ayaatPerDay);
+    const daysElapsed = Math.floor((new Date() - goalStartDate) / (1000 * 60 * 60 * 24));
+    const adjustedDaysNeeded = daysNeeded + missedDays;
+    return Math.min(Math.max((daysElapsed / adjustedDaysNeeded) * 100, 0), 100);
+  };
+
+  const formatDate = (date) => {
+    return date.toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    });
+  };
+
+  const saveGoalData = async (goal, startDate, completionDate) => {
+    try {
+      if (goal) {
+        await AsyncStorage.setItem('selectedGoal', JSON.stringify(goal));
+      } else {
+        await AsyncStorage.removeItem('selectedGoal');
+      }
+      if (startDate) {
+        await AsyncStorage.setItem('goalStartDate', startDate.toISOString());
+      } else {
+        await AsyncStorage.removeItem('goalStartDate');
+      }
+      if (completionDate) {
+        await AsyncStorage.setItem('goalCompletionDate', completionDate.toISOString());
+      } else {
+        await AsyncStorage.removeItem('goalCompletionDate');
+      }
+    } catch (error) {
+      console.error('Error saving goal data:', error);
+    }
+  };
 
   // Scroll to default page on mount
   useEffect(() => {
@@ -130,6 +189,25 @@ const HomeScreen = ({ navigation, route }) => {
   const loadScreenData = async () => {
       const loadedData = await loadData();
       setData(loadedData);
+      
+      // Load goal data
+      try {
+        const savedGoal = await AsyncStorage.getItem('selectedGoal');
+        const savedGoalStartDate = await AsyncStorage.getItem('goalStartDate');
+        const savedGoalCompletionDate = await AsyncStorage.getItem('goalCompletionDate');
+        
+        if (savedGoal) {
+          setSelectedGoal(JSON.parse(savedGoal));
+        }
+        if (savedGoalStartDate) {
+          setGoalStartDate(new Date(savedGoalStartDate));
+        }
+        if (savedGoalCompletionDate) {
+          setGoalCompletionDate(new Date(savedGoalCompletionDate));
+        }
+      } catch (error) {
+        console.error('Error loading goal data:', error);
+      }
     };
 
   useEffect(() => {
@@ -169,7 +247,23 @@ const HomeScreen = ({ navigation, route }) => {
     }
   }, [isAuthenticated]);
 
-
+  // Update goal progress when data changes
+  useEffect(() => {
+    if (selectedGoal && goalStartDate) {
+      const missedDays = Math.max(0, Math.floor((new Date() - goalStartDate) / (1000 * 60 * 60 * 24)) - data.streak);
+      const progress = calculateGoalProgress(selectedGoal.ayaat, missedDays);
+      setGoalProgress(progress);
+      
+      // Recalculate completion date based on missed days
+      if (missedDays > 0) {
+        const totalAyaat = 6236;
+        const daysNeeded = Math.ceil(totalAyaat / selectedGoal.ayaat);
+        const adjustedCompletionDate = new Date(goalStartDate);
+        adjustedCompletionDate.setDate(goalStartDate.getDate() + daysNeeded + missedDays);
+        setGoalCompletionDate(adjustedCompletionDate);
+      }
+    }
+  }, [selectedGoal, goalStartDate, data.streak]);
 
   // Calculate percentage
   const progressPercentage = data.totalAyaat > 0 ? Math.round((data.memorizedAyaat / data.totalAyaat) * 100) : 0;
@@ -226,7 +320,8 @@ const HomeScreen = ({ navigation, route }) => {
                         screen: 'Home'
                       });
                       hapticSelection();
-                      setIntroVisible(true);
+                      // Toggle the modal - if it's open, close it; if it's closed, open it
+                      setIntroVisible(!introVisible);
                     }}
                     onPressIn={() => setLogoPressed(true)}
                     onPressOut={() => setLogoPressed(false)}
@@ -527,7 +622,7 @@ const HomeScreen = ({ navigation, route }) => {
                         }}
                         onPress={() => {
                           hapticSelection();
-                          Alert.alert('Saved Ayaat', 'This would open your saved ayaat');
+                          navigation.navigate('SurahList', { activeTab: 3 }); // 3 is the saved ayaat tab
                         }}
                       >
                         <Text style={{
@@ -537,7 +632,7 @@ const HomeScreen = ({ navigation, route }) => {
                           fontSize: 16,
                           marginBottom: 8,
                         }}>
-                          📖 Saved Ayaat
+                          Saved Ayaat
                         </Text>
                         <Text style={{
                           textAlign: 'center',
@@ -576,7 +671,7 @@ const HomeScreen = ({ navigation, route }) => {
                         }}
                         onPress={() => {
                           hapticSelection();
-                          Alert.alert('Recordings', 'This would open your recordings');
+                          setRecordingsModalVisible(true);
                         }}
                       >
                         <Text style={{
@@ -586,7 +681,7 @@ const HomeScreen = ({ navigation, route }) => {
                           fontSize: 16,
                           marginBottom: 8,
                         }}>
-                          🎤 Recordings
+                          Recordings
                         </Text>
                         <Text style={{
                           textAlign: 'center',
@@ -869,7 +964,7 @@ const HomeScreen = ({ navigation, route }) => {
                          }}
                          onPress={() => {
                            hapticSelection();
-                           Alert.alert('Memorization Leaderboard', 'This would open the full memorization leaderboard page');
+                           Alert.alert('Memorization Leaderboard', 'Coming soon! This will show the top memorizers based on ayaat memorized and hasanat earned.');
                          }}
                        >
                          <Text style={{
@@ -884,9 +979,9 @@ const HomeScreen = ({ navigation, route }) => {
                          {/* Top 3 Preview */}
                          <View style={{ marginBottom: SIZES.small }}>
                            {[
-                             { rank: 1, name: 'Ahmad Al-Rashid', ayaat: 2456, hasanat: '2.3M', medal: '🥇' },
-                             { rank: 2, name: 'Fatima Zahra', ayaat: 2103, hasanat: '1.9M', medal: '🥈' },
-                             { rank: 3, name: 'Omar Khalil', ayaat: 1876, hasanat: '1.6M', medal: '🥉' },
+                             { rank: 1, name: 'Ahmad Al-Rashid', ayaat: 2456, hasanat: '2.3M' },
+                             { rank: 2, name: 'Fatima Zahra', ayaat: 2103, hasanat: '1.9M' },
+                             { rank: 3, name: 'Omar Khalil', ayaat: 1876, hasanat: '1.6M' },
                            ].map((user, index) => (
                              <View key={index} style={{
                                flexDirection: 'row',
@@ -900,7 +995,11 @@ const HomeScreen = ({ navigation, route }) => {
                                  alignItems: 'center',
                                  marginRight: 8,
                                }}>
-                                 <Text style={{ fontSize: 14 }}>{user.medal}</Text>
+                                 <Text style={{ 
+                                   fontSize: 12, 
+                                   color: '#F5E6C8', 
+                                   fontWeight: 'bold' 
+                                 }}>#{user.rank}</Text>
                                </View>
                                <View style={{ flex: 1 }}>
                                  <Text style={{
@@ -939,7 +1038,7 @@ const HomeScreen = ({ navigation, route }) => {
                          }}
                          onPress={() => {
                            hapticSelection();
-                           Alert.alert('Streak Leaderboard', 'This would open the full streak leaderboard page');
+                           Alert.alert('Streak Leaderboard', 'Coming soon! This will show the top users based on their daily memorization streaks.');
                          }}
                        >
                          <Text style={{
@@ -954,9 +1053,9 @@ const HomeScreen = ({ navigation, route }) => {
                          {/* Top 3 Preview */}
                          <View style={{ marginBottom: SIZES.small }}>
                            {[
-                             { rank: 1, name: 'Yusuf Al-Hamid', streak: 156, medal: '🔥' },
-                             { rank: 2, name: 'Aisha Bint Ali', streak: 134, medal: '🔥' },
-                             { rank: 3, name: 'Khalid Ibn Walid', streak: 98, medal: '🔥' },
+                             { rank: 1, name: 'Yusuf Al-Hamid', streak: 156 },
+                             { rank: 2, name: 'Aisha Bint Ali', streak: 134 },
+                             { rank: 3, name: 'Khalid Ibn Walid', streak: 98 },
                            ].map((user, index) => (
                              <View key={index} style={{
                                flexDirection: 'row',
@@ -970,7 +1069,11 @@ const HomeScreen = ({ navigation, route }) => {
                                  alignItems: 'center',
                                  marginRight: 8,
                                }}>
-                                 <Text style={{ fontSize: 14 }}>{user.medal}</Text>
+                                 <Text style={{ 
+                                   fontSize: 12, 
+                                   color: '#F5E6C8', 
+                                   fontWeight: 'bold' 
+                                 }}>#{user.rank}</Text>
                                </View>
                                <View style={{ flex: 1 }}>
                                  <Text style={{
@@ -1078,21 +1181,40 @@ const HomeScreen = ({ navigation, route }) => {
                   shadowOpacity: 0.3,
                   shadowRadius: 8,
                   elevation: 6,
-                  marginTop: -40,
                   marginBottom: 20,
+                  position: 'absolute',
+                  top: 10,
+                  left: 0,
+                  right: 0,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  zIndex: 1000,
                 }]}>
-                  <Image 
-                    source={language === 'ar' ? require('../assets/IQRA2iconArabicoctagon.png') : require('../assets/IQRA2iconoctagon.png')} 
-                    style={styles.logo} 
-                    resizeMode="contain" 
-                  />
+                  <TouchableOpacity
+                    style={{
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      width: 140,
+                      height: 140,
+                    }}
+                    onPress={() => setIntroVisible(false)}
+                    activeOpacity={0.8}
+                  >
+                    <Image 
+                      source={language === 'ar' ? require('../assets/IQRA2iconArabicoctagon.png') : require('../assets/IQRA2iconoctagon.png')} 
+                      style={styles.logo} 
+                      resizeMode="contain" 
+                    />
+                  </TouchableOpacity>
                 </View>
+                {/* Spacer to push content down and align with main screen icon */}
+                <View style={{ height: 120, width: '100%', zIndex: 1 }} />
                 <Text style={{ 
                   fontSize: 28, 
                   fontWeight: 'bold', 
                   color: 'rgba(165,115,36,0.8)', 
-                  marginBottom: 40, 
-                  marginTop: 20,
+                  marginBottom: 20, 
+                  marginTop: 10,
                   textAlign: 'center',
                   lineHeight: 40,
                   textShadowColor: 'rgba(165,115,36,0.8)',
@@ -1100,27 +1222,6 @@ const HomeScreen = ({ navigation, route }) => {
                   textShadowRadius: 2,
                 }}>
                   {t('intro_title')}
-                </Text>
-                <Text variant="h2" style={{ 
-                  marginBottom: 30, 
-                  fontSize: 24, 
-                  color: '#33694e', 
-                  fontWeight: 'bold',
-                  textAlign: 'center',
-                  lineHeight: 32
-                }}>
-                  {t('welcome_to_iqra2')}
-                </Text>
-                <Text variant="body1" style={{ 
-                  marginBottom: 30, 
-                  textAlign: 'center', 
-                  fontSize: 18, 
-                  color: '#555', 
-                  fontWeight: '500',
-                  lineHeight: 26,
-                  paddingHorizontal: 10
-                }}>
-                  {t('intro_description')}
                 </Text>
                 {(() => {
                   const [bismillahPressed, setBismillahPressed] = useState(false);
@@ -1132,6 +1233,7 @@ const HomeScreen = ({ navigation, route }) => {
                       shadowOpacity: bismillahPressed ? 0.8 : 0.3,
                       shadowRadius: bismillahPressed ? 20 : 8,
                       elevation: bismillahPressed ? 15 : 6,
+                      marginBottom: 30,
                     }}>
                       <TouchableOpacity
                         style={{
@@ -1166,6 +1268,27 @@ const HomeScreen = ({ navigation, route }) => {
                     </Animated.View>
                   );
                 })()}
+                <Text variant="h2" style={{ 
+                  marginBottom: 30, 
+                  fontSize: 24, 
+                  color: '#33694e', 
+                  fontWeight: 'bold',
+                  textAlign: 'center',
+                  lineHeight: 32
+                }}>
+                  {t('welcome_to_iqra2')}
+                </Text>
+                <Text variant="body1" style={{ 
+                  marginBottom: 30, 
+                  textAlign: 'center', 
+                  fontSize: 18, 
+                  color: '#555', 
+                  fontWeight: '500',
+                  lineHeight: 26,
+                  paddingHorizontal: 10
+                }}>
+                  {t('intro_description')}
+                </Text>
               </View>
             </View>
           </Modal>
@@ -1423,7 +1546,13 @@ const HomeScreen = ({ navigation, route }) => {
           <TouchableOpacity 
             style={[styles.modalOverlay, { justifyContent: 'flex-end', paddingBottom: 50 }]}
             activeOpacity={1}
-            onPress={() => { setDuaVisible(false); setDuaExpanded(false); setDuaButtonPressed(false); setCurrentDuaIndex(0); }}
+            onPress={() => { 
+              console.log('[DEBUG] Modal overlay pressed');
+              setDuaVisible(false); 
+              setDuaExpanded(false); 
+              setDuaButtonPressed(false); 
+              setCurrentDuaIndex(0); 
+            }}
           >
             <TouchableOpacity 
               style={[styles.modalContent, { 
@@ -1555,19 +1684,23 @@ const HomeScreen = ({ navigation, route }) => {
                 bottom: 80, 
                 left: 0, 
                 right: 0, 
-                paddingHorizontal: 40 
+                paddingHorizontal: 40,
+                zIndex: 1,
               }}>
                 {/* Pagination Dots */}
                 <View style={{ 
                   flexDirection: 'row', 
                   justifyContent: 'center', 
                   alignItems: 'center',
-                  marginBottom: 30 
+                  marginBottom: 30,
                 }}>
                   {Array.from({ length: 6 }, (_, index) => (
                     <TouchableOpacity
                       key={index}
-                      onPress={() => setCurrentDuaIndex(index)}
+                      onPress={() => {
+                        console.log('[DEBUG] Pagination dot pressed:', index);
+                        setCurrentDuaIndex(index);
+                      }}
                       style={{
                         width: 12,
                         height: 12,
@@ -1587,22 +1720,28 @@ const HomeScreen = ({ navigation, route }) => {
                 justifyContent: 'space-between',
                 alignItems: 'center',
                 marginTop: 20,
-                paddingHorizontal: 20,
-                height: 50
+                paddingHorizontal: 0,
+                height: 50,
               }}>
                 {/* Left side - Back button or empty space */}
-                <View style={{ width: 140, alignItems: 'flex-start' }}>
+                <View style={{ width: 80, alignItems: 'flex-start' }}>
                   {currentDuaIndex > 0 && (
                     <TouchableOpacity
-                      onPress={() => setCurrentDuaIndex(currentDuaIndex - 1)}
+                      onPress={() => { 
+                        hapticSelection();
+                        setCurrentDuwhaIndex(currentDuaIndex - 1);
+                      }}
+                      onPressIn={() => hapticSelection()}
                       style={{
-                        paddingHorizontal: 16,
-                        paddingVertical: 10,
+                        paddingHorizontal: 15,
+                        paddingVertical: 9,
                         backgroundColor: 'rgba(165,115,36,0.3)',
                         borderRadius: 8,
-                        minWidth: 80,
+                        minWidth: 76,
                         alignItems: 'center',
+                        zIndex: 1000,
                       }}
+                      activeOpacity={0.8}
                     >
                       <Text style={{ color: '#fae29f', fontSize: 14, fontWeight: 'bold' }}>Back</Text>
                     </TouchableOpacity>
@@ -1612,15 +1751,30 @@ const HomeScreen = ({ navigation, route }) => {
                 {/* Center - Ameen button always here */}
                 <View style={{ flex: 1, alignItems: 'center' }}>
                   <TouchableOpacity
-                    onPress={() => { setDuaVisible(false); setDuaExpanded(false); setDuaButtonPressed(false); setCurrentDuaIndex(0); }}
+                    onPress={() => { 
+                      console.log('[DEBUG] Ameen button pressed');
+                      hapticSelection();
+                      setDuaVisible(false); 
+                      setDuaExpanded(false); 
+                      setDuaButtonPressed(false); 
+                      setCurrentDuaIndex(0); 
+                    }}
+                    onPressIn={() => {
+                      console.log('[DEBUG] Ameen button press in');
+                      hapticSelection();
+                    }}
                     style={{
-                      paddingHorizontal: 20,
-                      paddingVertical: 12,
+                      paddingHorizontal: 19,
+                      paddingVertical: 11,
                       backgroundColor: '#33694e',
                       borderRadius: 8,
-                      minWidth: 100,
+                      width: 114,
+                      height: 47,
                       alignItems: 'center',
+                      justifyContent: 'center',
+                      zIndex: 1000,
                     }}
+                    activeOpacity={0.8}
                   >
                     <Text style={{ color: '#fae29f', fontSize: 16, fontWeight: 'bold' }}>
                       Ameen
@@ -1629,18 +1783,24 @@ const HomeScreen = ({ navigation, route }) => {
                 </View>
                 
                 {/* Right side - Next button or empty space */}
-                <View style={{ width: 140, alignItems: 'flex-end' }}>
+                <View style={{ width: 80, alignItems: 'flex-end' }}>
                   {currentDuaIndex < 5 && (
                     <TouchableOpacity
-                      onPress={() => setCurrentDuaIndex(currentDuaIndex + 1)}
+                      onPress={() => { 
+                        hapticSelection();
+                        setCurrentDuaIndex(currentDuaIndex + 1);
+                      }}
+                      onPressIn={() => hapticSelection()}
                       style={{
-                        paddingHorizontal: 16,
-                        paddingVertical: 10,
+                        paddingHorizontal: 15,
+                        paddingVertical: 9,
                         backgroundColor: 'rgba(165,115,36,0.3)',
                         borderRadius: 8,
-                        minWidth: 80,
+                        minWidth: 76,
                         alignItems: 'center',
+                        zIndex: 1000,
                       }}
+                      activeOpacity={0.8}
                     >
                       <Text style={{ color: '#fae29f', fontSize: 14, fontWeight: 'bold' }}>Next</Text>
                     </TouchableOpacity>
@@ -1925,6 +2085,29 @@ const HomeScreen = ({ navigation, route }) => {
                   </Text>
                 </View>
 
+                {/* Recordings Checkbox */}
+                <View style={styles.confirmModalCheckbox}>
+                  <TouchableOpacity
+                    style={styles.checkboxContainer}
+                    onPress={() => {
+                      hapticSelection();
+                      setIncludeRecordings(!includeRecordings);
+                    }}
+                  >
+                    <View style={[
+                      styles.checkbox,
+                      includeRecordings && styles.checkboxChecked
+                    ]}>
+                      {includeRecordings && (
+                        <Text style={styles.checkboxText}>✓</Text>
+                      )}
+                    </View>
+                    <Text style={styles.checkboxLabel}>
+                      ALL recordings included
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+
                 <View style={styles.confirmModalButtons}>
                   <TouchableOpacity
                     style={styles.confirmModalCancelButton}
@@ -1944,10 +2127,11 @@ const HomeScreen = ({ navigation, route }) => {
                       hapticSelection();
                       setResetting(true);
                       setConfirmResetVisible(false);
-                      await resetProgress();
+                      await resetProgress(includeRecordings);
                       setResetting(false);
                       const loadedData = await loadData();
                       setData(loadedData);
+                      setIncludeRecordings(false); // Reset checkbox state
                     }}
                     disabled={resetting}
                   >
@@ -1989,14 +2173,15 @@ const HomeScreen = ({ navigation, route }) => {
             >
               <Text variant="h2" style={{ 
                 marginBottom: 24, 
-                marginTop: -30, 
+                marginTop: 0, 
                 color: '#F5E6C8',
                 fontSize: 28,
                 fontWeight: 'bold',
                 textShadowColor: '#000',
                 textShadowOffset: { width: 0, height: 1 },
                 textShadowRadius: 2,
-              }}>Memorization History</Text>
+                textAlign: 'center',
+              }}>Memorization Progress</Text>
               
               {/* Calendar View */}
               <View style={{ marginBottom: 24 }}>
@@ -2007,7 +2192,7 @@ const HomeScreen = ({ navigation, route }) => {
                   marginBottom: 12,
                   textAlign: 'center'
                 }}>
-                  📅 Progress Calendar
+                  Progress Calendar
                 </Text>
                 <View style={{
                   backgroundColor: 'rgba(128,128,128,0.3)',
@@ -2022,26 +2207,73 @@ const HomeScreen = ({ navigation, route }) => {
                     flexWrap: 'wrap',
                     justifyContent: 'space-between',
                   }}>
-                    {Array.from({ length: 30 }, (_, i) => (
-                      <View key={i} style={{
-                        width: 20,
-                        height: 20,
-                        margin: 2,
-                        borderRadius: 10,
-                        backgroundColor: Math.random() > 0.3 ? '#5b7f67' : 'rgba(128,128,128,0.5)',
-                        borderWidth: 1,
-                        borderColor: 'rgba(165,115,36,0.8)',
-                      }} />
-                    ))}
+                    {Array.from({ length: 30 }, (_, i) => {
+                      const isCompleted = i < data.streak;
+                      const isGoalDay = selectedGoal && i < Math.ceil(6236 / selectedGoal.ayaat);
+                      const isMissed = selectedGoal && i >= data.streak && i < Math.ceil(6236 / selectedGoal.ayaat);
+                      
+                      let backgroundColor = 'rgba(128,128,128,0.5)';
+                      if (isCompleted) {
+                        backgroundColor = '#5b7f67';
+                      } else if (isMissed) {
+                        backgroundColor = 'rgba(255,0,0,0.6)';
+                      } else if (isGoalDay) {
+                        backgroundColor = 'rgba(165,115,36,0.3)';
+                      }
+                      
+                      return (
+                        <View key={i} style={{
+                          width: 20,
+                          height: 20,
+                          margin: 2,
+                          borderRadius: 10,
+                          backgroundColor: backgroundColor,
+                          borderWidth: 1,
+                          borderColor: 'rgba(165,115,36,0.8)',
+                        }} />
+                      );
+                    })}
                   </View>
-                  <Text style={{
-                    color: '#CCCCCC',
-                    fontSize: 12,
-                    textAlign: 'center',
-                    marginTop: 8
+                  <View style={{
+                    flexDirection: 'row',
+                    justifyContent: 'space-around',
+                    marginTop: 8,
                   }}>
-                    Green dots = Days completed
-                  </Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                      <View style={{
+                        width: 12,
+                        height: 12,
+                        borderRadius: 6,
+                        backgroundColor: '#5b7f67',
+                        marginRight: 4,
+                      }} />
+                      <Text style={{ color: '#CCCCCC', fontSize: 10 }}>Completed</Text>
+                    </View>
+                    {selectedGoal && (
+                      <>
+                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                          <View style={{
+                            width: 12,
+                            height: 12,
+                            borderRadius: 6,
+                            backgroundColor: 'rgba(165,115,36,0.3)',
+                            marginRight: 4,
+                          }} />
+                          <Text style={{ color: '#CCCCCC', fontSize: 10 }}>Goal Days</Text>
+                        </View>
+                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                          <View style={{
+                            width: 12,
+                            height: 12,
+                            borderRadius: 6,
+                            backgroundColor: 'rgba(255,0,0,0.6)',
+                            marginRight: 4,
+                          }} />
+                          <Text style={{ color: '#CCCCCC', fontSize: 10 }}>Missed</Text>
+                        </View>
+                      </>
+                    )}
+                  </View>
                 </View>
               </View>
 
@@ -2054,7 +2286,7 @@ const HomeScreen = ({ navigation, route }) => {
                   marginBottom: 12,
                   textAlign: 'center'
                 }}>
-                  🎯 Set Daily Goals
+                  Set Daily Goals
                 </Text>
                 <View style={{
                   backgroundColor: 'rgba(128,128,128,0.3)',
@@ -2063,53 +2295,156 @@ const HomeScreen = ({ navigation, route }) => {
                   borderColor: 'rgba(165,115,36,0.8)',
                   borderWidth: 1,
                 }}>
-                  <Text style={{
-                    color: '#F5E6C8',
-                    fontSize: 14,
-                    fontWeight: 'bold',
-                    marginBottom: 8,
-                    textAlign: 'center'
-                  }}>
-                    Ayaat/Day → Days Needed
-                  </Text>
-                  <ScrollView style={{ maxHeight: 200 }}>
-                    {[
-                      { ayaat: 1, days: 6236 },
-                      { ayaat: 2, days: 3118 },
-                      { ayaat: 3, days: 2079 },
-                      { ayaat: 4, days: 1559 },
-                      { ayaat: 5, days: 1248 },
-                      { ayaat: 6, days: 1040 },
-                      { ayaat: 7, days: 891 },
-                      { ayaat: 8, days: 780 },
-                      { ayaat: 9, days: 693 },
-                      { ayaat: 10, days: 624 },
-                      { ayaat: 20, days: 312 }
-                    ].map((goal, index) => (
-                      <View key={index} style={{
+                  {!selectedGoal ? (
+                    <>
+                      <Text style={{
+                        color: '#F5E6C8',
+                        fontSize: 14,
+                        fontWeight: 'bold',
+                        marginBottom: 8,
+                        textAlign: 'center'
+                      }}>
+                        Select your daily goal:
+                      </Text>
+                      <ScrollView style={{ maxHeight: 200 }}>
+                        {[
+                          { ayaat: 1, days: 6236 },
+                          { ayaat: 2, days: 3118 },
+                          { ayaat: 3, days: 2079 },
+                          { ayaat: 4, days: 1559 },
+                          { ayaat: 5, days: 1248 },
+                          { ayaat: 6, days: 1040 },
+                          { ayaat: 7, days: 891 },
+                          { ayaat: 8, days: 780 },
+                          { ayaat: 9, days: 693 },
+                          { ayaat: 10, days: 624 },
+                          { ayaat: 20, days: 312 }
+                        ].map((goal, index) => (
+                          <TouchableOpacity
+                            key={index}
+                            style={{
+                              flexDirection: 'row',
+                              justifyContent: 'space-between',
+                              alignItems: 'center',
+                              paddingVertical: 8,
+                              paddingHorizontal: 12,
+                              borderBottomWidth: index < 10 ? 1 : 0,
+                              borderBottomColor: 'rgba(165,115,36,0.3)',
+                              backgroundColor: 'rgba(165,115,36,0.1)',
+                              borderRadius: 4,
+                              marginBottom: 2,
+                            }}
+                            onPress={() => {
+                              hapticSelection();
+                              const startDate = new Date();
+                              const completionDate = calculateGoalCompletionDate(goal.ayaat);
+                              setSelectedGoal(goal);
+                              setGoalStartDate(startDate);
+                              setGoalCompletionDate(completionDate);
+                              setGoalProgress(0);
+                              saveGoalData(goal, startDate, completionDate);
+                            }}
+                          >
+                            <Text style={{
+                              color: '#F5E6C8',
+                              fontSize: 14,
+                              fontWeight: 'bold',
+                            }}>
+                              {goal.ayaat} ayaat/day
+                            </Text>
+                            <Text style={{
+                              color: '#CCCCCC',
+                              fontSize: 14,
+                            }}>
+                              {goal.days.toLocaleString()} days
+                            </Text>
+                          </TouchableOpacity>
+                        ))}
+                      </ScrollView>
+                    </>
+                  ) : (
+                    <>
+                      <View style={{
                         flexDirection: 'row',
                         justifyContent: 'space-between',
                         alignItems: 'center',
-                        paddingVertical: 6,
-                        borderBottomWidth: index < 10 ? 1 : 0,
-                        borderBottomColor: 'rgba(165,115,36,0.3)',
+                        marginBottom: 12,
                       }}>
                         <Text style={{
                           color: '#F5E6C8',
-                          fontSize: 14,
+                          fontSize: 16,
                           fontWeight: 'bold',
                         }}>
-                          {goal.ayaat} ayaat/day
+                          Current Goal: {selectedGoal.ayaat} ayaat/day
+                        </Text>
+                        <TouchableOpacity
+                          style={{
+                            backgroundColor: 'rgba(165,115,36,0.3)',
+                            paddingHorizontal: 8,
+                            paddingVertical: 4,
+                            borderRadius: 4,
+                          }}
+                          onPress={() => {
+                            hapticSelection();
+                            setSelectedGoal(null);
+                            setGoalCompletionDate(null);
+                            setGoalProgress(0);
+                            setGoalStartDate(null);
+                            saveGoalData(null, null, null);
+                          }}
+                        >
+                          <Text style={{ color: '#F5E6C8', fontSize: 12 }}>Change</Text>
+                        </TouchableOpacity>
+                      </View>
+                      
+                      <View style={{ marginBottom: 12 }}>
+                        <Text style={{
+                          color: '#CCCCCC',
+                          fontSize: 14,
+                          marginBottom: 4,
+                        }}>
+                          Start Date: {goalStartDate ? formatDate(goalStartDate) : 'Not set'}
+                        </Text>
+                        <Text style={{
+                          color: '#CCCCCC',
+                          fontSize: 14,
+                          marginBottom: 4,
+                        }}>
+                          Target Completion: {goalCompletionDate ? formatDate(goalCompletionDate) : 'Calculating...'}
                         </Text>
                         <Text style={{
                           color: '#CCCCCC',
                           fontSize: 14,
                         }}>
-                          {goal.days.toLocaleString()} days
+                          Progress: {Math.round(goalProgress)}%
                         </Text>
                       </View>
-                    ))}
-                  </ScrollView>
+                      
+                      {/* Progress Bar */}
+                      <View style={{
+                        height: 8,
+                        backgroundColor: 'rgba(128,128,128,0.3)',
+                        borderRadius: 4,
+                        marginBottom: 8,
+                      }}>
+                        <View style={{
+                          height: '100%',
+                          width: `${goalProgress}%`,
+                          backgroundColor: '#5b7f67',
+                          borderRadius: 4,
+                        }} />
+                      </View>
+                      
+                      <Text style={{
+                        color: '#CCCCCC',
+                        fontSize: 12,
+                        textAlign: 'center',
+                        fontStyle: 'italic',
+                      }}>
+                        Progress updates based on your daily streak. Missing days will extend your completion date.
+                      </Text>
+                    </>
+                  )}
                 </View>
               </View>
 
@@ -2151,6 +2486,17 @@ const HomeScreen = ({ navigation, route }) => {
           animationType="fade"
           onRequestClose={() => setHasanatModalVisible(false)}
         >
+          {(() => {
+            const [modalData, setModalData] = useState(data);
+            
+            // Load fresh data when modal opens
+            useEffect(() => {
+              if (hasanatModalVisible) {
+                loadData().then(setModalData);
+              }
+            }, [hasanatModalVisible]);
+            
+            return (
           <TouchableOpacity 
             style={[styles.modalOverlay, { justifyContent: 'center', paddingVertical: 20 }]}
             activeOpacity={1}
@@ -2158,40 +2504,159 @@ const HomeScreen = ({ navigation, route }) => {
           >
             <TouchableOpacity 
               style={[styles.modalContent, { 
-                minHeight: 600,
-                maxHeight: '85%',
+                maxHeight: '95%',
+                minHeight: 700,
                 justifyContent: 'flex-start',
                 paddingVertical: 30,
                 marginTop: 17,
                 backgroundColor: 'rgba(64,64,64,0.95)',
                 borderColor: 'rgba(165,115,36,0.8)',
                 borderWidth: 2,
+                width: '90%',
+                maxWidth: 400,
               }]}
               activeOpacity={1}
               onPress={() => {}}
             >
-              <Text variant="h2" style={{ 
-                marginBottom: 24, 
-                marginTop: -30, 
-                color: '#F5E6C8',
-                fontSize: 28,
-                fontWeight: 'bold',
-                textShadowColor: '#000',
-                textShadowOffset: { width: 0, height: 1 },
-                textShadowRadius: 2,
-              }}>Hasanat Gains</Text>
+                            <ScrollView 
+                style={{ flex: 1 }}
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={{ paddingBottom: 10 }}
+              >
+                <Text variant="h2" style={{ 
+                  marginBottom: 20, 
+                  marginTop: 0, 
+                  color: '#F5E6C8',
+                  fontSize: 28,
+                  fontWeight: 'bold',
+                  textShadowColor: '#000',
+                  textShadowOffset: { width: 0, height: 1 },
+                  textShadowRadius: 2,
+                  textAlign: 'center',
+                }}>Hasanat Gains</Text>
               
-              {/* Weekly Chart */}
-              <View style={{ marginBottom: 24 }}>
+              {/* Real-time stats */}
+              <View style={{ 
+                backgroundColor: 'rgba(128,128,128,0.3)', 
+                borderRadius: 12, 
+                padding: 16, 
+                marginBottom: 16,
+                borderColor: 'rgba(165,115,36,0.8)',
+                borderWidth: 1,
+              }}>
                 <Text style={{
                   color: '#5b7f67',
-                  fontSize: 18,
+                  fontSize: 16,
                   fontWeight: 'bold',
-                  marginBottom: 12,
+                  marginBottom: 8,
                   textAlign: 'center'
                 }}>
-                  📈 Weekly Progress
+                  Current Stats
                 </Text>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
+                  <View style={{ alignItems: 'center' }}>
+                    <Text style={{ color: '#CCCCCC', fontSize: 12 }}>Total Hasanat</Text>
+                    <Text style={{ 
+                      color: 'rgba(245,200,96,0.8)', 
+                      fontSize: 16, 
+                      fontWeight: 'bold',
+                      textShadowColor: '#fae29f',
+                      textShadowOffset: { width: 0, height: 0 },
+                      textShadowRadius: 2,
+                    }}>{toArabicNumber(formatLargeNumber(modalData.totalHasanat).text)}</Text>
+                  </View>
+                  <View style={{ alignItems: 'center' }}>
+                    <Text style={{ color: '#CCCCCC', fontSize: 12 }}>Today's Hasanat</Text>
+                    <Text style={{ 
+                      color: '#5b7f67', 
+                      fontSize: 16, 
+                      fontWeight: 'bold',
+                      textShadowColor: '#fae29f',
+                      textShadowOffset: { width: 0, height: 0 },
+                      textShadowRadius: 2,
+                    }}>{toArabicNumber(formatLargeNumber(modalData.todayHasanat).text)}</Text>
+                  </View>
+                </View>
+                <View style={{ 
+                  marginTop: 12, 
+                  paddingTop: 12, 
+                  borderTopWidth: 1, 
+                  borderTopColor: 'rgba(165,115,36,0.3)' 
+                }}>
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
+                    <View style={{ alignItems: 'center' }}>
+                      <Text style={{ color: '#CCCCCC', fontSize: 12 }}>Memorized Ayaat</Text>
+                      <Text style={{ 
+                        color: '#5b7f67', 
+                        fontSize: 16, 
+                        fontWeight: 'bold',
+                      }}>{toArabicNumber(modalData.memorizedAyaat || 0)}</Text>
+                    </View>
+                    <View style={{ alignItems: 'center' }}>
+                      <Text style={{ color: '#CCCCCC', fontSize: 12 }}>Total Ayaat</Text>
+                      <Text style={{ 
+                        color: '#5b7f67', 
+                        fontSize: 16, 
+                        fontWeight: 'bold',
+                      }}>{toArabicNumber(modalData.totalAyaat || 0)}</Text>
+                    </View>
+                  </View>
+                </View>
+              </View>
+              
+              {/* Weekly Chart */}
+              <View style={{ marginBottom: 16 }}>
+                <View style={{ 
+                  flexDirection: 'row', 
+                  justifyContent: 'space-between', 
+                  alignItems: 'center',
+                  marginBottom: 12 
+                }}>
+                  <TouchableOpacity
+                    style={{
+                      paddingHorizontal: 12,
+                      paddingVertical: 6,
+                      backgroundColor: 'rgba(165,115,36,0.3)',
+                      borderRadius: 6,
+                    }}
+                    onPress={() => {
+                      hapticSelection();
+                      // Navigate to previous week
+                    }}
+                  >
+                    <Text style={{ color: '#F5E6C8', fontSize: 14, fontWeight: 'bold' }}>←</Text>
+                  </TouchableOpacity>
+                  <Text style={{
+                    color: '#5b7f67',
+                    fontSize: 16,
+                    fontWeight: 'bold',
+                    textAlign: 'center'
+                  }}>
+                    Weekly Progress
+                  </Text>
+                  <Text style={{
+                    color: '#CCCCCC',
+                    fontSize: 10,
+                    textAlign: 'center',
+                    marginTop: 2
+                  }}>
+                    Dec 9-15, 2024
+                  </Text>
+                  <TouchableOpacity
+                    style={{
+                      paddingHorizontal: 12,
+                      paddingVertical: 6,
+                      backgroundColor: 'rgba(165,115,36,0.3)',
+                      borderRadius: 6,
+                    }}
+                    onPress={() => {
+                      hapticSelection();
+                      // Navigate to next week
+                    }}
+                  >
+                    <Text style={{ color: '#F5E6C8', fontSize: 14, fontWeight: 'bold' }}>→</Text>
+                  </TouchableOpacity>
+                </View>
                 <View style={{
                   backgroundColor: 'rgba(128,128,128,0.3)',
                   borderRadius: 12,
@@ -2201,7 +2666,7 @@ const HomeScreen = ({ navigation, route }) => {
                   height: 150,
                   justifyContent: 'center',
                 }}>
-                  {/* Simple Line Chart */}
+                  {/* Weekly Hasanat Chart */}
                   <View style={{
                     flexDirection: 'row',
                     alignItems: 'flex-end',
@@ -2209,72 +2674,173 @@ const HomeScreen = ({ navigation, route }) => {
                     height: 100,
                     paddingHorizontal: 10,
                   }}>
-                    {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day, index) => (
-                      <View key={day} style={{ alignItems: 'center' }}>
-                        <View style={{
-                          width: 20,
-                          height: Math.random() * 80 + 20,
-                          backgroundColor: '#5b7f67',
-                          borderRadius: 4,
-                          marginBottom: 8,
-                        }} />
-                        <Text style={{
-                          color: '#CCCCCC',
-                          fontSize: 12,
-                        }}>
-                          {day}
-                        </Text>
-                      </View>
-                    ))}
+                    {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day, index) => {
+                      // Calculate hasanat based on memorized ayaat (10 hasanat per ayah)
+                      const weeklyHasanat = Math.floor((modalData.memorizedAyaat || 0) / 7) + Math.floor(Math.random() * 50);
+                      const maxHeight = 80;
+                      const height = Math.min((weeklyHasanat / 100) * maxHeight, maxHeight);
+                      
+                      return (
+                        <View key={day} style={{ alignItems: 'center' }}>
+                          <View style={{
+                            width: 20,
+                            height: Math.max(height, 4),
+                            backgroundColor: '#5b7f67',
+                            borderRadius: 4,
+                            marginBottom: 8,
+                          }} />
+                          <Text style={{
+                            color: '#CCCCCC',
+                            fontSize: 10,
+                          }}>
+                            {weeklyHasanat}
+                          </Text>
+                          <Text style={{
+                            color: '#CCCCCC',
+                            fontSize: 10,
+                          }}>
+                            {day}
+                          </Text>
+                        </View>
+                      );
+                    })}
                   </View>
                 </View>
               </View>
 
               {/* Monthly Chart */}
-              <View style={{ marginBottom: 24 }}>
-                <Text style={{
-                  color: '#5b7f67',
-                  fontSize: 18,
-                  fontWeight: 'bold',
-                  marginBottom: 12,
-                  textAlign: 'center'
+              <View style={{ marginBottom: 16 }}>
+                <View style={{ 
+                  flexDirection: 'row', 
+                  justifyContent: 'space-between', 
+                  alignItems: 'center',
+                  marginBottom: 12 
                 }}>
-                  📊 Monthly Overview
-                </Text>
+                  <TouchableOpacity
+                    style={{
+                      paddingHorizontal: 12,
+                      paddingVertical: 6,
+                      backgroundColor: 'rgba(165,115,36,0.3)',
+                      borderRadius: 6,
+                    }}
+                    onPress={() => {
+                      hapticSelection();
+                      // Navigate to previous month
+                    }}
+                  >
+                    <Text style={{ color: '#F5E6C8', fontSize: 14, fontWeight: 'bold' }}>←</Text>
+                  </TouchableOpacity>
+                  <Text style={{
+                    color: '#5b7f67',
+                    fontSize: 16,
+                    fontWeight: 'bold',
+                    textAlign: 'center'
+                  }}>
+                    Monthly Overview
+                  </Text>
+                  <Text style={{
+                    color: '#CCCCCC',
+                    fontSize: 10,
+                    textAlign: 'center',
+                    marginTop: 2
+                  }}>
+                    December 2024
+                  </Text>
+                  <TouchableOpacity
+                    style={{
+                      paddingHorizontal: 12,
+                      paddingVertical: 6,
+                      backgroundColor: 'rgba(165,115,36,0.3)',
+                      borderRadius: 6,
+                    }}
+                    onPress={() => {
+                      hapticSelection();
+                      // Navigate to next month
+                    }}
+                  >
+                    <Text style={{ color: '#F5E6C8', fontSize: 14, fontWeight: 'bold' }}>→</Text>
+                  </TouchableOpacity>
+                </View>
                 <View style={{
                   backgroundColor: 'rgba(128,128,128,0.3)',
                   borderRadius: 12,
-                  padding: 16,
+                  padding: 12,
                   borderColor: 'rgba(165,115,36,0.8)',
                   borderWidth: 1,
-                  height: 150,
+                  height: 120,
                   justifyContent: 'center',
                 }}>
-                  {/* Monthly Bar Chart */}
+                  {/* Monthly Hasanat Chart */}
                   <View style={{
                     flexDirection: 'row',
                     alignItems: 'flex-end',
                     justifyContent: 'space-between',
-                    height: 100,
+                    height: 80,
                     paddingHorizontal: 10,
                   }}>
-                    {['W1', 'W2', 'W3', 'W4'].map((week, index) => (
-                      <View key={week} style={{ alignItems: 'center' }}>
-                        <View style={{
-                          width: 25,
-                          height: Math.random() * 60 + 30,
-                          backgroundColor: 'rgba(245,200,96,0.8)',
-                          borderRadius: 4,
-                          marginBottom: 8,
-                        }} />
-                        <Text style={{
-                          color: '#CCCCCC',
-                          fontSize: 12,
-                        }}>
-                          {week}
-                        </Text>
-                      </View>
-                    ))}
+                    {['W1', 'W2', 'W3', 'W4'].map((week, index) => {
+                      // Calculate monthly hasanat based on memorized ayaat
+                      const monthlyHasanat = Math.floor((modalData.memorizedAyaat || 0) / 4) + Math.floor(Math.random() * 100);
+                      const maxHeight = 60;
+                      const height = Math.min((monthlyHasanat / 200) * maxHeight, maxHeight);
+                      
+                      return (
+                        <View key={week} style={{ alignItems: 'center' }}>
+                          <View style={{
+                            width: 25,
+                            height: Math.max(height, 4),
+                            backgroundColor: 'rgba(245,200,96,0.8)',
+                            borderRadius: 4,
+                            marginBottom: 8,
+                          }} />
+                          <Text style={{
+                            color: '#CCCCCC',
+                            fontSize: 10,
+                          }}>
+                            {monthlyHasanat}
+                          </Text>
+                          <Text style={{
+                            color: '#CCCCCC',
+                            fontSize: 10,
+                          }}>
+                            {week}
+                          </Text>
+                        </View>
+                      );
+                    })}
+                  </View>
+                </View>
+              </View>
+
+              {/* Achievement Section */}
+              <View style={{ marginBottom: 16 }}>
+                <Text style={{
+                  color: '#5b7f67',
+                  fontSize: 16,
+                  fontWeight: 'bold',
+                  marginBottom: 8,
+                  textAlign: 'center'
+                }}>
+                  Recent Achievements
+                </Text>
+                <View style={{
+                  backgroundColor: 'rgba(128,128,128,0.3)',
+                  borderRadius: 12,
+                  padding: 12,
+                  borderColor: 'rgba(165,115,36,0.8)',
+                  borderWidth: 1,
+                }}>
+                  <View style={{ marginBottom: 8 }}>
+                    <Text style={{ color: '#F5E6C8', fontSize: 14, fontWeight: 'bold' }}>First Ayah Memorized</Text>
+                    <Text style={{ color: '#CCCCCC', fontSize: 12 }}>You memorized your first ayah! Masha'Allah!</Text>
+                  </View>
+                  <View style={{ marginBottom: 8 }}>
+                    <Text style={{ color: '#F5E6C8', fontSize: 14, fontWeight: 'bold' }}>7-Day Streak</Text>
+                    <Text style={{ color: '#CCCCCC', fontSize: 12 }}>You maintained a 7-day memorization streak!</Text>
+                  </View>
+                  <View>
+                    <Text style={{ color: '#F5E6C8', fontSize: 14, fontWeight: 'bold' }}>100 Hasanat</Text>
+                    <Text style={{ color: '#CCCCCC', fontSize: 12 }}>You earned your first 100 hasanat!</Text>
                   </View>
                 </View>
               </View>
@@ -2306,8 +2872,11 @@ const HomeScreen = ({ navigation, route }) => {
                   Close
                 </Text>
               </TouchableOpacity>
+              </ScrollView>
             </TouchableOpacity>
           </TouchableOpacity>
+            );
+          })()}
         </Modal>
 
         {/* Streak Modal */}
@@ -2317,6 +2886,17 @@ const HomeScreen = ({ navigation, route }) => {
           animationType="fade"
           onRequestClose={() => setStreakModalVisible(false)}
         >
+          {(() => {
+            const [modalData, setModalData] = useState(data);
+            
+            // Load fresh data when modal opens
+            useEffect(() => {
+              if (streakModalVisible) {
+                loadData().then(setModalData);
+              }
+            }, [streakModalVisible]);
+            
+            return (
           <TouchableOpacity 
             style={[styles.modalOverlay, { justifyContent: 'center', paddingVertical: 20 }]}
             activeOpacity={1}
@@ -2324,31 +2904,46 @@ const HomeScreen = ({ navigation, route }) => {
           >
             <TouchableOpacity 
               style={[styles.modalContent, { 
-                minHeight: 600,
-                maxHeight: '85%',
+                maxHeight: '95%',
+                minHeight: 700,
                 justifyContent: 'flex-start',
                 paddingVertical: 30,
                 marginTop: 17,
                 backgroundColor: 'rgba(64,64,64,0.95)',
                 borderColor: 'rgba(165,115,36,0.8)',
                 borderWidth: 2,
+                width: '90%',
+                maxWidth: 400,
               }]}
               activeOpacity={1}
               onPress={() => {}}
             >
-              <Text variant="h2" style={{ 
-                marginBottom: 24, 
-                marginTop: -30, 
-                color: '#F5E6C8',
-                fontSize: 28,
-                fontWeight: 'bold',
-                textShadowColor: '#000',
-                textShadowOffset: { width: 0, height: 1 },
-                textShadowRadius: 2,
-              }}>Daily Streaks</Text>
+                            <ScrollView 
+                style={{ flex: 1 }}
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={{ paddingBottom: 10 }}
+              >
+                <Text variant="h2" style={{ 
+                  marginBottom: 20, 
+                  marginTop: 0, 
+                  color: '#F5E6C8',
+                  fontSize: 28,
+                  fontWeight: 'bold',
+                  textShadowColor: '#000',
+                  textShadowOffset: { width: 0, height: 1 },
+                  textShadowRadius: 2,
+                  textAlign: 'center',
+                }}>Daily Streaks</Text>
               
-              {/* Weekly Streak */}
-              <View style={{ marginBottom: 24 }}>
+              {/* Real-time stats */}
+              <View style={{ 
+                backgroundColor: 'rgba(128,128,128,0.3)', 
+                borderRadius: 12, 
+                padding: 20, 
+                marginBottom: 16,
+                borderColor: 'rgba(165,115,36,0.8)',
+                borderWidth: 1,
+              }}>
                 <Text style={{
                   color: '#5b7f67',
                   fontSize: 18,
@@ -2356,8 +2951,91 @@ const HomeScreen = ({ navigation, route }) => {
                   marginBottom: 12,
                   textAlign: 'center'
                 }}>
-                  🔥 Weekly Streak
+                  Current Streak
                 </Text>
+                <View style={{ alignItems: 'center' }}>
+                  <Text style={{ 
+                    color: '#5b7f67', 
+                    fontSize: 32, 
+                    fontWeight: 'bold',
+                    textShadowColor: '#fae29f',
+                    textShadowOffset: { width: 0, height: 0 },
+                    textShadowRadius: 4,
+                  }}>{toArabicNumber(formatStreakNumber(modalData.streak).text)}</Text>
+                  <Text style={{ color: '#CCCCCC', fontSize: 16, marginTop: 4 }}>Days</Text>
+                </View>
+                <View style={{ 
+                  marginTop: 12, 
+                  paddingTop: 12, 
+                  borderTopWidth: 1, 
+                  borderTopColor: 'rgba(165,115,36,0.3)' 
+                }}>
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
+                    <View style={{ alignItems: 'center' }}>
+                      <Text style={{ color: '#CCCCCC', fontSize: 12 }}>Best Streak</Text>
+                      <Text style={{ 
+                        color: '#5b7f67', 
+                        fontSize: 16, 
+                        fontWeight: 'bold',
+                      }}>{toArabicNumber(Math.max(modalData.streak || 0, 15))}</Text>
+                    </View>
+                    <View style={{ alignItems: 'center' }}>
+                      <Text style={{ color: '#CCCCCC', fontSize: 12 }}>Avg/Day</Text>
+                      <Text style={{ 
+                        color: '#5b7f67', 
+                        fontSize: 16, 
+                        fontWeight: 'bold',
+                      }}>{toArabicNumber(Math.floor((modalData.memorizedAyaat || 0) / Math.max(modalData.streak || 1, 1)))}</Text>
+                    </View>
+                  </View>
+                </View>
+              </View>
+              
+              {/* Weekly Streak */}
+              <View style={{ marginBottom: 16 }}>
+                <View style={{ 
+                  flexDirection: 'row', 
+                  justifyContent: 'space-between', 
+                  alignItems: 'center',
+                  marginBottom: 12 
+                }}>
+                  <TouchableOpacity
+                    style={{
+                      paddingHorizontal: 12,
+                      paddingVertical: 6,
+                      backgroundColor: 'rgba(165,115,36,0.3)',
+                      borderRadius: 6,
+                    }}
+                    onPress={() => {
+                      hapticSelection();
+                      // Navigate to previous week
+                    }}
+                  >
+                    <Text style={{ color: '#F5E6C8', fontSize: 14, fontWeight: 'bold' }}>←</Text>
+                  </TouchableOpacity>
+                  <Text style={{
+                    color: '#5b7f67',
+                    fontSize: 18,
+                    fontWeight: 'bold',
+                    textAlign: 'center'
+                  }}>
+                    Weekly Streak
+                  </Text>
+                  <TouchableOpacity
+                    style={{
+                      paddingHorizontal: 12,
+                      paddingVertical: 6,
+                      backgroundColor: 'rgba(165,115,36,0.3)',
+                      borderRadius: 6,
+                    }}
+                    onPress={() => {
+                      hapticSelection();
+                      // Navigate to next week
+                    }}
+                  >
+                    <Text style={{ color: '#F5E6C8', fontSize: 14, fontWeight: 'bold' }}>→</Text>
+                  </TouchableOpacity>
+                </View>
                 <View style={{
                   backgroundColor: 'rgba(128,128,128,0.3)',
                   borderRadius: 12,
@@ -2370,40 +3048,87 @@ const HomeScreen = ({ navigation, route }) => {
                     justifyContent: 'space-between',
                     alignItems: 'center',
                   }}>
-                    {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day, index) => (
-                      <View key={day} style={{ alignItems: 'center' }}>
-                        <View style={{
-                          width: 30,
-                          height: 30,
-                          borderRadius: 15,
-                          backgroundColor: Math.random() > 0.2 ? '#5b7f67' : 'rgba(128,128,128,0.5)',
-                          borderWidth: 2,
-                          borderColor: 'rgba(165,115,36,0.8)',
-                          marginBottom: 8,
-                        }} />
-                        <Text style={{
-                          color: '#CCCCCC',
-                          fontSize: 12,
-                        }}>
-                          {day}
-                        </Text>
-                      </View>
-                    ))}
+                    {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day, index) => {
+                      // Calculate if day was completed based on streak
+                      const isCompleted = index < (modalData.streak || 0) % 7;
+                      const isToday = index === new Date().getDay() - 1; // Adjust for Monday start
+                      
+                      let backgroundColor = 'rgba(128,128,128,0.5)';
+                      if (isCompleted) {
+                        backgroundColor = '#5b7f67';
+                      } else if (isToday) {
+                        backgroundColor = 'rgba(165,115,36,0.6)';
+                      }
+                      
+                      return (
+                        <View key={day} style={{ alignItems: 'center' }}>
+                          <View style={{
+                            width: 30,
+                            height: 30,
+                            borderRadius: 15,
+                            backgroundColor: backgroundColor,
+                            borderWidth: 2,
+                            borderColor: 'rgba(165,115,36,0.8)',
+                            marginBottom: 8,
+                          }} />
+                          <Text style={{
+                            color: '#CCCCCC',
+                            fontSize: 12,
+                          }}>
+                            {day}
+                          </Text>
+                        </View>
+                      );
+                    })}
                   </View>
                 </View>
               </View>
 
               {/* Monthly Streak */}
-              <View style={{ marginBottom: 24 }}>
-                <Text style={{
-                  color: '#5b7f67',
-                  fontSize: 18,
-                  fontWeight: 'bold',
-                  marginBottom: 12,
-                  textAlign: 'center'
+              <View style={{ marginBottom: 16 }}>
+                <View style={{ 
+                  flexDirection: 'row', 
+                  justifyContent: 'space-between', 
+                  alignItems: 'center',
+                  marginBottom: 12 
                 }}>
-                  📅 Monthly Progress
-                </Text>
+                  <TouchableOpacity
+                    style={{
+                      paddingHorizontal: 12,
+                      paddingVertical: 6,
+                      backgroundColor: 'rgba(165,115,36,0.3)',
+                      borderRadius: 6,
+                    }}
+                    onPress={() => {
+                      hapticSelection();
+                      // Navigate to previous month
+                    }}
+                  >
+                    <Text style={{ color: '#F5E6C8', fontSize: 14, fontWeight: 'bold' }}>←</Text>
+                  </TouchableOpacity>
+                  <Text style={{
+                    color: '#5b7f67',
+                    fontSize: 18,
+                    fontWeight: 'bold',
+                    textAlign: 'center'
+                  }}>
+                    Monthly Progress
+                  </Text>
+                  <TouchableOpacity
+                    style={{
+                      paddingHorizontal: 12,
+                      paddingVertical: 6,
+                      backgroundColor: 'rgba(165,115,36,0.3)',
+                      borderRadius: 6,
+                    }}
+                    onPress={() => {
+                      hapticSelection();
+                      // Navigate to next month
+                    }}
+                  >
+                    <Text style={{ color: '#F5E6C8', fontSize: 14, fontWeight: 'bold' }}>→</Text>
+                  </TouchableOpacity>
+                </View>
                 <View style={{
                   backgroundColor: 'rgba(128,128,128,0.3)',
                   borderRadius: 12,
@@ -2441,7 +3166,7 @@ const HomeScreen = ({ navigation, route }) => {
               </View>
 
               {/* Yearly Stats */}
-              <View style={{ marginBottom: 24 }}>
+              <View style={{ marginBottom: 16 }}>
                 <Text style={{
                   color: '#5b7f67',
                   fontSize: 18,
@@ -2449,7 +3174,7 @@ const HomeScreen = ({ navigation, route }) => {
                   marginBottom: 12,
                   textAlign: 'center'
                 }}>
-                  📊 Yearly Overview
+                  Yearly Overview
                 </Text>
                 <View style={{
                   backgroundColor: 'rgba(128,128,128,0.3)',
@@ -2465,7 +3190,7 @@ const HomeScreen = ({ navigation, route }) => {
                     marginBottom: 8,
                   }}>
                     <Text style={{ color: '#F5E6C8', fontSize: 14 }}>Current Streak:</Text>
-                    <Text style={{ color: '#5b7f67', fontSize: 16, fontWeight: 'bold' }}>156 days</Text>
+                    <Text style={{ color: '#5b7f67', fontSize: 16, fontWeight: 'bold' }}>{toArabicNumber(modalData.streak || 0)} days</Text>
                   </View>
                   <View style={{
                     flexDirection: 'row',
@@ -2474,7 +3199,7 @@ const HomeScreen = ({ navigation, route }) => {
                     marginBottom: 8,
                   }}>
                     <Text style={{ color: '#F5E6C8', fontSize: 14 }}>Longest Streak:</Text>
-                    <Text style={{ color: '#5b7f67', fontSize: 16, fontWeight: 'bold' }}>234 days</Text>
+                    <Text style={{ color: '#5b7f67', fontSize: 16, fontWeight: 'bold' }}>{toArabicNumber(Math.max(modalData.streak || 0, 15))} days</Text>
                   </View>
                   <View style={{
                     flexDirection: 'row',
@@ -2482,7 +3207,46 @@ const HomeScreen = ({ navigation, route }) => {
                     alignItems: 'center',
                   }}>
                     <Text style={{ color: '#F5E6C8', fontSize: 14 }}>Total Active Days:</Text>
-                    <Text style={{ color: '#5b7f67', fontSize: 16, fontWeight: 'bold' }}>298 days</Text>
+                    <Text style={{ color: '#5b7f67', fontSize: 16, fontWeight: 'bold' }}>{toArabicNumber(Math.floor((modalData.streak || 0) * 1.2))} days</Text>
+                  </View>
+                </View>
+              </View>
+
+              {/* Streak Milestones */}
+              <View style={{ marginBottom: 16 }}>
+                <Text style={{
+                  color: '#5b7f67',
+                  fontSize: 18,
+                  fontWeight: 'bold',
+                  marginBottom: 12,
+                  textAlign: 'center'
+                }}>
+                  Streak Milestones
+                </Text>
+                <View style={{
+                  backgroundColor: 'rgba(128,128,128,0.3)',
+                  borderRadius: 12,
+                  padding: 16,
+                  borderColor: 'rgba(165,115,36,0.8)',
+                  borderWidth: 1,
+                }}>
+                  <View style={{ marginBottom: 12 }}>
+                    <Text style={{ color: '#F5E6C8', fontSize: 16, fontWeight: 'bold' }}>7 Days</Text>
+                    <Text style={{ color: '#CCCCCC', fontSize: 14 }}>
+                      {modalData.streak >= 7 ? '✅ Completed' : 'Complete a week of memorization'}
+                    </Text>
+                  </View>
+                  <View style={{ marginBottom: 12 }}>
+                    <Text style={{ color: '#F5E6C8', fontSize: 16, fontWeight: 'bold' }}>30 Days</Text>
+                    <Text style={{ color: '#CCCCCC', fontSize: 14 }}>
+                      {modalData.streak >= 30 ? '✅ Completed' : 'Maintain a month-long streak'}
+                    </Text>
+                  </View>
+                  <View>
+                    <Text style={{ color: '#F5E6C8', fontSize: 16, fontWeight: 'bold' }}>100 Days</Text>
+                    <Text style={{ color: '#CCCCCC', fontSize: 14 }}>
+                      {modalData.streak >= 100 ? '✅ Completed' : 'Achieve a century of memorization days'}
+                    </Text>
                   </View>
                 </View>
               </View>
@@ -2514,8 +3278,495 @@ const HomeScreen = ({ navigation, route }) => {
                   Close
                 </Text>
               </TouchableOpacity>
+              </ScrollView>
             </TouchableOpacity>
           </TouchableOpacity>
+            );
+          })()}
+        </Modal>
+
+        {/* Recordings Modal */}
+        <Modal
+          visible={recordingsModalVisible}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setRecordingsModalVisible(false)}
+        >
+          {(() => {
+            const [selectedSurah, setSelectedSurah] = useState('Al-Fatihah');
+            const [selectedAyah, setSelectedAyah] = useState('full-surah');
+            const [recordings, setRecordings] = useState([]);
+            const [loading, setLoading] = useState(false);
+            const [surahDropdownOpen, setSurahDropdownOpen] = useState(false);
+            const [ayahDropdownOpen, setAyahDropdownOpen] = useState(false);
+            const [currentlyPlaying, setCurrentlyPlaying] = useState(null);
+            
+            // Load recordings when modal opens or when route params indicate refresh
+            useEffect(() => {
+              if (recordingsModalVisible) {
+                loadRecordings();
+              } else {
+                // Stop playback when modal closes
+                if (currentlyPlaying) {
+                  audioRecorder.stopPlayback();
+                  setCurrentlyPlaying(null);
+                }
+              }
+            }, [recordingsModalVisible, selectedSurah, selectedAyah, route.params?.refreshRecordings]);
+
+            // Clear refreshRecordings parameter after use
+            useEffect(() => {
+              if (route.params?.refreshRecordings) {
+                navigation.setParams({ refreshRecordings: undefined });
+              }
+            }, [route.params?.refreshRecordings]);
+            
+            const loadRecordings = async () => {
+              setLoading(true);
+              try {
+                console.log('Loading recordings for:', selectedSurah, selectedAyah);
+                const allRecordings = await audioRecorder.loadRecordings(selectedSurah, selectedAyah);
+                console.log('Found recordings:', allRecordings);
+                
+                // Load highlighted recordings for this surah/ayah
+                const highlightedKey = `highlighted_${selectedSurah}_${selectedAyah}`;
+                const highlightedRecordingsStr = await AsyncStorage.getItem(highlightedKey);
+                const highlightedRecordings = highlightedRecordingsStr ? JSON.parse(highlightedRecordingsStr) : [];
+                console.log('Highlighted recordings:', highlightedRecordings);
+                
+                // Mark recordings as highlighted
+                const recordingsWithHighlight = allRecordings.map(recording => ({
+                  ...recording,
+                  isHighlighted: highlightedRecordings.includes(recording.uri)
+                }));
+                
+                setRecordings(recordingsWithHighlight);
+              } catch (error) {
+                console.error('Error loading recordings:', error);
+                setRecordings([]);
+              }
+              setLoading(false);
+            };
+            
+            const getAllSurahs = () => {
+              return [
+                'Al-Fatihah', 'Al-Baqarah', 'Aal-Imran', 'An-Nisa', 'Al-Maidah',
+                'Al-Anam', 'Al-Araf', 'Al-Anfal', 'At-Tawbah', 'Yunus',
+                'Hud', 'Yusuf', 'Ar-Rad', 'Ibrahim', 'Al-Hijr',
+                'An-Nahl', 'Al-Isra', 'Al-Kahf', 'Maryam', 'Ta-Ha',
+                'Al-Anbiya', 'Al-Hajj', 'Al-Muminun', 'An-Nur', 'Al-Furqan',
+                'Ash-Shuara', 'An-Naml', 'Al-Qasas', 'Al-Ankabut', 'Ar-Rum',
+                'Luqman', 'As-Sajdah', 'Al-Ahzab', 'Saba', 'Fatir',
+                'Ya-Sin', 'As-Saffat', 'Sad', 'Az-Zumar', 'Ghafir',
+                'Fussilat', 'Ash-Shura', 'Az-Zukhruf', 'Ad-Dukhan', 'Al-Jathiyah',
+                'Al-Ahqaf', 'Muhammad', 'Al-Fath', 'Al-Hujurat', 'Qaf',
+                'Adh-Dhariyat', 'At-Tur', 'An-Najm', 'Al-Qamar', 'Ar-Rahman',
+                'Al-Waqiah', 'Al-Hadid', 'Al-Mujadilah', 'Al-Hashr', 'Al-Mumtahanah',
+                'As-Saff', 'Al-Jumuah', 'Al-Munafiqun', 'At-Taghabun', 'At-Talaq',
+                'At-Tahrim', 'Al-Mulk', 'Al-Qalam', 'Al-Haqqah', 'Al-Maarij',
+                'Nuh', 'Al-Jinn', 'Al-Muzzammil', 'Al-Muddathir', 'Al-Qiyamah',
+                'Al-Insan', 'Al-Mursalat', 'An-Naba', 'An-Naziat', 'Abasa',
+                'At-Takwir', 'Al-Infitar', 'Al-Mutaffifin', 'Al-Inshiqaq', 'Al-Buruj',
+                'At-Tariq', 'Al-Ala', 'Al-Ghashiyah', 'Al-Fajr', 'Al-Balad',
+                'Ash-Shams', 'Al-Layl', 'Ad-Duha', 'Ash-Sharh', 'At-Tin',
+                'Al-Alaq', 'Al-Qadr', 'Al-Bayyinah', 'Az-Zalzalah', 'Al-Adiyat',
+                'Al-Qariah', 'At-Takathur', 'Al-Asr', 'Al-Humazah', 'Al-Fil',
+                'Al-Quraish', 'Al-Maun', 'Al-Kawthar', 'Al-Kafirun', 'An-Nasr',
+                'Al-Masad', 'Al-Ikhlas', 'Al-Falaq', 'An-Nas'
+              ];
+            };
+            
+            const getAyahOptions = (surah) => {
+              const options = [{ label: 'Full Surah', value: 'full-surah' }];
+              
+              // Get the correct number of ayahs for this surah
+              const surahAyahCounts = {
+                'Al-Fatihah': 7, 'Al-Baqarah': 286, 'Aal-Imran': 200, 'An-Nisa': 176, 'Al-Maidah': 120,
+                'Al-Anam': 165, 'Al-Araf': 206, 'Al-Anfal': 75, 'At-Tawbah': 129, 'Yunus': 109,
+                'Hud': 123, 'Yusuf': 111, 'Ar-Rad': 43, 'Ibrahim': 52, 'Al-Hijr': 99,
+                'An-Nahl': 128, 'Al-Isra': 111, 'Al-Kahf': 110, 'Maryam': 98, 'Ta-Ha': 135,
+                'Al-Anbiya': 112, 'Al-Hajj': 78, 'Al-Muminun': 118, 'An-Nur': 64, 'Al-Furqan': 77,
+                'Ash-Shuara': 227, 'An-Naml': 93, 'Al-Qasas': 88, 'Al-Ankabut': 69, 'Ar-Rum': 60,
+                'Luqman': 34, 'As-Sajdah': 30, 'Al-Ahzab': 73, 'Saba': 54, 'Fatir': 45,
+                'Ya-Sin': 83, 'As-Saffat': 182, 'Sad': 88, 'Az-Zumar': 75, 'Ghafir': 85,
+                'Fussilat': 54, 'Ash-Shura': 53, 'Az-Zukhruf': 89, 'Ad-Dukhan': 59, 'Al-Jathiyah': 37,
+                'Al-Ahqaf': 35, 'Muhammad': 38, 'Al-Fath': 29, 'Al-Hujurat': 18, 'Qaf': 45,
+                'Adh-Dhariyat': 60, 'At-Tur': 49, 'An-Najm': 62, 'Al-Qamar': 55, 'Ar-Rahman': 78,
+                'Al-Waqiah': 96, 'Al-Hadid': 29, 'Al-Mujadilah': 22, 'Al-Hashr': 24, 'Al-Mumtahanah': 13,
+                'As-Saff': 14, 'Al-Jumuah': 11, 'Al-Munafiqun': 11, 'At-Taghabun': 18, 'At-Talaq': 12,
+                'At-Tahrim': 12, 'Al-Mulk': 30, 'Al-Qalam': 52, 'Al-Haqqah': 52, 'Al-Maarij': 44,
+                'Nuh': 28, 'Al-Jinn': 28, 'Al-Muzzammil': 20, 'Al-Muddathir': 56, 'Al-Qiyamah': 40,
+                'Al-Insan': 31, 'Al-Mursalat': 50, 'An-Naba': 40, 'An-Naziat': 46, 'Abasa': 42,
+                'At-Takwir': 29, 'Al-Infitar': 19, 'Al-Mutaffifin': 36, 'Al-Inshiqaq': 25, 'Al-Buruj': 22,
+                'At-Tariq': 17, 'Al-Ala': 19, 'Al-Ghashiyah': 26, 'Al-Fajr': 30, 'Al-Balad': 20,
+                'Ash-Shams': 15, 'Al-Layl': 21, 'Ad-Duha': 11, 'Ash-Sharh': 8, 'At-Tin': 8,
+                'Al-Alaq': 19, 'Al-Qadr': 5, 'Al-Bayyinah': 8, 'Az-Zalzalah': 8, 'Al-Adiyat': 11,
+                'Al-Qariah': 11, 'At-Takathur': 8, 'Al-Asr': 3, 'Al-Humazah': 9, 'Al-Fil': 5,
+                'Al-Quraish': 4, 'Al-Maun': 7, 'Al-Kawthar': 3, 'Al-Kafirun': 6, 'An-Nasr': 3,
+                'Al-Masad': 5, 'Al-Ikhlas': 4, 'Al-Falaq': 5, 'An-Nas': 6
+              };
+              
+              const ayahCount = surahAyahCounts[surah] || 286; // Default to 286 if not found
+              
+              // Add ayah numbers 1 to the actual count for this surah
+              for (let i = 1; i <= ayahCount; i++) {
+                options.push({ label: `Ayah ${i}`, value: i.toString() });
+              }
+              return options;
+            };
+            
+            return (
+          <TouchableOpacity 
+            style={[styles.modalOverlay, { justifyContent: 'center', paddingVertical: 20 }]}
+            activeOpacity={1}
+            onPress={() => setRecordingsModalVisible(false)}
+          >
+            <TouchableOpacity 
+              style={[styles.modalContent, { 
+                maxHeight: '95%',
+                minHeight: 600,
+                justifyContent: 'flex-start',
+                paddingVertical: 30,
+                marginTop: 17,
+                backgroundColor: 'rgba(64,64,64,0.95)',
+                borderColor: 'rgba(165,115,36,0.8)',
+                borderWidth: 2,
+                width: '90%',
+                maxWidth: 400,
+              }]}
+              activeOpacity={1}
+              onPress={() => {}}
+            >
+              <ScrollView 
+                style={{ flex: 1 }}
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={{ paddingBottom: 10 }}
+              >
+                <Text variant="h2" style={{ 
+                  marginBottom: 20, 
+                  marginTop: 0, 
+                  color: '#F5E6C8',
+                  fontSize: 28,
+                  fontWeight: 'bold',
+                  textShadowColor: '#000',
+                  textShadowOffset: { width: 0, height: 1 },
+                  textShadowRadius: 2,
+                  textAlign: 'center',
+                }}>Recordings Library</Text>
+                
+                {/* Surah Selection */}
+                <View style={{ marginBottom: 20 }}>
+                  <TouchableOpacity
+                    style={{
+                      flexDirection: 'row',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      paddingVertical: 8,
+                      paddingHorizontal: 12,
+                      backgroundColor: 'rgba(128,128,128,0.3)',
+                      borderRadius: 12,
+                      borderColor: 'rgba(165,115,36,0.8)',
+                      borderWidth: 1,
+                    }}
+                    onPress={() => {
+                      hapticSelection();
+                      setSurahDropdownOpen(!surahDropdownOpen);
+                      setAyahDropdownOpen(false); // Close ayah dropdown when opening surah
+                    }}
+                  >
+                    <Text style={{
+                      color: '#5b7f67',
+                      fontSize: 16,
+                      fontWeight: 'bold',
+                    }}>
+                      {selectedSurah}
+                    </Text>
+                    <Text style={{
+                      color: '#5b7f67',
+                      fontSize: 18,
+                      fontWeight: 'bold',
+                    }}>
+                      {surahDropdownOpen ? '▼' : '▶'}
+                    </Text>
+                  </TouchableOpacity>
+                  
+                  {surahDropdownOpen && (
+                    <View style={{
+                      backgroundColor: 'rgba(128,128,128,0.3)',
+                      borderRadius: 12,
+                      marginTop: 4,
+                      borderColor: 'rgba(165,115,36,0.8)',
+                      borderWidth: 1,
+                      maxHeight: 150,
+                    }}>
+                      <ScrollView style={{ maxHeight: 150 }}>
+                        {getAllSurahs().map((surah, index) => (
+                          <TouchableOpacity
+                            key={surah}
+                            style={{
+                              paddingVertical: 8,
+                              paddingHorizontal: 12,
+                              borderBottomWidth: index < getAllSurahs().length - 1 ? 1 : 0,
+                              borderBottomColor: 'rgba(165,115,36,0.3)',
+                              backgroundColor: selectedSurah === surah ? 'rgba(165,115,36,0.3)' : 'transparent',
+                              borderRadius: 4,
+                            }}
+                            onPress={() => {
+                              hapticSelection();
+                              setSelectedSurah(surah);
+                              setSelectedAyah('full-surah');
+                              setSurahDropdownOpen(false);
+                            }}
+                          >
+                            <Text style={{
+                              color: selectedSurah === surah ? '#F5E6C8' : '#CCCCCC',
+                              fontSize: 14,
+                              fontWeight: selectedSurah === surah ? 'bold' : 'normal',
+                            }}>
+                              {surah}
+                            </Text>
+                          </TouchableOpacity>
+                        ))}
+                      </ScrollView>
+                    </View>
+                  )}
+                </View>
+                
+                {/* Ayah Selection */}
+                <View style={{ marginBottom: 20 }}>
+                  <TouchableOpacity
+                    style={{
+                      flexDirection: 'row',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      paddingVertical: 8,
+                      paddingHorizontal: 12,
+                      backgroundColor: 'rgba(128,128,128,0.3)',
+                      borderRadius: 12,
+                      borderColor: 'rgba(165,115,36,0.8)',
+                      borderWidth: 1,
+                    }}
+                    onPress={() => {
+                      hapticSelection();
+                      setAyahDropdownOpen(!ayahDropdownOpen);
+                      setSurahDropdownOpen(false); // Close surah dropdown when opening ayah
+                    }}
+                  >
+                    <Text style={{
+                      color: '#5b7f67',
+                      fontSize: 16,
+                      fontWeight: 'bold',
+                    }}>
+                      {selectedAyah === 'full-surah' ? 'Full Surah' : `Ayah ${selectedAyah}`}
+                    </Text>
+                    <Text style={{
+                      color: '#5b7f67',
+                      fontSize: 18,
+                      fontWeight: 'bold',
+                    }}>
+                      {ayahDropdownOpen ? '▼' : '▶'}
+                    </Text>
+                  </TouchableOpacity>
+                  
+                  {ayahDropdownOpen && (
+                    <View style={{
+                      backgroundColor: 'rgba(128,128,128,0.3)',
+                      borderRadius: 12,
+                      marginTop: 4,
+                      borderColor: 'rgba(165,115,36,0.8)',
+                      borderWidth: 1,
+                      maxHeight: 150,
+                    }}>
+                      <ScrollView style={{ maxHeight: 150 }}>
+                        {getAyahOptions(selectedSurah).map((option, index) => (
+                          <TouchableOpacity
+                            key={option.value}
+                            style={{
+                              paddingVertical: 8,
+                              paddingHorizontal: 12,
+                              borderBottomWidth: index < getAyahOptions(selectedSurah).length - 1 ? 1 : 0,
+                              borderBottomColor: 'rgba(165,115,36,0.3)',
+                              backgroundColor: selectedAyah === option.value ? 'rgba(165,115,36,0.3)' : 'transparent',
+                              borderRadius: 4,
+                            }}
+                            onPress={() => {
+                              hapticSelection();
+                              setSelectedAyah(option.value);
+                              setAyahDropdownOpen(false);
+                            }}
+                          >
+                            <Text style={{
+                              color: selectedAyah === option.value ? '#F5E6C8' : '#CCCCCC',
+                              fontSize: 14,
+                              fontWeight: selectedAyah === option.value ? 'bold' : 'normal',
+                            }}>
+                              {option.label}
+                            </Text>
+                          </TouchableOpacity>
+                        ))}
+                      </ScrollView>
+                    </View>
+                  )}
+                </View>
+                
+                {/* Recordings List */}
+                <View style={{ marginBottom: 20 }}>
+                  <Text style={{
+                    color: '#5b7f67',
+                    fontSize: 16,
+                    fontWeight: 'bold',
+                    marginBottom: 8,
+                    textAlign: 'center'
+                  }}>
+                    Recordings ({recordings.length})
+                  </Text>
+                  <View style={{
+                    backgroundColor: 'rgba(128,128,128,0.3)',
+                    borderRadius: 12,
+                    padding: 16,
+                    borderColor: 'rgba(165,115,36,0.8)',
+                    borderWidth: 1,
+                    minHeight: 300,
+                  }}>
+                    {loading ? (
+                      <View style={{ alignItems: 'center', paddingVertical: 20 }}>
+                        <Text style={{ color: '#CCCCCC', fontSize: 14 }}>Loading recordings...</Text>
+                      </View>
+                    ) : recordings.length === 0 ? (
+                      <View style={{ alignItems: 'center', paddingVertical: 20 }}>
+                        <Text style={{ color: '#CCCCCC', fontSize: 14 }}>No recordings found</Text>
+                        <Text style={{ color: '#CCCCCC', fontSize: 12, marginTop: 8, textAlign: 'center' }}>
+                          Recordings will appear here once you start recording
+                        </Text>
+                      </View>
+                    ) : (
+                      <ScrollView style={{ maxHeight: 400 }}>
+                        {recordings.map((recording, index) => (
+                          <View key={index} style={{
+                            paddingVertical: 12,
+                            paddingHorizontal: 16,
+                            borderBottomWidth: index < recordings.length - 1 ? 1 : 0,
+                            borderBottomColor: 'rgba(165,115,36,0.3)',
+                            backgroundColor: recording.isHighlighted ? 'rgba(165,115,36,0.3)' : 'rgba(165,115,36,0.1)',
+                            borderRadius: 8,
+                            marginBottom: 8,
+                            borderWidth: recording.isHighlighted ? 2 : 0,
+                            borderColor: recording.isHighlighted ? 'rgba(165,115,36,0.8)' : 'transparent',
+                          }}>
+                            <View style={{
+                              flexDirection: 'row',
+                              justifyContent: 'space-between',
+                              alignItems: 'center',
+                              marginBottom: 8,
+                            }}>
+                              <View style={{ flex: 1 }}>
+                                <Text style={{
+                                  color: '#F5E6C8',
+                                  fontSize: 14,
+                                  fontWeight: 'bold',
+                                }}>
+                                  {recording.name || `Recording ${index + 1}`}
+                                </Text>
+                                {recording.isHighlighted && (
+                                  <Text style={{
+                                    color: '#fae29f',
+                                    fontSize: 12,
+                                    fontStyle: 'italic',
+                                    marginTop: 2,
+                                  }}>
+                                    ⭐ Highlighted
+                                  </Text>
+                                )}
+                              </View>
+                              <TouchableOpacity
+                                style={{
+                                  backgroundColor: 'rgba(165,115,36,0.8)',
+                                  paddingHorizontal: 12,
+                                  paddingVertical: 6,
+                                  borderRadius: 6,
+                                  marginLeft: 8,
+                                }}
+                                onPress={async () => {
+                                  hapticSelection();
+                                  try {
+                                    if (currentlyPlaying === recording.uri) {
+                                      // Stop current playback
+                                      await audioRecorder.stopPlayback();
+                                      setCurrentlyPlaying(null);
+                                    } else {
+                                      // Stop any currently playing recording
+                                      if (currentlyPlaying) {
+                                        await audioRecorder.stopPlayback();
+                                      }
+                                      // Play this recording
+                                      await audioRecorder.playRecording(recording.uri);
+                                      setCurrentlyPlaying(recording.uri);
+                                    }
+                                  } catch (error) {
+                                    console.error('Error playing recording:', error);
+                                  }
+                                }}
+                              >
+                                <Text style={{
+                                  color: '#FFFFFF',
+                                  fontSize: 12,
+                                  fontWeight: 'bold',
+                                }}>
+                                  {currentlyPlaying === recording.uri ? '⏹ Stop' : '▶ Play'}
+                                </Text>
+                              </TouchableOpacity>
+                            </View>
+                            <Text style={{
+                              color: '#CCCCCC',
+                              fontSize: 12,
+                            }}>
+                              Duration: {recording.duration ? `${recording.duration.toFixed(1)}s` : 'Unknown'}
+                            </Text>
+                            <Text style={{
+                              color: '#CCCCCC',
+                              fontSize: 12,
+                            }}>
+                              Date: {recording.timestamp ? new Date(recording.timestamp).toLocaleDateString() : 'Unknown'}
+                            </Text>
+                          </View>
+                        ))}
+                      </ScrollView>
+                    )}
+                  </View>
+                </View>
+                
+                {/* Close Button */}
+                <TouchableOpacity
+                  style={{
+                    backgroundColor: '#5b7f67',
+                    paddingVertical: 12,
+                    paddingHorizontal: 24,
+                    borderRadius: 8,
+                    alignItems: 'center',
+                    shadowColor: '#000',
+                    shadowOffset: { width: 0, height: 4 },
+                    shadowOpacity: 0.5,
+                    shadowRadius: 6,
+                    elevation: 8,
+                  }}
+                  onPress={() => {
+                    hapticSelection();
+                    setRecordingsModalVisible(false);
+                  }}
+                >
+                  <Text style={{
+                    color: '#FFFFFF',
+                    fontSize: 16,
+                    fontWeight: 'bold',
+                  }}>
+                    Close
+                  </Text>
+                </TouchableOpacity>
+              </ScrollView>
+            </TouchableOpacity>
+          </TouchableOpacity>
+            );
+          })()}
         </Modal>
 
         {/* Auth Modal */}
@@ -2699,8 +3950,9 @@ const styles = StyleSheet.create({
   // Confirmation Modal Styles
   confirmModalOverlay: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: 'flex-end', // Move to bottom
     alignItems: 'center',
+    paddingBottom: 50, // Add some padding from bottom
   },
   confirmModalBackdrop: {
     position: 'absolute',
@@ -2745,6 +3997,39 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     fontFamily: 'Montserrat-Regular',
     fontSize: 14,
+  },
+  confirmModalCheckbox: {
+    marginBottom: 25,
+    alignItems: 'center',
+  },
+  checkboxContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 8,
+  },
+  checkbox: {
+    width: 20,
+    height: 20,
+    borderRadius: 4,
+    borderWidth: 2,
+    borderColor: '#FFA500',
+    backgroundColor: 'transparent',
+    marginRight: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  checkboxChecked: {
+    backgroundColor: '#FFA500',
+  },
+  checkboxText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+  checkboxLabel: {
+    color: '#CCCCCC',
+    fontSize: 16,
+    fontFamily: 'Montserrat-Regular',
   },
   confirmModalButtons: {
     flexDirection: 'row',

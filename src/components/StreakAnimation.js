@@ -145,6 +145,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 1000,
+    paddingTop: height * 0.1, // Add top padding to prevent going off screen
+    paddingBottom: height * 0.1, // Add bottom padding
   },
   container: {
     width: width * 0.8,

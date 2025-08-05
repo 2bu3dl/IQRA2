@@ -19,7 +19,7 @@ class AudioRecorderModule: NSObject {
   // MARK: - Recording Methods
   
   @objc
-  func startRecording(_ surahName: String, ayahNumber: Int, resolver: @escaping RCTPromiseResolveBlock, rejecter: @escaping RCTPromiseRejectBlock) {
+  func startRecording(_ surahName: String, ayahNumber: String, resolver: @escaping RCTPromiseResolveBlock, rejecter: @escaping RCTPromiseRejectBlock) {
     do {
       // Request microphone permission
       AVAudioSession.sharedInstance().requestRecordPermission { [weak self] granted in
@@ -36,7 +36,7 @@ class AudioRecorderModule: NSObject {
     }
   }
   
-  private func setupRecording(surahName: String, ayahNumber: Int, resolver: @escaping RCTPromiseResolveBlock, rejecter: @escaping RCTPromiseRejectBlock) {
+  private func setupRecording(surahName: String, ayahNumber: String, resolver: @escaping RCTPromiseResolveBlock, rejecter: @escaping RCTPromiseRejectBlock) {
     do {
       // Configure audio session
       let audioSession = AVAudioSession.sharedInstance()
@@ -191,7 +191,7 @@ class AudioRecorderModule: NSObject {
   }
   
   @objc
-  func listRecordings(_ surahName: String, ayahNumber: Int, resolver: @escaping RCTPromiseResolveBlock, rejecter: @escaping RCTPromiseRejectBlock) {
+  func listRecordings(_ surahName: String, ayahNumber: String, resolver: @escaping RCTPromiseResolveBlock, rejecter: @escaping RCTPromiseRejectBlock) {
     do {
       let documentsPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
       let recordingsPath = documentsPath.appendingPathComponent("recordings")
@@ -205,9 +205,12 @@ class AudioRecorderModule: NSObject {
       
       let recordings = files.compactMap { url -> [String: Any]? in
         let fileName = url.lastPathComponent
-        let pattern = "recording_\(surahName)_\(ayahNumber)_"
         
-        guard fileName.hasPrefix(pattern) else { return nil }
+        // Handle both ayah recordings and full surah recordings
+        let ayahPattern = "recording_\(surahName)_\(ayahNumber)_"
+        let fullSurahPattern = "recording_\(surahName)_full-surah_"
+        
+        guard fileName.hasPrefix(ayahPattern) || fileName.hasPrefix(fullSurahPattern) else { return nil }
         
         let attributes = try? FileManager.default.attributesOfItem(atPath: url.path)
         let creationDate = attributes?[.creationDate] as? Date ?? Date()

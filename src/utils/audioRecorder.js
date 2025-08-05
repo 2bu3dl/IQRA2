@@ -16,6 +16,7 @@ class AudioRecorder {
     this.recordings = [];
     this.currentRecordingUri = null;
     this.recordingStartTime = null;
+    this.currentSurahName = null;
   }
 
   // Request permissions (handled by native module on iOS)
@@ -37,9 +38,12 @@ class AudioRecorder {
   // Start recording using native module
   async startRecording(surahName, ayahNumber) {
     try {
+      // Store the surah name for naming recordings
+      this.currentSurahName = surahName;
+      
       if (Platform.OS === 'ios' && AudioRecorderModule) {
         // Use native iOS module
-        const result = await AudioRecorderModule.startRecording(surahName, ayahNumber);
+        const result = await AudioRecorderModule.startRecording(surahName, ayahNumber.toString());
         
         this.isRecording = true;
         this.recordingStartTime = Date.now();
@@ -100,6 +104,9 @@ class AudioRecorder {
         // Use native iOS module
         const result = await AudioRecorderModule.stopRecording();
         
+        // Save recording metadata with duration and surah name
+        await this.saveRecordingMetadata(result.uri, result.duration, null, this.currentSurahName);
+        
         this.isRecording = false;
         this.recordingStartTime = null;
         return { uri: result.uri, duration: result.duration };
@@ -107,6 +114,9 @@ class AudioRecorder {
         // Fallback to mock for Android or if module not available
         const mockUri = `mock://recording_${Date.now()}.m4a`;
         const mockDuration = (Date.now() - this.recordingStartTime) / 1000;
+        
+        // Save recording metadata with duration
+        await this.saveRecordingMetadata(mockUri, mockDuration);
         
         this.isRecording = false;
         this.recordingStartTime = null;
@@ -130,8 +140,8 @@ class AudioRecorder {
       
       const duration = this.recordingStartTime ? (Date.now() - this.recordingStartTime) / 1000 : 3;
       
-      // Save recording metadata
-      await this.saveRecordingMetadata(this.currentRecordingUri, duration);
+      // Save recording metadata with duration and surah name
+      await this.saveRecordingMetadata(this.currentRecordingUri, duration, null, this.currentSurahName);
       
       this.isRecording = false;
       this.recordingStartTime = null;
@@ -145,12 +155,24 @@ class AudioRecorder {
   }
 
   // Save recording metadata
-  async saveRecordingMetadata(uri, duration = 0) {
+  async saveRecordingMetadata(uri, duration = 0, name = null, surahName = null) {
     try {
+      let recordingName = name;
+      
+      if (!name && surahName) {
+        // Generate name in format: "SurahName_IQRA2-rec_number"
+        const existingRecordings = await this.getExistingRecordings(surahName);
+        const nextNumber = existingRecordings.length + 1;
+        recordingName = `${surahName}_IQRA2-rec_${nextNumber}`;
+      } else if (!name) {
+        recordingName = `Recording ${new Date().toLocaleString()}`;
+      }
+
       const metadata = {
         uri,
         timestamp: new Date().toISOString(),
         duration: duration,
+        name: recordingName,
       };
 
       const key = `recording_${uri.split('/').pop()}`;
@@ -160,16 +182,42 @@ class AudioRecorder {
     }
   }
 
+  // Helper function to get existing recordings for a surah
+  async getExistingRecordings(surahName) {
+    try {
+      const allKeys = await AsyncStorage.getAllKeys();
+      const recordingKeys = allKeys.filter(key => key.startsWith('recording_'));
+      
+      const recordings = [];
+      for (const key of recordingKeys) {
+        const metadataStr = await AsyncStorage.getItem(key);
+        if (metadataStr) {
+          const metadata = JSON.parse(metadataStr);
+          if (metadata.name && metadata.name.startsWith(`${surahName}_IQRA2-rec_`)) {
+            recordings.push(metadata);
+          }
+        }
+      }
+      
+      return recordings;
+    } catch (error) {
+      console.error('Error getting existing recordings:', error);
+      return [];
+    }
+  }
+
   // Load recordings using native module
   async loadRecordings(surahName, ayahNumber) {
     try {
+      console.log('[AudioRecorder] Loading recordings for:', surahName, ayahNumber);
       if (Platform.OS === 'ios') {
         // Use native iOS module
-        const recordings = await AudioRecorderModule.listRecordings(surahName, ayahNumber);
+        const recordings = await AudioRecorderModule.listRecordings(surahName, ayahNumber.toString());
+        console.log('[AudioRecorder] Native module returned:', recordings);
         
         // Load metadata for each recording
         const recordingsWithMetadata = await Promise.all(
-          recordings.map(async (recording) => {
+          recordings.map(async (recording, index) => {
             const key = `recording_${recording.filename}`;
             const metadataStr = await AsyncStorage.getItem(key);
             const metadata = metadataStr ? JSON.parse(metadataStr) : {};
@@ -179,10 +227,12 @@ class AudioRecorder {
               filename: recording.filename,
               timestamp: recording.timestamp,
               duration: metadata.duration || recording.duration || 0,
+              name: metadata.name || `Recording ${index + 1}`,
             };
           })
         );
         
+        console.log('[AudioRecorder] Final recordings with metadata:', recordingsWithMetadata);
         return recordingsWithMetadata;
       } else {
         // TODO: Implement Android recording listing

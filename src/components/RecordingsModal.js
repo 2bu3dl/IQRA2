@@ -508,15 +508,26 @@ const RecordingsModal = ({
         onPress={handleRecordingsModalClose}
       >
         <TouchableOpacity
-          style={styles.modalContent}
+          style={[
+            styles.modalContent,
+            safeAyahNumber === 'full-surah' && { backgroundColor: '#5b7f67' } // Green background for full surah (matching MemorizationScreen)
+          ]}
           activeOpacity={1}
           onPress={(e) => e.stopPropagation()}
         >
           {/* Header */}
           <View style={styles.header}>
-            <Text style={styles.title}>Ayah Recitations</Text>
-            <Text style={styles.subtitle}>
-              {safeSurahName} - {toArabicNumber(safeAyahNumber)}
+            <Text style={[
+              styles.title,
+              safeAyahNumber === 'full-surah' && { color: '#F5E6C8' } // Parchment color for full surah
+            ]}>
+              {safeAyahNumber === 'full-surah' ? 'Full Surah Recitation' : 'Ayah Recitations'}
+            </Text>
+            <Text style={[
+              styles.subtitle,
+              safeAyahNumber === 'full-surah' && { color: '#F5E6C8' } // Parchment color for full surah
+            ]}>
+              {safeAyahNumber === 'full-surah' ? safeSurahName : `${safeSurahName} - ${toArabicNumber(safeAyahNumber)}`}
             </Text>
             
             {/* Exit Button */}
@@ -556,7 +567,7 @@ const RecordingsModal = ({
                     width: 20, 
                     height: 20,
                     tintColor: selectedRecordings.length > 0 
-                      ? (isOnlyHighlightedSelected() ? '#F5E6C8' : '#5b7f67')
+                      ? (isOnlyHighlightedSelected() ? '#5b7f67' : '#5b7f67') // Keep icon green when filled with parchment
                       : '#F5E6C8'
                   }}
                   resizeMode="contain"
@@ -585,7 +596,12 @@ const RecordingsModal = ({
                   styles.recordingItem,
                   isMultiSelectMode && styles.recordingItemSelectable,
                   selectedRecordings.includes(recording.uri) && styles.recordingItemSelected,
-                  highlightedRecordings.includes(recording.uri) && styles.recordingItemHighlighted
+                  highlightedRecordings.includes(recording.uri) && styles.recordingItemHighlighted,
+                  safeAyahNumber === 'full-surah' && { 
+                    backgroundColor: '#F5E6C8',
+                    borderColor: selectedRecordings.includes(recording.uri) ? '#333333' : 
+                               (highlightedRecordings.includes(recording.uri) ? 'rgba(165,115,36,0.8)' : '#F5E6C8') // Super dark gray for selected, orange for highlighted
+                  } // Parchment background for full surah recordings
                 ]}
                 onPress={() => {
                   if (isMultiSelectMode) {
@@ -625,13 +641,25 @@ const RecordingsModal = ({
 
                 {/* Recording Info */}
                 <View style={styles.recordingInfo}>
-                  <Text style={styles.recordingName} numberOfLines={1}>
+                  <Text style={[
+                    styles.recordingName,
+                    safeAyahNumber === 'full-surah' && { color: '#F5E6C8' } // Parchment color for full surah
+                  ]} numberOfLines={1}>
                     {recording.name}
                   </Text>
-                  <Text style={styles.recordingDuration}>
-                    {recordings.indexOf(recording) + 1}. <Text style={styles.durationNumber}>{recording.duration ? recording.duration.toFixed(3) : '00.000'}</Text> • {recording.name || 'Unnamed Recording'}
+                  <Text style={[
+                    styles.recordingDuration,
+                    safeAyahNumber === 'full-surah' && { color: '#2D5016' } // Dark green for full surah (visible on parchment background)
+                  ]}>
+                    {recordings.indexOf(recording) + 1}. <Text style={[
+                      styles.durationNumber,
+                      safeAyahNumber === 'full-surah' && { color: '#2D5016' } // Dark green for full surah (visible on parchment background)
+                    ]}>{recording.duration ? recording.duration.toFixed(3) : '00.000'}</Text> • {recording.name || 'Unnamed Recording'}
                   </Text>
-                  <Text style={styles.recordingTimestamp}>
+                  <Text style={[
+                    styles.recordingTimestamp,
+                    safeAyahNumber === 'full-surah' && { color: '#2D5016' } // Dark green for full surah (visible on parchment background)
+                  ]}>
                     {recording.timestamp ? new Date(recording.timestamp).toLocaleDateString() + ' • ' + new Date(recording.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'Unknown date'}
                   </Text>
                 </View>
@@ -662,25 +690,64 @@ const RecordingsModal = ({
           <View style={styles.bottomButtonsWrapper}>
             {!isMultiSelectMode ? (
               // Normal mode - show New and Select buttons
-              <>
-                {/* Select Button (Left) */}
-                <TouchableOpacity
-                  style={[styles.bottomButton, styles.selectButton]}
-                  onPress={handleSelectMode}
-                >
-                  <Image 
-                    source={require('../assets/app_icons/select.png')}
-                    style={{ width: 24, height: 24 }}
-                    resizeMode="contain"
-                  />
-                  <Text style={styles.bottomButtonText}>Select</Text>
-                </TouchableOpacity>
+              <View style={[
+                { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', width: '100%' },
+                safeAyahNumber === 'full-surah' && { 
+                  justifyContent: recordings.length === 0 ? 'center' : 'space-between', // Center recite button when no recordings
+                  gap: 20 // Add gap between buttons for full surah
+                } // Center buttons for full surah
+              ]}>
+                {/* Select Button (Left) - Only show when there are recordings for full surah */}
+                {!(safeAyahNumber === 'full-surah' && recordings.length === 0) && (
+                  <TouchableOpacity
+                    style={[
+                      styles.bottomButton, 
+                      styles.selectButton,
+                      safeAyahNumber === 'full-surah' && { 
+                        backgroundColor: 'transparent',
+                        borderWidth: 1, // Thinner border
+                        borderColor: '#555555', // Lighter gray border for full surah
+                        minWidth: 140, // Wider select button
+                        paddingHorizontal: 20, // More horizontal padding
+                        paddingVertical: 8 // Shorter height
+                      }
+                    ]}
+                    onPress={handleSelectMode}
+                  >
+                    <Image 
+                      source={require('../assets/app_icons/select.png')}
+                      style={{ 
+                        width: safeAyahNumber === 'full-surah' ? 20 : 24, // Smaller icon for full surah
+                        height: safeAyahNumber === 'full-surah' ? 20 : 24, // Smaller icon for full surah
+                        tintColor: safeAyahNumber === 'full-surah' ? '#F5E6C8' : undefined // Parchment color for full surah
+                      }}
+                      resizeMode="contain"
+                    />
+                    <Text style={[
+                      styles.bottomButtonText,
+                      safeAyahNumber === 'full-surah' && { 
+                        color: '#555555', // Lighter gray for full surah
+                        fontSize: 14 // Smaller text for full surah
+                      }
+                    ]}>Select</Text>
+                  </TouchableOpacity>
+                )}
           
-                {/* Recite Button (Right) */}
+                {/* Recite Button (Center) */}
                 <TouchableOpacity
                   style={[
                     styles.bottomButton,
-                    isRecording && styles.recordingButton
+                    isRecording && styles.recordingButton,
+                    safeAyahNumber === 'full-surah' && { 
+                      borderRadius: 50, // Perfect circle
+                      borderWidth: isRecording ? 0 : 4, // No border when recording
+                      borderColor: '#555555', // Lighter gray border
+                      width: 60, // Smaller width for perfect circle
+                      height: 60, // Smaller height for perfect circle
+                      paddingVertical: 4, // Minimal padding
+                      paddingHorizontal: 8, // Minimal padding
+                      alignSelf: 'center' // Center the button
+                    }
                   ]}
                   onPress={handleNewRecording}
                 >
@@ -690,17 +757,25 @@ const RecordingsModal = ({
                         ? require('../assets/app_icons/mic-on.png')
                         : require('../assets/app_icons/mic-off.png')
                     }
-                    style={{ width: 24, height: 24 }}
+                    style={{ 
+                      width: 24, 
+                      height: 24,
+                      tintColor: safeAyahNumber === 'full-surah' ? '#F5E6C8' : undefined // Parchment color for full surah
+                    }}
                     resizeMode="contain"
                   />
                   <Text style={[
                     styles.bottomButtonText,
-                    isRecording && styles.recordingButtonText
+                    isRecording && styles.recordingButtonText,
+                    safeAyahNumber === 'full-surah' && { 
+                      color: '#555555', // Lighter gray for full surah
+                      fontSize: 16 // Larger text
+                    }
                   ]}>
                     {isRecording ? 'Reciting...' : 'Recite'}
                   </Text>
                 </TouchableOpacity>
-              </>
+              </View>
             ) : (
               // Multi-select mode - show Delete, Cancel, and Share buttons
               <View style={styles.bottomButtonsContainer}>
@@ -722,6 +797,7 @@ const RecordingsModal = ({
                     <Text style={[
                       styles.bottomButtonText,
                       styles.bottomButtonTextSmall,
+                      { fontSize: 16 }, // Larger text
                       selectedRecordings.length === 0 && styles.bottomButtonTextDisabled
                     ]}>
                       Delete
@@ -740,7 +816,8 @@ const RecordingsModal = ({
                     <Text style={[
                       styles.bottomButtonText,
                       styles.bottomButtonTextSmall,
-                      styles.cancelButtonText
+                      styles.cancelButtonText,
+                      { fontSize: 16 } // Larger text
                     ]}>
                       Cancel
                     </Text>
@@ -760,13 +837,14 @@ const RecordingsModal = ({
                       style={{ 
                         width: 20, 
                         height: 20,
-                        tintColor: '#5b7f67' // Green same as title
+                        tintColor: '#000000' // Black icon
                       }}
                       resizeMode="contain"
                     />
                     <Text style={[
                       styles.bottomButtonText,
                       styles.bottomButtonTextSmall,
+                      { fontSize: 16 }, // Larger text
                       selectedRecordings.length === 0 && styles.bottomButtonTextDisabled
                     ]}>
                       Share
@@ -890,7 +968,9 @@ const styles = {
     borderWidth: 2,
   },
   recordingItemHighlighted: {
-    backgroundColor: 'rgba(165, 115, 36, 0.1)', // A very light muted green
+    backgroundColor: 'rgba(165, 115, 36, 0.2)', // Orange highlight matching memorization screen
+    borderColor: 'rgba(165, 115, 36, 0.8)', // Orange border
+    borderWidth: 3, // Thicker outline
   },
   playButton: {
     width: 40,
@@ -945,7 +1025,7 @@ const styles = {
     justifyContent: 'space-around',
     paddingHorizontal: 20,
     paddingTop: 20,
-    backgroundColor: '#F5E6C8',
+    backgroundColor: 'transparent', // Remove background
     borderTopWidth: 1,
     borderTopColor: '#E0E0E0',
   },
@@ -1055,7 +1135,7 @@ const styles = {
   },
   selectedCountText: {
     fontSize: 14,
-    color: 'rgba(165,115,36,0.8)',
+    color: '#CCCCCC', // Light gray
     marginBottom: 10,
     textAlign: 'center',
   },
@@ -1111,7 +1191,7 @@ const styles = {
     elevation: 5,
   },
   highlightButtonActive: {
-    backgroundColor: '#5b7f67',
+    backgroundColor: '#F5E6C8', // Parchment color when highlighted recordings are selected
   },
   selectButton: {
     backgroundColor: '#E0E0E0',

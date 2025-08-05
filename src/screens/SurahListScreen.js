@@ -910,21 +910,41 @@ const AllSurahsTab = ({ navigation, route, searchText, isJuzMode, juzData }) => 
     }
   }, [route.params?.refresh]);
 
-  // Check if we're coming from MemorizationScreen with current ayah info
+  // Check if we're coming from MemorizationScreen with current surah info
   useEffect(() => {
     if (route.params?.currentSurahId) {
       setSelectedSurahId(route.params.currentSurahId);
-      // Scroll to the selected surah after a short delay to ensure the list is rendered
-      setTimeout(() => {
+      
+      // More robust scrolling with multiple attempts
+      const scrollToSurah = (attempts = 0) => {
         const surahIndex = surahs.findIndex(s => s.id === route.params.currentSurahId);
+        
         if (surahIndex !== -1 && flatListRef.current) {
-          flatListRef.current.scrollToIndex({
-            index: surahIndex,
-            animated: true,
-            viewPosition: 0.3, // Show the item in the upper third of the screen
-          });
+          try {
+            flatListRef.current.scrollToIndex({
+              index: surahIndex,
+              animated: true,
+              viewPosition: 0.5, // Show the item in the middle of the screen
+            });
+            // Clear the selected surah after scrolling to remove green border
+            setTimeout(() => setSelectedSurahId(null), 1000);
+          } catch (error) {
+            console.log(`Scroll attempt ${attempts + 1} failed, retrying...`);
+            if (attempts < 3) {
+              setTimeout(() => scrollToSurah(attempts + 1), 200);
+            }
+          }
+        } else if (attempts < 3) {
+          // If surah not found or FlatList not ready, retry
+          setTimeout(() => scrollToSurah(attempts + 1), 200);
         }
-      }, 100);
+      };
+      
+      // Start scrolling after a delay to ensure list is rendered
+      setTimeout(() => scrollToSurah(), 300);
+      
+      // Clear the parameter after use to prevent re-scrolling
+      navigation.setParams({ currentSurahId: undefined });
     }
   }, [route.params?.currentSurahId]);
 
@@ -985,7 +1005,7 @@ const AllSurahsTab = ({ navigation, route, searchText, isJuzMode, juzData }) => 
           shadowOpacity: 0.4,
           shadowRadius: 8,
           elevation: 5,
-          borderRadius: SIZES.small,
+          borderRadius: 30, // Increased from 20 to 30 for even more rounded borders
           marginHorizontal: SIZES.medium,
         }
       ]}>
@@ -1158,8 +1178,25 @@ const AllSurahsTab = ({ navigation, route, searchText, isJuzMode, juzData }) => 
               maxToRenderPerBatch={15}
               updateCellsBatchingPeriod={16}
               removeClippedSubviews={true}
-              onScrollToIndexFailed={() => {
-                console.warn('Failed to scroll to index');
+              getItemLayout={(data, index) => ({
+                length: 120, // Approximate height of each surah item
+                offset: 120 * index,
+                index,
+              })}
+              onScrollToIndexFailed={(info) => {
+                console.warn('Failed to scroll to index:', info);
+                // Try alternative scrolling method
+                if (route.params?.currentSurahId) {
+                  const surahIndex = surahs.findIndex(s => s.id === route.params.currentSurahId);
+                  if (surahIndex !== -1 && flatListRef.current) {
+                    // Use scrollToOffset as fallback
+                    const estimatedOffset = surahIndex * 150; // Approximate item height
+                    flatListRef.current.scrollToOffset({
+                      offset: estimatedOffset,
+                      animated: true,
+                    });
+                  }
+                }
               }}
               bounces={true}
               overScrollMode="always"
@@ -1886,7 +1923,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.93)',
     borderColor: 'rgba(165,115,36,0.8)',
     borderWidth: 1,
-    borderRadius: SIZES.small,
+    borderRadius: 30, // Increased from 20 to 30 for even more rounded borders
     overflow: 'hidden',
     marginHorizontal: SIZES.medium,
     padding: SIZES.medium,

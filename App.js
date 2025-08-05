@@ -18,31 +18,26 @@ const Stack = createNativeStackNavigator();
 function App() {
   // Suppress legacy architecture warnings
   LogBox.ignoreLogs([
-    'Warning: React Native is using the legacy architecture',
-    'Warning: The legacy architecture is deprecated',
-    'Warning: Please migrate to the new architecture',
+    'Warning: React Native',
+    'Require cycle:',
+    'ViewPropTypes will be removed',
+    'AsyncStorage has been extracted',
   ]);
 
   useEffect(() => {
-    // Handle deep links for email confirmation
+    // Handle deep linking
     const handleDeepLink = (url) => {
-      if (url) {
-        supabase.auth.onAuthStateChange((event, session) => {
-          if (event === 'SIGNED_IN') {
-            console.log('User signed in via email confirmation');
-          }
-        });
-      }
+      console.log('Deep link received:', url);
     };
 
-    // Get initial URL if app was opened via deep link
+    // Get initial URL
     Linking.getInitialURL().then((url) => {
       if (url) {
         handleDeepLink(url);
       }
     });
 
-    // Listen for incoming links when app is already running
+    // Listen for incoming links
     const subscription = Linking.addEventListener('url', (event) => {
       handleDeepLink(event.url);
     });
@@ -59,15 +54,8 @@ function App() {
           <Stack.Navigator
             initialRouteName="Home"
             screenOptions={{
-              headerStyle: {
-                backgroundColor: COLORS.primary,
-              },
-              headerTintColor: COLORS.white,
-              headerTitleStyle: {
-                fontWeight: 'bold',
-              },
               headerShown: false,
-              animation: 'none',
+              contentStyle: { backgroundColor: COLORS.background },
             }}>
             <Stack.Screen name="Home" component={HomeScreen} />
             <Stack.Screen name="SurahList" component={SurahListScreen} />

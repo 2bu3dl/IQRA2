@@ -65,6 +65,11 @@ const MemorizationScreen = ({ route, navigation }) => {
   const [showStreakAnimation, setShowStreakAnimation] = useState(false);
   const [newStreak, setNewStreak] = useState(0);
   const [previousStreak, setPreviousStreak] = useState(0);
+  const [isFullSurahCompletion, setIsFullSurahCompletion] = useState(false);
+  const [showFullSurahReward, setShowFullSurahReward] = useState(false);
+  const [fullSurahHasanat, setFullSurahHasanat] = useState(0);
+  const [showRecordingModal, setShowRecordingModal] = useState(false);
+  const [showFullSurahRecordingsModal, setShowFullSurahRecordingsModal] = useState(false);
   const [memorizationData, setMemorizationData] = useState(null);
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
   const [currentPlayingAyah, setCurrentPlayingAyah] = useState(null);
@@ -165,6 +170,13 @@ const MemorizationScreen = ({ route, navigation }) => {
   React.useEffect(() => {
     loadMemorizationData();
   }, []);
+
+  // Handle showRecordings parameter from navigation
+  React.useEffect(() => {
+    if (route?.params?.showRecordings) {
+      setShowRecordingsModal(true);
+    }
+  }, [route?.params?.showRecordings]);
 
   // Audio functionality
   useEffect(() => {
@@ -374,6 +386,10 @@ const MemorizationScreen = ({ route, navigation }) => {
           setIsTextHidden(false);
       return;
     }
+    
+    // Check if this is the last ayah of the surah
+    const isLastAyah = currentAyahIndex === flashcards.length - 1;
+    
     // Only run heavy logic for ayah cards
     // Note: Streak will be updated when hasanat is added, no need to call separately
     const hasanat = flashcards[currentAyahIndex]?.text.length * 10;
@@ -520,16 +536,18 @@ const MemorizationScreen = ({ route, navigation }) => {
         }
         const audioSource = getAyahAudioUri(surahNumber, ayahNumber);
         if (audioSource) {
-                  // Get metadata for highlighting
-        let metadata = getAyahMetadata(surahNumber, ayahNumber);
-        if (!metadata) {
-          // Try to get metadata for special cards
-          metadata = getSpecialCardMetadata(currentFlashcard.type);
-        }
-        setCurrentAudioMetadata(metadata);
+          // Get metadata for highlighting
+          let metadata = getAyahMetadata(surahNumber, ayahNumber);
+          if (!metadata) {
+            // Try to get metadata for special cards
+            metadata = getSpecialCardMetadata(currentFlashcard.type);
+          }
+          setCurrentAudioMetadata(metadata);
           
           await audioPlayer.playAudio(audioSource, metadata);
           setIsAudioPlaying(true);
+        } else {
+          console.warn('[MemorizationScreen] Audio source not available for ayah:', ayahNumber);
         }
       }
     }
@@ -579,6 +597,8 @@ const MemorizationScreen = ({ route, navigation }) => {
         await audioPlayer.seekToStart();
         await audioPlayer.playAudio(audioSource);
         setIsAudioPlaying(true);
+      } else {
+        console.warn('[MemorizationScreen] Audio source not available for ayah:', ayahNumber);
       }
     }
   };
@@ -614,16 +634,23 @@ const MemorizationScreen = ({ route, navigation }) => {
 
   // Recording functions
   const checkRecordings = async () => {
+    console.log('[MemorizationScreen] checkRecordings called');
     if (flashcards && flashcards[currentAyahIndex]?.type === 'ayah') {
       const ayahNumber = flashcards.slice(0, currentAyahIndex + 1).filter(a => a.type === 'ayah').length;
+      console.log('[MemorizationScreen] Checking recordings for ayah:', ayahNumber);
       const recordings = await audioRecorder.loadRecordings(surah?.name || 'Al-Fatihah', ayahNumber);
+      console.log('[MemorizationScreen] Found recordings:', recordings.length);
       setHasRecordings(recordings.length > 0);
+    } else {
+      console.log('[MemorizationScreen] Not an ayah card, skipping recordings check');
     }
   };
 
   const handleRecordingToggle = async () => {
     try {
       hapticSelection();
+      console.log('[MemorizationScreen] Recording toggle pressed');
+      console.log('[MemorizationScreen] Current state - isRecording:', isRecording, 'hasRecordings:', hasRecordings);
       
       if (isRecording) {
         // Stop recording
@@ -634,6 +661,7 @@ const MemorizationScreen = ({ route, navigation }) => {
         await checkRecordings();
       } else if (hasRecordings) {
         // If recordings exist, open the modal instead of starting new recording
+        console.log('[MemorizationScreen] Opening recordings modal...');
         setShowRecordingsModal(true);
       } else {
         // Check if audio is playing before starting recording
@@ -644,6 +672,11 @@ const MemorizationScreen = ({ route, navigation }) => {
         
         // Start recording only if no recordings exist
         if (flashcards && flashcards[currentAyahIndex]?.type === 'ayah') {
+          // Hide text if it's revealed before starting recording
+          if (!isTextHidden) {
+            setIsTextHidden(true);
+          }
+          
           const ayahNumber = flashcards.slice(0, currentAyahIndex + 1).filter(a => a.type === 'ayah').length;
           console.log('[MemorizationScreen] Starting recording for ayah:', ayahNumber);
           await audioRecorder.startRecording(surah?.name || 'Al-Fatihah', ayahNumber);
@@ -676,61 +709,7 @@ const MemorizationScreen = ({ route, navigation }) => {
     }
   };
 
-  const handleRecordingLongPress = async () => {
-    if (isRecording) {
-      // Reset recording
-      try {
-        hapticImpactMedium();
-        await audioRecorder.stopRecording();
-        setIsRecording(false);
-        recordingPulseAnim.stopAnimation();
-        Alert.alert('Recording Reset', 'Recording has been reset');
-      } catch (error) {
-        console.error('Error resetting recording:', error);
-      }
-    } else if (hasRecordings) {
-      // Start new recording to add to existing list
-      try {
-        hapticImpactMedium();
-        
-        if (isAudioPlaying) {
-          Alert.alert('Cannot Record', 'Please stop the audio recitation before starting a recording.');
-          return;
-        }
-        
-        if (flashcards && flashcards[currentAyahIndex]?.type === 'ayah') {
-          const ayahNumber = flashcards.slice(0, currentAyahIndex + 1).filter(a => a.type === 'ayah').length;
-          console.log('[MemorizationScreen] Starting new recording for ayah:', ayahNumber);
-          await audioRecorder.startRecording(surah?.name || 'Al-Fatihah', ayahNumber);
-          setIsRecording(true);
-          
-          // Start pulse animation
-          Animated.loop(
-            Animated.sequence([
-              Animated.timing(recordingPulseAnim, {
-                toValue: 1,
-                duration: 1000,
-                useNativeDriver: true,
-              }),
-              Animated.timing(recordingPulseAnim, {
-                toValue: 0,
-                duration: 1000,
-                useNativeDriver: true,
-              }),
-            ])
-          ).start();
-        } else {
-          Alert.alert('Cannot Record', 'Recording is only available for Quran ayahs.');
-        }
-      } catch (error) {
-        console.error('Error starting new recording:', error);
-        Alert.alert('Recording Error', `Failed to start recording. ${error.message}`);
-      }
-    } else {
-      // Show recordings modal (shouldn't happen if no recordings)
-      setShowRecordingsModal(true);
-    }
-  };
+
 
   const handleRecordingsModalClose = () => {
     setShowRecordingsModal(false);
@@ -775,6 +754,9 @@ const MemorizationScreen = ({ route, navigation }) => {
     inputRange: [0, 1],
     outputRange: [1, 1.2],
   });
+
+  // Touch state for recording button
+  const [isRecordingButtonPressed, setIsRecordingButtonPressed] = useState(false);
 
   const fontCandidates = ['UthmanTN_v2-0', 'UthmanTN', 'KFGQPC Uthman Taha Naskh', 'Uthman Taha Naskh'];
   const fontFamily = fontCandidates[currentAyahIndex % fontCandidates.length];
@@ -1127,39 +1109,50 @@ const MemorizationScreen = ({ route, navigation }) => {
                   <TouchableOpacity
                     style={styles.voiceRecordingButton}
                     onPress={handleRecordingToggle}
-                    onLongPress={handleRecordingLongPress}
-                    delayLongPress={500}
+                    onPressIn={() => setIsRecordingButtonPressed(true)}
+                    onPressOut={() => setIsRecordingButtonPressed(false)}
                     disabled={showReward}
                   >
-                                                <View style={{
-                              borderWidth: 2,
-                              borderColor: isRecording ? '#FF4444' : (hasRecordings ? 'rgba(165,115,36,0.8)' : 'rgba(165,115,36,0.8)'),
-                              borderRadius: 12,
-                              padding: 6,
-                              shadowColor: '#000',
-                              shadowOffset: { width: 0, height: 2 },
-                              shadowOpacity: 0.1,
-                              shadowRadius: 4,
-                              elevation: 3,
-                              width: 48,
-                              height: 48,
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              backgroundColor: hasRecordings ? 'rgba(165,115,36,0.8)' : 'transparent',
-                            }}>
+                    <View style={{
+                      borderWidth: 2,
+                      borderColor: 'rgba(165,115,36,0.8)',
+                      borderRadius: 12,
+                      padding: 6,
+                      shadowColor: '#000',
+                      shadowOffset: { width: 0, height: 2 },
+                      shadowOpacity: 0.1,
+                      shadowRadius: 4,
+                      elevation: 3,
+                      width: 48,
+                      height: 48,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      backgroundColor: hasRecordings ? 'rgba(165,115,36,0.8)' : 'transparent',
+                    }}>
                       {isRecording ? (
+                        isRecordingButtonPressed ? (
+                          <Svg width={28} height={28} style={{ alignItems: 'center', justifyContent: 'center' }}>
+                            <Polygon
+                              points="14,2 26,8 26,20 14,26 2,20 2,8"
+                              fill="#5b7f67"
+                              stroke="#5b7f67"
+                              strokeWidth="1"
+                            />
+                          </Svg>
+                        ) : (
+                          <Image 
+                            source={require('../assets/app_icons/mic-on.png')} 
+                            style={{ width: 28, height: 28, tintColor: '#FF4444' }}
+                            resizeMode="contain"
+                          />
+                        )
+                      ) : (
                         <Image 
-                          source={require('../assets/app_icons/mic-on.png')} 
-                          style={{ width: 28, height: 28, tintColor: '#FF4444' }}
+                          source={require('../assets/app_icons/mic-off.png')} 
+                          style={{ width: 28, height: 28, tintColor: hasRecordings ? '#F5E6C8' : 'rgba(165,115,36,0.8)' }}
                           resizeMode="contain"
                         />
-                                                    ) : (
-                                <Image 
-                                  source={require('../assets/app_icons/mic-off.png')} 
-                                  style={{ width: 28, height: 28, tintColor: hasRecordings ? '#F5E6C8' : 'rgba(165,115,36,0.8)' }}
-                                  resizeMode="contain"
-                                />
-                              )}
+                      )}
                     </View>
                   </TouchableOpacity>
                 </Animated.View>
@@ -1230,7 +1223,7 @@ const MemorizationScreen = ({ route, navigation }) => {
             onPress={async () => {
               hapticSelection();
               if (currentAyahIndex === 0) {
-                navigation.navigate('SurahList');
+                navigation.navigate('SurahList', { currentSurahId: surahNumber, refreshRecordings: true });
               } else {
                 handlePrevious();
               }
@@ -1462,6 +1455,14 @@ const MemorizationScreen = ({ route, navigation }) => {
         visible={showReward}
         rewardAmount={rewardAmount}
         onClose={() => setShowReward(false)}
+        onRecordFullSurah={async () => {
+          setShowReward(false);
+          setShowFullSurahRecordingsModal(true);
+        }}
+        onSurahList={() => {
+          setShowReward(false);
+          navigation.navigate('SurahList', { refresh: true, currentSurahId: surahNumber, refreshRecordings: true });
+        }}
         onNext={async () => {
           setShowReward(false);
           
@@ -1487,19 +1488,72 @@ const MemorizationScreen = ({ route, navigation }) => {
             // Reload memorization data to update dots
             await loadMemorizationData();
           } else {
-            // Add all session hasanat at the end of the surah
-            try {
-              await addHasanat(sessionHasanat.current);
-            } catch (error) {
-              console.error('[MemorizationScreen] Error updating streak on reward finish:', error);
-            }
-            sessionHasanat.current = 0;
-            navigation.navigate('SurahList', { refresh: true });
+            // This is the last ayah, show full surah reward
+            setIsFullSurahCompletion(true);
+            // Calculate total hasanat from all ayahs in the surah (not session hasanat)
+            const totalAyahHasanat = flashcards
+              .filter(card => card.type === 'ayah')
+              .reduce((total, card) => total + (card.text.length * 10), 0);
+            setFullSurahHasanat(totalAyahHasanat);
+            setShowFullSurahReward(true);
           }
         }}
         isLastAyah={currentAyahIndex === flashcards.length - 1}
+        isFullSurah={false}
         language={language}
         toArabicNumber={toArabicNumber}
+      />
+
+      {/* Full Surah Reward Modal */}
+      <AnimatedRewardModal
+        visible={showFullSurahReward}
+        rewardAmount={fullSurahHasanat}
+        onClose={() => setShowFullSurahReward(false)}
+        onRecordFullSurah={async () => {
+          setShowFullSurahReward(false);
+          setShowFullSurahRecordingsModal(true);
+        }}
+        onSurahList={() => {
+          setShowFullSurahReward(false);
+          navigation.navigate('SurahList', { refresh: true, currentSurahId: surahNumber, refreshRecordings: true });
+        }}
+        onNext={async () => {
+          setShowFullSurahReward(false);
+          
+          // Don't add hasanat to home screen counter for full surah completion
+          // The hasanat was already added for each individual ayah during the process
+          sessionHasanat.current = 0;
+          
+          // Navigate to next surah's isti3aadhah
+          const allSurahs = getAllSurahs();
+          const currentSurahIndex = allSurahs.findIndex(s => s.surah === surahNumber);
+          
+          // If we're at the last surah, go to the first surah (Al-Fatihah)
+          if (currentSurahIndex === allSurahs.length - 1) {
+            const firstSurah = allSurahs[0]; // Al-Fatihah
+            navigation.navigate('Memorization', { surah: firstSurah, resumeFromIndex: 0 });
+          } else {
+            // Go to the next surah
+            const nextSurah = allSurahs[currentSurahIndex + 1];
+            navigation.navigate('Memorization', { surah: nextSurah, resumeFromIndex: 0 });
+          }
+        }}
+        isLastAyah={false}
+        isFullSurah={true}
+        language={language}
+        toArabicNumber={toArabicNumber}
+      />
+
+      {/* Full Surah Recordings Modal */}
+      <RecordingsModal
+        visible={showFullSurahRecordingsModal}
+        onClose={() => setShowFullSurahRecordingsModal(false)}
+        surahName={surah?.name || 'Al-Fatihah'}
+        ayahNumber="full-surah"
+        onRecordingChange={() => {
+          // Refresh recordings when they change
+          checkRecordings();
+        }}
       />
 
       {/* Streak Animation Modal */}
