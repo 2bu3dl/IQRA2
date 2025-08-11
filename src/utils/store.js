@@ -13,6 +13,9 @@ const STORAGE_KEYS = {
   BOOKMARKED_AYAHS: 'bookmarked_ayahs',
   CUSTOM_LISTS: 'custom_lists',
   CUSTOM_LIST_AYAHS: 'custom_list_ayahs',
+  WEEKLY_ACTIVITY: 'weekly_activity',
+  STREAK_BROKEN_SHOWN: 'streak_broken_shown',
+  LAST_STREAK_CHECK: 'last_streak_check',
 };
 
 // Calculate total ayaat in the Qur'an
@@ -148,6 +151,9 @@ export const addHasanat = async (amount) => {
     // Update streak (this handles the streak logic properly)
     const streakResult = await updateStreak();
     const newStreak = streakResult ? streakResult.streak : 0;
+    
+    // Also update weekly activity when earning hasanat
+    await updateWeeklyActivity();
 
     await Promise.all([
       AsyncStorage.setItem(STORAGE_KEYS.TOTAL_HASANAT, newTotal.toString()),
@@ -206,11 +212,14 @@ export const updateStreak = async () => {
         newStreak = 1;
       }
 
-      await Promise.all([
-        AsyncStorage.setItem(STORAGE_KEYS.LAST_ACTIVITY_DATE, today),
-        AsyncStorage.setItem(STORAGE_KEYS.STREAK, newStreak.toString()),
-        AsyncStorage.setItem(STORAGE_KEYS.STREAK_UPDATED_TODAY, today),
-      ]);
+          await Promise.all([
+      AsyncStorage.setItem(STORAGE_KEYS.LAST_ACTIVITY_DATE, today),
+      AsyncStorage.setItem(STORAGE_KEYS.STREAK, newStreak.toString()),
+      AsyncStorage.setItem(STORAGE_KEYS.STREAK_UPDATED_TODAY, today),
+    ]);
+    
+    // Also update weekly activity
+    await updateWeeklyActivity();
 
       console.log('[updateStreak] Streak updated:', {
         lastActivityDate,
@@ -228,6 +237,158 @@ export const updateStreak = async () => {
   } catch (error) {
     console.error('Error updating streak:', error);
     return null;
+  }
+};
+
+// Helper to get start of current week (Sunday)
+const getWeekStart = (date = new Date()) => {
+  const d = new Date(date);
+  const day = d.getDay(); // 0 = Sunday, 1 = Monday, etc.
+  const diff = d.getDate() - day;
+  const weekStart = new Date(d.setDate(diff));
+  weekStart.setHours(0, 0, 0, 0);
+  return weekStart;
+};
+
+// Helper to get date string for a specific date
+const getDateString = (date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+// Track weekly activity and get current week's activity pattern
+export const updateWeeklyActivity = async () => {
+  try {
+    const today = getTodayString();
+    const weeklyActivity = await AsyncStorage.getItem(STORAGE_KEYS.WEEKLY_ACTIVITY);
+    
+    let activityData = {};
+    if (weeklyActivity) {
+      try {
+        activityData = JSON.parse(weeklyActivity);
+      } catch (e) {
+        console.warn('Failed to parse weekly activity data');
+        activityData = {};
+      }
+    }
+    
+    // Get current week start
+    const weekStart = getWeekStart();
+    const weekStartString = getDateString(weekStart);
+    
+    // Initialize current week if not exists
+    if (!activityData[weekStartString]) {
+      activityData[weekStartString] = {};
+    }
+    
+    // Mark today as active
+    activityData[weekStartString][today] = true;
+    
+    // Clean old weeks (keep only last 4 weeks)
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - 28);
+    Object.keys(activityData).forEach(weekKey => {
+      const weekDate = new Date(weekKey);
+      if (weekDate < cutoffDate) {
+        delete activityData[weekKey];
+      }
+    });
+    
+    await AsyncStorage.setItem(STORAGE_KEYS.WEEKLY_ACTIVITY, JSON.stringify(activityData));
+    return activityData;
+  } catch (error) {
+    console.error('Error updating weekly activity:', error);
+    return {};
+  }
+};
+
+// Get current week's activity pattern (array of 7 booleans for Sun-Sat)
+export const getCurrentWeekActivity = async () => {
+  try {
+    const weeklyActivity = await AsyncStorage.getItem(STORAGE_KEYS.WEEKLY_ACTIVITY);
+    
+    if (!weeklyActivity) {
+      return [false, false, false, false, false, false, false];
+    }
+    
+    const activityData = JSON.parse(weeklyActivity);
+    const weekStart = getWeekStart();
+    const weekStartString = getDateString(weekStart);
+    
+    const currentWeekData = activityData[weekStartString] || {};
+    
+    // Create array for each day of the week (Sun-Sat)
+    const weekActivity = [];
+    for (let i = 0; i < 7; i++) {
+      const dayDate = new Date(weekStart);
+      dayDate.setDate(weekStart.getDate() + i);
+      const dayString = getDateString(dayDate);
+      weekActivity.push(!!currentWeekData[dayString]);
+    }
+    
+    return weekActivity;
+  } catch (error) {
+    console.error('Error getting current week activity:', error);
+    return [false, false, false, false, false, false, false];
+  }
+};
+
+// Get current week streak (number of consecutive weeks with activity)
+export const getCurrentWeekStreak = async () => {
+  try {
+    const weeklyActivity = await AsyncStorage.getItem(STORAGE_KEYS.WEEKLY_ACTIVITY);
+    
+    if (!weeklyActivity) {
+      return 0;
+    }
+    
+    const activityData = JSON.parse(weeklyActivity);
+    
+    // Get all weeks in chronological order
+    const weekKeys = Object.keys(activityData).sort();
+    if (weekKeys.length === 0) {
+      return 0;
+    }
+    
+    // Get current week start
+    const currentWeekStart = getWeekStart();
+    const currentWeekString = getDateString(currentWeekStart);
+    
+    // Check if current week has any activity
+    const currentWeekData = activityData[currentWeekString];
+    const hasCurrentWeekActivity = currentWeekData && Object.keys(currentWeekData).length > 0;
+    
+    if (!hasCurrentWeekActivity) {
+      return 0;
+    }
+    
+    // Count consecutive weeks from current week backwards
+    let weekStreak = 0;
+    let checkDate = new Date(currentWeekStart);
+    
+    while (true) {
+      const checkWeekString = getDateString(checkDate);
+      const weekData = activityData[checkWeekString];
+      
+      // Check if this week has activity
+      if (weekData && Object.keys(weekData).length > 0) {
+        weekStreak++;
+        // Move to previous week
+        checkDate.setDate(checkDate.getDate() - 7);
+      } else {
+        break;
+      }
+      
+      // Safety check - don't go beyond 52 weeks
+      if (weekStreak >= 52) break;
+    }
+    
+    return weekStreak;
+  } catch (error) {
+    console.error('Error getting current week streak:', error);
+    return 0;
   }
 };
 
@@ -300,38 +461,20 @@ export const saveCurrentPosition = async (surahName, flashcardIndex) => {
 };
 
 // Reset all progress
-export const resetProgress = async (includeRecordings = false) => {
+export const resetProgress = async () => {
   try {
     // Set last activity date to yesterday
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
     const yesterdayString = yesterday.toISOString().split('T')[0];
-    
-    const resetPromises = [
+    await Promise.all([
       AsyncStorage.setItem(STORAGE_KEYS.TOTAL_HASANAT, '0'),
       AsyncStorage.setItem(STORAGE_KEYS.TODAY_HASANAT, '0'),
       AsyncStorage.setItem(STORAGE_KEYS.LAST_ACTIVITY_DATE, yesterdayString),
       AsyncStorage.setItem(STORAGE_KEYS.STREAK, '0'),
       AsyncStorage.setItem(STORAGE_KEYS.MEMORIZED_AYAHS, JSON.stringify(initialState.memorizedAyahs)),
       AsyncStorage.removeItem(STORAGE_KEYS.STREAK_UPDATED_TODAY),
-    ];
-
-    // If includeRecordings is true, also clear all recording-related data
-    if (includeRecordings) {
-      // Get all keys and filter out recording-related ones
-      const allKeys = await AsyncStorage.getAllKeys();
-      const recordingKeys = allKeys.filter(key => 
-        key.startsWith('recording_') || 
-        key.startsWith('highlighted_') ||
-        key.includes('recording')
-      );
-      
-      if (recordingKeys.length > 0) {
-        resetPromises.push(AsyncStorage.multiRemove(recordingKeys));
-      }
-    }
-
-    await Promise.all(resetPromises);
+    ]);
     return true;
   } catch (error) {
     console.error('Error resetting progress:', error);
@@ -598,5 +741,93 @@ export const isAyahInAnyList = async (surahName, ayahNumber) => {
   } catch (error) {
     console.error('[Store] Error checking if ayah is in any list:', error);
     return false;
+  }
+};
+
+// Check if streak was broken since last app launch
+export const checkStreakBroken = async () => {
+  try {
+    const [
+      lastStreakCheck,
+      lastActivityDate,
+      currentStreak,
+      streakBrokenShown
+    ] = await Promise.all([
+      AsyncStorage.getItem(STORAGE_KEYS.LAST_STREAK_CHECK),
+      AsyncStorage.getItem(STORAGE_KEYS.LAST_ACTIVITY_DATE),
+      AsyncStorage.getItem(STORAGE_KEYS.STREAK),
+      AsyncStorage.getItem(STORAGE_KEYS.STREAK_BROKEN_SHOWN)
+    ]);
+
+    const today = getTodayString();
+    const todayDate = new Date(today);
+    
+    // If this is the first time checking, just set the check date
+    if (!lastStreakCheck) {
+      await AsyncStorage.setItem(STORAGE_KEYS.LAST_STREAK_CHECK, today);
+      return null;
+    }
+
+    const lastCheckDate = new Date(lastStreakCheck);
+    const lastActivity = lastActivityDate ? new Date(lastActivityDate) : null;
+    const streak = parseInt(currentStreak) || 0;
+    
+    // Calculate days between last check and today
+    const daysDiff = Math.floor((todayDate - lastCheckDate) / (1000 * 60 * 60 * 24));
+    
+    // If we already showed the broken streak today, don't show again
+    if (streakBrokenShown === today) {
+      return null;
+    }
+    
+    // Check if streak was broken (missed consecutive days)
+    if (daysDiff > 1 && lastActivity && streak > 0) {
+      // Find missed days in current week
+      const missedDays = [];
+      const currentWeekStart = getWeekStart();
+      
+      // Check each day in current week to see if it was missed
+      for (let i = 0; i < 7; i++) {
+        const checkDate = new Date(currentWeekStart);
+        checkDate.setDate(currentWeekStart.getDate() + i);
+        const checkDateString = getDateString(checkDate);
+        
+        // If this day is before today and after last activity, it's a missed day
+        if (checkDate < todayDate && checkDate > lastActivity) {
+          missedDays.push(i);
+        }
+      }
+      
+      // Calculate previous streak (before it was broken)
+      const previousStreak = streak;
+      
+      // Mark that we've shown the broken streak popup for today
+      await AsyncStorage.setItem(STORAGE_KEYS.STREAK_BROKEN_SHOWN, today);
+      await AsyncStorage.setItem(STORAGE_KEYS.LAST_STREAK_CHECK, today);
+      
+      return {
+        streakBroken: true,
+        previousStreak,
+        missedDays,
+        daysMissed: daysDiff - 1
+      };
+    }
+    
+    // Update last check date
+    await AsyncStorage.setItem(STORAGE_KEYS.LAST_STREAK_CHECK, today);
+    return null;
+    
+  } catch (error) {
+    console.error('Error checking streak broken:', error);
+    return null;
+  }
+};
+
+// Reset streak broken shown flag (call when user becomes active again)
+export const resetStreakBrokenShown = async () => {
+  try {
+    await AsyncStorage.removeItem(STORAGE_KEYS.STREAK_BROKEN_SHOWN);
+  } catch (error) {
+    console.error('Error resetting streak broken shown:', error);
   }
 }; 

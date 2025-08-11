@@ -28,24 +28,53 @@ export const AuthProvider = ({ children }) => {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Login with email/password
-  const login = async (email, password) => {
+  // Login with email/password or username
+  const login = async (identifier, password) => {
     try {
       setLoading(true);
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password
-      });
-
-      if (error) throw error;
       
-      console.log('[Auth] Login successful:', data.user.email);
-      return { success: true, user: data.user };
+      // Check if identifier is email or username
+      const isEmail = identifier.includes('@');
+      
+      if (isEmail) {
+        // Login with email
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: identifier,
+          password
+        });
+
+        if (error) throw error;
+        
+        console.log('[Auth] Login successful:', data.user.email);
+        return { success: true, user: data.user };
+      } else {
+        // Login with username - we need to find the user by username first
+        const { data: profile, error: profileError } = await supabase
+          .from('user_profiles')
+          .select('email')
+          .eq('username', identifier)
+          .single();
+
+        if (profileError || !profile) {
+          return { success: false, error: 'Username not found' };
+        }
+
+        // Login with the email associated with the username
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: profile.email,
+          password
+        });
+
+        if (error) throw error;
+        
+        console.log('[Auth] Login successful with username:', data.user.email);
+        return { success: true, user: data.user };
+      }
     } catch (error) {
       console.error('[Auth] Login error:', error);
       let message = 'Login failed';
       if (error.message.includes('Invalid login credentials')) {
-        message = 'Invalid email or password';
+        message = 'Invalid username/email or password';
       } else if (error.message.includes('Email not confirmed')) {
         message = 'Please check your email and confirm your account';
       }
@@ -56,7 +85,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   // Register new user
-  const register = async (email, password) => {
+  const register = async (email, password, username = '') => {
     try {
       setLoading(true);
       const { data, error } = await supabase.auth.signUp({
@@ -65,6 +94,10 @@ export const AuthProvider = ({ children }) => {
       });
 
       if (error) throw error;
+      
+      // Note: User profile is automatically created by database trigger
+      // The trigger will create user_profiles, user_progress, and leaderboard_stats entries
+      // The username will be automatically generated to ensure uniqueness
       
       console.log('[Auth] Registration successful:', data.user.email);
       return { success: true, user: data.user };

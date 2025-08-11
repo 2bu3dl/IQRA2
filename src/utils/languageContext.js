@@ -164,9 +164,7 @@ export const LanguageProvider = ({ children }) => {
       'search_surahs': 'Search surahs by name or number...',
       'home': 'Home',
       'continue': 'Continue',
-      'masha2allah': 'masha2Allah',
       'you_earned_hasanat': 'You\'ve earned {amount} 7asanaat for this Ayah!',
-      'insha2allah': 'insha2Allah',
       'revise': 'Revise',
       'back': 'Back',
       'previous': 'Previous',
@@ -409,9 +407,7 @@ export const LanguageProvider = ({ children }) => {
       'search_surahs': 'ابحث عن السورة بالاسم أو الرقم...',
       'home': 'الرئيسية',
       'continue': 'استمر',
-      'masha2allah': 'ما شاء الله',
       'you_earned_hasanat': 'لقد كسبت {amount} حسنة لهذه الآية!',
-      'insha2allah': 'إن شاء الله',
       'revise': 'راجع',
       'back': 'رجوع',
       'previous': 'السابق',
@@ -564,7 +560,7 @@ export const LanguageProvider = ({ children }) => {
     
     // Handle interpolation for app_name
     if (translation.includes('{app_name}')) {
-      const appName = translations[language]['app_name'] || translations.en['app_name'] || 'IQRA2';
+      const appName = translations[language].app_name || translations.en.app_name || 'IQRA2';
       translation = translation.replace(/{app_name}/g, appName);
     }
     

@@ -1,11 +1,11 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { View, StyleSheet, SafeAreaView, Image, ImageBackground, Modal, TouchableOpacity, Dimensions, Alert, TextInput, Animated, ScrollView, FlatList, Platform } from 'react-native';
+import { View, StyleSheet, SafeAreaView, Image, ImageBackground, Modal, TouchableOpacity, Dimensions, Alert, TextInput, Animated, ScrollView, FlatList, Platform, PanResponder } from 'react-native';
 import { useAuth } from '../utils/authContext';
 import { COLORS as BASE_COLORS, SIZES, FONTS } from '../utils/theme';
 import Text from '../components/Text';
 import Button from '../components/Button';
 import Card from '../components/Card';
-import { loadData, resetProgress } from '../utils/store';
+import { loadData, resetProgress, checkStreakBroken } from '../utils/store';
 import { syncProgressData } from '../utils/cloudStore';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -16,6 +16,11 @@ import audioRecorder from '../utils/audioRecorder';
 import audioPlayer from '../utils/audioPlayer';
 
 import AuthScreen from './AuthScreen';
+import StreakAnimation from '../components/StreakAnimation';
+import StreakBrokenAnimation from '../components/StreakBrokenAnimation';
+import LeaderboardCard from '../components/LeaderboardCard';
+import ProfileDashboard from './ProfileDashboard';
+import { LEADERBOARD_TYPES, syncUserStatsToLeaderboard, testLeaderboardConnection } from '../utils/leaderboardService';
 
 const COLORS = { ...BASE_COLORS, primary: '#6BA368', accent: '#FFD700' };
 
@@ -101,6 +106,7 @@ const HomeScreen = ({ navigation, route }) => {
     memorizedAyaat: 0,
   });
   const [settingsVisible, setSettingsVisible] = useState(false);
+  const [authVisible, setAuthVisible] = useState(false);
   const [introVisible, setIntroVisible] = useState(false);
   const [infoVisible, setInfoVisible] = useState(false);
   const [infoActiveTab, setInfoActiveTab] = useState('numerals'); // 'numerals' or 'tajweed'
@@ -110,6 +116,7 @@ const HomeScreen = ({ navigation, route }) => {
   const [currentDuaIndex, setCurrentDuaIndex] = useState(0);
   const [resetting, setResetting] = useState(false);
   const [confirmResetVisible, setConfirmResetVisible] = useState(false);
+  const [resetType, setResetType] = useState('all'); // 'all' or 'today'
   const [includeRecordings, setIncludeRecordings] = useState(false);
   const [memorizeButtonHeld, setMemorizeButtonHeld] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
@@ -118,12 +125,96 @@ const HomeScreen = ({ navigation, route }) => {
   const [streakModalVisible, setStreakModalVisible] = useState(false);
   const [recordingsModalVisible, setRecordingsModalVisible] = useState(false);
   
+  // Page indicator swipe functionality
+  const dotsSwipeResponder = useRef(null);
+  const dotsLayout = useRef({ width: 0, x: 0 });
+  
+  // Streak animation state
+  const [showStreakAnimation, setShowStreakAnimation] = useState(false);
+  const [newStreak, setNewStreak] = useState(0);
+  
+  // Streak broken animation state
+  const [showStreakBrokenAnimation, setShowStreakBrokenAnimation] = useState(false);
+  const [brokenStreakData, setBrokenStreakData] = useState({ previousStreak: 0, missedDays: [] });
+  
+  // Pre-calculated glow animation values for caching
+  const GLOW_CONFIG = {
+    // Icon container glow
+    iconContainer: {
+      shadowRadius: {
+        android: { normal: 8, pressed: 12 },
+        ios: { normal: 35, pressed: 40 }
+      },
+      shadowOpacity: {
+        android: { normal: 1.0, pressed: 2.0 },
+        ios: { normal: 5.0, pressed: 8.5 }
+      },
+      elevation: {
+        android: { normal: 5, pressed: 8 },
+        ios: { normal: 15, pressed: 25 }
+      },
+    },
+    // Text button glow
+    textButton: {
+      shadowOpacity: {
+        android: { normal: 0.2, pressed: 0.4 },
+        ios: { normal: 0.6, pressed: 1.0 }
+      },
+      shadowRadius: {
+        android: { normal: 4, pressed: 8 },
+        ios: { normal: 10, pressed: 24 }
+      },
+      elevation: {
+        android: { normal: 3, pressed: 6 },
+        ios: { normal: 8, pressed: 20 }
+      },
+    },
+    // Text glow
+    text: {
+      shadowRadius: 4,
+      shadowOpacity: 1.0,
+    },
+  };
+  
   // Goal setting state
   const [selectedGoal, setSelectedGoal] = useState(null);
   const [goalCompletionDate, setGoalCompletionDate] = useState(null);
   const [goalProgress, setGoalProgress] = useState(0);
   const [goalStartDate, setGoalStartDate] = useState(null);
   const flatListRef = useRef(null);
+
+  // Streak animation handler
+  const handleStreakAnimationComplete = () => {
+    setShowStreakAnimation(false);
+  };
+
+  // Streak broken animation handler
+  const handleStreakBrokenAnimationComplete = () => {
+    setShowStreakBrokenAnimation(false);
+  };
+
+  // Sync user stats to leaderboard when data changes
+  useEffect(() => {
+    if (data.totalHasanat > 0 || data.streak > 0) {
+      syncUserStatsToLeaderboard().catch(error => {
+        console.error('[HomeScreen] Error syncing to leaderboard:', error);
+      });
+    }
+  }, [data.totalHasanat, data.streak, data.memorizedAyaat]);
+
+  // Test leaderboard connection (for debugging)
+  const testLeaderboard = async () => {
+    try {
+      const result = await testLeaderboardConnection();
+      if (result.success) {
+        Alert.alert('Success', 'Leaderboard database connection is working!');
+      } else {
+        Alert.alert('Error', `Leaderboard test failed: ${result.error}`);
+      }
+    } catch (error) {
+      Alert.alert('Error', `Test failed: ${error.message}`);
+    }
+  };
 
   // Goal calculation helpers
   const calculateGoalCompletionDate = (ayaatPerDay) => {
@@ -216,14 +307,43 @@ const HomeScreen = ({ navigation, route }) => {
     // Track app usage
     telemetryService.trackAppUsage('screen_view', { screen: 'Home' });
 
+    // Check for broken streak when app loads
+    checkForBrokenStreak();
+
     // Refresh data when screen comes into focus
     const unsubscribe = navigation.addListener('focus', () => {
       loadScreenData();
       setMemorizeButtonHeld(false); // Reset button state when returning to home
+      
+      // Reset all modal states when returning to home screen
+      setProgressModalVisible(false);
+      setHasanatModalVisible(false);
+      setStreakModalVisible(false);
+      setRecordingsModalVisible(false);
+      setShowStreakAnimation(false);
+      
+      // Check for broken streak when returning to home
+      checkForBrokenStreak();
+      
       telemetryService.trackAppUsage('screen_focus', { screen: 'Home' });
     });
     return unsubscribe;
   }, [navigation]);
+
+  const checkForBrokenStreak = async () => {
+    try {
+      const brokenStreakInfo = await checkStreakBroken();
+      if (brokenStreakInfo) {
+        setBrokenStreakData({
+          previousStreak: brokenStreakInfo.previousStreak,
+          missedDays: brokenStreakInfo.missedDays || []
+        });
+        setShowStreakBrokenAnimation(true);
+      }
+    } catch (error) {
+      console.error('[HomeScreen] Error checking broken streak:', error);
+    }
+  };
 
   // Handle refresh parameter from navigation
   useEffect(() => {
@@ -264,6 +384,28 @@ const HomeScreen = ({ navigation, route }) => {
       }
     }
   }, [selectedGoal, goalStartDate, data.streak]);
+
+  // Monitor streak changes and trigger animation
+  useEffect(() => {
+    // Only trigger animation if we have a previous streak value and the new streak is higher
+    if (data.streak > 0 && newStreak > 0 && data.streak > newStreak && !showStreakAnimation) {
+      setNewStreak(data.streak);
+      setShowStreakAnimation(true);
+    } else if (data.streak > 0 && newStreak === 0) {
+      // Initial load - just set the streak without animation
+      setNewStreak(data.streak);
+    }
+  }, [data.streak, newStreak, showStreakAnimation]);
+
+  // Check for streak animation trigger from navigation params
+  useEffect(() => {
+    if (route.params?.showStreakAnimation && data.streak > 0) {
+      setNewStreak(data.streak);
+      setShowStreakAnimation(true);
+      // Clear the parameter so it doesn't trigger again
+      navigation.setParams({ showStreakAnimation: undefined });
+    }
+  }, [route.params?.showStreakAnimation, data.streak]);
 
   // Calculate percentage
   const progressPercentage = data.totalAyaat > 0 ? Math.round((data.memorizedAyaat / data.totalAyaat) * 100) : 0;
@@ -335,7 +477,17 @@ const HomeScreen = ({ navigation, route }) => {
                 </Animated.View>
               );
             })()}
-            <TouchableOpacity style={styles.settingsButton} onPress={() => setSettingsVisible(true)} onPressIn={() => hapticSelection()}>
+            <TouchableOpacity 
+              style={styles.settingsButton} 
+              onPress={() => {
+                if (isAuthenticated) {
+                  setSettingsVisible(true);
+                } else {
+                  setAuthVisible(true);
+                }
+              }} 
+              onPressIn={() => hapticSelection()}
+            >
               <View style={{
                 borderWidth: 2,
                 borderColor: 'rgba(165,115,36,0.8)',
@@ -407,6 +559,7 @@ const HomeScreen = ({ navigation, route }) => {
           <View style={{
             flexDirection: 'row',
             justifyContent: 'space-around',
+            alignItems: 'center',
             marginTop: Platform.OS === 'android' ? -40 : -20, // Moved up more for Android
             marginBottom: 20,
             position: 'relative',
@@ -445,6 +598,51 @@ const HomeScreen = ({ navigation, route }) => {
                   };
                 }
               }, []);
+
+              // Initialize dots swipe responder
+              useEffect(() => {
+                dotsSwipeResponder.current = PanResponder.create({
+                  onStartShouldSetPanResponder: () => true,
+                  onMoveShouldSetPanResponder: (evt, gestureState) => {
+                    // Only respond to horizontal swipes
+                    return Math.abs(gestureState.dx) > Math.abs(gestureState.dy) && Math.abs(gestureState.dx) > 5;
+                  },
+                  onPanResponderGrant: (evt) => {
+                    // Don't change page on initial touch
+                  },
+                  onPanResponderMove: (evt, gestureState) => {
+                    // Calculate which page the finger is currently over
+                    const touchX = evt.nativeEvent.pageX;
+                    const dotsWidth = dotsLayout.current.width;
+                    const dotsX = dotsLayout.current.x;
+                    
+                    if (dotsWidth > 0) {
+                      // Calculate relative position within the dots container
+                      const relativeX = touchX - dotsX;
+                      const dotWidth = dotsWidth / 3; // 3 pages
+                      
+                      // Calculate which page the touch is over
+                      const pageIndex = Math.floor(relativeX / dotWidth);
+                      const clampedPageIndex = Math.max(0, Math.min(2, pageIndex));
+                      
+                      // Switch to the page under the finger
+                      if (clampedPageIndex !== currentPage) {
+                        setCurrentPage(clampedPageIndex);
+                        // Scroll FlatList to the corresponding page
+                        if (flatListRef.current) {
+                          flatListRef.current.scrollToIndex({
+                            index: clampedPageIndex,
+                            animated: true
+                          });
+                        }
+                      }
+                    }
+                  },
+                  onPanResponderRelease: (evt, gestureState) => {
+                    // No need to do anything on release since we're switching during move
+                  },
+                });
+              }, [currentPage]);
               
               return (
                 <Animated.View
@@ -515,9 +713,9 @@ const HomeScreen = ({ navigation, route }) => {
                   activeOpacity={1}
                 >
                   <View style={[styles.buttonIconContainer, {
-                    shadowRadius: memorizeButtonHeld ? (Platform.OS === 'android' ? 12 : 40) : (Platform.OS === 'android' ? 8 : 35),
-                    shadowOpacity: memorizeButtonHeld ? (Platform.OS === 'android' ? 2.0 : 8.5) : (Platform.OS === 'android' ? 1.0 : 5.0),
-                    elevation: memorizeButtonHeld ? (Platform.OS === 'android' ? 8 : 25) : (Platform.OS === 'android' ? 5 : 15),
+                    shadowRadius: memorizeButtonHeld ? GLOW_CONFIG.iconContainer.shadowRadius[Platform.OS].pressed : GLOW_CONFIG.iconContainer.shadowRadius[Platform.OS].normal,
+                    shadowOpacity: memorizeButtonHeld ? GLOW_CONFIG.iconContainer.shadowOpacity[Platform.OS].pressed : GLOW_CONFIG.iconContainer.shadowOpacity[Platform.OS].normal,
+                    elevation: memorizeButtonHeld ? GLOW_CONFIG.iconContainer.elevation[Platform.OS].pressed : GLOW_CONFIG.iconContainer.elevation[Platform.OS].normal,
                   }]}>
                     <Image source={require('../assets/openQuran.png')} style={[styles.buttonIcon, { width: Platform.OS === 'android' ? 52 : 45, height: Platform.OS === 'android' ? 52 : 45 }]} resizeMode="contain" />
                   </View>
@@ -531,9 +729,9 @@ const HomeScreen = ({ navigation, route }) => {
                     justifyContent: 'center', 
                     shadowColor: '#fae29f', 
                     shadowOffset: { width: 0, height: 0 }, 
-                    shadowOpacity: pressed ? (Platform.OS === 'android' ? 0.4 : 1.0) : (Platform.OS === 'android' ? 0.2 : 0.6), 
-                    shadowRadius: pressed ? (Platform.OS === 'android' ? 8 : 24) : (Platform.OS === 'android' ? 4 : 10), 
-                    elevation: pressed ? (Platform.OS === 'android' ? 6 : 20) : (Platform.OS === 'android' ? 3 : 8),
+                    shadowOpacity: pressed ? GLOW_CONFIG.textButton.shadowOpacity[Platform.OS].pressed : GLOW_CONFIG.textButton.shadowOpacity[Platform.OS].normal, 
+                    shadowRadius: pressed ? GLOW_CONFIG.textButton.shadowRadius[Platform.OS].pressed : GLOW_CONFIG.textButton.shadowRadius[Platform.OS].normal, 
+                    elevation: pressed ? GLOW_CONFIG.textButton.elevation[Platform.OS].pressed : GLOW_CONFIG.textButton.elevation[Platform.OS].normal,
                     minHeight: language === 'ar' ? 80 : 60
                   }}>
                     <Text style={[{
@@ -545,7 +743,7 @@ const HomeScreen = ({ navigation, route }) => {
                       fontSize: memorizeButtonHeld ? 26 : 22, 
                       textShadowColor: '#fae29f', 
                       textShadowOffset: { width: 0, height: 0 }, 
-                      textShadowRadius: 4,
+                      textShadowRadius: GLOW_CONFIG.text.shadowRadius,
                       lineHeight: language === 'ar' ? 36 : 26,
                       fontFamily: 'Montserrat-Bold'
                     }]}>{memorizeButtonHeld ? t('b2ithnAllah') : t('quran_memorize')}</Text>
@@ -568,7 +766,8 @@ const HomeScreen = ({ navigation, route }) => {
                     marginTop: isSmallScreen ? 20 : (isMediumScreen ? 25 : 30),
                     marginBottom: SIZES.medium,
                     flex: 1,
-                    paddingHorizontal: SIZES.small,
+                    alignItems: 'center',
+                    width: '100%',
                   }}>
                     {/* Saved Content Header */}
                     <View style={{
@@ -587,13 +786,7 @@ const HomeScreen = ({ navigation, route }) => {
                       }}>
                         Saved Content
                       </Text>
-                      <Text style={{
-                        textAlign: 'center',
-                        color: '#CCCCCC',
-                        fontSize: 12,
-                      }}>
-                        Your saved ayaat and recordings
-                      </Text>
+
                     </View>
 
                     {/* Two Column Layout */}
@@ -601,6 +794,8 @@ const HomeScreen = ({ navigation, route }) => {
                       flexDirection: 'row',
                       justifyContent: 'space-between',
                       gap: 8,
+                      width: '90%',
+                      alignSelf: 'center',
                     }}>
                       {/* Saved Ayaat */}
                       <TouchableOpacity
@@ -711,7 +906,6 @@ const HomeScreen = ({ navigation, route }) => {
                     marginBottom: 40,
                     alignItems: 'center',
                     width: '100%',
-                    marginLeft: -16
                   }}>
                     {/* Progress Card */}
                     <TouchableOpacity
@@ -913,7 +1107,8 @@ const HomeScreen = ({ navigation, route }) => {
                     marginTop: isSmallScreen ? 20 : (isMediumScreen ? 25 : 30),
                     marginBottom: SIZES.medium,
                     flex: 1,
-                    paddingHorizontal: SIZES.small,
+                    alignItems: 'center',
+                    width: '100%',
                   }}>
                                                              {/* Leaderboards Header */}
                      <View style={{
@@ -932,13 +1127,7 @@ const HomeScreen = ({ navigation, route }) => {
                        }}>
                          Leaderboards
                        </Text>
-                       <Text style={{
-                         textAlign: 'center',
-                         color: '#CCCCCC',
-                         fontSize: 12,
-                       }}>
-                         Tap to view full leaderboards
-                       </Text>
+
                      </View>
 
                      {/* Two Column Leaderboards */}
@@ -946,154 +1135,30 @@ const HomeScreen = ({ navigation, route }) => {
                        flexDirection: 'row',
                        justifyContent: 'space-between',
                        gap: 8,
+                       width: '90%',
+                       alignSelf: 'center',
                      }}>
                        {/* Memorization Leaderboard */}
-                       <TouchableOpacity
-                         style={{
-                           flex: 0.48,
-                           backgroundColor: 'rgba(128,128,128,0.3)',
-                           borderColor: 'rgba(165,115,36,0.8)',
-                           borderWidth: 1,
-                           borderRadius: SIZES.base,
-                           padding: SIZES.small,
-                           shadowColor: '#000000',
-                           shadowOffset: { width: 4, height: 4 },
-                           shadowOpacity: 0.6,
-                           shadowRadius: 6,
-                           elevation: 8,
-                         }}
+                       <LeaderboardCard
+                         type={LEADERBOARD_TYPES.MEMORIZATION}
+                         title="Top Memorizers"
                          onPress={() => {
                            hapticSelection();
-                           Alert.alert('Memorization Leaderboard', 'Coming soon! This will show the top memorizers based on ayaat memorized and hasanat earned.');
+                           navigation.navigate('Leaderboard');
                          }}
-                       >
-                         <Text style={{
-                           textAlign: 'center',
-                           color: '#5b7f67',
-                           fontWeight: 'bold',
-                           fontSize: 16,
-                           marginBottom: 8,
-                         }}>
-                           Top Memorizers
-                         </Text>
-                         {/* Top 3 Preview */}
-                         <View style={{ marginBottom: SIZES.small }}>
-                           {[
-                             { rank: 1, name: 'Ahmad Al-Rashid', ayaat: 2456, hasanat: '2.3M' },
-                             { rank: 2, name: 'Fatima Zahra', ayaat: 2103, hasanat: '1.9M' },
-                             { rank: 3, name: 'Omar Khalil', ayaat: 1876, hasanat: '1.6M' },
-                           ].map((user, index) => (
-                             <View key={index} style={{
-                               flexDirection: 'row',
-                               alignItems: 'center',
-                               paddingVertical: 4,
-                               borderBottomWidth: index < 2 ? 1 : 0,
-                               borderBottomColor: 'rgba(165,115,36,0.3)',
-                             }}>
-                               <View style={{
-                                 width: 20,
-                                 alignItems: 'center',
-                                 marginRight: 8,
-                               }}>
-                                 <Text style={{ 
-                                   fontSize: 12, 
-                                   color: '#F5E6C8', 
-                                   fontWeight: 'bold' 
-                                 }}>#{user.rank}</Text>
-                               </View>
-                               <View style={{ flex: 1 }}>
-                                 <Text style={{
-                                   color: '#F5E6C8',
-                                   fontWeight: 'bold',
-                                   fontSize: 12,
-                                 }}>
-                                   {user.name}
-                                 </Text>
-                                 <Text style={{
-                                   color: '#CCCCCC',
-                                   fontSize: 10,
-                                 }}>
-                                   {user.ayaat} ayaat
-                                 </Text>
-                               </View>
-                             </View>
-                           ))}
-                         </View>
-                       </TouchableOpacity>
+                         limit={3}
+                       />
 
                        {/* Streak Leaderboard */}
-                       <TouchableOpacity
-                         style={{
-                           flex: 0.48,
-                           backgroundColor: 'rgba(128,128,128,0.3)',
-                           borderColor: 'rgba(165,115,36,0.8)',
-                           borderWidth: 1,
-                           borderRadius: SIZES.base,
-                           padding: SIZES.small,
-                           shadowColor: '#000000',
-                           shadowOffset: { width: 4, height: 4 },
-                           shadowOpacity: 0.6,
-                           shadowRadius: 6,
-                           elevation: 8,
-                         }}
+                       <LeaderboardCard
+                         type={LEADERBOARD_TYPES.STREAK}
+                         title="Daily Streaks"
                          onPress={() => {
                            hapticSelection();
-                           Alert.alert('Streak Leaderboard', 'Coming soon! This will show the top users based on their daily memorization streaks.');
+                           navigation.navigate('Leaderboard');
                          }}
-                       >
-                         <Text style={{
-                           textAlign: 'center',
-                           color: '#5b7f67',
-                           fontWeight: 'bold',
-                           fontSize: 16,
-                           marginBottom: 8,
-                         }}>
-                           Daily Streaks
-                         </Text>
-                         {/* Top 3 Preview */}
-                         <View style={{ marginBottom: SIZES.small }}>
-                           {[
-                             { rank: 1, name: 'Yusuf Al-Hamid', streak: 156 },
-                             { rank: 2, name: 'Aisha Bint Ali', streak: 134 },
-                             { rank: 3, name: 'Khalid Ibn Walid', streak: 98 },
-                           ].map((user, index) => (
-                             <View key={index} style={{
-                               flexDirection: 'row',
-                               alignItems: 'center',
-                               paddingVertical: 4,
-                               borderBottomWidth: index < 2 ? 1 : 0,
-                               borderBottomColor: 'rgba(165,115,36,0.3)',
-                             }}>
-                               <View style={{
-                                 width: 20,
-                                 alignItems: 'center',
-                                 marginRight: 8,
-                               }}>
-                                 <Text style={{ 
-                                   fontSize: 12, 
-                                   color: '#F5E6C8', 
-                                   fontWeight: 'bold' 
-                                 }}>#{user.rank}</Text>
-                               </View>
-                               <View style={{ flex: 1 }}>
-                                 <Text style={{
-                                   color: '#F5E6C8',
-                                   fontWeight: 'bold',
-                                   fontSize: 12,
-                                 }}>
-                                   {user.name}
-                                 </Text>
-                                 <Text style={{
-                                   color: '#CCCCCC',
-                                   fontSize: 10,
-                                 }}>
-                                   {user.streak} days
-                                 </Text>
-                               </View>
-                             </View>
-                           ))}
-                         </View>
-                       </TouchableOpacity>
+                         limit={3}
+                       />
                      </View>
                   </View>
                 )
@@ -1105,7 +1170,7 @@ const HomeScreen = ({ navigation, route }) => {
             bounces={false}
             decelerationRate="fast"
             snapToInterval={Dimensions.get('window').width}
-            snapToAlignment="start"
+            snapToAlignment="center"
             onMomentumScrollEnd={(event) => {
               const pageIndex = Math.round(event.nativeEvent.contentOffset.x / Dimensions.get('window').width);
               setCurrentPage(pageIndex);
@@ -1114,14 +1179,16 @@ const HomeScreen = ({ navigation, route }) => {
               <View style={{ 
                 width: Dimensions.get('window').width,
                 overflow: 'hidden',
-                height: '100%'
+                height: '100%',
+                alignItems: 'center',
+                justifyContent: 'center',
               }}>
                 {item.content}
               </View>
             )}
             keyExtractor={(item) => item.id}
             style={{ flex: 1 }}
-            contentContainerStyle={{ flexGrow: 1 }}
+            contentContainerStyle={{ flexGrow: 1, alignItems: 'center' }}
             getItemLayout={(data, index) => ({
               length: Dimensions.get('window').width,
               offset: Dimensions.get('window').width * index,
@@ -1130,34 +1197,74 @@ const HomeScreen = ({ navigation, route }) => {
            />
            
            {/* Page Indicators */}
-           <View style={{
+           <View 
+             style={{
              flexDirection: 'row',
              justifyContent: 'center',
              alignItems: 'center',
              marginTop: 30,
              marginBottom: 10
-           }}>
-             <View style={{
+             }}
+             {...(dotsSwipeResponder.current?.panHandlers || {})}
+             onLayout={(e) => {
+               const { width, x } = e.nativeEvent.layout;
+               dotsLayout.current = { width, x };
+             }}
+           >
+             <TouchableOpacity
+               style={{
                width: 8,
                height: 8,
                borderRadius: 4,
                backgroundColor: currentPage === 0 ? '#5b7f67' : 'rgba(165,115,36,0.8)',
                marginHorizontal: 4
-             }} />
-             <View style={{
+               }}
+               onPress={() => {
+                 setCurrentPage(0);
+                 if (flatListRef.current) {
+                   flatListRef.current.scrollToIndex({
+                     index: 0,
+                     animated: true
+                   });
+                 }
+               }}
+             />
+             <TouchableOpacity
+               style={{
                width: 8,
                height: 8,
                borderRadius: 4,
                backgroundColor: currentPage === 1 ? '#5b7f67' : 'rgba(165,115,36,0.8)',
                marginHorizontal: 4
-             }} />
-             <View style={{
+               }}
+               onPress={() => {
+                 setCurrentPage(1);
+                 if (flatListRef.current) {
+                   flatListRef.current.scrollToIndex({
+                     index: 1,
+                     animated: true
+                   });
+                 }
+               }}
+             />
+             <TouchableOpacity
+               style={{
                width: 8,
                height: 8,
                borderRadius: 4,
                backgroundColor: currentPage === 2 ? '#5b7f67' : 'rgba(165,115,36,0.8)',
                marginHorizontal: 4
-             }} />
+               }}
+               onPress={() => {
+                 setCurrentPage(2);
+                 if (flatListRef.current) {
+                   flatListRef.current.scrollToIndex({
+                     index: 2,
+                     animated: true
+                   });
+                 }
+               }}
+             />
            </View>
         </View>
 
@@ -1276,7 +1383,7 @@ const HomeScreen = ({ navigation, route }) => {
                   textAlign: 'center',
                   lineHeight: 32
                 }}>
-                  {t('welcome_to_iqra2')}
+                  {isAuthenticated ? `Welcome ${user?.email?.split('@')[0] || 'User'}!` : t('welcome_to_iqra2')}
                 </Text>
                 <Text variant="body1" style={{ 
                   marginBottom: 30, 
@@ -1894,26 +2001,18 @@ const HomeScreen = ({ navigation, route }) => {
                     {t('logged_in_as')} {user?.email}
                   </Text>
                   
-                  <View style={{ flexDirection: 'row', gap: 8, marginBottom: 8 }}>
+                  <View style={{ flexDirection: 'row', gap: 12, marginBottom: 8 }}>
                     <Button
-                      title={t('sync_progress')}
+                      title={t('logout')}
                       onPress={async () => {
                         hapticSelection();
-                        try {
-                          const result = await syncProgressData();
+                        const result = await logout();
                           if (result.success) {
-                            Alert.alert(t('success'), t('sync_successful'));
-                            const loadedData = await loadData();
-                            setData(loadedData);
-                          } else {
-                            Alert.alert(t('error'), t('sync_failed'));
-                          }
-                        } catch (error) {
-                          Alert.alert(t('error'), t('sync_failed'));
+                          Alert.alert(t('success'), t('logout') + ' ' + t('success').toLowerCase());
                         }
                       }}
                       style={{ 
-                        backgroundColor: '#33694e', 
+                        backgroundColor: 'rgba(220,20,60,0.7)', 
                         flex: 1,
                         shadowColor: '#000',
                         shadowOffset: { width: 0, height: 4 },
@@ -1924,16 +2023,13 @@ const HomeScreen = ({ navigation, route }) => {
                     />
                     
                     <Button
-                      title={t('logout')}
-                      onPress={async () => {
+                      title="Profile"
+                      onPress={() => {
                         hapticSelection();
-                        const result = await logout();
-                        if (result.success) {
-                          Alert.alert(t('success'), t('logout') + ' ' + t('success').toLowerCase());
-                        }
+                        navigation.navigate('Profile');
                       }}
                       style={{ 
-                        backgroundColor: 'rgba(220,20,60,0.7)', 
+                        backgroundColor: '#33694e', 
                         flex: 1,
                         shadowColor: '#000',
                         shadowOffset: { width: 0, height: 4 },
@@ -1969,31 +2065,11 @@ const HomeScreen = ({ navigation, route }) => {
                 />
               )}
               
-              <Button
-                title={t('reset_today')}
-                onPress={async () => {
+              <TouchableOpacity
+                onPress={() => {
                   hapticSelection();
-                  setResetting(true);
-                  // Reset only today's hasanat
-                  const today = new Date().toISOString().split('T')[0];
-                  const currentTodayHasanat = await AsyncStorage.getItem('today_hasanat');
-                  const currentTotalHasanat = await AsyncStorage.getItem('total_hasanat');
-                  
-                  // Subtract today's hasanat from total
-                  const todayAmount = parseInt(currentTodayHasanat || '0');
-                  const totalAmount = parseInt(currentTotalHasanat || '0');
-                  const newTotal = Math.max(0, totalAmount - todayAmount);
-                  
-                  await AsyncStorage.setItem('today_hasanat', '0');
-                  await AsyncStorage.setItem('total_hasanat', newTotal.toString());
-                  // Don't reset last_activity_date when only resetting today's hasanat
-                  // This preserves streak calculation
-                  // Also reset streak_updated_today to allow streak recalculation
-                  await AsyncStorage.removeItem('streak_updated_today');
-                  setResetting(false);
                   setSettingsVisible(false);
-                  const loadedData = await loadData();
-                  setData(loadedData);
+                  setConfirmResetVisible(true);
                 }}
                 style={{ 
                   backgroundColor: 'rgba(165,115,36,0.8)', 
@@ -2003,12 +2079,23 @@ const HomeScreen = ({ navigation, route }) => {
                   shadowOpacity: 0.5,
                   shadowRadius: 6,
                   elevation: 8,
+                  paddingVertical: 16,
+                  paddingHorizontal: 24,
+                  borderRadius: 12,
+                  alignItems: 'center',
+                  justifyContent: 'center',
                 }}
                 disabled={resetting}
-              />
+                onPressIn={() => hapticSelection()}
+              >
+                <Text style={{ color: '#FFFFFF', fontSize: 16, fontWeight: '600', textAlign: 'center' }}>
+                  {resetting ? t('resetting') : t('reset_today')}
+                </Text>
+              </TouchableOpacity>
               <TouchableOpacity
                 onPress={() => {
                   hapticSelection();
+                    setResetType('all');
                   setSettingsVisible(false);
                   setConfirmResetVisible(true);
                 }}
@@ -2078,14 +2165,18 @@ const HomeScreen = ({ navigation, route }) => {
               <View style={styles.confirmModalContent}>
                 <View style={styles.confirmModalHeader}>
                   <Text style={styles.confirmModalTitle}>
-                    {t('confirm_reset_title')}
+                    {resetType === 'today' ? 'Reset Today\'s Progress' : t('confirm_reset_title')}
                   </Text>
                   <Text style={styles.confirmModalSubtitle}>
-                    {t('confirm_reset_message')}
+                    {resetType === 'today' 
+                      ? 'This will reset only today\'s hasanat and progress. Your streak and total progress will remain intact.'
+                      : t('confirm_reset_message')
+                    }
                   </Text>
                 </View>
 
-                {/* Recordings Checkbox */}
+                {/* Recordings Checkbox - only show for ALL reset */}
+                {resetType === 'all' && (
                 <View style={styles.confirmModalCheckbox}>
                   <TouchableOpacity
                     style={styles.checkboxContainer}
@@ -2107,6 +2198,7 @@ const HomeScreen = ({ navigation, route }) => {
                     </Text>
                   </TouchableOpacity>
                 </View>
+                )}
 
                 <View style={styles.confirmModalButtons}>
                   <TouchableOpacity
@@ -2127,16 +2219,38 @@ const HomeScreen = ({ navigation, route }) => {
                       hapticSelection();
                       setResetting(true);
                       setConfirmResetVisible(false);
+                      
+                      if (resetType === 'today') {
+                        // Reset only today's hasanat
+                        const today = new Date().toISOString().split('T')[0];
+                        const currentTodayHasanat = await AsyncStorage.getItem('today_hasanat');
+                        const currentTotalHasanat = await AsyncStorage.getItem('total_hasanat');
+                        
+                        // Subtract today's hasanat from total
+                        const todayAmount = parseInt(currentTodayHasanat || '0');
+                        const totalAmount = parseInt(currentTotalHasanat || '0');
+                        const newTotal = Math.max(0, totalAmount - todayAmount);
+                        
+                        await AsyncStorage.setItem('today_hasanat', '0');
+                        await AsyncStorage.setItem('total_hasanat', newTotal.toString());
+                        // Don't reset last_activity_date when only resetting today's hasanat
+                        // This preserves streak calculation
+                        // Also reset streak_updated_today to allow streak recalculation
+                        await AsyncStorage.removeItem('streak_updated_today');
+                      } else {
+                        // Reset all progress
                       await resetProgress(includeRecordings);
+                        setIncludeRecordings(false); // Reset checkbox state
+                      }
+                      
                       setResetting(false);
                       const loadedData = await loadData();
                       setData(loadedData);
-                      setIncludeRecordings(false); // Reset checkbox state
                     }}
                     disabled={resetting}
                   >
                     <Text style={styles.confirmModalConfirmText}>
-                      {resetting ? t('resetting') : t('confirm_reset')}
+                      {resetting ? t('resetting') : (resetType === 'today' ? 'Reset Today' : t('confirm_reset'))}
                     </Text>
                   </TouchableOpacity>
                 </View>
@@ -3770,6 +3884,56 @@ const HomeScreen = ({ navigation, route }) => {
         </Modal>
 
         {/* Auth Modal */}
+        <Modal
+          visible={authVisible}
+          transparent={true}
+          animationType="fade"
+          onRequestClose={() => setAuthVisible(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalBackdrop} />
+            <View style={styles.modalContainer}>
+              <AuthScreen 
+                navigation={navigation} 
+                onClose={() => setAuthVisible(false)}
+                isModal={true}
+              />
+            </View>
+          </View>
+        </Modal>
+
+        {/* Profile Dashboard Modal */}
+        <Modal
+          visible={settingsVisible}
+          transparent={true}
+          animationType="slide"
+          onRequestClose={() => setSettingsVisible(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalBackdrop} />
+            <View style={styles.modalContainer}>
+              <ProfileDashboard 
+                navigation={navigation} 
+                onClose={() => setSettingsVisible(false)}
+              />
+            </View>
+          </View>
+        </Modal>
+
+        {/* Streak Animation */}
+        <StreakAnimation
+          visible={showStreakAnimation}
+          newStreak={newStreak}
+          onAnimationComplete={handleStreakAnimationComplete}
+        />
+
+        {/* Streak Broken Animation */}
+        <StreakBrokenAnimation
+          visible={showStreakBrokenAnimation}
+          previousStreak={brokenStreakData.previousStreak}
+          missedDays={brokenStreakData.missedDays}
+          onAnimationComplete={handleStreakBrokenAnimationComplete}
+        />
 
               </SafeAreaView>
       </ImageBackground>
@@ -3819,7 +3983,6 @@ const styles = StyleSheet.create({
   },
   mainContent: {
     flex: 1,
-    padding: SIZES.medium,
   },
   progressCard: {
     marginBottom: SIZES.medium,
@@ -3906,6 +4069,20 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
     alignItems: 'center',
     paddingBottom: 80,
+  },
+  modalBackdrop: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: SIZES.medium,
   },
   modalContent: {
     backgroundColor: COLORS.white,

@@ -134,6 +134,7 @@ class TelemetryService {
         used: 'unknown',
       };
     } catch (error) {
+      console.error('[Telemetry] Memory usage error:', error);
       return { error: error.message };
     }
   }
@@ -142,6 +143,10 @@ class TelemetryService {
   async getBatteryLevel() {
     try {
       // This would require a native module in a real implementation
+      // Simulate potential failure
+      if (Math.random() < 0.1) {
+        throw new Error('Battery level unavailable');
+      }
       return 'unknown';
     } catch (error) {
       return 'unknown';
@@ -152,11 +157,16 @@ class TelemetryService {
   async getNetworkInfo() {
     try {
       // This would require a native module in a real implementation
+      // Simulate potential failure
+      if (Math.random() < 0.1) {
+        throw new Error('Network info unavailable');
+      }
       return {
         type: 'unknown',
         isConnected: true,
       };
     } catch (error) {
+      console.error('[Telemetry] Network info error:', error);
       return { error: error.message };
     }
   }
@@ -164,11 +174,16 @@ class TelemetryService {
   // Get app state
   async getAppState() {
     try {
+      // Simulate potential failure
+      if (Math.random() < 0.1) {
+        throw new Error('App state unavailable');
+      }
       return {
         isActive: true,
         lastActive: Date.now(),
       };
     } catch (error) {
+      console.error('[Telemetry] App state error:', error);
       return { error: error.message };
     }
   }
