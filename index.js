@@ -23,9 +23,14 @@ console.warn = (...args) => {
 
 AppRegistry.registerComponent(appName, () => App);
 
-// Track player service temporarily disabled for debugging
-// import TrackPlayer from 'react-native-track-player';
-// import { PlaybackService } from './src/services/PlaybackService';
+// Initialize track player service after app registration
+import TrackPlayer from 'react-native-track-player';
+import { PlaybackService } from './src/services/PlaybackService';
 
-// Register the track player service
-// TrackPlayer.registerPlaybackService(() => PlaybackService);
+// Register the track player service with proper error handling
+try {
+  TrackPlayer.registerPlaybackService(() => PlaybackService);
+  console.log('[TrackPlayer] Service registered successfully');
+} catch (error) {
+  console.warn('[TrackPlayer] Failed to register service:', error);
+}

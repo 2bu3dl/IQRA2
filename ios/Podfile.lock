@@ -2108,11 +2108,34 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
-  - RNSound (0.13.0):
-    - React
-    - RNSound/Core (= 0.13.0)
-  - RNSound/Core (0.13.0):
-    - React
+  - RNSound (0.12.0):
+    - boost
+    - DoubleConversion
+    - fast_float
+    - fmt
+    - glog
+    - RCT-Folly
+    - RCT-Folly/Fabric
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-jsc
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - SocketRocket
+    - Yoga
   - RNSVG (15.12.0):
     - React-Core
   - RNVectorIcons (10.3.0):
@@ -2227,7 +2250,7 @@ DEPENDENCIES:
   - RNLocalize (from `../node_modules/react-native-localize`)
   - RNReactNativeHapticFeedback (from `../node_modules/react-native-haptic-feedback`)
   - RNScreens (from `../node_modules/react-native-screens`)
-  - "RNSound (from `../node_modules/@exodus/react-native-sound`)"
+  - RNSound (from `../node_modules/react-native-sound`)
   - RNSVG (from `../node_modules/react-native-svg`)
   - RNVectorIcons (from `../node_modules/react-native-vector-icons`)
   - SocketRocket (~> 0.7.1)
@@ -2396,7 +2419,7 @@ EXTERNAL SOURCES:
   RNScreens:
     :path: "../node_modules/react-native-screens"
   RNSound:
-    :path: "../node_modules/@exodus/react-native-sound"
+    :path: "../node_modules/react-native-sound"
   RNSVG:
     :path: "../node_modules/react-native-svg"
   RNVectorIcons:
@@ -2483,7 +2506,7 @@ SPEC CHECKSUMS:
   RNLocalize: 60ebbb668e46d3b9f276aaf2db8ae5353b84e514
   RNReactNativeHapticFeedback: d1e1015d04b9ade60fde05198031bb21bd00d881
   RNScreens: 4e5d94cab8dddf252aecde8071da70740ea99326
-  RNSound: cb5264cf239ebdf3b493d23cb1942b601a4f6b34
+  RNSound: f012725ae51e373f5573e32c7ed3d70ac40f4073
   RNSVG: e17f99a7d2774ef99018dfed91e812e058fdbcdf
   RNVectorIcons: d9519d4c4c142f69dd6ba4b9426db2227e29e5ac
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748

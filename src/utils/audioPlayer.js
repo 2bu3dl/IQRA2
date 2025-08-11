@@ -40,20 +40,28 @@ class AudioPlayer {
     
     try {
       if (Platform.OS === 'ios' && TrackPlayer) {
-        // iOS: Initialize TrackPlayer
-        await TrackPlayer.setupPlayer();
-        await TrackPlayer.updateOptions({
-          capabilities: [
-            'play',
-            'pause',
-            'stop',
-          ],
-          compactCapabilities: [
-            'play',
-            'pause',
-            'stop',
-          ],
-        });
+        // iOS: Initialize TrackPlayer with proper error handling
+        try {
+          await TrackPlayer.setupPlayer();
+          await TrackPlayer.updateOptions({
+            capabilities: [
+              'play',
+              'pause',
+              'stop',
+            ],
+            compactCapabilities: [
+              'play',
+              'pause',
+              'stop',
+            ],
+          });
+          console.log('[AudioPlayer] TrackPlayer initialized successfully');
+        } catch (trackPlayerError) {
+          console.warn('[AudioPlayer] TrackPlayer initialization failed, falling back to basic audio:', trackPlayerError);
+          // Mark as initialized to prevent retry attempts
+          this.isInitialized = true;
+          return;
+        }
       } else if (Platform.OS === 'android' && Sound) {
         // Android: Initialize Sound
         Sound.setCategory('Playback');
@@ -63,6 +71,8 @@ class AudioPlayer {
       console.log('[AudioPlayer] Audio player initialized successfully');
     } catch (error) {
       console.error('[AudioPlayer] Error initializing audio player:', error);
+      // Mark as initialized to prevent retry attempts
+      this.isInitialized = true;
     }
   }
 
