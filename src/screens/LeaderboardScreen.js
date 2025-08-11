@@ -1,0 +1,754 @@
+import React, { useState, useEffect, useRef } from 'react';
+import {
+  View,
+  StyleSheet,
+  SafeAreaView,
+  ScrollView,
+  TouchableOpacity,
+  ActivityIndicator,
+  ImageBackground,
+  FlatList,
+  RefreshControl,
+  Image,
+} from 'react-native';
+import { useAuth } from '../utils/authContext';
+import { useLanguage } from '../utils/languageContext';
+import { COLORS as BASE_COLORS, SIZES, FONTS } from '../utils/theme';
+import Text from '../components/Text';
+import Card from '../components/Card';
+import { 
+  getLeaderboardData, 
+  formatLeaderboardData, 
+  getUserRank,
+  LEADERBOARD_TYPES,
+  subscribeToLeaderboardUpdates
+} from '../utils/leaderboardService';
+import { supabase } from '../utils/supabase';
+import { hapticSelection } from '../utils/hapticFeedback';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+
+const COLORS = { ...BASE_COLORS, primary: '#6BA368', accent: '#FFD700' };
+
+const LeaderboardScreen = ({ navigation }) => {
+  const { user } = useAuth();
+  const { language, t } = useLanguage();
+  const [activeTab, setActiveTab] = useState('memorization');
+  const [activeSubtab, setActiveSubtab] = useState('total');
+  const [leaderboardData, setLeaderboardData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [userRank, setUserRank] = useState(null);
+  const [error, setError] = useState(null);
+  const [showInfoModal] = useState(false);
+  const subscriptionRef = useRef(null);
+
+  const tabs = [
+    { id: 'memorization', title: language === 'ar' ? 'الحفظ' : 'Memorized' },
+    { id: 'streak', title: language === 'ar' ? 'السلسلة' : 'Streak' },
+    { id: 'hasanat', title: language === 'ar' ? 'الحسنات' : '7asanat' },
+  ];
+
+
+
+  const hasanatSubtabs = [
+    { id: 'total', title: language === 'ar' ? 'المجموع' : 'Total' },
+    { id: 'daily', title: language === 'ar' ? 'يومي' : 'Daily' },
+    { id: 'weekly', title: language === 'ar' ? 'أسبوعي' : 'Weekly' },
+    { id: 'monthly', title: language === 'ar' ? 'شهري' : 'Monthly' },
+  ];
+
+  useEffect(() => {
+    loadLeaderboardData();
+    setupSubscription();
+    
+    return () => {
+      if (subscriptionRef.current) {
+        subscriptionRef.current();
+      }
+    };
+  }, [activeTab]);
+
+  const loadLeaderboardData = async (showLoader = true) => {
+    try {
+      if (showLoader) setLoading(true);
+      setError(null);
+      
+      // Load leaderboard data and user rank in parallel
+      const [leaderboardResult, rankResult] = await Promise.all([
+        getLeaderboardData(activeTab, 50),
+        user ? getUserRank(user.id, activeTab) : { success: false }
+      ]);
+      
+      if (leaderboardResult.success) {
+        const formattedData = formatLeaderboardData(leaderboardResult.data, activeTab);
+        setLeaderboardData(formattedData);
+      } else {
+        setError(leaderboardResult.error);
+        setLeaderboardData([]);
+      }
+      
+      if (rankResult.success) {
+        setUserRank(rankResult.rank);
+      } else {
+        setUserRank(null);
+      }
+    } catch (error) {
+      console.error('[LeaderboardScreen] Error loading data:', error);
+      setError(error.message);
+      setLeaderboardData([]);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+
+
+  const setupSubscription = () => {
+    // Clean up previous subscription
+    if (subscriptionRef.current) {
+      subscriptionRef.current();
+    }
+    
+    // Set up new subscription for real-time updates
+    subscriptionRef.current = subscribeToLeaderboardUpdates(activeTab, (newData) => {
+      const formattedData = formatLeaderboardData(newData, activeTab);
+      setLeaderboardData(formattedData);
+    });
+  };
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    loadLeaderboardData(false);
+  };
+
+  const handleTabPress = (tabId) => {
+    hapticSelection();
+    setActiveTab(tabId);
+    if (tabId !== 'hasanat') {
+      setActiveSubtab('total');
+    }
+  };
+
+  const handleSubtabPress = (subtabId) => {
+    hapticSelection();
+    if (subtabId === 'daily') {
+      setActiveTab('streak');
+      setActiveSubtab('total');
+    } else {
+      setActiveSubtab(subtabId);
+    }
+  };
+
+  const getRankColor = (rank) => {
+    switch (rank) {
+      case 1: return '#FFD700'; // Gold
+      case 2: return '#C0C0C0'; // Silver
+      case 3: return '#CD7F32'; // Bronze
+      default: return '#F5E6C8';
+    }
+  };
+
+  const getRankIcon = (rank) => {
+    switch (rank) {
+      case 1: return '🥇';
+      case 2: return '🥈';
+      case 3: return '🥉';
+      default: return null;
+    }
+  };
+
+  const renderTabButton = (tab, index) => {
+    const isActive = activeTab === tab.id;
+    const isFirst = index === 0;
+    const isLast = index === tabs.length - 1;
+    
+    let wrapperStyle = styles.tabButtonWrapper;
+    if (isFirst) wrapperStyle = styles.tabButtonWrapperFirst;
+    if (isLast) wrapperStyle = styles.tabButtonWrapperLast;
+    
+    return (
+      <View key={tab.id} style={wrapperStyle}>
+        <TouchableOpacity
+          style={[styles.tabButton, isActive && styles.activeTabButton]}
+          onPress={() => handleTabPress(tab.id)}
+        >
+          <Text style={[styles.tabText, isActive && styles.activeTabText]}>
+            {tab.title}
+          </Text>
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
+  const renderLeaderboardItem = ({ item, index }) => {
+    const isCurrentUser = user && item.userId === user.id;
+    const isTopThree = item.rank <= 3;
+    
+    return (
+      <View style={[
+        styles.leaderboardItem,
+        isCurrentUser && styles.currentUserItem,
+        isTopThree && styles.topThreeItem
+      ]}>
+        <View style={styles.rankContainer}>
+          {getRankIcon(item.rank) ? (
+            <Text style={styles.rankEmoji}>{getRankIcon(item.rank)}</Text>
+          ) : (
+            <Text style={[styles.rankText, { color: getRankColor(item.rank) }]}>
+              #{item.rank}
+            </Text>
+          )}
+        </View>
+        
+        <View style={styles.userInfo}>
+          <View style={styles.userNameRow}>
+            <Text style={[styles.userName, isCurrentUser && styles.currentUserText]}>
+              {item.name}
+              {isCurrentUser && (
+                <Text style={styles.youLabel}>
+                  {' '}({language === 'ar' ? 'أنت' : 'You'})
+                </Text>
+              )}
+            </Text>
+            <TouchableOpacity 
+              style={styles.profileButton}
+              onPress={() => navigation.navigate('Profile', { userId: item.userId })}
+            >
+              <Image 
+                source={require('../assets/app_icons/information.png')} 
+                style={styles.profileIcon}
+              />
+            </TouchableOpacity>
+          </View>
+          <Text style={styles.userStats}>
+            {typeof item.value === 'string' ? item.value : item.value.toLocaleString()} {item.label}
+          </Text>
+        </View>
+        
+
+      </View>
+    );
+  };
+
+  const renderUserRankBanner = () => {
+    if (!user || !userRank) return null;
+    
+    return (
+      <Card style={styles.userRankBanner}>
+        <View style={styles.userRankContent}>
+          <Ionicons name="person" size={24} color={COLORS.primary} />
+          <View style={styles.userRankInfo}>
+            <Text style={styles.userRankTitle}>
+              {language === 'ar' ? 'ترتيبك' : 'Your Rank'}
+            </Text>
+            <Text style={styles.userRankValue}>
+              #{userRank} {language === 'ar' ? 'عالمياً' : 'globally'}
+            </Text>
+          </View>
+        </View>
+      </Card>
+    );
+  };
+
+  return (
+    <View style={{ flex: 1, backgroundColor: '#000' }}>
+      <ImageBackground 
+        source={require('../assets/IQRA2background.png')} 
+        style={styles.backgroundImage}
+        imageStyle={{ opacity: 0.2 }}
+      >
+        <SafeAreaView style={styles.container}>
+          {/* Header */}
+          <View style={styles.header}>
+            <TouchableOpacity
+              style={styles.backButton}
+              onPress={() => {
+                hapticSelection();
+                navigation.goBack();
+              }}
+            >
+              <Ionicons 
+                name="arrow-back" 
+                size={24} 
+                color="#F5E6C8" 
+              />
+            </TouchableOpacity>
+            <Text variant="h2" style={styles.headerTitle}>
+              {language === 'ar' ? 'لوحة المتصدرين' : 'Leaderboards'}
+            </Text>
+            <TouchableOpacity
+              style={styles.infoButton}
+              onPress={() => setShowInfoModal(true)}
+            >
+              <Ionicons 
+                name="information-circle" 
+                size={24} 
+                color="#F5E6C8" 
+              />
+            </TouchableOpacity>
+          </View>
+
+          {/* Information Modal */}
+          {showInfoModal && (
+            <View style={styles.modalOverlay}>
+              <View style={styles.modalContent}>
+                <View style={styles.modalHeader}>
+                  <Text style={styles.modalTitle}>
+                    {language === 'ar' ? 'معلومات لوحة المتصدرين' : 'Leaderboard Information'}
+                  </Text>
+                  <TouchableOpacity
+                    style={styles.closeButton}
+                    onPress={() => setShowInfoModal(false)}
+                  >
+                    <Ionicons name="close" size={24} color="#666" />
+                  </TouchableOpacity>
+                </View>
+                <ScrollView style={styles.modalBody}>
+                  <Text style={styles.modalText}>
+                    {language === 'ar' 
+                      ? 'لوحة المتصدرين تعرض إنجازات المستخدمين في تطبيق IQRA2. يمكنك تصفح أفضل المستخدمين في الحفظ، السلسلة، الحسنات، والإحصائيات الأسبوعية والشهرية.'
+                      : 'The leaderboard displays user achievements in the IQRA2 app. You can browse the top users in memorization, streaks, hasanat, and weekly/monthly statistics.'
+                    }
+                  </Text>
+                  <Text style={styles.modalText}>
+                    {language === 'ar'
+                      ? '• الحفظ: عدد الآيات المحفوظة\n• السلسلة: أيام المتابعة المتتالية\n• الحسنات: مجموع الحسنات المكتسبة\n• الأسبوعي/الشهري: الإحصائيات الزمنية'
+                      : '• Memorization: Number of memorized verses\n• Streak: Consecutive days of practice\n• Hasanat: Total hasanat earned\n• Weekly/Monthly: Time-based statistics'
+                    }
+                  </Text>
+                </ScrollView>
+              </View>
+            </View>
+          )}
+
+          {/* Tab Bar */}
+          <View style={styles.tabBarContainer}>
+            <ScrollView 
+              horizontal 
+              showsHorizontalScrollIndicator={false}
+              style={styles.tabBar}
+              contentContainerStyle={styles.tabBarContent}
+            >
+              {tabs.map(renderTabButton)}
+            </ScrollView>
+          </View>
+
+          {/* Hasanat Subtabs */}
+          {activeTab === 'hasanat' && (
+            <ScrollView 
+              horizontal 
+              showsHorizontalScrollIndicator={false}
+              style={styles.subtabBar}
+              contentContainerStyle={styles.subtabBarContent}
+            >
+              {hasanatSubtabs.map((subtab, index) => (
+                <TouchableOpacity
+                  key={subtab.id}
+                  style={[
+                    styles.subtabButton,
+                    activeSubtab === subtab.id && styles.activeSubtabButton
+                  ]}
+                  onPress={() => handleSubtabPress(subtab.id)}
+                >
+                  <Text style={[
+                    styles.subtabText,
+                    activeSubtab === subtab.id && styles.activeSubtabText
+                  ]}>
+                    {subtab.title}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          )}
+
+          {/* Separator Bar */}
+          <View style={styles.separatorBar} />
+
+          {/* User Rank Banner */}
+          {renderUserRankBanner()}
+
+          {/* Leaderboard Content */}
+          {loading ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color={COLORS.primary} />
+              <Text style={styles.loadingText}>
+                {language === 'ar' ? 'جاري التحميل...' : 'Loading leaderboard...'}
+              </Text>
+            </View>
+          ) : error ? (
+            <Card style={styles.errorContainer}>
+              <Ionicons name="warning" size={48} color="#FF6B6B" />
+              <Text style={styles.errorTitle}>
+                {language === 'ar' ? 'خطأ في التحميل' : 'Loading Error'}
+              </Text>
+              <Text style={styles.errorText}>
+                {language === 'ar' ? 'لا يمكن تحميل البيانات حالياً' : 'Cannot load leaderboard data'}
+              </Text>
+              <TouchableOpacity style={styles.retryButton} onPress={() => loadLeaderboardData()}>
+                <Text style={styles.retryText}>
+                  {language === 'ar' ? 'إعادة المحاولة' : 'Retry'}
+                </Text>
+              </TouchableOpacity>
+            </Card>
+          ) : (
+            <FlatList
+              data={leaderboardData}
+              renderItem={renderLeaderboardItem}
+              keyExtractor={(item) => item.userId}
+              style={styles.leaderboardList}
+              contentContainerStyle={styles.leaderboardContent}
+              refreshControl={
+                <RefreshControl
+                  refreshing={refreshing}
+                  onRefresh={onRefresh}
+                  tintColor={COLORS.primary}
+                />
+              }
+              showsVerticalScrollIndicator={false}
+            />
+          )}
+          
+          {/* Bottom Bar */}
+          <View style={styles.bottomBar} />
+        </SafeAreaView>
+      </ImageBackground>
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  backgroundImage: {
+    flex: 1,
+    resizeMode: 'cover',
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingTop: 8,
+    paddingBottom: 12,
+    justifyContent: 'space-between',
+  },
+  backButton: {
+    padding: 8,
+    borderRadius: 20,
+    backgroundColor: 'rgba(91, 127, 103, 0.3)',
+  },
+  infoButton: {
+    padding: 8,
+    borderRadius: 20,
+    backgroundColor: 'rgba(91, 127, 103, 0.3)',
+  },
+
+  headerTitle: {
+    color: '#F5E6C8',
+    fontWeight: 'bold',
+    textAlign: 'center',
+    fontSize: 32,
+    flex: 1,
+  },
+
+  tabBarContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+  },
+  tabBar: {
+    paddingHorizontal: 0,
+    marginBottom: 20,
+    maxHeight: 80,
+  },
+  tabBarContent: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 20,
+  },
+  subtabBar: {
+    paddingHorizontal: 0,
+    marginBottom: 0,
+    maxHeight: 50,
+  },
+  subtabBarContent: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 20,
+  },
+  tabButtonWrapper: {
+    height: 64,
+    marginRight: 8,
+  },
+  tabButtonWrapperFirst: {
+    height: 64,
+    marginRight: 8,
+  },
+  tabButtonWrapperLast: {
+    height: 64,
+    marginRight: 8,
+  },
+  tabButton: {
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 20,
+    backgroundColor: 'rgba(91, 127, 103, 0.3)',
+    height: 64,
+    justifyContent: 'center',
+  },
+  activeTabButton: {
+    backgroundColor: '#F5E6C8',
+  },
+  tabText: {
+    color: '#F5E6C8',
+    fontSize: 16,
+    fontWeight: '600',
+    textAlign: 'center',
+    lineHeight: 18,
+  },
+  activeTabText: {
+    color: '#3E2723',
+  },
+  subtabButton: {
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
+    backgroundColor: 'rgba(91, 127, 103, 0.2)',
+    marginRight: 8,
+    height: 36,
+    justifyContent: 'center',
+  },
+  activeSubtabButton: {
+    backgroundColor: 'rgba(245, 230, 200, 0.8)',
+  },
+  subtabText: {
+    color: '#F5E6C8',
+    fontSize: 12,
+    fontWeight: '500',
+    textAlign: 'center',
+  },
+  activeSubtabText: {
+    color: '#3E2723',
+  },
+  userRankBanner: {
+    marginHorizontal: 20,
+    marginBottom: 0,
+    backgroundColor: 'rgba(245, 230, 200, 0.95)',
+  },
+  userRankContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  userRankInfo: {
+    marginLeft: 12,
+    flex: 1,
+  },
+  userRankTitle: {
+    color: '#3E2723',
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  userRankValue: {
+    color: COLORS.primary,
+    fontSize: 22,
+    fontWeight: 'bold',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: 16,
+    color: '#F5E6C8',
+    fontSize: 16,
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginHorizontal: 20,
+    backgroundColor: 'rgba(245, 230, 200, 0.95)',
+  },
+  errorTitle: {
+    color: '#3E2723',
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginTop: 16,
+  },
+  errorText: {
+    color: '#666',
+    fontSize: 16,
+    textAlign: 'center',
+    marginTop: 8,
+    marginBottom: 20,
+  },
+  retryButton: {
+    backgroundColor: COLORS.primary,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 8,
+  },
+  retryText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  leaderboardList: {
+    flex: 1,
+  },
+  leaderboardContent: {
+    paddingHorizontal: 0,
+    paddingBottom: 0,
+  },
+  leaderboardItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(245, 230, 200, 0.9)',
+    borderRadius: 30,
+    padding: 8,
+    marginBottom: 8,
+    marginHorizontal: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(165,115,36,0.3)',
+  },
+  currentUserItem: {
+    backgroundColor: 'rgba(107, 163, 104, 0.2)',
+    borderColor: COLORS.primary,
+    borderWidth: 2,
+  },
+  topThreeItem: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  rankContainer: {
+    width: 50,
+    height: 70,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 16,
+    paddingTop: 4,
+  },
+  rankEmoji: {
+    fontSize: 32,
+  },
+  rankText: {
+    fontSize: 22,
+    fontWeight: 'bold',
+  },
+  userInfo: {
+    flex: 1,
+  },
+
+  userNameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 4,
+  },
+  userName: {
+    color: '#3E2723',
+    fontSize: 20,
+    fontWeight: '600',
+    flex: 1,
+  },
+  currentUserText: {
+    color: COLORS.primary,
+    fontWeight: 'bold',
+  },
+  youLabel: {
+    color: COLORS.primary,
+    fontWeight: 'normal',
+    fontStyle: 'italic',
+  },
+
+  profileButton: {
+    padding: 4,
+    marginLeft: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    alignSelf: 'center',
+  },
+  profileIcon: {
+    width: 28,
+    height: 28,
+    tintColor: '#666',
+  },
+  userStats: {
+    color: '#666',
+    fontSize: 18,
+  },
+  // Modal styles
+  modalOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1000,
+  },
+  modalContent: {
+    backgroundColor: '#F5E6C8',
+    borderRadius: 16,
+    padding: 20,
+    margin: 20,
+    maxWidth: '90%',
+    maxHeight: '80%',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#3E2723',
+    flex: 1,
+    textAlign: 'center',
+  },
+  closeButton: {
+    padding: 4,
+  },
+  modalBody: {
+    maxHeight: 300,
+  },
+  modalText: {
+    fontSize: 16,
+    color: '#3E2723',
+    lineHeight: 24,
+    marginBottom: 16,
+  },
+  crownContainer: {
+    marginLeft: 12,
+  },
+  bottomBar: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 34,
+    backgroundColor: 'rgba(91, 127, 103, 0.6)',
+    borderRadius: 16,
+    zIndex: 10,
+  },
+  separatorBar: {
+    height: 8,
+    backgroundColor: 'rgba(91, 127, 103, 0.2)',
+    marginHorizontal: 20,
+    marginVertical: 15,
+    borderRadius: 20,
+  },
+});
+
+export default LeaderboardScreen;
