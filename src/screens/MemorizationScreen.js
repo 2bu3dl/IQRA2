@@ -1,4 +1,4 @@
-import React, { useState, useRef, memo, useMemo, useEffect } from 'react';
+import React, { useState, useRef, memo, useMemo, useEffect, useCallback } from 'react';
 import { View, StyleSheet, SafeAreaView, TouchableOpacity, Modal, Animated, Image, ScrollView, TextInput, ImageBackground, TouchableWithoutFeedback, Alert, Pressable, Easing, Platform } from 'react-native';
 import { COLORS as BASE_COLORS, SIZES, FONTS } from '../utils/theme';
 import Text from '../components/Text';
@@ -88,6 +88,15 @@ const MemorizationScreen = ({ route, navigation }) => {
   const [hasRecordings, setHasRecordings] = useState(false);
   const [showRecordingsModal, setShowRecordingsModal] = useState(false);
 
+  // Builder Mode state
+  const [isBuilderMode, setIsBuilderMode] = useState(false);
+  const [wordsPerBatch, setWordsPerBatch] = useState(2);
+  const [currentBatchIndex, setCurrentBatchIndex] = useState(0);
+  const [showBuilderModal, setShowBuilderModal] = useState(false);
+  const [builderWords, setBuilderWords] = useState([]);
+  const [isCurrentBatchHidden, setIsCurrentBatchHidden] = useState(false);
+  const [visibleChunks, setVisibleChunks] = useState(1);
+
   const allSurahs = getAllSurahs();
   const currentSurahIndex = allSurahs.findIndex(s => s.surah === surahNumber);
   const prevSurah = currentSurahIndex > 0 ? allSurahs[currentSurahIndex - 1] : null;
@@ -143,6 +152,20 @@ const MemorizationScreen = ({ route, navigation }) => {
     
     checkBookmarkStatus();
     checkRecordings();
+    
+    // Reset Builder mode when ayah changes
+    if (isBuilderMode) {
+      setIsBuilderMode(false);
+      setCurrentBatchIndex(0);
+      setIsCurrentBatchHidden(false);
+      setBuilderWords([]);
+    }
+    
+    // Update builder words if in Builder mode
+    if (isBuilderMode && flashcards[currentAyahIndex]?.text) {
+      const words = flashcards[currentAyahIndex].text.split(' ').filter(word => word.trim());
+      setBuilderWords(words);
+    }
         }, [currentAyahIndex, ayaat, surah?.name, flashcards]);
 
   // Reset highlighting state when ayah changes
@@ -330,7 +353,15 @@ const MemorizationScreen = ({ route, navigation }) => {
     setCurrentAyahIndex(index);
     setShowGoToModal(false);
     setSearchText('');
-      setIsTextHidden(false);
+    setIsTextHidden(false);
+    
+    // Reset Builder mode when navigating to specific ayah
+    if (isBuilderMode) {
+      setIsBuilderMode(false);
+      setCurrentBatchIndex(0);
+      setIsCurrentBatchHidden(false);
+      setBuilderWords([]);
+    }
   };
 
   const handleSearchSubmit = () => {
@@ -387,6 +418,14 @@ const MemorizationScreen = ({ route, navigation }) => {
       return;
     }
     
+    // Reset Builder mode when moving to next ayah
+    if (isBuilderMode) {
+      setIsBuilderMode(false);
+      setCurrentBatchIndex(0);
+      setIsCurrentBatchHidden(false);
+      setBuilderWords([]);
+    }
+    
     // Check if this is the last ayah of the surah
     const isLastAyah = currentAyahIndex === flashcards.length - 1;
     
@@ -410,6 +449,15 @@ const MemorizationScreen = ({ route, navigation }) => {
     if (currentAyahIndex > 0) {
       const newIndex = currentAyahIndex - 1;
       setCurrentAyahIndex(newIndex);
+      
+      // Reset Builder mode when moving to previous ayah
+      if (isBuilderMode) {
+        setIsBuilderMode(false);
+        setCurrentBatchIndex(0);
+        setIsCurrentBatchHidden(false);
+        setBuilderWords([]);
+      }
+      
       // Only reveal special cards (bismillah and isti3aadhah)
       // Official ayaat should be hidden when navigating back
       const prevCard = flashcards?.[newIndex];
@@ -743,6 +791,20 @@ const MemorizationScreen = ({ route, navigation }) => {
     }
   };
 
+  // Function to activate Builder mode
+  const activateBuilderMode = () => {
+    if (flashcards[currentAyahIndex]?.text) {
+      const words = flashcards[currentAyahIndex].text.split(' ').filter(word => word.trim());
+      setBuilderWords(words);
+      setIsBuilderMode(true);
+      setCurrentBatchIndex(0);
+      setIsCurrentBatchHidden(false);
+      setShowBuilderModal(false);
+    }
+  };
+
+
+
   const spin = spinAnim.interpolate({
     inputRange: [0, 1],
     outputRange: ['0deg', '360deg'],
@@ -951,21 +1013,111 @@ const MemorizationScreen = ({ route, navigation }) => {
                 {flashcards[currentAyahIndex]?.text ? '⬡'.repeat(Math.min(44, Math.ceil(flashcards[currentAyahIndex]?.text.length / 2))) : ''}
               </Text>
             ) : (
-              <HighlightedArabicText
-                text={flashcards[currentAyahIndex]?.text || ''}
-                metadata={currentAudioMetadata}
-                isPlaying={isAudioPlaying}
-                currentTime={currentAudioTime}
-                fontSize={ayahFontSize}
-                isBoldFont={isBoldFont}
-                style={[styles.arabicText, { 
+              isBuilderMode && builderWords.length > 0 ? (
+                // Custom Builder Mode Text Display with Colored Dots - Completely fixed positioning
+                <View style={[styles.arabicText, { 
                   textAlign: 'center', 
                   alignSelf: 'center', 
                   writingDirection: 'rtl',
                   textAlignVertical: 'center',
-                  includeFontPadding: false
-                }]}
-              />
+                  includeFontPadding: false,
+                  position: 'relative',
+                  width: '100%',
+                }]}>
+                  {(() => {
+                    if (isCurrentBatchHidden) {
+                      return (
+                        <Text style={[styles.arabicText, { 
+                          fontSize: ayahFontSize,
+                          fontFamily: isBoldFont ? 'KFGQPC Uthman Taha Naskh Bold' : 'KFGQPC Uthman Taha Naskh',
+                          lineHeight: ayahFontSize * 1.5,
+                          color: '#FF8C00',
+                          textAlign: 'center',
+                          includeFontPadding: false
+                        }]}>
+                          {'⬡'.repeat(Math.min(44, Math.ceil(flashcards[currentAyahIndex]?.text.length / 2)))}
+                        </Text>
+                      );
+                    }
+                    
+                    const endIndex = Math.min(visibleChunks * wordsPerBatch, builderWords.length);
+                    const totalChunks = Math.ceil(builderWords.length / wordsPerBatch);
+                    const orangeShades = [
+                      'rgba(165,115,36,1)', // Full theme orange
+                      'rgba(165,115,36,0.9)', // Slightly transparent
+                      'rgba(165,115,36,0.8)', // Theme orange (current)
+                      'rgba(165,115,36,0.7)', // More transparent
+                      'rgba(165,115,36,0.6)', // Most transparent
+                    ];
+                    
+                    return (
+                      <View style={{
+                        flexDirection: 'row-reverse',
+                        flexWrap: 'wrap',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        paddingHorizontal: 10,
+                        width: '100%',
+                      }}>
+                        {builderWords.map((word, index) => {
+                          const isVisible = index < endIndex;
+                          const chunkIndex = Math.floor(index / wordsPerBatch);
+                          const shadeIndex = Math.min(chunkIndex, orangeShades.length - 1);
+                          
+                          // Calculate number of hexagons based on word length and batch
+                          let hexagonCount = 1;
+                          if (!isVisible) {
+                            // Base count based on word length (1 hexagon per ~3 characters)
+                            hexagonCount = Math.max(1, Math.ceil(word.length / 3));
+                            // Add batch-based variation but cap it to fit the word width
+                            const maxHexagonsForWord = Math.max(1, Math.floor(word.length / 2));
+                            hexagonCount = Math.min(hexagonCount + Math.floor(chunkIndex / 2), maxHexagonsForWord);
+                          }
+                          
+                          return (
+                            <Text
+                              key={`word-${index}`}
+                              style={[styles.arabicText, { 
+                                fontSize: ayahFontSize,
+                                fontFamily: isBoldFont ? 'KFGQPC Uthman Taha Naskh Bold' : 'KFGQPC Uthman Taha Naskh',
+                                lineHeight: ayahFontSize * 1.5,
+                                color: isVisible ? '#5b7f67' : orangeShades[shadeIndex],
+                                marginHorizontal: 2,
+                                marginVertical: 4,
+                                textAlign: 'center',
+                                includeFontPadding: false,
+                                width: `${word.length * (ayahFontSize * 0.6)}px`, // Fixed width for all elements
+                                minWidth: `${word.length * (ayahFontSize * 0.6)}px`,
+                                maxWidth: `${word.length * (ayahFontSize * 0.6)}px`,
+                              }]}
+                              allowFontScaling={false}
+                              lang="ar"
+                            >
+                              {isVisible ? word : '⬡'.repeat(hexagonCount)}
+                            </Text>
+                          );
+                        })}
+                      </View>
+                    );
+                  })()}
+                </View>
+              ) : (
+                <HighlightedArabicText
+                  text={flashcards[currentAyahIndex]?.text || ''}
+                  metadata={currentAudioMetadata}
+                  isPlaying={isAudioPlaying}
+                  currentTime={currentAudioTime}
+                  fontSize={ayahFontSize}
+                  isBoldFont={isBoldFont}
+                  style={[styles.arabicText, { 
+                    textAlign: 'center', 
+                    alignSelf: 'center', 
+                    writingDirection: 'rtl',
+                    textAlignVertical: 'center',
+                    includeFontPadding: false
+                  }]}
+                />
+              )
             )}
             
             {/* Show transliteration with fixed distance from Arabic text */}
@@ -999,6 +1151,30 @@ const MemorizationScreen = ({ route, navigation }) => {
               >
                 {flashcards[currentAyahIndex]?.translation}
               </Text>
+            )}
+            
+            {/* Builder Mode Progress Indicator */}
+            {isBuilderMode && builderWords.length > 0 && (
+              <View style={{ marginTop: 16, alignItems: 'center' }}>
+                <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
+                  {Array.from({ length: Math.ceil(builderWords.length / wordsPerBatch) }, (_, i) => {
+                    const totalChunks = Math.ceil(builderWords.length / wordsPerBatch);
+                    const chunkIndex = totalChunks - 1 - i; // Flip the order for RTL
+                    return (
+                      <View
+                        key={i}
+                        style={{
+                          width: 8,
+                          height: 8,
+                          borderRadius: 4,
+                          backgroundColor: chunkIndex < visibleChunks ? '#5b7f67' : '#CCCCCC',
+                          marginHorizontal: 4,
+                        }}
+                      />
+                    );
+                  })}
+                </View>
+              </View>
             )}
                   </ScrollView>
           </Card>
@@ -1039,17 +1215,27 @@ const MemorizationScreen = ({ route, navigation }) => {
                   </View>
                 </TouchableOpacity>
                 
-                {/* Help Button */}
+                {/* Builder Mode Toggle Button */}
                 <TouchableOpacity
                   style={[styles.placeholderButton, { marginLeft: 15 }]}
                   onPress={() => {
                     hapticSelection();
-                    testRecordingFunctionality();
+                    if (isBuilderMode) {
+                      // Deactivate Builder Mode
+                      setIsBuilderMode(false);
+                      setCurrentBatchIndex(0);
+                      setIsCurrentBatchHidden(false);
+                      setBuilderWords([]);
+                      setIsTextHidden(false);
+                    } else {
+                      // Show Builder Mode modal
+                      setShowBuilderModal(true);
+                    }
                   }}
                 >
                   <View style={{
                     borderWidth: 2,
-                    borderColor: 'rgba(165,115,36,0.8)',
+                    borderColor: isBuilderMode ? '#5b7f67' : 'rgba(165,115,36,0.8)',
                     borderRadius: 12,
                     padding: 6,
                     shadowColor: '#000',
@@ -1061,44 +1247,123 @@ const MemorizationScreen = ({ route, navigation }) => {
                     height: 48,
                     alignItems: 'center',
                     justifyContent: 'center',
+                    backgroundColor: isBuilderMode ? 'rgba(91, 127, 103, 0.3)' : 'transparent',
                   }}>
-                    <Ionicons 
-                      name="help-circle-outline" 
-                      size={28} 
-                      color="#F5E6C8" 
-                    />
+                    <Text style={{
+                      color: isBuilderMode ? '#5b7f67' : '#F5E6C8',
+                      fontWeight: 'bold',
+                      fontSize: 10,
+                      textAlign: 'center',
+                    }}>
+                      {isBuilderMode ? 'ON' : 'BUILDER'}
+                    </Text>
                   </View>
                 </TouchableOpacity>
               </View>
 
-              {/* Center Hide/Reveal Button */}
-              <TouchableOpacity
-                style={[styles.revealButtonNew, {
-                  backgroundColor: isTextHidden ? '#F5E6C8' : 'rgba(245, 230, 200, 0.7)',
-                  padding: SIZES.medium,
-                  width: 120,
-                  minHeight: 40,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  borderRadius: 12,
-                  borderWidth: 2,
-                  borderColor: isTextHidden ? 'rgba(165,115,36,0.8)' : '#5b7f67',
-                  marginHorizontal: 20,
-                }]}
-                onPress={() => {
-                  hapticSelection();
-                  handleRevealToggle();
-                }}
-              >
-                <Text variant="body1" color="primary" style={[styles.revealButtonText, { 
-                  fontSize: isTextHidden ? 16 : 18,
-                  color: isTextHidden ? COLORS.primary : '#333333',
-                  fontWeight: 'bold',
-                  textAlign: 'center',
-                }]}>
-                  {isTextHidden ? t('reveal') : t('hide')}
-                </Text>
-              </TouchableOpacity>
+              {/* Center Buttons - Hide/Reveal or Cover/Build based on mode */}
+              {isBuilderMode ? (
+                <View style={{ flexDirection: 'row', alignItems: 'center', marginHorizontal: 20 }}>
+                  {/* Build/Unbuild Button (Left) */}
+                  <TouchableOpacity
+                    style={[styles.revealButtonNew, {
+                      backgroundColor: visibleChunks > 1 ? 'rgba(165,115,36,0.8)' : '#5b7f67', // Orange for Unbuild, Green for Build
+                      padding: SIZES.medium,
+                      width: 60,
+                      minHeight: 40,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      borderRadius: 12,
+                      borderWidth: 2,
+                      borderColor: visibleChunks > 1 ? '#5b7f67' : 'rgba(165,115,36,0.8)', // Green outline for Unbuild
+                      borderRightWidth: 0,
+                      borderTopRightRadius: 0,
+                      borderBottomRightRadius: 0,
+                    }]}
+                    onPress={() => {
+                      hapticSelection();
+                      if (visibleChunks < Math.ceil(builderWords.length / wordsPerBatch)) {
+                        // Build: Add next chunk
+                        setVisibleChunks(visibleChunks + 1);
+                        setIsCurrentBatchHidden(false);
+                      } else {
+                        // Unbuild: Go back to first chunk
+                        setVisibleChunks(1);
+                        setIsCurrentBatchHidden(false);
+                      }
+                    }}
+                    disabled={builderWords.length === 0}
+                  >
+                    <Text variant="body1" color="primary" style={[styles.revealButtonText, { 
+                      fontSize: 20,
+                      color: visibleChunks > 1 ? '#5b7f67' : '#F5E6C8', // Green text for Unbuild, White for Build
+                      fontWeight: 'bold',
+                      textAlign: 'center',
+                    }]}>
+                      {visibleChunks < Math.ceil(builderWords.length / wordsPerBatch) ? '+' : '−'}
+                    </Text>
+                  </TouchableOpacity>
+
+                  {/* Cover/Uncover Button (Right) */}
+                  <TouchableOpacity
+                    style={[styles.revealButtonNew, {
+                      backgroundColor: isCurrentBatchHidden ? 'rgba(165,115,36,0.8)' : '#5b7f67', // Orange when hidden, Green when uncovered
+                      padding: SIZES.medium,
+                      width: 60,
+                      minHeight: 40,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      borderRadius: 12,
+                      borderWidth: 2,
+                      borderColor: isCurrentBatchHidden ? '#5b7f67' : 'rgba(165,115,36,0.8)', // Green outline when hidden, Orange outline when uncovered
+                      borderLeftWidth: 0,
+                      borderTopLeftRadius: 0,
+                      borderBottomLeftRadius: 0,
+                    }]}
+                    onPress={() => {
+                      hapticSelection();
+                      setIsCurrentBatchHidden(!isCurrentBatchHidden);
+                    }}
+                  >
+                    <Text variant="body1" color="primary" style={[styles.revealButtonText, { 
+                      fontSize: 16,
+                      color: isCurrentBatchHidden ? '#5b7f67' : '#F5E6C8', // Green text when hidden, White text when uncovered
+                      fontWeight: 'bold',
+                      textAlign: 'center',
+                    }]}>
+                      ⬡
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                <TouchableOpacity
+                  style={[styles.revealButtonNew, {
+                    backgroundColor: isTextHidden ? '#F5E6C8' : 'rgba(245, 230, 200, 0.7)',
+                    padding: SIZES.medium,
+                    width: 120,
+                    minHeight: 40,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    borderRadius: 12,
+                    borderWidth: 2,
+                    borderColor: isTextHidden ? 'rgba(165,115,36,0.8)' : '#5b7f67',
+                    marginHorizontal: 20,
+                  }]}
+                  onPress={() => {
+                    hapticSelection();
+                    handleRevealToggle();
+                  }}
+                >
+                  <Text variant="body1" color="primary" style={[styles.revealButtonText, { 
+                    fontSize: isTextHidden ? 16 : 18,
+                    color: isTextHidden ? COLORS.primary : '#333333',
+                    fontWeight: 'bold',
+                    textAlign: 'center',
+                  }]}>
+                    {isTextHidden ? t('reveal') : t('hide')}
+                  </Text>
+                </TouchableOpacity>
+              )}
 
               {/* Right side buttons */}
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
@@ -1727,6 +1992,115 @@ const MemorizationScreen = ({ route, navigation }) => {
             ayahNumber={flashcards && flashcards[currentAyahIndex]?.type === 'ayah' ? flashcards.slice(0, currentAyahIndex + 1).filter(a => a.type === 'ayah').length : null}
             onRecordingChange={checkRecordings}
           />
+
+          {/* Builder Mode Modal */}
+          <Modal
+            visible={showBuilderModal}
+            transparent
+            animationType="fade"
+            onRequestClose={() => setShowBuilderModal(false)}
+          >
+            <TouchableOpacity 
+              style={styles.modalOverlay}
+              activeOpacity={1}
+              onPress={() => setShowBuilderModal(false)}
+            >
+              <TouchableOpacity 
+                style={styles.modalContent}
+                activeOpacity={1}
+                onPress={(e) => e.stopPropagation()}
+              >
+                {/* Close X button at top right */}
+                <TouchableOpacity
+                  style={{
+                    position: 'absolute',
+                    top: 16,
+                    right: 16,
+                    backgroundColor: '#FF4444',
+                    borderRadius: 20,
+                    width: 40,
+                    height: 40,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    shadowColor: '#000',
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.3,
+                    shadowRadius: 4,
+                    elevation: 3,
+                  }}
+                  onPress={() => setShowBuilderModal(false)}
+                >
+                  <Text style={{ 
+                    color: 'white', 
+                    fontSize: 20, 
+                    fontWeight: 'bold',
+                    lineHeight: 20,
+                  }}>
+                    ×
+                  </Text>
+                </TouchableOpacity>
+
+                <Text variant="h2" style={{ marginBottom: 16, marginTop: 8, color: '#A57324' }}>Builder Mode Settings</Text>
+                
+                {/* Words Per Batch Selection */}
+                <Text style={{ marginBottom: 6, fontWeight: 'bold', color: '#5b7f67', fontSize: 16 }}>Words Per Batch</Text>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-around', width: '100%', marginBottom: 16 }}>
+                  {[1, 2, 3, 4, 5].map((num) => (
+                    <TouchableOpacity
+                      key={num}
+                      style={{
+                        backgroundColor: wordsPerBatch === num ? '#5b7f67' : '#CCCCCC',
+                        paddingHorizontal: 16,
+                        paddingVertical: 10,
+                        borderRadius: 8,
+                        marginHorizontal: 4,
+                        shadowColor: '#000',
+                        shadowOffset: { width: 0, height: 2 },
+                        shadowOpacity: 0.3,
+                        shadowRadius: 4,
+                        elevation: 3,
+                      }}
+                      onPress={() => setWordsPerBatch(num)}
+                    >
+                      <Text style={{ 
+                        color: wordsPerBatch === num ? '#F5E6C8' : '#5b7f67', 
+                        fontWeight: 'bold', 
+                        fontSize: 16,
+                        textAlign: 'center'
+                      }}>
+                        {num}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+
+                {/* Activate Button */}
+                <TouchableOpacity
+                  style={{
+                    backgroundColor: '#5b7f67',
+                    paddingHorizontal: 30,
+                    paddingVertical: 12,
+                    borderRadius: 8,
+                    shadowColor: '#000',
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.3,
+                    shadowRadius: 4,
+                    elevation: 3,
+                  }}
+                  onPress={activateBuilderMode}
+                >
+                  <Text style={{ 
+                    color: '#F5E6C8', 
+                    fontWeight: 'bold', 
+                    fontSize: 16,
+                    textAlign: 'center'
+                  }}>
+                    Activate Builder Mode
+                  </Text>
+                </TouchableOpacity>
+              </TouchableOpacity>
+            </TouchableOpacity>
+          </Modal>
     </SafeAreaView>
       </ImageBackground>
     </View>
