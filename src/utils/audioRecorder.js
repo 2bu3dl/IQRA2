@@ -1,13 +1,14 @@
 import { NativeModules, Platform } from 'react-native';
 import RNFS from 'react-native-fs';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import logger from './logger';
 
 // Import native module (iOS only for now)
 const { AudioRecorderModule } = NativeModules;
 
 // Debug logging
-console.log('[AudioRecorder] Available native modules:', Object.keys(NativeModules));
-console.log('[AudioRecorder] AudioRecorderModule:', AudioRecorderModule);
+logger.debug('AudioRecorder', 'Available native modules', { modules: Object.keys(NativeModules) });
+logger.debug('AudioRecorder', 'AudioRecorderModule available', { hasModule: !!AudioRecorderModule });
 
 class AudioRecorder {
   constructor() {
@@ -30,7 +31,7 @@ class AudioRecorder {
         return false;
       }
     } catch (error) {
-      console.error('Error requesting audio permissions:', error);
+      logger.error('AudioRecorder', 'Error requesting audio permissions', error);
       return false;
     }
   }
@@ -64,7 +65,7 @@ class AudioRecorder {
   // Mock recording implementation (fallback)
   async startRecordingMock(surahName, ayahNumber) {
     try {
-      console.log('[AudioRecorder] Mock: Starting recording for:', surahName, ayahNumber);
+      logger.debug('AudioRecorder', 'Mock: Starting recording', { surah: surahName, ayah: ayahNumber });
       
       // Create a mock recording file
       const timestamp = Date.now();
@@ -85,10 +86,10 @@ class AudioRecorder {
       this.recordingStartTime = Date.now();
       this.currentRecordingUri = filePath;
       
-      console.log('[AudioRecorder] Mock: Recording started, file:', filePath);
+      logger.debug('AudioRecorder', 'Mock: Recording started', { filePath });
       return true;
     } catch (error) {
-      console.error('[AudioRecorder] Mock: Error starting recording:', error);
+      logger.error('AudioRecorder', 'Mock: Error starting recording', error);
       throw error;
     }
   }
@@ -132,7 +133,7 @@ class AudioRecorder {
   // Mock stop recording implementation
   async stopRecordingMock() {
     try {
-      console.log('[AudioRecorder] Mock: Stopping recording...');
+      logger.debug('AudioRecorder', 'Mock: Stopping recording');
       
       if (!this.currentRecordingUri) {
         throw new Error('No active recording');
@@ -146,10 +147,10 @@ class AudioRecorder {
       this.isRecording = false;
       this.recordingStartTime = null;
       
-      console.log('[AudioRecorder] Mock: Recording stopped, file:', this.currentRecordingUri);
+      logger.debug('AudioRecorder', 'Mock: Recording stopped', { file: this.currentRecordingUri });
       return this.currentRecordingUri;
     } catch (error) {
-      console.error('[AudioRecorder] Mock: Error stopping recording:', error);
+      logger.error('AudioRecorder', 'Mock: Error stopping recording', error);
       throw error;
     }
   }
@@ -178,7 +179,7 @@ class AudioRecorder {
       const key = `recording_${uri.split('/').pop()}`;
       await AsyncStorage.setItem(key, JSON.stringify(metadata));
     } catch (error) {
-      console.error('Error saving recording metadata:', error);
+      logger.error('AudioRecorder', 'Error saving recording metadata', error);
     }
   }
 
@@ -201,7 +202,7 @@ class AudioRecorder {
       
       return recordings;
     } catch (error) {
-      console.error('Error getting existing recordings:', error);
+      logger.error('AudioRecorder', 'Error getting existing recordings', error);
       return [];
     }
   }
@@ -209,11 +210,11 @@ class AudioRecorder {
   // Load recordings using native module
   async loadRecordings(surahName, ayahNumber) {
     try {
-      console.log('[AudioRecorder] Loading recordings for:', surahName, ayahNumber);
+      logger.debug('AudioRecorder', 'Loading recordings', { surah: surahName, ayah: ayahNumber });
       if (Platform.OS === 'ios') {
         // Use native iOS module
         const recordings = await AudioRecorderModule.listRecordings(surahName, ayahNumber.toString());
-        console.log('[AudioRecorder] Native module returned:', recordings);
+        logger.debug('AudioRecorder', 'Native module returned', { count: recordings.length });
         
         // Load metadata for each recording
         const recordingsWithMetadata = await Promise.all(
@@ -232,15 +233,15 @@ class AudioRecorder {
           })
         );
         
-        console.log('[AudioRecorder] Final recordings with metadata:', recordingsWithMetadata);
+        logger.debug('AudioRecorder', 'Final recordings with metadata', { count: recordingsWithMetadata.length });
         return recordingsWithMetadata;
       } else {
         // TODO: Implement Android recording listing
-        console.log('[AudioRecorder] Android recording listing not implemented yet');
+        logger.debug('AudioRecorder', 'Android recording listing not implemented yet');
         return [];
       }
     } catch (error) {
-      console.error('Error loading recordings:', error);
+      logger.error('AudioRecorder', 'Error loading recordings', error);
       return [];
     }
   }

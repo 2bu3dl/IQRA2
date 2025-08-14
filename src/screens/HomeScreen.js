@@ -14,6 +14,7 @@ import telemetryService from '../utils/telemetry';
 import { hapticSelection } from '../utils/hapticFeedback';
 import audioRecorder from '../utils/audioRecorder';
 import audioPlayer from '../utils/audioPlayer';
+import logger from '../utils/logger';
 
 import AuthScreen from './AuthScreen';
 import StreakAnimation from '../components/StreakAnimation';
@@ -197,7 +198,7 @@ const HomeScreen = ({ navigation, route }) => {
   useEffect(() => {
     if (data.totalHasanat > 0 || data.streak > 0) {
       syncUserStatsToLeaderboard().catch(error => {
-        console.error('[HomeScreen] Error syncing to leaderboard:', error);
+        logger.error('HomeScreen', 'Error syncing to leaderboard', error);
       });
     }
   }, [data.totalHasanat, data.streak, data.memorizedAyaat]);
@@ -261,7 +262,7 @@ const HomeScreen = ({ navigation, route }) => {
         await AsyncStorage.removeItem('goalCompletionDate');
       }
     } catch (error) {
-      console.error('Error saving goal data:', error);
+      logger.error('HomeScreen', 'Error saving goal data', error);
     }
   };
 
@@ -297,7 +298,7 @@ const HomeScreen = ({ navigation, route }) => {
           setGoalCompletionDate(new Date(savedGoalCompletionDate));
         }
       } catch (error) {
-        console.error('Error loading goal data:', error);
+        logger.error('HomeScreen', 'Error loading goal data', error);
       }
     };
 
@@ -341,7 +342,7 @@ const HomeScreen = ({ navigation, route }) => {
         setShowStreakBrokenAnimation(true);
       }
     } catch (error) {
-      console.error('[HomeScreen] Error checking broken streak:', error);
+      logger.error('HomeScreen', 'Error checking broken streak', error);
     }
   };
 
@@ -355,14 +356,14 @@ const HomeScreen = ({ navigation, route }) => {
   // Auto-sync when user logs in/out
   useEffect(() => {
     if (isAuthenticated) {
-      console.log('[HomeScreen] User logged in, syncing progress...');
+      logger.log('HomeScreen', 'User logged in, syncing progress');
       syncProgressData().then(result => {
         if (result.success) {
-          console.log('[HomeScreen] Auto-sync successful');
+          logger.log('HomeScreen', 'Auto-sync successful');
           loadScreenData(); // Reload data after sync
         }
       }).catch(error => {
-        console.error('[HomeScreen] Auto-sync failed:', error);
+        logger.error('HomeScreen', 'Auto-sync failed', error);
       });
     }
   }, [isAuthenticated]);
@@ -927,7 +928,7 @@ const HomeScreen = ({ navigation, route }) => {
                         shadowOpacity: 0.6,
                         shadowRadius: 6,
                         elevation: 8,
-                        height: isSmallScreen ? 130 : 150,
+                        height: isSmallScreen ? 145 : 165,
                         alignSelf: 'center',
                         width: '80%'
                       }}>
@@ -1034,7 +1035,7 @@ const HomeScreen = ({ navigation, route }) => {
                         shadowOpacity: 0.6,
                         shadowRadius: 6,
                         elevation: 8,
-                        height: isSmallScreen ? 120 : 140,
+                        height: isSmallScreen ? 160 : 180,
                         marginHorizontal: 0
                       }}>
                         <TouchableOpacity
@@ -1075,7 +1076,7 @@ const HomeScreen = ({ navigation, route }) => {
                         shadowOpacity: 0.6,
                         shadowRadius: 6,
                         elevation: 8,
-                        height: isSmallScreen ? 120 : 140,
+                        height: isSmallScreen ? 160 : 180,
                         marginHorizontal: 0
                       }}>
                         <TouchableOpacity
@@ -1202,7 +1203,7 @@ const HomeScreen = ({ navigation, route }) => {
              flexDirection: 'row',
              justifyContent: 'center',
              alignItems: 'center',
-             marginTop: 30,
+             marginTop: -8,
              marginBottom: 10
              }}
              {...(dotsSwipeResponder.current?.panHandlers || {})}
@@ -1654,7 +1655,7 @@ const HomeScreen = ({ navigation, route }) => {
             style={[styles.modalOverlay, { justifyContent: 'flex-end', paddingBottom: 50 }]}
             activeOpacity={1}
             onPress={() => { 
-              console.log('[DEBUG] Modal overlay pressed');
+              logger.debug('HomeScreen', 'Modal overlay pressed');
               setDuaVisible(false); 
               setDuaExpanded(false); 
               setDuaButtonPressed(false); 
@@ -1805,7 +1806,7 @@ const HomeScreen = ({ navigation, route }) => {
                     <TouchableOpacity
                       key={index}
                       onPress={() => {
-                        console.log('[DEBUG] Pagination dot pressed:', index);
+                        logger.debug('HomeScreen', 'Pagination dot pressed', { index });
                         setCurrentDuaIndex(index);
                       }}
                       style={{
@@ -1859,7 +1860,7 @@ const HomeScreen = ({ navigation, route }) => {
                 <View style={{ flex: 1, alignItems: 'center' }}>
                   <TouchableOpacity
                     onPress={() => { 
-                      console.log('[DEBUG] Ameen button pressed');
+                      logger.debug('HomeScreen', 'Ameen button pressed');
                       hapticSelection();
                       setDuaVisible(false); 
                       setDuaExpanded(false); 
@@ -1867,7 +1868,7 @@ const HomeScreen = ({ navigation, route }) => {
                       setCurrentDuaIndex(0); 
                     }}
                     onPressIn={() => {
-                      console.log('[DEBUG] Ameen button press in');
+                      logger.debug('HomeScreen', 'Ameen button press in');
                       hapticSelection();
                     }}
                     style={{
@@ -2271,34 +2272,41 @@ const HomeScreen = ({ navigation, route }) => {
             activeOpacity={1}
             onPress={() => setProgressModalVisible(false)}
           >
-            <TouchableOpacity 
+            <View 
               style={[styles.modalContent, { 
-                minHeight: 600,
-                maxHeight: '85%',
+                minHeight: 700,
+                maxHeight: '95%',
                 justifyContent: 'flex-start',
                 paddingVertical: 30,
                 marginTop: 17,
                 backgroundColor: 'rgba(64,64,64,0.95)',
                 borderColor: 'rgba(165,115,36,0.8)',
                 borderWidth: 2,
+                width: '95%',
+                maxWidth: 500,
               }]}
-              activeOpacity={1}
-              onPress={() => {}}
             >
-              <Text variant="h2" style={{ 
-                marginBottom: 24, 
-                marginTop: 0, 
-                color: '#F5E6C8',
-                fontSize: 28,
-                fontWeight: 'bold',
-                textShadowColor: '#000',
-                textShadowOffset: { width: 0, height: 1 },
-                textShadowRadius: 2,
-                textAlign: 'center',
-              }}>Memorization Progress</Text>
-              
-              {/* Calendar View */}
-              <View style={{ marginBottom: 24 }}>
+              <ScrollView 
+                style={{ flex: 1 }} 
+                showsVerticalScrollIndicator={true}
+                contentContainerStyle={{ paddingBottom: 20, flexGrow: 1 }}
+                nestedScrollEnabled={true}
+                bounces={false}
+              >
+                <Text variant="h2" style={{ 
+                  marginBottom: 24, 
+                  marginTop: 0, 
+                  color: '#F5E6C8',
+                  fontSize: 28,
+                  fontWeight: 'bold',
+                  textShadowColor: '#000',
+                  textShadowOffset: { width: 0, height: 1 },
+                  textShadowRadius: 2,
+                  textAlign: 'center',
+                }}>Memorization Progress</Text>
+                
+                {/* Calendar View */}
+                <View style={{ marginBottom: 24, flex: 0 }}>
                 <Text style={{
                   color: '#5b7f67',
                   fontSize: 18,
@@ -2314,6 +2322,7 @@ const HomeScreen = ({ navigation, route }) => {
                   padding: 16,
                   borderColor: 'rgba(165,115,36,0.8)',
                   borderWidth: 1,
+                  flex: 0,
                 }}>
                   {/* Calendar Grid */}
                   <View style={{
@@ -2392,7 +2401,7 @@ const HomeScreen = ({ navigation, route }) => {
               </View>
 
               {/* Goal Setting */}
-              <View style={{ marginBottom: 24 }}>
+              <View style={{ marginBottom: 24, flex: 0 }}>
                 <Text style={{
                   color: '#5b7f67',
                   fontSize: 18,
@@ -2408,6 +2417,7 @@ const HomeScreen = ({ navigation, route }) => {
                   padding: 16,
                   borderColor: 'rgba(165,115,36,0.8)',
                   borderWidth: 1,
+                  flex: 0,
                 }}>
                   {!selectedGoal ? (
                     <>
@@ -2420,7 +2430,7 @@ const HomeScreen = ({ navigation, route }) => {
                       }}>
                         Select your daily goal:
                       </Text>
-                      <ScrollView style={{ maxHeight: 200 }}>
+                      <ScrollView style={{ maxHeight: 200 }} nestedScrollEnabled={true}>
                         {[
                           { ayaat: 1, days: 6236 },
                           { ayaat: 2, days: 3118 },
@@ -2561,6 +2571,7 @@ const HomeScreen = ({ navigation, route }) => {
                   )}
                 </View>
               </View>
+              </ScrollView>
 
               {/* Close Button */}
               <TouchableOpacity
@@ -2575,6 +2586,7 @@ const HomeScreen = ({ navigation, route }) => {
                   shadowOpacity: 0.5,
                   shadowRadius: 6,
                   elevation: 8,
+                  marginTop: 20,
                 }}
                 onPress={() => {
                   hapticSelection();
@@ -2589,7 +2601,7 @@ const HomeScreen = ({ navigation, route }) => {
                   Close
                 </Text>
               </TouchableOpacity>
-            </TouchableOpacity>
+            </View>
           </TouchableOpacity>
         </Modal>
 
@@ -3438,15 +3450,15 @@ const HomeScreen = ({ navigation, route }) => {
             const loadRecordings = async () => {
               setLoading(true);
               try {
-                console.log('Loading recordings for:', selectedSurah, selectedAyah);
+                logger.debug('HomeScreen', 'Loading recordings', { surah: selectedSurah, ayah: selectedAyah });
                 const allRecordings = await audioRecorder.loadRecordings(selectedSurah, selectedAyah);
-                console.log('Found recordings:', allRecordings);
+                logger.debug('HomeScreen', 'Found recordings', { count: allRecordings.length });
                 
                 // Load highlighted recordings for this surah/ayah
                 const highlightedKey = `highlighted_${selectedSurah}_${selectedAyah}`;
                 const highlightedRecordingsStr = await AsyncStorage.getItem(highlightedKey);
                 const highlightedRecordings = highlightedRecordingsStr ? JSON.parse(highlightedRecordingsStr) : [];
-                console.log('Highlighted recordings:', highlightedRecordings);
+                logger.debug('HomeScreen', 'Highlighted recordings', { count: highlightedRecordings.length });
                 
                 // Mark recordings as highlighted
                 const recordingsWithHighlight = allRecordings.map(recording => ({
@@ -3456,7 +3468,7 @@ const HomeScreen = ({ navigation, route }) => {
                 
                 setRecordings(recordingsWithHighlight);
               } catch (error) {
-                console.error('Error loading recordings:', error);
+                logger.error('HomeScreen', 'Error loading recordings', error);
                 setRecordings([]);
               }
               setLoading(false);
@@ -3816,9 +3828,9 @@ const HomeScreen = ({ navigation, route }) => {
                                       await audioRecorder.playRecording(recording.uri);
                                       setCurrentlyPlaying(recording.uri);
                                     }
-                                  } catch (error) {
-                                    console.error('Error playing recording:', error);
-                                  }
+                                                } catch (error) {
+                logger.error('HomeScreen', 'Error playing recording', error);
+              }
                                 }}
                               >
                                 <Text style={{

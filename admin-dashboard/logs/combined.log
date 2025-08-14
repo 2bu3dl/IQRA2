@@ -4896,3 +4896,327 @@
 {"acknowledged":false,"category":"SYSTEM","data":{"arch":"x64","cpu":{"cores":16,"usage":[208.07763671875,99.6328125,51.43115234375]},"memory":{"free":763129856,"total":34359738368,"usage":97.77899980545044,"used":33596608512},"platform":"darwin","timestamp":"2025-07-21T23:39:56.384Z","uptime":276664},"id":"5bc9a286-9e89-4072-a1b8-fc2585574cb9","level":"\u001b[33mwarn\u001b[39m","message":"\u001b[33mAlert created: SYSTEM - HIGH_CPU_USAGE CPU usage is above 80%\u001b[39m","timestamp":"2025-07-21 19:39:56:3956","type":"HIGH_CPU_USAGE"}
 {"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mClient disconnected: OMtfN1ByXq-LbOsJAAAE\u001b[39m","timestamp":"2025-07-21 19:42:40:4240"}
 {"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mSIGINT received, shutting down gracefully\u001b[39m","timestamp":"2025-07-21 19:43:52:4352"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mDatabase connection established\u001b[39m","timestamp":"2025-08-14 14:12:11:1211"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mDatabase tables created successfully\u001b[39m","timestamp":"2025-08-14 14:12:11:1211"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mDatabase initialized successfully\u001b[39m","timestamp":"2025-08-14 14:12:11:1211"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mDatabase connection established\u001b[39m","timestamp":"2025-08-14 14:12:47:1247"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mDatabase tables created successfully\u001b[39m","timestamp":"2025-08-14 14:12:47:1247"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mDatabase initialized successfully\u001b[39m","timestamp":"2025-08-14 14:12:47:1247"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mDatabase connection established\u001b[39m","timestamp":"2025-08-14 14:42:45:4245"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mDatabase tables created successfully\u001b[39m","timestamp":"2025-08-14 14:42:45:4245"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mDatabase initialized successfully\u001b[39m","timestamp":"2025-08-14 14:42:45:4245"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mInitializing monitoring service...\u001b[39m","timestamp":"2025-08-14 14:42:45:4245"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mMonitoring service initialized successfully\u001b[39m","timestamp":"2025-08-14 14:42:45:4245"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m🚀 Admin Dashboard Server running on port 5001\u001b[39m","timestamp":"2025-08-14 14:42:45:4245"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m📊 Health check: http://localhost:5001/health\u001b[39m","timestamp":"2025-08-14 14:42:45:4245"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m🔒 Security dashboard: http://localhost:5001/api/security\u001b[39m","timestamp":"2025-08-14 14:42:45:4245"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m📈 Monitoring: http://localhost:5001/api/monitoring\u001b[39m","timestamp":"2025-08-14 14:42:45:4245"}
+{"acknowledged":false,"category":"SYSTEM","data":{"arch":"x64","cpu":{"cores":16,"usage":[4.26416015625,3.4619140625,3.060546875]},"memory":{"free":97177600,"total":34359738368,"usage":99.71717596054077,"used":34262560768},"platform":"darwin","timestamp":"2025-08-14T18:43:00.472Z","uptime":11037},"id":"5dc3bd86-f02f-4333-bb7f-2cc1247fb58a","level":"\u001b[33mwarn\u001b[39m","message":"\u001b[33mAlert created: SYSTEM - HIGH_MEMORY_USAGE Memory usage is above 90%\u001b[39m","timestamp":"2025-08-14 14:43:00:430","type":"HIGH_MEMORY_USAGE"}
+{"acknowledged":false,"category":"SYSTEM","data":{"arch":"x64","cpu":{"cores":16,"usage":[3.05810546875,3.2802734375,3.0810546875]},"memory":{"free":165969920,"total":34359738368,"usage":99.51696395874023,"used":34193768448},"platform":"darwin","timestamp":"2025-08-14T18:48:00.492Z","uptime":11337},"id":"bfdd6de5-6498-4a30-b048-1ddee5db62dd","level":"\u001b[33mwarn\u001b[39m","message":"\u001b[33mAlert created: SYSTEM - HIGH_MEMORY_USAGE Memory usage is above 90%\u001b[39m","timestamp":"2025-08-14 14:48:00:480","type":"HIGH_MEMORY_USAGE"}
+{"acknowledged":false,"category":"SYSTEM","data":{"arch":"x64","cpu":{"cores":16,"usage":[2.267578125,2.681640625,2.85888671875]},"memory":{"free":132866048,"total":34359738368,"usage":99.61330890655518,"used":34226872320},"platform":"darwin","timestamp":"2025-08-14T18:53:15.483Z","uptime":11652},"id":"52737adc-6c52-4569-802a-27120dfdcc30","level":"\u001b[33mwarn\u001b[39m","message":"\u001b[33mAlert created: SYSTEM - HIGH_MEMORY_USAGE Memory usage is above 90%\u001b[39m","timestamp":"2025-08-14 14:53:15:5315","type":"HIGH_MEMORY_USAGE"}
+{"acknowledged":false,"category":"SYSTEM","data":{"arch":"x64","cpu":{"cores":16,"usage":[2.99560546875,2.7607421875,2.826171875]},"memory":{"free":148840448,"total":34359738368,"usage":99.56681728363037,"used":34210897920},"platform":"darwin","timestamp":"2025-08-14T18:58:15.497Z","uptime":11952},"id":"755cac3c-15c1-4521-8859-ab0a34e3ae4b","level":"\u001b[33mwarn\u001b[39m","message":"\u001b[33mAlert created: SYSTEM - HIGH_MEMORY_USAGE Memory usage is above 90%\u001b[39m","timestamp":"2025-08-14 14:58:15:5815","type":"HIGH_MEMORY_USAGE"}
+{"acknowledged":false,"category":"SYSTEM","data":{"arch":"x64","cpu":{"cores":16,"usage":[2.93798828125,3.095703125,2.974609375]},"memory":{"free":170082304,"total":34359738368,"usage":99.50499534606934,"used":34189656064},"platform":"darwin","timestamp":"2025-08-14T19:03:15.522Z","uptime":12252},"id":"0aa5acec-508e-4cd6-ba1a-f11ac22b2273","level":"\u001b[33mwarn\u001b[39m","message":"\u001b[33mAlert created: SYSTEM - HIGH_MEMORY_USAGE Memory usage is above 90%\u001b[39m","timestamp":"2025-08-14 15:03:15:315","type":"HIGH_MEMORY_USAGE"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mSIGINT received, shutting down gracefully\u001b[39m","timestamp":"2025-08-14 15:06:15:615"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mDatabase connection established\u001b[39m","timestamp":"2025-08-14 15:06:40:640"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mDatabase tables created successfully\u001b[39m","timestamp":"2025-08-14 15:06:40:640"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mDatabase initialized successfully\u001b[39m","timestamp":"2025-08-14 15:06:40:640"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mInitializing monitoring service...\u001b[39m","timestamp":"2025-08-14 15:06:40:640"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mMonitoring service initialized successfully\u001b[39m","timestamp":"2025-08-14 15:06:40:640"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m🚀 Admin Dashboard Server running on port 5001\u001b[39m","timestamp":"2025-08-14 15:06:40:640"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m📊 Health check: http://localhost:5001/health\u001b[39m","timestamp":"2025-08-14 15:06:40:640"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m🔒 Security dashboard: http://localhost:5001/api/security\u001b[39m","timestamp":"2025-08-14 15:06:40:640"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m📈 Monitoring: http://localhost:5001/api/monitoring\u001b[39m","timestamp":"2025-08-14 15:06:40:640"}
+{"level":"\u001b[33mwarn\u001b[39m","message":"\u001b[33mFailed login attempt for: admin (1/5)\u001b[39m","timestamp":"2025-08-14 15:06:46:646"}
+{"level":"\u001b[33mwarn\u001b[39m","message":"\u001b[33mFailed login attempt for user: admin\u001b[39m","timestamp":"2025-08-14 15:06:46:646"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m::1 - - [14/Aug/2025:19:06:46 +0000] \"POST /api/auth/login HTTP/1.1\" 401 93 \"-\" \"curl/8.7.1\"\u001b[39m","timestamp":"2025-08-14 15:06:46:646"}
+{"duration":118,"ip":"::1","level":"\u001b[33mwarn\u001b[39m","message":"\u001b[33mRequest completed with error:\u001b[39m","method":"POST","status":401,"timestamp":"2025-08-14 15:06:46:646","url":"/login","userAgent":"curl/8.7.1"}
+{"acknowledged":false,"category":"SYSTEM","data":{"arch":"x64","cpu":{"cores":16,"usage":[3.0185546875,2.89404296875,2.8916015625]},"memory":{"free":156463104,"total":34359738368,"usage":99.54463243484497,"used":34203275264},"platform":"darwin","timestamp":"2025-08-14T19:06:55.213Z","uptime":12472},"id":"a9250987-e1d8-4eac-b8f4-a38b0c696127","level":"\u001b[33mwarn\u001b[39m","message":"\u001b[33mAlert created: SYSTEM - HIGH_MEMORY_USAGE Memory usage is above 90%\u001b[39m","timestamp":"2025-08-14 15:06:55:655","type":"HIGH_MEMORY_USAGE"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mSuccessful login for: admin\u001b[39m","timestamp":"2025-08-14 15:06:55:655"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mSession created for user: admin\u001b[39m","timestamp":"2025-08-14 15:06:55:655"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mSuccessful login for user: admin\u001b[39m","timestamp":"2025-08-14 15:06:55:655"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m::1 - - [14/Aug/2025:19:06:55 +0000] \"POST /api/auth/login HTTP/1.1\" 200 637 \"-\" \"curl/8.7.1\"\u001b[39m","timestamp":"2025-08-14 15:06:55:655"}
+{"duration":101,"ip":"::1","level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mRequest completed:\u001b[39m","method":"POST","status":200,"timestamp":"2025-08-14 15:06:55:655","url":"/login","userAgent":"curl/8.7.1"}
+{"level":"\u001b[33mwarn\u001b[39m","message":"\u001b[33mFailed login attempt for: admin (1/5)\u001b[39m","timestamp":"2025-08-14 15:07:00:70"}
+{"level":"\u001b[33mwarn\u001b[39m","message":"\u001b[33mFailed login attempt for user: admin\u001b[39m","timestamp":"2025-08-14 15:07:00:70"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m::1 - - [14/Aug/2025:19:07:00 +0000] \"POST /api/auth/login HTTP/1.1\" 401 93 \"-\" \"curl/8.7.1\"\u001b[39m","timestamp":"2025-08-14 15:07:00:70"}
+{"duration":92,"ip":"::1","level":"\u001b[33mwarn\u001b[39m","message":"\u001b[33mRequest completed with error:\u001b[39m","method":"POST","status":401,"timestamp":"2025-08-14 15:07:00:70","url":"/login","userAgent":"curl/8.7.1"}
+{"level":"\u001b[33mwarn\u001b[39m","message":"\u001b[33mFailed login attempt for: admin (2/5)\u001b[39m","timestamp":"2025-08-14 15:07:00:70"}
+{"level":"\u001b[33mwarn\u001b[39m","message":"\u001b[33mFailed login attempt for user: admin\u001b[39m","timestamp":"2025-08-14 15:07:00:70"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m::1 - - [14/Aug/2025:19:07:00 +0000] \"POST /api/auth/login HTTP/1.1\" 401 93 \"-\" \"curl/8.7.1\"\u001b[39m","timestamp":"2025-08-14 15:07:00:70"}
+{"duration":89,"ip":"::1","level":"\u001b[33mwarn\u001b[39m","message":"\u001b[33mRequest completed with error:\u001b[39m","method":"POST","status":401,"timestamp":"2025-08-14 15:07:00:70","url":"/login","userAgent":"curl/8.7.1"}
+{"level":"\u001b[33mwarn\u001b[39m","message":"\u001b[33mFailed login attempt for: admin (3/5)\u001b[39m","timestamp":"2025-08-14 15:07:00:70"}
+{"level":"\u001b[33mwarn\u001b[39m","message":"\u001b[33mFailed login attempt for user: admin\u001b[39m","timestamp":"2025-08-14 15:07:00:70"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m::1 - - [14/Aug/2025:19:07:00 +0000] \"POST /api/auth/login HTTP/1.1\" 401 93 \"-\" \"curl/8.7.1\"\u001b[39m","timestamp":"2025-08-14 15:07:00:70"}
+{"duration":86,"ip":"::1","level":"\u001b[33mwarn\u001b[39m","message":"\u001b[33mRequest completed with error:\u001b[39m","method":"POST","status":401,"timestamp":"2025-08-14 15:07:00:70","url":"/login","userAgent":"curl/8.7.1"}
+{"level":"\u001b[33mwarn\u001b[39m","message":"\u001b[33mFailed login attempt for: admin (4/5)\u001b[39m","timestamp":"2025-08-14 15:07:00:70"}
+{"level":"\u001b[33mwarn\u001b[39m","message":"\u001b[33mFailed login attempt for user: admin\u001b[39m","timestamp":"2025-08-14 15:07:00:70"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m::1 - - [14/Aug/2025:19:07:00 +0000] \"POST /api/auth/login HTTP/1.1\" 401 93 \"-\" \"curl/8.7.1\"\u001b[39m","timestamp":"2025-08-14 15:07:00:70"}
+{"duration":81,"ip":"::1","level":"\u001b[33mwarn\u001b[39m","message":"\u001b[33mRequest completed with error:\u001b[39m","method":"POST","status":401,"timestamp":"2025-08-14 15:07:00:70","url":"/login","userAgent":"curl/8.7.1"}
+{"level":"\u001b[33mwarn\u001b[39m","message":"\u001b[33mFailed login attempt for: admin (5/5)\u001b[39m","timestamp":"2025-08-14 15:07:00:70"}
+{"level":"\u001b[31merror\u001b[39m","message":"\u001b[31mAccount locked for: admin until 2025-08-14T19:22:00.604Z\u001b[39m","timestamp":"2025-08-14 15:07:00:70"}
+{"level":"\u001b[33mwarn\u001b[39m","message":"\u001b[33mFailed login attempt for user: admin\u001b[39m","timestamp":"2025-08-14 15:07:00:70"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m::1 - - [14/Aug/2025:19:07:00 +0000] \"POST /api/auth/login HTTP/1.1\" 401 93 \"-\" \"curl/8.7.1\"\u001b[39m","timestamp":"2025-08-14 15:07:00:70"}
+{"duration":90,"ip":"::1","level":"\u001b[33mwarn\u001b[39m","message":"\u001b[33mRequest completed with error:\u001b[39m","method":"POST","status":401,"timestamp":"2025-08-14 15:07:00:70","url":"/login","userAgent":"curl/8.7.1"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m::1 - - [14/Aug/2025:19:07:00 +0000] \"POST /api/auth/login HTTP/1.1\" 429 141 \"-\" \"curl/8.7.1\"\u001b[39m","timestamp":"2025-08-14 15:07:00:70"}
+{"duration":1,"ip":"::1","level":"\u001b[33mwarn\u001b[39m","message":"\u001b[33mRequest completed with error:\u001b[39m","method":"POST","status":429,"timestamp":"2025-08-14 15:07:00:70","url":"/login","userAgent":"curl/8.7.1"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m::1 - - [14/Aug/2025:19:07:00 +0000] \"POST /api/auth/login HTTP/1.1\" 429 141 \"-\" \"curl/8.7.1\"\u001b[39m","timestamp":"2025-08-14 15:07:00:70"}
+{"duration":2,"ip":"::1","level":"\u001b[33mwarn\u001b[39m","message":"\u001b[33mRequest completed with error:\u001b[39m","method":"POST","status":429,"timestamp":"2025-08-14 15:07:00:70","url":"/login","userAgent":"curl/8.7.1"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m::1 - - [14/Aug/2025:19:07:00 +0000] \"POST /api/auth/login HTTP/1.1\" 429 141 \"-\" \"curl/8.7.1\"\u001b[39m","timestamp":"2025-08-14 15:07:00:70"}
+{"duration":1,"ip":"::1","level":"\u001b[33mwarn\u001b[39m","message":"\u001b[33mRequest completed with error:\u001b[39m","method":"POST","status":429,"timestamp":"2025-08-14 15:07:00:70","url":"/login","userAgent":"curl/8.7.1"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m::1 - - [14/Aug/2025:19:07:00 +0000] \"POST /api/auth/login HTTP/1.1\" 429 141 \"-\" \"curl/8.7.1\"\u001b[39m","timestamp":"2025-08-14 15:07:00:70"}
+{"duration":2,"ip":"::1","level":"\u001b[33mwarn\u001b[39m","message":"\u001b[33mRequest completed with error:\u001b[39m","method":"POST","status":429,"timestamp":"2025-08-14 15:07:00:70","url":"/login","userAgent":"curl/8.7.1"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m::1 - - [14/Aug/2025:19:07:00 +0000] \"POST /api/auth/login HTTP/1.1\" 429 141 \"-\" \"curl/8.7.1\"\u001b[39m","timestamp":"2025-08-14 15:07:00:70"}
+{"duration":1,"ip":"::1","level":"\u001b[33mwarn\u001b[39m","message":"\u001b[33mRequest completed with error:\u001b[39m","method":"POST","status":429,"timestamp":"2025-08-14 15:07:00:70","url":"/login","userAgent":"curl/8.7.1"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m::1 - - [14/Aug/2025:19:07:00 +0000] \"POST /api/auth/login HTTP/1.1\" 429 141 \"-\" \"curl/8.7.1\"\u001b[39m","timestamp":"2025-08-14 15:07:00:70"}
+{"duration":1,"ip":"::1","level":"\u001b[33mwarn\u001b[39m","message":"\u001b[33mRequest completed with error:\u001b[39m","method":"POST","status":429,"timestamp":"2025-08-14 15:07:00:70","url":"/login","userAgent":"curl/8.7.1"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m::1 - - [14/Aug/2025:19:07:00 +0000] \"POST /api/auth/login HTTP/1.1\" 429 141 \"-\" \"curl/8.7.1\"\u001b[39m","timestamp":"2025-08-14 15:07:00:70"}
+{"duration":2,"ip":"::1","level":"\u001b[33mwarn\u001b[39m","message":"\u001b[33mRequest completed with error:\u001b[39m","method":"POST","status":429,"timestamp":"2025-08-14 15:07:00:70","url":"/login","userAgent":"curl/8.7.1"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m::1 - - [14/Aug/2025:19:07:11 +0000] \"GET /api/admin/users HTTP/1.1\" 404 27 \"-\" \"curl/8.7.1\"\u001b[39m","timestamp":"2025-08-14 15:07:11:711"}
+{"duration":3,"ip":"::1","level":"\u001b[33mwarn\u001b[39m","message":"\u001b[33mRequest completed with error:\u001b[39m","method":"GET","status":404,"timestamp":"2025-08-14 15:07:11:711","url":"/","userAgent":"curl/8.7.1"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m::1 - - [14/Aug/2025:19:07:16 +0000] \"GET /health HTTP/1.1\" 200 201 \"-\" \"curl/8.7.1\"\u001b[39m","timestamp":"2025-08-14 15:07:16:716"}
+{"duration":1,"ip":"::1","level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mRequest completed:\u001b[39m","method":"GET","status":200,"timestamp":"2025-08-14 15:07:16:716","url":"/health","userAgent":"curl/8.7.1"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mSIGTERM received, shutting down gracefully\u001b[39m","timestamp":"2025-08-14 15:07:26:726"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mDatabase connection established\u001b[39m","timestamp":"2025-08-14 15:21:58:2158"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mDatabase tables created successfully\u001b[39m","timestamp":"2025-08-14 15:21:58:2158"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mDatabase initialized successfully\u001b[39m","timestamp":"2025-08-14 15:21:58:2158"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mInitializing monitoring service...\u001b[39m","timestamp":"2025-08-14 15:21:58:2158"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mMonitoring service initialized successfully\u001b[39m","timestamp":"2025-08-14 15:21:58:2158"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m🚀 Admin Dashboard Server running on port 5001\u001b[39m","timestamp":"2025-08-14 15:21:58:2158"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m📊 Health check: http://localhost:5001/health\u001b[39m","timestamp":"2025-08-14 15:21:58:2158"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m🔒 Security dashboard: http://localhost:5001/api/security\u001b[39m","timestamp":"2025-08-14 15:21:58:2158"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m📈 Monitoring: http://localhost:5001/api/monitoring\u001b[39m","timestamp":"2025-08-14 15:21:58:2158"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mSuccessful login for: admin\u001b[39m","timestamp":"2025-08-14 15:22:04:224"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mRefresh token stored for user: admin\u001b[39m","timestamp":"2025-08-14 15:22:04:224"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mSession created for user: admin with refresh token\u001b[39m","timestamp":"2025-08-14 15:22:04:224"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mSuccessful login for user: admin\u001b[39m","timestamp":"2025-08-14 15:22:04:224"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m::1 - - [14/Aug/2025:19:22:04 +0000] \"POST /api/auth/login HTTP/1.1\" 200 1030 \"-\" \"curl/8.7.1\"\u001b[39m","timestamp":"2025-08-14 15:22:04:224"}
+{"duration":103,"ip":"::1","level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mRequest completed:\u001b[39m","method":"POST","status":200,"timestamp":"2025-08-14 15:22:04:224","url":"/login","userAgent":"curl/8.7.1"}
+{"acknowledged":false,"category":"SYSTEM","data":{"arch":"x64","cpu":{"cores":16,"usage":[4.1806640625,3.9521484375,3.40087890625]},"memory":{"free":208179200,"total":34359738368,"usage":99.39411878585815,"used":34151559168},"platform":"darwin","timestamp":"2025-08-14T19:22:13.221Z","uptime":13390},"id":"29085309-7259-4583-9e90-719b0bc4cba4","level":"\u001b[33mwarn\u001b[39m","message":"\u001b[33mAlert created: SYSTEM - HIGH_MEMORY_USAGE Memory usage is above 90%\u001b[39m","timestamp":"2025-08-14 15:22:13:2213","type":"HIGH_MEMORY_USAGE"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mRefresh token stored for user: admin\u001b[39m","timestamp":"2025-08-14 15:22:21:2221"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mSession created for user: admin with refresh token\u001b[39m","timestamp":"2025-08-14 15:22:21:2221"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mRefresh token revoked for user: admin\u001b[39m","timestamp":"2025-08-14 15:22:21:2221"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mToken refreshed for user: admin\u001b[39m","timestamp":"2025-08-14 15:22:21:2221"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m::1 - - [14/Aug/2025:19:22:21 +0000] \"POST /api/auth/refresh HTTP/1.1\" 200 879 \"-\" \"curl/8.7.1\"\u001b[39m","timestamp":"2025-08-14 15:22:21:2221"}
+{"duration":8,"ip":"::1","level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mRequest completed:\u001b[39m","method":"POST","status":200,"timestamp":"2025-08-14 15:22:21:2221","url":"/refresh","userAgent":"curl/8.7.1"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mRevoked 1 refresh tokens for user ID: 1\u001b[39m","timestamp":"2025-08-14 15:22:29:2229"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mUser logged out: admin (revoked 1 refresh tokens)\u001b[39m","timestamp":"2025-08-14 15:22:29:2229"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m::1 - - [14/Aug/2025:19:22:29 +0000] \"POST /api/auth/logout HTTP/1.1\" 200 85 \"-\" \"curl/8.7.1\"\u001b[39m","timestamp":"2025-08-14 15:22:29:2229"}
+{"duration":4,"ip":"::1","level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mRequest completed:\u001b[39m","method":"POST","status":200,"timestamp":"2025-08-14 15:22:29:2229","url":"/logout","userAgent":"curl/8.7.1","userId":1,"username":"admin"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mSIGTERM received, shutting down gracefully\u001b[39m","timestamp":"2025-08-14 15:22:33:2233"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mDatabase connection established\u001b[39m","timestamp":"2025-08-14 15:26:48:2648"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mDatabase tables created successfully\u001b[39m","timestamp":"2025-08-14 15:26:48:2648"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mDatabase initialized successfully\u001b[39m","timestamp":"2025-08-14 15:26:48:2648"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mDatabase connection established\u001b[39m","timestamp":"2025-08-14 15:27:41:2741"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mDatabase tables created successfully\u001b[39m","timestamp":"2025-08-14 15:27:41:2741"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mDatabase initialized successfully\u001b[39m","timestamp":"2025-08-14 15:27:41:2741"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mInitializing monitoring service...\u001b[39m","timestamp":"2025-08-14 15:27:41:2741"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mMonitoring service initialized successfully\u001b[39m","timestamp":"2025-08-14 15:27:41:2741"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m🚀 Admin Dashboard Server running on port 5001\u001b[39m","timestamp":"2025-08-14 15:27:41:2741"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m📊 Health check: http://localhost:5001/health\u001b[39m","timestamp":"2025-08-14 15:27:41:2741"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m🔒 Security dashboard: http://localhost:5001/api/security\u001b[39m","timestamp":"2025-08-14 15:27:41:2741"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m📈 Monitoring: http://localhost:5001/api/monitoring\u001b[39m","timestamp":"2025-08-14 15:27:41:2741"}
+{"level":"\u001b[33mwarn\u001b[39m","message":"\u001b[33mFailed login attempt for: admin (1/5)\u001b[39m","timestamp":"2025-08-14 15:27:49:2749"}
+{"level":"\u001b[33mwarn\u001b[39m","message":"\u001b[33mFailed login attempt for user: admin\u001b[39m","timestamp":"2025-08-14 15:27:49:2749"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m::1 - - [14/Aug/2025:19:27:49 +0000] \"POST /api/auth/login HTTP/1.1\" 401 93 \"-\" \"curl/8.7.1\"\u001b[39m","timestamp":"2025-08-14 15:27:49:2749"}
+{"duration":107,"ip":"::1","level":"\u001b[33mwarn\u001b[39m","message":"\u001b[33mRequest completed with error:\u001b[39m","method":"POST","status":401,"timestamp":"2025-08-14 15:27:49:2749","url":"/login","userAgent":"curl/8.7.1"}
+{"acknowledged":false,"category":"SYSTEM","data":{"arch":"x64","cpu":{"cores":16,"usage":[3.251953125,3.20556640625,3.19873046875]},"memory":{"free":257548288,"total":34359738368,"usage":99.2504358291626,"used":34102190080},"platform":"darwin","timestamp":"2025-08-14T19:27:56.492Z","uptime":13733},"id":"587e8694-3c99-4bff-9c1f-e53e04203739","level":"\u001b[33mwarn\u001b[39m","message":"\u001b[33mAlert created: SYSTEM - HIGH_MEMORY_USAGE Memory usage is above 90%\u001b[39m","timestamp":"2025-08-14 15:27:56:2756","type":"HIGH_MEMORY_USAGE"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mSuccessful login for: admin\u001b[39m","timestamp":"2025-08-14 15:28:01:281"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mRefresh token stored for user: admin\u001b[39m","timestamp":"2025-08-14 15:28:01:281"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mSession created for user: admin with refresh token\u001b[39m","timestamp":"2025-08-14 15:28:01:281"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mSuccessful login for user: admin\u001b[39m","timestamp":"2025-08-14 15:28:01:281"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m::1 - - [14/Aug/2025:19:28:01 +0000] \"POST /api/auth/login HTTP/1.1\" 200 1030 \"-\" \"curl/8.7.1\"\u001b[39m","timestamp":"2025-08-14 15:28:01:281"}
+{"duration":88,"ip":"::1","level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mRequest completed:\u001b[39m","method":"POST","status":200,"timestamp":"2025-08-14 15:28:01:281","url":"/login","userAgent":"curl/8.7.1"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mDatabase connection established\u001b[39m","timestamp":"2025-08-14 15:28:26:2826"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mDatabase tables created successfully\u001b[39m","timestamp":"2025-08-14 15:28:26:2826"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mDatabase initialized successfully\u001b[39m","timestamp":"2025-08-14 15:28:26:2826"}
+{"level":"\u001b[33mwarn\u001b[39m","message":"\u001b[33mFailed login attempt for: admin (1/5)\u001b[39m","timestamp":"2025-08-14 15:28:32:2832"}
+{"level":"\u001b[33mwarn\u001b[39m","message":"\u001b[33mFailed login attempt for user: admin\u001b[39m","timestamp":"2025-08-14 15:28:32:2832"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m::1 - - [14/Aug/2025:19:28:32 +0000] \"POST /api/auth/login HTTP/1.1\" 401 93 \"-\" \"curl/8.7.1\"\u001b[39m","timestamp":"2025-08-14 15:28:32:2832"}
+{"duration":84,"ip":"::1","level":"\u001b[33mwarn\u001b[39m","message":"\u001b[33mRequest completed with error:\u001b[39m","method":"POST","status":401,"timestamp":"2025-08-14 15:28:32:2832","url":"/login","userAgent":"curl/8.7.1"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mDatabase connection established\u001b[39m","timestamp":"2025-08-14 15:28:49:2849"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mDatabase tables created successfully\u001b[39m","timestamp":"2025-08-14 15:28:49:2849"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mDatabase initialized successfully\u001b[39m","timestamp":"2025-08-14 15:28:49:2849"}
+{"level":"\u001b[33mwarn\u001b[39m","message":"\u001b[33mFailed login attempt for: admin (2/5)\u001b[39m","timestamp":"2025-08-14 15:28:55:2855"}
+{"level":"\u001b[33mwarn\u001b[39m","message":"\u001b[33mFailed login attempt for user: admin\u001b[39m","timestamp":"2025-08-14 15:28:55:2855"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m::1 - - [14/Aug/2025:19:28:55 +0000] \"POST /api/auth/login HTTP/1.1\" 401 93 \"-\" \"curl/8.7.1\"\u001b[39m","timestamp":"2025-08-14 15:28:55:2855"}
+{"duration":223,"ip":"::1","level":"\u001b[33mwarn\u001b[39m","message":"\u001b[33mRequest completed with error:\u001b[39m","method":"POST","status":401,"timestamp":"2025-08-14 15:28:55:2855","url":"/login","userAgent":"curl/8.7.1"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mSIGTERM received, shutting down gracefully\u001b[39m","timestamp":"2025-08-14 15:29:06:296"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mDatabase connection established\u001b[39m","timestamp":"2025-08-14 15:29:11:2911"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mDatabase tables created successfully\u001b[39m","timestamp":"2025-08-14 15:29:11:2911"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mDatabase initialized successfully\u001b[39m","timestamp":"2025-08-14 15:29:11:2911"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mInitializing monitoring service...\u001b[39m","timestamp":"2025-08-14 15:29:11:2911"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mMonitoring service initialized successfully\u001b[39m","timestamp":"2025-08-14 15:29:11:2911"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m🚀 Admin Dashboard Server running on port 5001\u001b[39m","timestamp":"2025-08-14 15:29:11:2911"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m📊 Health check: http://localhost:5001/health\u001b[39m","timestamp":"2025-08-14 15:29:11:2911"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m🔒 Security dashboard: http://localhost:5001/api/security\u001b[39m","timestamp":"2025-08-14 15:29:11:2911"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m📈 Monitoring: http://localhost:5001/api/monitoring\u001b[39m","timestamp":"2025-08-14 15:29:11:2911"}
+{"level":"\u001b[33mwarn\u001b[39m","message":"\u001b[33mFailed login attempt for: admin (1/5)\u001b[39m","timestamp":"2025-08-14 15:29:18:2918"}
+{"level":"\u001b[33mwarn\u001b[39m","message":"\u001b[33mFailed login attempt for user: admin\u001b[39m","timestamp":"2025-08-14 15:29:18:2918"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m::1 - - [14/Aug/2025:19:29:18 +0000] \"POST /api/auth/login HTTP/1.1\" 401 93 \"-\" \"curl/8.7.1\"\u001b[39m","timestamp":"2025-08-14 15:29:18:2918"}
+{"duration":102,"ip":"::1","level":"\u001b[33mwarn\u001b[39m","message":"\u001b[33mRequest completed with error:\u001b[39m","method":"POST","status":401,"timestamp":"2025-08-14 15:29:18:2918","url":"/login","userAgent":"curl/8.7.1"}
+{"acknowledged":false,"category":"SYSTEM","data":{"arch":"x64","cpu":{"cores":16,"usage":[5.65283203125,3.97705078125,3.490234375]},"memory":{"free":252456960,"total":34359738368,"usage":99.26525354385376,"used":34107281408},"platform":"darwin","timestamp":"2025-08-14T19:29:26.602Z","uptime":13823},"id":"30b31f00-775d-41c3-83df-9880426dca9b","level":"\u001b[33mwarn\u001b[39m","message":"\u001b[33mAlert created: SYSTEM - HIGH_MEMORY_USAGE Memory usage is above 90%\u001b[39m","timestamp":"2025-08-14 15:29:26:2926","type":"HIGH_MEMORY_USAGE"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mSIGTERM received, shutting down gracefully\u001b[39m","timestamp":"2025-08-14 15:30:52:3052"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mDatabase connection established\u001b[39m","timestamp":"2025-08-14 15:30:58:3058"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mDatabase connection established\u001b[39m","timestamp":"2025-08-14 15:30:58:3058"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mDatabase tables created successfully\u001b[39m","timestamp":"2025-08-14 15:30:58:3058"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mDatabase initialized successfully\u001b[39m","timestamp":"2025-08-14 15:30:58:3058"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mDatabase tables created successfully\u001b[39m","timestamp":"2025-08-14 15:30:58:3058"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mDatabase initialized successfully\u001b[39m","timestamp":"2025-08-14 15:30:58:3058"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mDatabase service initialized for auth routes\u001b[39m","timestamp":"2025-08-14 15:30:58:3058"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mInitializing monitoring service...\u001b[39m","timestamp":"2025-08-14 15:30:58:3058"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mMonitoring service initialized successfully\u001b[39m","timestamp":"2025-08-14 15:30:58:3058"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m🚀 Admin Dashboard Server running on port 5001\u001b[39m","timestamp":"2025-08-14 15:30:58:3058"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m📊 Health check: http://localhost:5001/health\u001b[39m","timestamp":"2025-08-14 15:30:58:3058"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m🔒 Security dashboard: http://localhost:5001/api/security\u001b[39m","timestamp":"2025-08-14 15:30:58:3058"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m📈 Monitoring: http://localhost:5001/api/monitoring\u001b[39m","timestamp":"2025-08-14 15:30:58:3058"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mSuccessful login for: admin\u001b[39m","timestamp":"2025-08-14 15:31:05:315"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mRefresh token stored for user: admin\u001b[39m","timestamp":"2025-08-14 15:31:05:315"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mSession created for user: admin with refresh token\u001b[39m","timestamp":"2025-08-14 15:31:05:315"}
+{"__augmented":true,"code":"SQLITE_ERROR","errno":1,"level":"\u001b[31merror\u001b[39m","message":"\u001b[31mDatabase query error: SQLITE_ERROR: no such column: lastLogin\u001b[39m","stack":"Error: SQLITE_ERROR: no such column: lastLogin\n--> in Database#run('UPDATE users SET lastLogin = ? WHERE id = ?', [ '2025-08-14T19:31:05.746Z', 1 ], [Function (anonymous)])\n    at /Users/nadoom/Desktop/IQRA2/admin-dashboard/services/database.js:164:15\n    at new Promise (<anonymous>)\n    at DatabaseService.run (/Users/nadoom/Desktop/IQRA2/admin-dashboard/services/database.js:163:12)\n    at /Users/nadoom/Desktop/IQRA2/admin-dashboard/routes/auth.js:125:21","timestamp":"2025-08-14 15:31:05:315"}
+{"__augmented":true,"code":"SQLITE_ERROR","errno":1,"level":"\u001b[31merror\u001b[39m","message":"\u001b[31mLogin error: SQLITE_ERROR: no such column: lastLogin\u001b[39m","stack":"Error: SQLITE_ERROR: no such column: lastLogin\n--> in Database#run('UPDATE users SET lastLogin = ? WHERE id = ?', [ '2025-08-14T19:31:05.746Z', 1 ], [Function (anonymous)])\n    at /Users/nadoom/Desktop/IQRA2/admin-dashboard/services/database.js:164:15\n    at new Promise (<anonymous>)\n    at DatabaseService.run (/Users/nadoom/Desktop/IQRA2/admin-dashboard/services/database.js:163:12)\n    at /Users/nadoom/Desktop/IQRA2/admin-dashboard/routes/auth.js:125:21","timestamp":"2025-08-14 15:31:05:315"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m::1 - - [14/Aug/2025:19:31:05 +0000] \"POST /api/auth/login HTTP/1.1\" 500 83 \"-\" \"curl/8.7.1\"\u001b[39m","timestamp":"2025-08-14 15:31:05:315"}
+{"duration":324,"ip":"::1","level":"\u001b[33mwarn\u001b[39m","message":"\u001b[33mRequest completed with error:\u001b[39m","method":"POST","status":500,"timestamp":"2025-08-14 15:31:05:315","url":"/login","userAgent":"curl/8.7.1"}
+{"acknowledged":false,"category":"SYSTEM","data":{"arch":"x64","cpu":{"cores":16,"usage":[3.88037109375,3.849609375,3.49560546875]},"memory":{"free":334704640,"total":34359738368,"usage":99.02588129043579,"used":34025033728},"platform":"darwin","timestamp":"2025-08-14T19:31:13.049Z","uptime":13930},"id":"6a0769cc-5a15-420a-ae6c-08d65928efb3","level":"\u001b[33mwarn\u001b[39m","message":"\u001b[33mAlert created: SYSTEM - HIGH_MEMORY_USAGE Memory usage is above 90%\u001b[39m","timestamp":"2025-08-14 15:31:13:3113","type":"HIGH_MEMORY_USAGE"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mSIGTERM received, shutting down gracefully\u001b[39m","timestamp":"2025-08-14 15:31:43:3143"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mDatabase connection established\u001b[39m","timestamp":"2025-08-14 15:31:48:3148"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mDatabase connection established\u001b[39m","timestamp":"2025-08-14 15:31:48:3148"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mDatabase tables created successfully\u001b[39m","timestamp":"2025-08-14 15:31:48:3148"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mDatabase initialized successfully\u001b[39m","timestamp":"2025-08-14 15:31:48:3148"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mDatabase service initialized for auth routes\u001b[39m","timestamp":"2025-08-14 15:31:48:3148"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mDatabase tables created successfully\u001b[39m","timestamp":"2025-08-14 15:31:48:3148"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mDatabase initialized successfully\u001b[39m","timestamp":"2025-08-14 15:31:48:3148"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mInitializing monitoring service...\u001b[39m","timestamp":"2025-08-14 15:31:48:3148"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mMonitoring service initialized successfully\u001b[39m","timestamp":"2025-08-14 15:31:48:3148"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m🚀 Admin Dashboard Server running on port 5001\u001b[39m","timestamp":"2025-08-14 15:31:48:3148"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m📊 Health check: http://localhost:5001/health\u001b[39m","timestamp":"2025-08-14 15:31:48:3148"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m🔒 Security dashboard: http://localhost:5001/api/security\u001b[39m","timestamp":"2025-08-14 15:31:48:3148"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m📈 Monitoring: http://localhost:5001/api/monitoring\u001b[39m","timestamp":"2025-08-14 15:31:48:3148"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mSuccessful login for: admin\u001b[39m","timestamp":"2025-08-14 15:31:56:3156"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mRefresh token stored for user: admin\u001b[39m","timestamp":"2025-08-14 15:31:56:3156"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mSession created for user: admin with refresh token\u001b[39m","timestamp":"2025-08-14 15:31:56:3156"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mSuccessful login for user: admin\u001b[39m","timestamp":"2025-08-14 15:31:56:3156"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m::1 - - [14/Aug/2025:19:31:56 +0000] \"POST /api/auth/login HTTP/1.1\" 200 1014 \"-\" \"curl/8.7.1\"\u001b[39m","timestamp":"2025-08-14 15:31:56:3156"}
+{"duration":331,"ip":"::1","level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mRequest completed:\u001b[39m","method":"POST","status":200,"timestamp":"2025-08-14 15:31:56:3156","url":"/login","userAgent":"curl/8.7.1"}
+{"acknowledged":false,"category":"SYSTEM","data":{"arch":"x64","cpu":{"cores":16,"usage":[8.0380859375,5.02294921875,3.94921875]},"memory":{"free":204660736,"total":34359738368,"usage":99.40435886383057,"used":34155077632},"platform":"darwin","timestamp":"2025-08-14T19:32:03.447Z","uptime":13980},"id":"6b8da7de-c493-4d78-b607-7b1893d86287","level":"\u001b[33mwarn\u001b[39m","message":"\u001b[33mAlert created: SYSTEM - HIGH_MEMORY_USAGE Memory usage is above 90%\u001b[39m","timestamp":"2025-08-14 15:32:03:323","type":"HIGH_MEMORY_USAGE"}
+{"level":"\u001b[31merror\u001b[39m","message":"\u001b[31mRefresh token error: users is not defined\u001b[39m","stack":"ReferenceError: users is not defined\n    at /Users/nadoom/Desktop/IQRA2/admin-dashboard/routes/auth.js:425:18\n    at Layer.handle [as handle_request] (/Users/nadoom/Desktop/IQRA2/admin-dashboard/node_modules/express/lib/router/layer.js:95:5)\n    at next (/Users/nadoom/Desktop/IQRA2/admin-dashboard/node_modules/express/lib/router/route.js:149:13)\n    at middleware (/Users/nadoom/Desktop/IQRA2/admin-dashboard/node_modules/express-validator/lib/middlewares/check.js:16:13)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)","timestamp":"2025-08-14 15:32:06:326"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m::1 - - [14/Aug/2025:19:32:06 +0000] \"POST /api/auth/refresh HTTP/1.1\" 500 99 \"-\" \"curl/8.7.1\"\u001b[39m","timestamp":"2025-08-14 15:32:06:326"}
+{"duration":11,"ip":"::1","level":"\u001b[33mwarn\u001b[39m","message":"\u001b[33mRequest completed with error:\u001b[39m","method":"POST","status":500,"timestamp":"2025-08-14 15:32:06:326","url":"/refresh","userAgent":"curl/8.7.1"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mSIGTERM received, shutting down gracefully\u001b[39m","timestamp":"2025-08-14 15:32:33:3233"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mDatabase connection established\u001b[39m","timestamp":"2025-08-14 15:32:39:3239"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mDatabase connection established\u001b[39m","timestamp":"2025-08-14 15:32:39:3239"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mDatabase tables created successfully\u001b[39m","timestamp":"2025-08-14 15:32:39:3239"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mDatabase initialized successfully\u001b[39m","timestamp":"2025-08-14 15:32:39:3239"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mDatabase service initialized for auth routes\u001b[39m","timestamp":"2025-08-14 15:32:39:3239"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mDatabase tables created successfully\u001b[39m","timestamp":"2025-08-14 15:32:39:3239"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mDatabase initialized successfully\u001b[39m","timestamp":"2025-08-14 15:32:39:3239"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mInitializing monitoring service...\u001b[39m","timestamp":"2025-08-14 15:32:39:3239"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mMonitoring service initialized successfully\u001b[39m","timestamp":"2025-08-14 15:32:39:3239"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m🚀 Admin Dashboard Server running on port 5001\u001b[39m","timestamp":"2025-08-14 15:32:39:3239"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m📊 Health check: http://localhost:5001/health\u001b[39m","timestamp":"2025-08-14 15:32:39:3239"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m🔒 Security dashboard: http://localhost:5001/api/security\u001b[39m","timestamp":"2025-08-14 15:32:39:3239"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m📈 Monitoring: http://localhost:5001/api/monitoring\u001b[39m","timestamp":"2025-08-14 15:32:39:3239"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mSuccessful login for: admin\u001b[39m","timestamp":"2025-08-14 15:32:47:3247"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mRefresh token stored for user: admin\u001b[39m","timestamp":"2025-08-14 15:32:47:3247"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mSession created for user: admin with refresh token\u001b[39m","timestamp":"2025-08-14 15:32:47:3247"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mSuccessful login for user: admin\u001b[39m","timestamp":"2025-08-14 15:32:47:3247"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m::1 - - [14/Aug/2025:19:32:47 +0000] \"POST /api/auth/login HTTP/1.1\" 200 1014 \"-\" \"curl/8.7.1\"\u001b[39m","timestamp":"2025-08-14 15:32:47:3247"}
+{"duration":324,"ip":"::1","level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mRequest completed:\u001b[39m","method":"POST","status":200,"timestamp":"2025-08-14 15:32:47:3247","url":"/login","userAgent":"curl/8.7.1"}
+{"acknowledged":false,"category":"SYSTEM","data":{"arch":"x64","cpu":{"cores":16,"usage":[6.419921875,5.0224609375,4.0078125]},"memory":{"free":58286080,"total":34359738368,"usage":99.83036518096924,"used":34301452288},"platform":"darwin","timestamp":"2025-08-14T19:32:54.212Z","uptime":14031},"id":"5b2e0c88-b9c1-41c0-9493-e7b65972ff89","level":"\u001b[33mwarn\u001b[39m","message":"\u001b[33mAlert created: SYSTEM - HIGH_MEMORY_USAGE Memory usage is above 90%\u001b[39m","timestamp":"2025-08-14 15:32:54:3254","type":"HIGH_MEMORY_USAGE"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mRefresh token stored for user: admin\u001b[39m","timestamp":"2025-08-14 15:32:56:3256"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mSession created for user: admin with refresh token\u001b[39m","timestamp":"2025-08-14 15:32:56:3256"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mRefresh token revoked for user: admin\u001b[39m","timestamp":"2025-08-14 15:32:56:3256"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mToken refreshed for user: admin\u001b[39m","timestamp":"2025-08-14 15:32:56:3256"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m::1 - - [14/Aug/2025:19:32:56 +0000] \"POST /api/auth/refresh HTTP/1.1\" 200 892 \"-\" \"curl/8.7.1\"\u001b[39m","timestamp":"2025-08-14 15:32:56:3256"}
+{"duration":8,"ip":"::1","level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mRequest completed:\u001b[39m","method":"POST","status":200,"timestamp":"2025-08-14 15:32:56:3256","url":"/refresh","userAgent":"curl/8.7.1"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mRevoked 1 refresh tokens for user ID: 1\u001b[39m","timestamp":"2025-08-14 15:33:09:339"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mUser logged out: admin (revoked 1 refresh tokens)\u001b[39m","timestamp":"2025-08-14 15:33:09:339"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m::1 - - [14/Aug/2025:19:33:09 +0000] \"POST /api/auth/logout HTTP/1.1\" 200 85 \"-\" \"curl/8.7.1\"\u001b[39m","timestamp":"2025-08-14 15:33:09:339"}
+{"duration":3,"ip":"::1","level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mRequest completed:\u001b[39m","method":"POST","status":200,"timestamp":"2025-08-14 15:33:09:339","url":"/logout","userAgent":"curl/8.7.1","userId":1,"username":"admin"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mSIGTERM received, shutting down gracefully\u001b[39m","timestamp":"2025-08-14 15:33:39:3339"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mDatabase connection established\u001b[39m","timestamp":"2025-08-14 15:46:10:4610"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mDatabase connection established\u001b[39m","timestamp":"2025-08-14 15:46:10:4610"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mDatabase tables created successfully\u001b[39m","timestamp":"2025-08-14 15:46:10:4610"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mDatabase initialized successfully\u001b[39m","timestamp":"2025-08-14 15:46:10:4610"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mDatabase tables created successfully\u001b[39m","timestamp":"2025-08-14 15:46:10:4610"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mDatabase initialized successfully\u001b[39m","timestamp":"2025-08-14 15:46:10:4610"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mDatabase service initialized for auth routes\u001b[39m","timestamp":"2025-08-14 15:46:10:4610"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mInitializing monitoring service...\u001b[39m","timestamp":"2025-08-14 15:46:10:4610"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mMonitoring service initialized successfully\u001b[39m","timestamp":"2025-08-14 15:46:10:4610"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m🚀 Admin Dashboard HTTP Server running on port 5001\u001b[39m","timestamp":"2025-08-14 15:46:10:4610"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m📊 Health check: http://localhost:5001/health\u001b[39m","timestamp":"2025-08-14 15:46:10:4610"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m🔒 Security dashboard: http://localhost:5001/api/security\u001b[39m","timestamp":"2025-08-14 15:46:10:4610"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m📈 Monitoring: http://localhost:5001/api/monitoring\u001b[39m","timestamp":"2025-08-14 15:46:10:4610"}
+{"acknowledged":false,"category":"SYSTEM","data":{"arch":"x64","cpu":{"cores":16,"usage":[3.34912109375,3.119140625,3.2919921875]},"memory":{"free":1427775488,"total":34359738368,"usage":95.84462642669678,"used":32931962880},"platform":"darwin","timestamp":"2025-08-14T19:46:25.697Z","uptime":14842},"id":"fcc950b4-c94d-4ab7-ab6f-120b1054c30d","level":"\u001b[33mwarn\u001b[39m","message":"\u001b[33mAlert created: SYSTEM - HIGH_MEMORY_USAGE Memory usage is above 90%\u001b[39m","timestamp":"2025-08-14 15:46:25:4625","type":"HIGH_MEMORY_USAGE"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m::1 - - [14/Aug/2025:19:46:26 +0000] \"GET /health HTTP/1.1\" 200 201 \"-\" \"curl/8.7.1\"\u001b[39m","timestamp":"2025-08-14 15:46:26:4626"}
+{"duration":6,"ip":"::1","level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mRequest completed:\u001b[39m","method":"GET","status":200,"timestamp":"2025-08-14 15:46:26:4626","url":"/health","userAgent":"curl/8.7.1"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mSIGTERM received, shutting down gracefully\u001b[39m","timestamp":"2025-08-14 15:46:33:4633"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m✅ HTTPS server created successfully\u001b[39m","timestamp":"2025-08-14 15:46:37:4637"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mDatabase connection established\u001b[39m","timestamp":"2025-08-14 15:46:37:4637"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mDatabase connection established\u001b[39m","timestamp":"2025-08-14 15:46:37:4637"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mDatabase tables created successfully\u001b[39m","timestamp":"2025-08-14 15:46:37:4637"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mDatabase initialized successfully\u001b[39m","timestamp":"2025-08-14 15:46:37:4637"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mDatabase tables created successfully\u001b[39m","timestamp":"2025-08-14 15:46:37:4637"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mDatabase initialized successfully\u001b[39m","timestamp":"2025-08-14 15:46:37:4637"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mDatabase service initialized for auth routes\u001b[39m","timestamp":"2025-08-14 15:46:37:4637"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mInitializing monitoring service...\u001b[39m","timestamp":"2025-08-14 15:46:37:4637"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mMonitoring service initialized successfully\u001b[39m","timestamp":"2025-08-14 15:46:37:4637"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m🚀 Admin Dashboard HTTP Server running on port 5001\u001b[39m","timestamp":"2025-08-14 15:46:37:4637"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m📊 Health check: http://localhost:5001/health\u001b[39m","timestamp":"2025-08-14 15:46:37:4637"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m🔒 Security dashboard: http://localhost:5001/api/security\u001b[39m","timestamp":"2025-08-14 15:46:37:4637"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m📈 Monitoring: http://localhost:5001/api/monitoring\u001b[39m","timestamp":"2025-08-14 15:46:37:4637"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m🔒 Admin Dashboard HTTPS Server running on port 5002\u001b[39m","timestamp":"2025-08-14 15:46:37:4637"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m📊 Health check: https://localhost:5002/health\u001b[39m","timestamp":"2025-08-14 15:46:37:4637"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m🔒 Security dashboard: https://localhost:5002/api/security\u001b[39m","timestamp":"2025-08-14 15:46:37:4637"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m📈 Monitoring: https://localhost:5002/api/monitoring\u001b[39m","timestamp":"2025-08-14 15:46:37:4637"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m⚠️  Note: Using self-signed certificate (browser will show warning)\u001b[39m","timestamp":"2025-08-14 15:46:37:4637"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m::1 - - [14/Aug/2025:19:46:48 +0000] \"GET /health HTTP/1.1\" 200 201 \"-\" \"curl/8.7.1\"\u001b[39m","timestamp":"2025-08-14 15:46:48:4648"}
+{"duration":5,"ip":"::1","level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mRequest completed:\u001b[39m","method":"GET","status":200,"timestamp":"2025-08-14 15:46:48:4648","url":"/health","userAgent":"curl/8.7.1"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m::1 - - [14/Aug/2025:19:46:51 +0000] \"HEAD /api/security HTTP/1.1\" 404 27 \"-\" \"curl/8.7.1\"\u001b[39m","timestamp":"2025-08-14 15:46:51:4651"}
+{"duration":2,"ip":"::1","level":"\u001b[33mwarn\u001b[39m","message":"\u001b[33mRequest completed with error:\u001b[39m","method":"HEAD","status":404,"timestamp":"2025-08-14 15:46:51:4651","url":"/","userAgent":"curl/8.7.1"}
+{"acknowledged":false,"category":"SYSTEM","data":{"arch":"x64","cpu":{"cores":16,"usage":[3.052734375,3.07421875,3.2705078125]},"memory":{"free":1449787392,"total":34359738368,"usage":95.78056335449219,"used":32909950976},"platform":"darwin","timestamp":"2025-08-14T19:46:52.576Z","uptime":14869},"id":"063c0f6d-8453-47cd-a443-68af797e341d","level":"\u001b[33mwarn\u001b[39m","message":"\u001b[33mAlert created: SYSTEM - HIGH_MEMORY_USAGE Memory usage is above 90%\u001b[39m","timestamp":"2025-08-14 15:46:52:4652","type":"HIGH_MEMORY_USAGE"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mSuccessful login for: admin\u001b[39m","timestamp":"2025-08-14 15:46:56:4656"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mRefresh token stored for user: admin\u001b[39m","timestamp":"2025-08-14 15:46:56:4656"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mSession created for user: admin with refresh token\u001b[39m","timestamp":"2025-08-14 15:46:56:4656"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mSuccessful login for user: admin\u001b[39m","timestamp":"2025-08-14 15:46:56:4656"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m::1 - - [14/Aug/2025:19:46:56 +0000] \"POST /api/auth/login HTTP/1.1\" 200 1014 \"-\" \"curl/8.7.1\"\u001b[39m","timestamp":"2025-08-14 15:46:56:4656"}
+{"duration":287,"ip":"::1","level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mRequest completed:\u001b[39m","method":"POST","status":200,"timestamp":"2025-08-14 15:46:56:4656","url":"/login","userAgent":"curl/8.7.1"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mRefresh token stored for user: admin\u001b[39m","timestamp":"2025-08-14 15:47:04:474"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mSession created for user: admin with refresh token\u001b[39m","timestamp":"2025-08-14 15:47:04:474"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mRefresh token revoked for user: admin\u001b[39m","timestamp":"2025-08-14 15:47:04:474"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mToken refreshed for user: admin\u001b[39m","timestamp":"2025-08-14 15:47:04:474"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m::1 - - [14/Aug/2025:19:47:04 +0000] \"POST /api/auth/refresh HTTP/1.1\" 200 892 \"-\" \"curl/8.7.1\"\u001b[39m","timestamp":"2025-08-14 15:47:04:474"}
+{"duration":6,"ip":"::1","level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mRequest completed:\u001b[39m","method":"POST","status":200,"timestamp":"2025-08-14 15:47:04:474","url":"/refresh","userAgent":"curl/8.7.1"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mSIGTERM received, shutting down gracefully\u001b[39m","timestamp":"2025-08-14 15:47:12:4712"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m✅ HTTPS server created successfully\u001b[39m","timestamp":"2025-08-14 15:56:25:5625"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mDatabase connection established\u001b[39m","timestamp":"2025-08-14 15:56:25:5625"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mDatabase connection established\u001b[39m","timestamp":"2025-08-14 15:56:25:5625"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mDatabase tables created successfully\u001b[39m","timestamp":"2025-08-14 15:56:25:5625"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mDatabase initialized successfully\u001b[39m","timestamp":"2025-08-14 15:56:25:5625"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mDatabase tables created successfully\u001b[39m","timestamp":"2025-08-14 15:56:25:5625"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mDatabase initialized successfully\u001b[39m","timestamp":"2025-08-14 15:56:25:5625"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mDatabase service initialized for auth routes\u001b[39m","timestamp":"2025-08-14 15:56:25:5625"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mInitializing monitoring service...\u001b[39m","timestamp":"2025-08-14 15:56:25:5625"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mMonitoring service initialized successfully\u001b[39m","timestamp":"2025-08-14 15:56:25:5625"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m🚀 Admin Dashboard HTTP Server running on port 5001\u001b[39m","timestamp":"2025-08-14 15:56:25:5625"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m📊 Health check: http://localhost:5001/health\u001b[39m","timestamp":"2025-08-14 15:56:25:5625"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m🔒 Security dashboard: http://localhost:5001/api/security\u001b[39m","timestamp":"2025-08-14 15:56:25:5625"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m📈 Monitoring: http://localhost:5001/api/monitoring\u001b[39m","timestamp":"2025-08-14 15:56:25:5625"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m🔒 Admin Dashboard HTTPS Server running on port 5002\u001b[39m","timestamp":"2025-08-14 15:56:25:5625"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m📊 Health check: https://localhost:5002/health\u001b[39m","timestamp":"2025-08-14 15:56:25:5625"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m🔒 Security dashboard: https://localhost:5002/api/security\u001b[39m","timestamp":"2025-08-14 15:56:25:5625"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m📈 Monitoring: https://localhost:5002/api/monitoring\u001b[39m","timestamp":"2025-08-14 15:56:25:5625"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m⚠️  Note: Using self-signed certificate (browser will show warning)\u001b[39m","timestamp":"2025-08-14 15:56:25:5625"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m::1 - - [14/Aug/2025:19:56:39 +0000] \"GET /health HTTP/1.1\" 200 201 \"-\" \"curl/8.7.1\"\u001b[39m","timestamp":"2025-08-14 15:56:39:5639"}
+{"duration":5,"ip":"::1","level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mRequest completed:\u001b[39m","method":"GET","status":200,"timestamp":"2025-08-14 15:56:39:5639","url":"/health","userAgent":"curl/8.7.1"}
+{"acknowledged":false,"category":"SYSTEM","data":{"arch":"x64","cpu":{"cores":16,"usage":[2.1181640625,2.509765625,2.869140625]},"memory":{"free":1145286656,"total":34359738368,"usage":96.6667652130127,"used":33214451712},"platform":"darwin","timestamp":"2025-08-14T19:56:40.877Z","uptime":15457},"id":"1ef45beb-7f90-4ac2-af28-8114c5befd2c","level":"\u001b[33mwarn\u001b[39m","message":"\u001b[33mAlert created: SYSTEM - HIGH_MEMORY_USAGE Memory usage is above 90%\u001b[39m","timestamp":"2025-08-14 15:56:40:5640","type":"HIGH_MEMORY_USAGE"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m::1 - - [14/Aug/2025:19:56:50 +0000] \"GET /api/security HTTP/1.1\" 404 27 \"-\" \"curl/8.7.1\"\u001b[39m","timestamp":"2025-08-14 15:56:50:5650"}
+{"duration":1,"ip":"::1","level":"\u001b[33mwarn\u001b[39m","message":"\u001b[33mRequest completed with error:\u001b[39m","method":"GET","status":404,"timestamp":"2025-08-14 15:56:50:5650","url":"/","userAgent":"curl/8.7.1"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mSuccessful login for: admin\u001b[39m","timestamp":"2025-08-14 15:56:54:5654"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mRefresh token stored for user: admin\u001b[39m","timestamp":"2025-08-14 15:56:54:5654"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mSession created for user: admin with refresh token\u001b[39m","timestamp":"2025-08-14 15:56:54:5654"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mSuccessful login for user: admin\u001b[39m","timestamp":"2025-08-14 15:56:54:5654"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m::1 - - [14/Aug/2025:19:56:54 +0000] \"POST /api/auth/login HTTP/1.1\" 200 1014 \"-\" \"curl/8.7.1\"\u001b[39m","timestamp":"2025-08-14 15:56:54:5654"}
+{"duration":271,"ip":"::1","level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mRequest completed:\u001b[39m","method":"POST","status":200,"timestamp":"2025-08-14 15:56:54:5654","url":"/login","userAgent":"curl/8.7.1"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m::1 - - [14/Aug/2025:19:57:43 +0000] \"GET / HTTP/1.1\" 200 15512 \"-\" \"curl/8.7.1\"\u001b[39m","timestamp":"2025-08-14 15:57:43:5743"}
+{"duration":4,"ip":"::1","level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mRequest completed:\u001b[39m","method":"GET","status":200,"timestamp":"2025-08-14 15:57:43:5743","url":"/","userAgent":"curl/8.7.1"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mSIGTERM received, shutting down gracefully\u001b[39m","timestamp":"2025-08-14 15:57:48:5748"}

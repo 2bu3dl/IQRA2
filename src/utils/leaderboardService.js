@@ -1,32 +1,36 @@
 import { supabase } from './supabase';
 import { loadData } from './store';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { SUPABASE_CONFIG } from './config';
+import logger from './logger';
 
 // Raw HTTP functions to bypass broken Supabase client
-const SUPABASE_URL = 'https://baimixtdewflnnyudhwz.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJhaW1peHRkZXdmbG5ueXVkaHd6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM2MjIwMTcsImV4cCI6MjA2OTE5ODAxN30.vXIW8HICOhsMO0bWk59PFLWmn8aKhFUUk25llLp4jSc';
 
 const makeSupabaseRequest = async (endpoint, options = {}) => {
   try {
-    const url = `${SUPABASE_URL}/rest/v1/${endpoint}`;
-    console.log('[makeSupabaseRequest] Making request to:', url);
-    console.log('[makeSupabaseRequest] Method:', options.method || 'GET');
-    console.log('[makeSupabaseRequest] Body:', options.body);
+    const url = `${SUPABASE_CONFIG.url}/rest/v1/${endpoint}`;
+    logger.debug('LeaderboardService', 'Making request', { 
+      endpoint, 
+      method: options.method || 'GET',
+      hasBody: !!options.body 
+    });
     
     const response = await fetch(url, {
       method: options.method || 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'apikey': SUPABASE_ANON_KEY,
-        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+        'apikey': SUPABASE_CONFIG.anonKey,
+        'Authorization': `Bearer ${SUPABASE_CONFIG.anonKey}`,
         'Prefer': 'return=minimal', // For PATCH/POST operations
         ...options.headers
       },
       body: options.body ? JSON.stringify(options.body) : undefined
     });
 
-    console.log('[makeSupabaseRequest] Response status:', response.status);
-    console.log('[makeSupabaseRequest] Response headers:', Object.fromEntries(response.headers.entries()));
+    logger.debug('LeaderboardService', 'Response received', { 
+      status: response.status,
+      hasHeaders: !!response.headers 
+    });
 
     if (response.ok) {
       // For PATCH/POST, response might be empty
@@ -43,11 +47,11 @@ const makeSupabaseRequest = async (endpoint, options = {}) => {
       }
     } else {
       const errorText = await response.text();
-      console.error('[makeSupabaseRequest] HTTP Error:', response.status, errorText);
+      logger.error('LeaderboardService', 'HTTP request error', { status: response.status, error: errorText });
       return { success: false, error: `HTTP ${response.status}: ${errorText}` };
     }
   } catch (err) {
-    console.error('[makeSupabaseRequest] Exception:', err);
+    logger.error('LeaderboardService', 'HTTP request exception', err);
     return { success: false, error: err.message };
   }
 };
@@ -64,7 +68,7 @@ export const LEADERBOARD_TYPES = {
 // Update user's leaderboard stats
 export const updateLeaderboardStats = async (userId, stats) => {
   try {
-    console.log('[updateLeaderboardStats] Starting update for user:', userId);
+    logger.log('LeaderboardService', 'Starting update for user', { userId });
     
     // Use raw HTTP instead of broken Supabase client
     const endpoint = 'leaderboard_stats';
@@ -80,44 +84,45 @@ export const updateLeaderboardStats = async (userId, stats) => {
       updated_at: new Date().toISOString()
     };
 
-    console.log('[updateLeaderboardStats] Request body:', body);
+    logger.debug('LeaderboardService', 'Request body prepared', { hasBody: !!body });
 
     // Try to update existing record first
     const updateUrl = `${endpoint}?user_id=eq.${userId}`;
-    console.log('[updateLeaderboardStats] Trying update with URL:', updateUrl);
+    logger.debug('LeaderboardService', 'Trying update', { updateUrl });
     
     const updateResult = await makeSupabaseRequest(updateUrl, {
       method: 'PATCH',
       body
     });
 
-    console.log('[updateLeaderboardStats] Update result:', updateResult);
+    logger.debug('LeaderboardService', 'Update result', { success: updateResult.success });
 
     if (updateResult.success) {
-      console.log('[updateLeaderboardStats] Update successful');
+      logger.log('LeaderboardService', 'Update successful');
       return { success: true, data: updateResult.data };
     }
 
     // If update fails, try to insert
-    console.log('[updateLeaderboardStats] Update failed, trying insert...');
+    logger.debug('LeaderboardService', 'Update failed, trying insert');
     const insertResult = await makeSupabaseRequest(endpoint, {
       method: 'POST',
       body
     });
 
-    console.log('[updateLeaderboardStats] Insert result:', insertResult);
+    logger.debug('LeaderboardService', 'Insert result', { success: insertResult.success });
 
     if (insertResult.success) {
-      console.log('[updateLeaderboardStats] Insert successful');
+      logger.log('LeaderboardService', 'Insert successful');
       return { success: true, data: insertResult.data };
     }
 
-    console.error('[updateLeaderboardStats] Both update and insert failed');
-    console.error('[updateLeaderboardStats] Update error:', updateResult.error);
-    console.error('[updateLeaderboardStats] Insert error:', insertResult.error);
+    logger.error('LeaderboardService', 'Both update and insert failed', { 
+      updateError: updateResult.error,
+      insertError: insertResult.error 
+    });
     return { success: false, error: `Update: ${updateResult.error}, Insert: ${insertResult.error}` };
   } catch (error) {
-    console.error('[LeaderboardService] Error updating stats:', error);
+    logger.error('LeaderboardService', 'Error updating stats', error);
     return { success: false, error: error.message };
   }
 };

@@ -2,13 +2,20 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
-const rateLimit = require('express-rate-limit');
-const slowDown = require('express-slow-down');
 const compression = require('compression');
 const http = require('http');
+const https = require('https');
 const socketIo = require('socket.io');
 const path = require('path');
 require('dotenv').config();
+
+// Import SSL configuration
+const { getSSLConfig, validateSSLFiles, createHTTPSOptions } = require('./config/ssl');
+
+// Import security configuration
+const { SECURITY_CONFIG } = require('./config/security');
+const { logRequest, sanitizeRequest } = require('./middleware/auth');
+const { httpsRedirect, enforceHTTPS, securityHeaders } = require('./middleware/https');
 
 // Import routes and middleware
 const authRoutes = require('./routes/auth');
@@ -24,74 +31,64 @@ const { initializeDatabase } = require('./services/database');
 const { initializeMonitoring } = require('./services/monitoring');
 
 const app = express();
-const server = http.createServer(app);
-const io = socketIo(server, {
-  cors: {
-    origin: process.env.FRONTEND_URL || "http://localhost:3000",
-    methods: ["GET", "POST"]
+
+// Create HTTP server
+const httpServer = http.createServer(app);
+
+// Create HTTPS server if SSL is enabled
+let httpsServer = null;
+let io = null;
+
+const sslConfig = getSSLConfig();
+if (sslConfig.enabled) {
+  try {
+    const httpsOptions = createHTTPSOptions();
+    if (httpsOptions) {
+      httpsServer = https.createServer(httpsOptions, app);
+      io = socketIo(httpsServer, {
+        cors: {
+          origin: process.env.FRONTEND_URL || "https://localhost:5002",
+          methods: ["GET", "POST"]
+        }
+      });
+      logger.info('✅ HTTPS server created successfully');
+    }
+  } catch (error) {
+    logger.error('❌ Failed to create HTTPS server:', error.message);
+    logger.info('🔄 Falling back to HTTP server');
   }
-});
+}
 
-// Security middleware - temporarily disabled for testing
-// app.use(helmet({
-//   contentSecurityPolicy: {
-//     directives: {
-//       defaultSrc: ["'self'"],
-//       styleSrc: ["'self'", "'unsafe-inline'"],
-//       scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://cdn.jsdelivr.net", "https://cdn.socket.io"],
-//       imgSrc: ["'self'", "data:", "https:"],
-//       workerSrc: ["'self'", "blob:"],
-//       connectSrc: ["'self'", "ws:", "wss:", "http:", "https:"],
-//     },
-//   },
-// }));
+// Fallback to HTTP if HTTPS failed
+if (!httpsServer) {
+  io = socketIo(httpServer, {
+    cors: {
+      origin: process.env.FRONTEND_URL || "http://localhost:3000",
+      methods: ["GET", "POST"]
+    }
+  });
+}
 
-// Basic security headers without CSP
-app.use(helmet({
-  contentSecurityPolicy: false,
-  crossOriginEmbedderPolicy: false,
-  crossOriginOpenerPolicy: false,
-  crossOriginResourcePolicy: false,
-  dnsPrefetchControl: false,
-  frameguard: false,
-  hidePoweredBy: true,
-  hsts: false,
-  ieNoOpen: true,
-  noSniff: true,
-  permittedCrossDomainPolicies: false,
-  referrerPolicy: false,
-  xssFilter: true
-}));
+// Security middleware with comprehensive protection
+app.use(helmet(SECURITY_CONFIG.helmet));
 
-// Rate limiting
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
-  message: 'Too many requests from this IP, please try again later.',
-  standardHeaders: true,
-  legacyHeaders: false,
-});
+// HTTPS and security headers
+app.use(securityHeaders);
+app.use(enforceHTTPS);
+app.use(httpsRedirect);
 
-const speedLimiter = slowDown({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  delayAfter: 50, // allow 50 requests per 15 minutes, then...
-  delayMs: () => 500 // begin adding 500ms of delay per request above 50
-});
-
-app.use(limiter);
-app.use(speedLimiter);
+// Rate limiting is now handled by the security middleware
 
 // Middleware
-app.use(cors({
-  origin: ["http://localhost:5001", "http://localhost:3000", "https://localhost:5001"],
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
+app.use(cors(SECURITY_CONFIG.cors));
 app.use(compression());
 app.use(morgan('combined', { stream: { write: message => logger.info(message.trim()) } }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Security middleware
+app.use(sanitizeRequest);
+app.use(logRequest);
 
 // Static files
 app.use('/static', express.static(path.join(__dirname, 'public')));
@@ -184,12 +181,26 @@ async function initializeApp() {
     await initializeMonitoring(io);
     
     const PORT = process.env.PORT || 5001;
-    server.listen(PORT, () => {
-      logger.info(`🚀 Admin Dashboard Server running on port ${PORT}`);
+    const HTTPS_PORT = sslConfig.enabled ? sslConfig.port : null;
+    
+    // Start HTTP server
+    httpServer.listen(PORT, () => {
+      logger.info(`🚀 Admin Dashboard HTTP Server running on port ${PORT}`);
       logger.info(`📊 Health check: http://localhost:${PORT}/health`);
       logger.info(`🔒 Security dashboard: http://localhost:${PORT}/api/security`);
       logger.info(`📈 Monitoring: http://localhost:${PORT}/api/monitoring`);
     });
+    
+    // Start HTTPS server if enabled
+    if (httpsServer && HTTPS_PORT) {
+      httpsServer.listen(HTTPS_PORT, () => {
+        logger.info(`🔒 Admin Dashboard HTTPS Server running on port ${HTTPS_PORT}`);
+        logger.info(`📊 Health check: https://localhost:${HTTPS_PORT}/health`);
+        logger.info(`🔒 Security dashboard: https://localhost:${HTTPS_PORT}/api/security`);
+        logger.info(`📈 Monitoring: https://localhost:${HTTPS_PORT}/api/monitoring`);
+        logger.info(`⚠️  Note: Using self-signed certificate (browser will show warning)`);
+      });
+    }
   } catch (error) {
     logger.error('Failed to initialize app:', error);
     process.exit(1);
@@ -199,17 +210,31 @@ async function initializeApp() {
 // Graceful shutdown
 process.on('SIGTERM', () => {
   logger.info('SIGTERM received, shutting down gracefully');
-  server.close(() => {
-    logger.info('Process terminated');
-    process.exit(0);
+  httpServer.close(() => {
+    if (httpsServer) {
+      httpsServer.close(() => {
+        logger.info('Process terminated');
+        process.exit(0);
+      });
+    } else {
+      logger.info('Process terminated');
+      process.exit(0);
+    }
   });
 });
 
 process.on('SIGINT', () => {
   logger.info('SIGINT received, shutting down gracefully');
-  server.close(() => {
-    logger.info('Process terminated');
-    process.exit(0);
+  httpServer.close(() => {
+    if (httpsServer) {
+      httpsServer.close(() => {
+        logger.info('Process terminated');
+        process.exit(0);
+      });
+    } else {
+      logger.info('Process terminated');
+      process.exit(0);
+    }
   });
 });
 
@@ -226,4 +251,4 @@ process.on('unhandledRejection', (reason, promise) => {
 
 initializeApp();
 
-module.exports = { app, server, io }; 
+module.exports = { app, httpServer, httpsServer, io }; 

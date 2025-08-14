@@ -1,6 +1,7 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import { Alert } from 'react-native';
 import { supabase } from './supabase';
+import logger from './logger';
 
 export const AuthContext = createContext();
 
@@ -10,7 +11,11 @@ export const AuthProvider = ({ children }) => {
 
   // Handle user state changes
   const onAuthStateChange = (event, session) => {
-    console.log('[Auth] User state changed:', session?.user?.email || 'No user');
+    logger.log('Auth', 'User state changed', { 
+      event, 
+      hasUser: !!session?.user,
+      userId: session?.user?.id 
+    });
     setUser(session?.user || null);
     setLoading(false);
   };
@@ -45,7 +50,7 @@ export const AuthProvider = ({ children }) => {
 
         if (error) throw error;
         
-        console.log('[Auth] Login successful:', data.user.email);
+        logger.log('Auth', 'Login successful', { userId: data.user.id });
         return { success: true, user: data.user };
       } else {
         // Login with username - we need to find the user by username first
@@ -67,17 +72,23 @@ export const AuthProvider = ({ children }) => {
 
         if (error) throw error;
         
-        console.log('[Auth] Login successful with username:', data.user.email);
+        logger.log('Auth', 'Login successful with username', { userId: data.user.id });
         return { success: true, user: data.user };
       }
     } catch (error) {
-      console.error('[Auth] Login error:', error);
+      logger.error('Auth', 'Login error', error);
       let message = 'Login failed';
+      
       if (error.message.includes('Invalid login credentials')) {
         message = 'Invalid username/email or password';
-      } else if (error.message.includes('Email not confirmed')) {
-        message = 'Please check your email and confirm your account';
+      } else if (error.message.includes('Email not confirmed') || error.message.includes('not confirmed')) {
+        message = 'Account not found or invalid credentials.';
+      } else if (error.message.includes('rate limit')) {
+        message = 'Too many login attempts. Please try again later.';
+      } else if (error.message.includes('User not found')) {
+        message = 'Account not found. Please check your email/username.';
       }
+      
       return { success: false, error: message };
     } finally {
       setLoading(false);
@@ -95,20 +106,33 @@ export const AuthProvider = ({ children }) => {
 
       if (error) throw error;
       
+      // Email confirmation is disabled, user can login immediately
+      if (data.user) {
+        logger.log('Auth', 'Registration successful', { userId: data.user.id });
+        return { success: true, user: data.user };
+      }
+      
       // Note: User profile is automatically created by database trigger
       // The trigger will create user_profiles, user_progress, and leaderboard_stats entries
       // The username will be automatically generated to ensure uniqueness
       
-      console.log('[Auth] Registration successful:', data.user.email);
+      logger.log('Auth', 'Registration successful', { userId: data.user.id });
       return { success: true, user: data.user };
     } catch (error) {
-      console.error('[Auth] Registration error:', error);
+      logger.error('Auth', 'Registration error', error);
       let message = 'Registration failed';
+      
+      // Handle specific error cases
       if (error.message.includes('User already registered')) {
         message = 'Email is already registered';
-      } else if (error.message.includes('Password should be at least')) {
-        message = 'Password is too weak';
+      } else if (error.message.includes('Password') || error.message.includes('pwned')) {
+        message = 'Password is too weak or has been compromised. Please choose a stronger password.';
+      } else if (error.message.includes('Email')) {
+        message = 'Please enter a valid email address.';
+      } else if (error.message.includes('rate limit')) {
+        message = 'Too many attempts. Please try again later.';
       }
+      
       return { success: false, error: message };
     } finally {
       setLoading(false);
@@ -121,10 +145,10 @@ export const AuthProvider = ({ children }) => {
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
       
-      console.log('[Auth] Logout successful');
+      logger.log('Auth', 'Logout successful');
       return { success: true };
     } catch (error) {
-      console.error('[Auth] Logout error:', error);
+      logger.error('Auth', 'Logout error', error);
       return { success: false, error: 'Logout failed' };
     }
   };
@@ -137,7 +161,7 @@ export const AuthProvider = ({ children }) => {
       
       return { success: true };
     } catch (error) {
-      console.error('[Auth] Password reset error:', error);
+      logger.error('Auth', 'Password reset error', error);
       let message = 'Password reset failed';
       if (error.message.includes('User not found')) {
         message = 'No account found with this email';

@@ -1,22 +1,23 @@
 import { supabase, saveUserProgress, loadUserProgress, createUserProfile } from './supabase';
 import { loadData as loadLocalData, saveCurrentPosition as saveLocalPosition } from './store';
+import logger from './logger';
 
 // Save user progress to Supabase
 export const saveProgressToCloud = async (progressData) => {
   try {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-      console.log('[CloudStore] No user logged in, skipping cloud save');
+      logger.log('CloudStore', 'No user logged in, skipping cloud save');
       return { success: false, error: 'Not authenticated' };
     }
 
     const result = await saveUserProgress(user.id, progressData);
     if (result.success) {
-      console.log('[CloudStore] Progress saved to cloud successfully');
+      logger.log('CloudStore', 'Progress saved to cloud successfully');
     }
     return result;
   } catch (error) {
-    console.error('[CloudStore] Error saving to cloud:', error);
+    logger.error('CloudStore', 'Error saving to cloud', error);
     return { success: false, error: error.message };
   }
 };
@@ -26,17 +27,17 @@ export const loadProgressFromCloud = async () => {
   try {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-      console.log('[CloudStore] No user logged in, cannot load from cloud');
+      logger.log('CloudStore', 'No user logged in, cannot load from cloud');
       return { success: false, error: 'Not authenticated' };
     }
 
     const result = await loadUserProgress(user.id);
     if (result.success && result.data) {
-      console.log('[CloudStore] Progress loaded from cloud successfully');
+      logger.log('CloudStore', 'Progress loaded from cloud successfully');
     }
     return result;
   } catch (error) {
-    console.error('[CloudStore] Error loading from cloud:', error);
+    logger.error('CloudStore', 'Error loading from cloud', error);
     return { success: false, error: error.message };
   }
 };
@@ -46,7 +47,7 @@ export const syncProgressData = async () => {
   try {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-      console.log('[CloudStore] No user logged in, skipping sync');
+      logger.log('CloudStore', 'No user logged in, skipping sync');
       return { success: false, error: 'Not authenticated' };
     }
 
@@ -80,11 +81,11 @@ export const syncProgressData = async () => {
     // Save merged data to cloud
     const saveResult = await saveUserProgress(user.id, mergedData);
     if (saveResult.success) {
-      console.log('[CloudStore] Sync completed successfully');
+      logger.log('CloudStore', 'Sync completed successfully');
     }
     return saveResult;
   } catch (error) {
-    console.error('[CloudStore] Error syncing data:', error);
+    logger.error('CloudStore', 'Error syncing data', error);
     return { success: false, error: error.message };
   }
 };
@@ -96,11 +97,11 @@ export const autoSync = async (progressData) => {
     if (user) {
       // Save to cloud in background (don't block UI)
       saveUserProgress(user.id, progressData).catch(error => {
-        console.error('[CloudStore] Background sync failed:', error);
+        logger.error('CloudStore', 'Background sync failed', error);
       });
     }
   } catch (error) {
-    console.error('[CloudStore] Auto-sync error:', error);
+    logger.error('CloudStore', 'Auto-sync error', error);
   }
 };
 
@@ -109,7 +110,7 @@ export const initializeUserCloudData = async () => {
   try {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-      console.log('[CloudStore] No user logged in, cannot initialize user data');
+      logger.log('CloudStore', 'No user logged in, cannot initialize user data');
       return { success: false, error: 'Not authenticated' };
     }
 
@@ -121,11 +122,11 @@ export const initializeUserCloudData = async () => {
     const result = await saveUserProgress(user.id, localData);
     
     if (result.success) {
-      console.log('[CloudStore] User data initialized successfully');
+      logger.log('CloudStore', 'User data initialized successfully');
     }
     return result;
   } catch (error) {
-    console.error('[CloudStore] Error initializing user data:', error);
+    logger.error('CloudStore', 'Error initializing user data', error);
     return { success: false, error: error.message };
   }
 }; 

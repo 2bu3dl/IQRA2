@@ -18,6 +18,7 @@ import Text from '../components/Text';
 import Card from '../components/Card';
 import { COLORS, SIZES, FONTS } from '../utils/theme';
 import { TextInput } from 'react-native';
+import { validateEmail, validatePassword, validatePasswordConfirmation, logValidationAttempt } from '../utils/validation';
 
 const AuthScreen = ({ navigation, onClose, isModal = false }) => {
   const [email, setEmail] = useState('');
@@ -29,37 +30,38 @@ const AuthScreen = ({ navigation, onClose, isModal = false }) => {
   const { login, register, resetPassword, loading } = useAuth();
   const { language, t } = useLanguage();
 
-  const validateEmail = (email) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
-
   const handleAuth = async () => {
-    if (!email.trim() || !password.trim()) {
-      Alert.alert(t('error'), t('please_fill_all_fields'));
+    // Validate email
+    const emailValidation = validateEmail(email);
+    logValidationAttempt('email', email, emailValidation.isValid, 'auth');
+    if (!emailValidation.isValid) {
+      Alert.alert(t('error'), emailValidation.error);
       return;
     }
 
-    if (!validateEmail(email.trim())) {
-      Alert.alert(t('error'), t('invalid_email_format'));
+    // Validate password
+    const passwordValidation = validatePassword(password);
+    logValidationAttempt('password', password, passwordValidation.isValid, 'auth');
+    if (!passwordValidation.isValid) {
+      Alert.alert(t('error'), passwordValidation.error);
       return;
     }
 
-    if (password.length < 6) {
-      Alert.alert(t('error'), t('password_min_length'));
-      return;
-    }
-
-    if (!isLogin && password !== confirmPassword) {
-      Alert.alert(t('error'), t('passwords_dont_match'));
-      return;
+    // Validate password confirmation for registration
+    if (!isLogin) {
+      const confirmValidation = validatePasswordConfirmation(password, confirmPassword);
+      logValidationAttempt('confirmPassword', confirmPassword, confirmValidation.isValid, 'auth');
+      if (!confirmValidation.isValid) {
+        Alert.alert(t('error'), confirmValidation.error);
+        return;
+      }
     }
 
     let result;
     if (isLogin) {
-      result = await login(email.trim(), password);
+      result = await login(emailValidation.value, passwordValidation.value);
     } else {
-      result = await register(email.trim(), password);
+      result = await register(emailValidation.value, passwordValidation.value);
     }
 
     if (!result.success) {
@@ -77,17 +79,14 @@ const AuthScreen = ({ navigation, onClose, isModal = false }) => {
   };
 
   const handleForgotPassword = async () => {
-    if (!email.trim()) {
-      Alert.alert(t('error'), t('enter_email_for_reset'));
+    const emailValidation = validateEmail(email);
+    logValidationAttempt('email', email, emailValidation.isValid, 'forgot_password');
+    if (!emailValidation.isValid) {
+      Alert.alert(t('error'), emailValidation.error);
       return;
     }
 
-    if (!validateEmail(email.trim())) {
-      Alert.alert(t('error'), t('invalid_email_format'));
-      return;
-    }
-
-    const result = await resetPassword(email.trim());
+    const result = await resetPassword(emailValidation.value);
     if (result.success) {
       Alert.alert(t('success'), t('reset_email_sent'));
       setShowForgotPassword(false);

@@ -1,14 +1,15 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import DeviceInfo from 'react-native-device-info';
+import { API_CONFIG, FEATURES } from './config';
 
 // Telemetry configuration
 const TELEMETRY_CONFIG = {
-  BACKEND_URL: 'http://localhost:5001',
+  BACKEND_URL: API_CONFIG.baseUrl,
   SEND_INTERVAL: 30000, // 30 seconds
   BATCH_SIZE: 10,
 };
 
-const TELEMETRY_URL = 'http://localhost:5001/api/iqra2/telemetry';
+const TELEMETRY_URL = API_CONFIG.telemetryUrl;
 
 // Telemetry data structure
 class TelemetryService {

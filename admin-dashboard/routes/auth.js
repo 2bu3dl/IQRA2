@@ -4,84 +4,38 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { body, validationResult } = require('express-validator');
 const { logger } = require('../services/logger');
+const { SECURITY_CONFIG, validatePassword } = require('../config/security');
+const { 
+  authenticateToken, 
+  checkPermission, 
+  requireAdmin, 
+  createSession, 
+  checkLoginAttempts, 
+  recordLoginAttempt,
+  validateRefreshToken,
+  revokeRefreshToken,
+  revokeAllRefreshTokensForUser,
+  getActiveRefreshTokensForUser
+} = require('../middleware/auth');
 
-// Mock user database for demonstration
-// In production, this would be a real database
-const users = [
-  {
-    id: 1,
-    username: 'admin',
-    email: 'admin@iqra2.com',
-    password: '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', // password
-    role: 'admin',
-    permissions: ['read', 'write', 'delete', 'admin'],
-    createdAt: new Date().toISOString(),
-    lastLogin: null
-  },
-  {
-    id: 2,
-    username: 'monitor',
-    email: 'monitor@iqra2.com',
-    password: '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', // password
-    role: 'monitor',
-    permissions: ['read'],
-    createdAt: new Date().toISOString(),
-    lastLogin: null
+// Database service for user management
+const { DatabaseService } = require('../services/database');
+const dbService = new DatabaseService();
+
+// Initialize database connection
+(async () => {
+  try {
+    await dbService.initialize();
+    logger.info('Database service initialized for auth routes');
+  } catch (error) {
+    logger.error('Failed to initialize database service:', error);
   }
-];
+})();
 
-// JWT secret (in production, use environment variable)
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+// JWT secret from security config
+const JWT_SECRET = SECURITY_CONFIG.auth.jwtSecret;
 
-// Middleware to verify JWT token
-const authenticateToken = (req, res, next) => {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
-
-  if (!token) {
-    return res.status(401).json({
-      success: false,
-      error: 'Access token required',
-      message: 'Please provide a valid access token'
-    });
-  }
-
-  jwt.verify(token, JWT_SECRET, (err, user) => {
-    if (err) {
-      return res.status(403).json({
-        success: false,
-        error: 'Invalid token',
-        message: 'Token is invalid or expired'
-      });
-    }
-    req.user = user;
-    next();
-  });
-};
-
-// Middleware to check permissions
-const checkPermission = (permission) => {
-  return (req, res, next) => {
-    if (!req.user) {
-      return res.status(401).json({
-        success: false,
-        error: 'Authentication required',
-        message: 'Please log in to access this resource'
-      });
-    }
-
-    const user = users.find(u => u.id === req.user.id);
-    if (!user || !user.permissions.includes(permission)) {
-      return res.status(403).json({
-        success: false,
-        error: 'Insufficient permissions',
-        message: `You don't have permission to ${permission}`
-      });
-    }
-
-    next();
-  };
-};
+// Using imported middleware from auth.js
 
 // Login endpoint
 router.post('/login', [
@@ -89,9 +43,23 @@ router.post('/login', [
   body('password').notEmpty().withMessage('Password is required')
 ], async (req, res) => {
   try {
+    const { username, password } = req.body;
+    
+    // Check login attempts
+    const loginCheck = checkLoginAttempts(username);
+    if (!loginCheck.allowed) {
+      return res.status(429).json({
+        success: false,
+        error: 'Account temporarily locked',
+        message: `Too many failed login attempts. Try again in ${loginCheck.retryAfter} seconds.`,
+        retryAfter: loginCheck.retryAfter
+      });
+    }
+    
     // Check for validation errors
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
+      recordLoginAttempt(username, false);
       return res.status(400).json({
         success: false,
         error: 'Validation failed',
@@ -99,11 +67,10 @@ router.post('/login', [
       });
     }
 
-    const { username, password } = req.body;
-
-    // Find user
-    const user = users.find(u => u.username === username);
+    // Find user in database
+    const user = await dbService.get('SELECT * FROM users WHERE username = ?', [username]);
     if (!user) {
+      recordLoginAttempt(username, false);
       logger.warn(`Failed login attempt for username: ${username}`);
       return res.status(401).json({
         success: false,
@@ -115,6 +82,7 @@ router.post('/login', [
     // Check password
     const isValidPassword = await bcrypt.compare(password, user.password);
     if (!isValidPassword) {
+      recordLoginAttempt(username, false);
       logger.warn(`Failed login attempt for user: ${username}`);
       return res.status(401).json({
         success: false,
@@ -123,20 +91,38 @@ router.post('/login', [
       });
     }
 
-    // Update last login
-    user.lastLogin = new Date().toISOString();
+    // Record successful login
+    recordLoginAttempt(username, true);
 
-    // Generate JWT token
+    // Create session with refresh token
+    const { session, refreshToken } = createSession(user);
+
+    // Generate JWT token with session ID
     const token = jwt.sign(
       { 
         id: user.id, 
         username: user.username, 
         role: user.role,
-        permissions: user.permissions 
+        permissions: user.permissions,
+        sessionId: session.id
       },
       JWT_SECRET,
-      { expiresIn: '24h' }
+      { expiresIn: SECURITY_CONFIG.auth.jwtExpiry }
     );
+
+    // Generate refresh token JWT
+    const refreshTokenJWT = jwt.sign(
+      {
+        token: refreshToken,
+        userId: user.id,
+        type: 'refresh'
+      },
+      SECURITY_CONFIG.auth.refreshTokenSecret,
+      { expiresIn: SECURITY_CONFIG.auth.refreshTokenExpiry }
+    );
+
+    // Update last login in database
+    await dbService.run('UPDATE users SET last_login = ? WHERE id = ?', [new Date().toISOString(), user.id]);
 
     logger.info(`Successful login for user: ${username}`);
 
@@ -152,7 +138,9 @@ router.post('/login', [
           lastLogin: user.lastLogin
         },
         token,
-        expiresIn: '24h'
+        refreshToken: refreshTokenJWT,
+        expiresIn: SECURITY_CONFIG.auth.jwtExpiry,
+        refreshExpiresIn: SECURITY_CONFIG.auth.refreshTokenExpiry
       },
       message: 'Login successful',
       timestamp: new Date().toISOString()
@@ -170,10 +158,10 @@ router.post('/login', [
 // Register endpoint (admin only)
 router.post('/register', [
   authenticateToken,
-  checkPermission('admin'),
+  requireAdmin,
   body('username').isLength({ min: 3 }).withMessage('Username must be at least 3 characters'),
   body('email').isEmail().withMessage('Valid email is required'),
-  body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
+  body('password').notEmpty().withMessage('Password is required'),
   body('role').isIn(['admin', 'monitor', 'user']).withMessage('Valid role is required')
 ], async (req, res) => {
   try {
@@ -189,8 +177,19 @@ router.post('/register', [
 
     const { username, email, password, role } = req.body;
 
+    // Validate password strength
+    const passwordValidation = validatePassword(password);
+    if (!passwordValidation.isValid) {
+      return res.status(400).json({
+        success: false,
+        error: 'Password validation failed',
+        message: 'Password does not meet security requirements',
+        details: passwordValidation.errors
+      });
+    }
+
     // Check if user already exists
-    const existingUser = users.find(u => u.username === username || u.email === email);
+    const existingUser = await dbService.get('SELECT * FROM users WHERE username = ? OR email = ?', [username, email]);
     if (existingUser) {
       return res.status(400).json({
         success: false,
@@ -202,20 +201,16 @@ router.post('/register', [
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Create new user
-    const newUser = {
-      id: users.length + 1,
-      username,
-      email,
-      password: hashedPassword,
-      role,
-      permissions: role === 'admin' ? ['read', 'write', 'delete', 'admin'] : 
-                   role === 'monitor' ? ['read'] : ['read'],
-      createdAt: new Date().toISOString(),
-      lastLogin: null
-    };
-
-    users.push(newUser);
+    // Create new user in database
+    const permissions = role === 'admin' ? ['read', 'write', 'delete', 'admin'] : 
+                       role === 'monitor' ? ['read'] : ['read'];
+    
+    const result = await dbService.run(`
+      INSERT INTO users (username, email, password, role, permissions, created_at)
+      VALUES (?, ?, ?, ?, ?, ?)
+    `, [username, email, hashedPassword, role, JSON.stringify(permissions), new Date().toISOString()]);
+    
+    const newUser = await dbService.get('SELECT * FROM users WHERE username = ?', [username]);
 
     logger.info(`New user registered: ${username} by admin: ${req.user.username}`);
 
@@ -243,9 +238,9 @@ router.post('/register', [
 });
 
 // Get current user profile
-router.get('/profile', authenticateToken, (req, res) => {
+router.get('/profile', authenticateToken, async (req, res) => {
   try {
-    const user = users.find(u => u.id === req.user.id);
+    const user = await dbService.get('SELECT * FROM users WHERE id = ?', [req.user.id]);
     if (!user) {
       return res.status(404).json({
         success: false,
@@ -352,7 +347,10 @@ router.put('/profile', [
 // Logout endpoint
 router.post('/logout', authenticateToken, (req, res) => {
   try {
-    logger.info(`User logged out: ${req.user.username}`);
+    // Revoke all refresh tokens for the user
+    const revokedCount = revokeAllRefreshTokensForUser(req.user.id);
+    
+    logger.info(`User logged out: ${req.user.username} (revoked ${revokedCount} refresh tokens)`);
     
     res.json({
       success: true,
@@ -370,66 +368,136 @@ router.post('/logout', authenticateToken, (req, res) => {
 });
 
 // Refresh token endpoint
-router.post('/refresh', authenticateToken, (req, res) => {
+router.post('/refresh', [
+  body('refreshToken').notEmpty().withMessage('Refresh token is required')
+], async (req, res) => {
   try {
-    const user = users.find(u => u.id === req.user.id);
-    if (!user) {
-      return res.status(404).json({
+    // Check rate limiting for refresh endpoint
+    const clientIp = req.ip || req.connection.remoteAddress;
+    const rateLimit = require('../config/security').checkRateLimit(clientIp, 'refresh');
+    
+    if (!rateLimit.allowed) {
+      return res.status(429).json({
         success: false,
-        error: 'User not found',
+        error: 'Rate limit exceeded',
+        message: `Too many refresh attempts. Try again in ${rateLimit.retryAfter} seconds.`,
+        retryAfter: rateLimit.retryAfter
+      });
+    }
+
+    // Check for validation errors
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        error: 'Validation failed',
+        errors: errors.array()
+      });
+    }
+
+    const { refreshToken } = req.body;
+
+    // Verify refresh token JWT
+    let decoded;
+    try {
+      decoded = jwt.verify(refreshToken, SECURITY_CONFIG.auth.refreshTokenSecret);
+    } catch (error) {
+      logger.warn(`Invalid refresh token JWT: ${error.message}`);
+      return res.status(401).json({
+        success: false,
+        error: 'Invalid refresh token',
+        message: 'Refresh token is invalid or expired'
+      });
+    }
+
+    // Validate the actual refresh token
+    const tokenData = validateRefreshToken(decoded.token);
+    if (!tokenData) {
+      logger.warn(`Invalid or expired refresh token for user ID: ${decoded.userId}`);
+      return res.status(401).json({
+        success: false,
+        error: 'Invalid refresh token',
+        message: 'Refresh token is invalid or expired'
+      });
+    }
+
+    // Find user in database
+    const user = await dbService.get('SELECT * FROM users WHERE id = ?', [tokenData.userId]);
+    if (!user) {
+      logger.warn(`User not found for refresh token: ${tokenData.userId}`);
+      return res.status(401).json({
+        success: false,
+        error: 'Invalid refresh token',
         message: 'User not found'
       });
     }
 
-    // Generate new token
-    const token = jwt.sign(
+    // Create new session and refresh token (token rotation)
+    const { session, refreshToken: newRefreshToken } = createSession(user);
+
+    // Generate new JWT token
+    const newToken = jwt.sign(
       { 
         id: user.id, 
         username: user.username, 
         role: user.role,
-        permissions: user.permissions 
+        permissions: user.permissions,
+        sessionId: session.id
       },
       JWT_SECRET,
-      { expiresIn: '24h' }
+      { expiresIn: SECURITY_CONFIG.auth.jwtExpiry }
     );
+
+    // Generate new refresh token JWT
+    const newRefreshTokenJWT = jwt.sign(
+      {
+        token: newRefreshToken,
+        userId: user.id,
+        type: 'refresh'
+      },
+      SECURITY_CONFIG.auth.refreshTokenSecret,
+      { expiresIn: SECURITY_CONFIG.auth.refreshTokenExpiry }
+    );
+
+    // Revoke old refresh token (token rotation)
+    if (SECURITY_CONFIG.auth.refreshTokenRotation) {
+      revokeRefreshToken(decoded.token);
+    }
 
     logger.info(`Token refreshed for user: ${user.username}`);
 
     res.json({
       success: true,
       data: {
-        token,
-        expiresIn: '24h'
+        token: newToken,
+        refreshToken: newRefreshTokenJWT,
+        expiresIn: SECURITY_CONFIG.auth.jwtExpiry,
+        refreshExpiresIn: SECURITY_CONFIG.auth.refreshTokenExpiry
       },
       message: 'Token refreshed successfully',
       timestamp: new Date().toISOString()
     });
   } catch (error) {
-    logger.error('Token refresh error:', error);
+    logger.error('Refresh token error:', error);
     res.status(500).json({
       success: false,
       error: 'Token refresh failed',
-      message: 'An error occurred while refreshing token'
+      message: 'An error occurred during token refresh'
     });
   }
 });
 
 // Get all users (admin only)
-router.get('/users', [authenticateToken, checkPermission('admin')], (req, res) => {
+router.get('/users', [authenticateToken, checkPermission('admin')], async (req, res) => {
   try {
-    const userList = users.map(user => ({
-      id: user.id,
-      username: user.username,
-      email: user.email,
-      role: user.role,
-      permissions: user.permissions,
-      createdAt: user.createdAt,
-      lastLogin: user.lastLogin
-    }));
+    const userList = await dbService.all('SELECT id, username, email, role, permissions, created_at, last_login FROM users');
 
     res.json({
       success: true,
-      data: userList,
+      data: userList.map(user => ({
+        ...user,
+        permissions: JSON.parse(user.permissions)
+      })),
       timestamp: new Date().toISOString()
     });
   } catch (error) {
@@ -438,6 +506,73 @@ router.get('/users', [authenticateToken, checkPermission('admin')], (req, res) =
       success: false,
       error: 'Failed to fetch users',
       message: 'An error occurred while fetching users'
+    });
+  }
+});
+
+// Get user's active refresh tokens
+router.get('/refresh-tokens', authenticateToken, (req, res) => {
+  try {
+    const userTokens = getActiveRefreshTokensForUser(req.user.id);
+    
+    res.json({
+      success: true,
+      data: {
+        tokens: userTokens,
+        count: userTokens.length
+      },
+      message: 'Refresh tokens retrieved successfully',
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    logger.error('Error fetching refresh tokens:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch refresh tokens',
+      message: 'An error occurred while fetching refresh tokens'
+    });
+  }
+});
+
+// Revoke specific refresh token
+router.delete('/refresh-tokens/:tokenId', authenticateToken, (req, res) => {
+  try {
+    const { tokenId } = req.params;
+    
+    // Find the token in the user's tokens
+    const userTokens = getActiveRefreshTokensForUser(req.user.id);
+    const tokenToRevoke = userTokens.find(t => t.token === tokenId);
+    
+    if (!tokenToRevoke) {
+      return res.status(404).json({
+        success: false,
+        error: 'Token not found',
+        message: 'Refresh token not found'
+      });
+    }
+    
+    // Revoke the token
+    const revoked = revokeRefreshToken(tokenId);
+    
+    if (revoked) {
+      res.json({
+        success: true,
+        message: 'Refresh token revoked successfully',
+        timestamp: new Date().toISOString()
+      });
+    } else {
+      res.status(404).json({
+        success: false,
+        error: 'Token not found',
+        message: 'Refresh token not found'
+      });
+    }
+  } catch (error) {
+    logger.error('Error revoking refresh token:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to revoke refresh token',
+      message: 'An error occurred while revoking refresh token'
     });
   }
 });

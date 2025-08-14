@@ -91,7 +91,7 @@ const LeaderboardCard = ({
           elevation: 8,
           justifyContent: 'center',
           alignItems: 'center',
-          minHeight: 120,
+          minHeight: 160,
         }}
         onPress={onPress}
       >
@@ -117,6 +117,7 @@ const LeaderboardCard = ({
         shadowOpacity: 0.6,
         shadowRadius: 6,
         elevation: 8,
+        minHeight: 160,
       }}
       onPress={onPress}
     >

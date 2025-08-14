@@ -18,6 +18,7 @@ import Button from '../components/Button';
 import Card from '../components/Card';
 import { supabase } from '../utils/supabase';
 import { hapticSelection } from '../utils/hapticFeedback';
+import { validateUsername, validateDisplayName, logValidationAttempt } from '../utils/validation';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
 const COLORS = { ...BASE_COLORS, primary: '#6BA368', accent: '#FFD700' };
@@ -124,12 +125,23 @@ const ProfileScreen = ({ navigation }) => {
   const saveDisplayName = async () => {
     if (!user) return;
 
+    // Validate display name
+    const displayNameValidation = validateDisplayName(displayName);
+    logValidationAttempt('displayName', displayName, displayNameValidation.isValid, 'profile');
+    if (!displayNameValidation.isValid) {
+      Alert.alert(
+        language === 'ar' ? 'خطأ' : 'Error',
+        displayNameValidation.error
+      );
+      return;
+    }
+
     try {
       setSaving(true);
       const { error } = await supabase
         .from('user_profiles')
         .update({ 
-          display_name: displayName,
+          display_name: displayNameValidation.value,
           updated_at: new Date().toISOString()
         })
         .eq('user_id', user.id);
@@ -155,7 +167,18 @@ const ProfileScreen = ({ navigation }) => {
   };
 
   const saveUsername = async () => {
-    if (!user || !username.trim()) return;
+    if (!user) return;
+
+    // Validate username
+    const usernameValidation = validateUsername(username);
+    logValidationAttempt('username', username, usernameValidation.isValid, 'profile');
+    if (!usernameValidation.isValid) {
+      Alert.alert(
+        language === 'ar' ? 'خطأ' : 'Error',
+        usernameValidation.error
+      );
+      return;
+    }
 
     try {
       setSaving(true);
@@ -164,7 +187,7 @@ const ProfileScreen = ({ navigation }) => {
       const { data: existingUser, error: checkError } = await supabase
         .from('user_profiles')
         .select('user_id')
-        .eq('username', username.trim())
+        .eq('username', usernameValidation.value)
         .neq('user_id', user.id)
         .single();
 
@@ -179,7 +202,7 @@ const ProfileScreen = ({ navigation }) => {
       const { error } = await supabase
         .from('user_profiles')
         .update({ 
-          username: username.trim(),
+          username: usernameValidation.value,
           updated_at: new Date().toISOString()
         })
         .eq('user_id', user.id);

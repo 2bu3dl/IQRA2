@@ -1,9 +1,11 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import DeviceInfo from 'react-native-device-info';
 
+import { API_CONFIG, FEATURES } from './config';
+
 class AdminDashboardIntegration {
   constructor() {
-    this.baseUrl = 'http://localhost:5001/api/iqra2';
+    this.baseUrl = API_CONFIG.adminDashboardUrl + '/api/iqra2';
     this.sessionId = null;
     this.isInitialized = false;
     this.retryCount = 0;
