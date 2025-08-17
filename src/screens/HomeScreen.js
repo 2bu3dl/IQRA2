@@ -5,7 +5,7 @@ import { COLORS as BASE_COLORS, SIZES, FONTS } from '../utils/theme';
 import Text from '../components/Text';
 import Button from '../components/Button';
 import Card from '../components/Card';
-import { loadData, resetProgress, checkStreakBroken } from '../utils/store';
+import { loadData, resetProgress, checkStreakBroken, getCustomLists, getListSurahs } from '../utils/store';
 import { syncProgressData } from '../utils/cloudStore';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -125,6 +125,265 @@ const HomeScreen = ({ navigation, route }) => {
   const [hasanatModalVisible, setHasanatModalVisible] = useState(false);
   const [streakModalVisible, setStreakModalVisible] = useState(false);
   const [recordingsModalVisible, setRecordingsModalVisible] = useState(false);
+  const [showSavedNotesModal, setShowSavedNotesModal] = useState(false);
+  const [savedNotes, setSavedNotes] = useState([]);
+  const [notesLoading, setNotesLoading] = useState(false);
+  const [notesDropdownOpen, setNotesDropdownOpen] = useState(false);
+  const [selectedSurah, setSelectedSurah] = useState(null);
+  const [showSavedAyaatModal, setShowSavedAyaatModal] = useState(false);
+  const [customLists, setCustomLists] = useState([]);
+  const [selectedCustomList, setSelectedCustomList] = useState('');
+  const [listAyahs, setListAyahs] = useState([]);
+  const [listsLoading, setListsLoading] = useState(false);
+  const [listsDropdownOpen, setListsDropdownOpen] = useState(false);
+  
+  // Helper functions for notes
+  const getSurahName = (surahNumber) => {
+    const surahNames = {
+      1: 'Al-Fatihah', 2: 'Al-Baqarah', 3: 'Aal-Imran', 4: 'An-Nisa', 5: 'Al-Maidah',
+      6: 'Al-Anam', 7: 'Al-Araf', 8: 'Al-Anfal', 9: 'At-Tawbah', 10: 'Yunus',
+      11: 'Hud', 12: 'Yusuf', 13: 'Ar-Rad', 14: 'Ibrahim', 15: 'Al-Hijr',
+      16: 'An-Nahl', 17: 'Al-Isra', 18: 'Al-Kahf', 19: 'Maryam', 20: 'Ta-Ha',
+      21: 'Al-Anbiya', 22: 'Al-Hajj', 23: 'Al-Muminun', 24: 'An-Nur', 25: 'Al-Furqan',
+      26: 'Ash-Shuara', 27: 'An-Naml', 28: 'Al-Qasas', 29: 'Al-Ankabut', 30: 'Ar-Rum',
+      31: 'Luqman', 32: 'As-Sajdah', 33: 'Al-Ahzab', 34: 'Saba', 35: 'Fatir',
+      36: 'Ya-Sin', 37: 'As-Saffat', 38: 'Sad', 39: 'Az-Zumar', 40: 'Ghafir',
+      41: 'Fussilat', 42: 'Ash-Shura', 43: 'Az-Zukhruf', 44: 'Ad-Dukhan', 45: 'Al-Jathiyah',
+      46: 'Al-Ahqaf', 47: 'Muhammad', 48: 'Al-Fath', 49: 'Al-Hujurat', 50: 'Qaf',
+      51: 'Adh-Dhariyat', 52: 'At-Tur', 53: 'An-Najm', 54: 'Al-Qamar', 55: 'Ar-Rahman',
+      56: 'Al-Waqiah', 57: 'Al-Hadid', 58: 'Al-Mujadilah', 59: 'Al-Hashr', 60: 'Al-Mumtahanah',
+      61: 'As-Saff', 62: 'Al-Jumuah', 63: 'Al-Munafiqun', 64: 'At-Taghabun', 65: 'At-Talaq',
+      66: 'At-Tahrim', 67: 'Al-Mulk', 68: 'Al-Qalam', 69: 'Al-Haqqah', 70: 'Al-Maarij',
+      71: 'Nuh', 72: 'Al-Jinn', 73: 'Al-Muzzammil', 74: 'Al-Muddathir', 75: 'Al-Qiyamah',
+      76: 'Al-Insan', 77: 'Al-Mursalat', 78: 'An-Naba', 79: 'An-Naziat', 80: 'Abasa',
+      81: 'At-Takwir', 82: 'Al-Infitar', 83: 'Al-Mutaffifin', 84: 'Al-Inshiqaq', 85: 'Al-Buruj',
+      86: 'At-Tariq', 87: 'Al-Ala', 88: 'Al-Ghashiyah', 89: 'Al-Fajr', 90: 'Al-Balad',
+      91: 'Ash-Shams', 92: 'Al-Layl', 93: 'Ad-Duha', 94: 'Ash-Sharh', 95: 'At-Tin',
+      96: 'Al-Alaq', 97: 'Al-Qadr', 98: 'Al-Bayyinah', 99: 'Az-Zalzalah', 100: 'Al-Adiyat',
+      101: 'Al-Qariah', 102: 'At-Takathur', 103: 'Al-Asr', 104: 'Al-Humazah', 105: 'Al-Fil',
+      106: 'Al-Quraish', 107: 'Al-Maun', 108: 'Al-Kawthar', 109: 'Al-Kafirun', 110: 'An-Nasr',
+      111: 'Al-Masad', 112: 'Al-Ikhlas', 113: 'Al-Falaq', 114: 'An-Nas'
+    };
+    return surahNames[surahNumber] || `Surah ${surahNumber}`;
+  };
+
+  const loadSurahNotes = async (surahNumber) => {
+    try {
+      const notes = [];
+      const noteKey = `note_${surahNumber}_`;
+      
+      // Get all keys for this surah
+      const allKeys = await AsyncStorage.getAllKeys();
+      const surahNoteKeys = allKeys.filter(key => key.startsWith(noteKey));
+      
+      if (surahNoteKeys.length > 0) {
+        console.log(`[HomeScreen] Found ${surahNoteKeys.length} note keys for surah ${surahNumber}:`, surahNoteKeys);
+      }
+      
+      for (const key of surahNoteKeys) {
+        const noteContent = await AsyncStorage.getItem(key);
+        if (noteContent) {
+          const ayahNumber = key.replace(noteKey, '');
+          const note = {
+            id: key,
+            surahNumber: surahNumber,
+            ayahNumber: parseInt(ayahNumber),
+            content: noteContent,
+            surahName: getSurahName(surahNumber)
+          };
+          notes.push(note);
+          console.log(`[HomeScreen] Loaded note for surah ${surahNumber}, ayah ${ayahNumber}:`, note);
+        }
+      }
+      
+      return notes;
+    } catch (error) {
+      console.error(`[HomeScreen] Error loading notes for surah ${surahNumber}:`, error);
+      return [];
+    }
+  };
+
+  const loadSavedNotes = async () => {
+    setNotesLoading(true);
+    try {
+      console.log('[HomeScreen] Starting to load saved notes...');
+      const notes = [];
+      
+      // Load all surah notes
+      const allSurahs = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114];
+      
+      for (const surahNumber of allSurahs) {
+        // Load notes for each surah
+        const surahNotes = await loadSurahNotes(surahNumber);
+        if (surahNotes.length > 0) {
+          console.log(`[HomeScreen] Found ${surahNotes.length} notes for surah ${surahNumber}`);
+        }
+        notes.push(...surahNotes);
+      }
+      
+      console.log('[HomeScreen] Total notes found:', notes.length);
+      console.log('[HomeScreen] Notes data:', notes);
+      setSavedNotes(notes);
+    } catch (error) {
+      console.error('[HomeScreen] Error loading saved notes:', error);
+      setSavedNotes([]);
+    } finally {
+      setNotesLoading(false);
+    }
+  };
+
+  const renderNotesBySurah = (notes) => {
+    console.log('[HomeScreen] renderNotesBySurah called with notes:', notes);
+    
+    if (!notes || notes.length === 0) {
+      console.log('[HomeScreen] No notes to render');
+      return null;
+    }
+
+    // Group notes by surah
+    const notesBySurah = {};
+    notes.forEach(note => {
+      console.log('[HomeScreen] Processing note:', note);
+      if (!notesBySurah[note.surahNumber]) {
+        notesBySurah[note.surahNumber] = [];
+      }
+      notesBySurah[note.surahNumber].push(note);
+    });
+
+    console.log('[HomeScreen] Notes grouped by surah:', notesBySurah);
+
+    // Sort surahs by number
+    const sortedSurahs = Object.keys(notesBySurah).sort((a, b) => parseInt(a) - parseInt(b));
+    console.log('[HomeScreen] Sorted surahs:', sortedSurahs);
+
+    return sortedSurahs.map(surahNumber => (
+      <View key={surahNumber} style={styles.surahSection}>
+        <Text style={styles.surahSectionTitle}>
+          {getSurahName(parseInt(surahNumber))}
+        </Text>
+        {notesBySurah[surahNumber].map((note, index) => (
+          <View key={note.id} style={styles.noteCard}>
+            <View style={styles.noteHeader}>
+              <Text style={styles.noteTitle}>
+                {language === 'ar' ? 'الآية' : 'Ayah'} {note.ayahNumber}
+              </Text>
+            </View>
+            
+            <Text style={styles.noteContent}>{note.content}</Text>
+            
+            {/* Social Features */}
+            <View style={styles.socialFeatures}>
+              <TouchableOpacity
+                style={styles.socialButton}
+                onPress={() => handleFavorite(note.id)}
+              >
+                <Text style={styles.socialButtonText}>
+                  {note.isFavorited ? '❤️' : '🤍'} {language === 'ar' ? 'مفضل' : 'Favorite'}
+                </Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity
+                style={styles.socialButton}
+                onPress={() => handleLike(note.id)}
+              >
+                <Text style={styles.socialButtonText}>
+                  {note.isLiked ? '👍' : '👍'} {note.likes || 0}
+                </Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity
+                style={styles.socialButton}
+                onPress={() => handleComment(note.id)}
+              >
+                <Text style={styles.socialButtonText}>
+                  💬 {note.comments || 0}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        ))}
+      </View>
+    ));
+  };
+
+  const handleFavorite = (noteId) => {
+    setSavedNotes(prev => prev.map(note => 
+      note.id === noteId 
+        ? { ...note, isFavorited: !note.isFavorited }
+        : note
+    ));
+  };
+
+  const handleLike = (noteId) => {
+    setSavedNotes(prev => prev.map(note => 
+      note.id === noteId 
+        ? { ...note, isLiked: !note.isLiked, likes: (note.likes || 0) + (note.isLiked ? -1 : 1) }
+        : note
+    ));
+  };
+
+  const handleComment = (noteId) => {
+    // This would open a comment modal or input
+    Alert.alert(
+      language === 'ar' ? 'إضافة تعليق' : 'Add Comment',
+      language === 'ar' ? 'سيتم إضافة ميزة التعليقات قريباً' : 'Comment feature will be added soon'
+    );
+  };
+
+  // Functions for Saved Ayaat modal
+  const loadCustomLists = async () => {
+    try {
+      const lists = await getCustomLists();
+      setCustomLists(lists);
+      if (lists.length > 0) {
+        setSelectedCustomList(lists[0]);
+      }
+    } catch (error) {
+      console.error('[HomeScreen] Error loading custom lists:', error);
+      setCustomLists([]);
+    }
+  };
+
+  const loadListAyahs = async (listName) => {
+    if (!listName) return;
+    
+    setListsLoading(true);
+    try {
+      const surahs = await getListSurahs(listName);
+      // Flatten surahs into individual ayahs
+      const allAyahs = [];
+      surahs.forEach(surah => {
+        surah.bookmarkedAyaat.forEach(ayahNumber => {
+          allAyahs.push({
+            surahName: surah.surahName,
+            surahNumber: surah.surahNumber,
+            ayahNumber: ayahNumber,
+            id: `${surah.surahNumber}_${ayahNumber}`
+          });
+        });
+      });
+      setListAyahs(allAyahs);
+    } catch (error) {
+      console.error('[HomeScreen] Error loading list ayahs:', error);
+      setListAyahs([]);
+    } finally {
+      setListsLoading(false);
+    }
+  };
+
+  // Load custom lists when Saved Ayaat modal opens
+  useEffect(() => {
+    if (showSavedAyaatModal) {
+      loadCustomLists();
+    }
+  }, [showSavedAyaatModal]);
+
+  // Load list ayahs when selected list changes
+  useEffect(() => {
+    if (selectedCustomList) {
+      loadListAyahs(selectedCustomList);
+    }
+  }, [selectedCustomList]);
   
   // Page indicator swipe functionality
   const dotsSwipeResponder = useRef(null);
@@ -277,6 +536,13 @@ const HomeScreen = ({ navigation, route }) => {
       }, 100);
     }
   }, []);
+
+  // Load saved notes when modal opens
+  useEffect(() => {
+    if (showSavedNotesModal) {
+      loadSavedNotes();
+    }
+  }, [showSavedNotesModal]);
 
   const loadScreenData = async () => {
       const loadedData = await loadData();
@@ -481,11 +747,7 @@ const HomeScreen = ({ navigation, route }) => {
             <TouchableOpacity 
               style={styles.settingsButton} 
               onPress={() => {
-                if (isAuthenticated) {
-                  setSettingsVisible(true);
-                } else {
-                  setAuthVisible(true);
-                }
+                setSettingsVisible(true);
               }} 
               onPressIn={() => hapticSelection()}
             >
@@ -818,7 +1080,7 @@ const HomeScreen = ({ navigation, route }) => {
                         }}
                         onPress={() => {
                           hapticSelection();
-                          navigation.navigate('SurahList', { activeTab: 3 }); // 3 is the saved ayaat tab
+                          setShowSavedAyaatModal(true);
                         }}
                       >
                         <Text style={{
@@ -896,6 +1158,60 @@ const HomeScreen = ({ navigation, route }) => {
                         </Text>
                       </TouchableOpacity>
                     </View>
+
+                    {/* Saved Notes Section */}
+                    <View style={{
+                      marginTop: 16,
+                      width: '90%',
+                      alignSelf: 'center',
+                    }}>
+                      <TouchableOpacity
+                        style={{
+                          backgroundColor: 'rgba(128,128,128,0.3)',
+                          borderColor: 'rgba(165,115,36,0.8)',
+                          borderWidth: 1,
+                          borderRadius: SIZES.base,
+                          padding: SIZES.small,
+                          shadowColor: '#000000',
+                          shadowOffset: { width: 0, height: 4 },
+                          shadowOpacity: 0.6,
+                          shadowRadius: 6,
+                          elevation: 8,
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          minHeight: 80,
+                        }}
+                        onPress={() => {
+                          hapticSelection();
+                          setShowSavedNotesModal(true);
+                        }}
+                      >
+                        <Text style={{
+                          textAlign: 'center',
+                          color: '#5b7f67',
+                          fontWeight: 'bold',
+                          fontSize: 16,
+                          marginBottom: 8,
+                        }}>
+                          {language === 'ar' ? 'الملاحظات المحفوظة' : 'Saved Notes'}
+                        </Text>
+                        <Text style={{
+                          textAlign: 'center',
+                          color: '#F5E6C8',
+                          fontSize: 14,
+                          marginBottom: 4,
+                        }}>
+                          {language === 'ar' ? 'عرض جميع الملاحظات' : 'View all notes'}
+                        </Text>
+                        <Text style={{
+                          textAlign: 'center',
+                          color: '#CCCCCC',
+                          fontSize: 12,
+                        }}>
+                          {language === 'ar' ? 'انقر للعرض' : 'Tap to view'}
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
                   </View>
                 )
               },
@@ -959,12 +1275,28 @@ const HomeScreen = ({ navigation, route }) => {
                           }}>{toArabicNumber(data.memorizedAyaat)}</Text> <Text style={{ color: '#CCCCCC' }}>{t('out_of_ayaat')}</Text> <Text style={{ color: '#F5E6C8', fontWeight: 'bold' }}>{toArabicNumber(data.totalAyaat)}</Text> <Text style={{ color: '#CCCCCC' }}>{t('ayaat_memorized')}</Text>
                         </Text>
                         <View style={styles.progressBar}>
+                          {/* Shadow layer underneath */}
+                          <View style={[
+                            styles.progressShadow, 
+                            { 
+                              width: `${progressPercentage}%`,
+                              backgroundColor: 'transparent',
+                              // Enhanced inner shadow effect for better visibility
+                              shadowColor: '#000',
+                              shadowOffset: { width: 0, height: 3 },
+                              shadowOpacity: 0.8,
+                              shadowRadius: 6,
+                              elevation: 6,
+                            }
+                          ]} />
+                          {/* Progress fill layer on top */}
                           <View style={[
                             styles.progressFill, 
                             { 
                               width: `${progressPercentage}%`,
                               backgroundColor: progressPercentage === 100 ? '#fae29f' : '#33694e',
                               ...(progressPercentage === 100 && {
+                                // Special styling for completed progress (gold)
                                 shadowColor: '#fae29f',
                                 shadowOffset: { width: 0, height: 0 },
                                 shadowOpacity: 1.0,
@@ -2127,6 +2459,66 @@ const HomeScreen = ({ navigation, route }) => {
                   )}
                 </Text>
               </TouchableOpacity>
+              {/* Temporary Test Button */}
+              <TouchableOpacity
+                onPress={() => {
+                  hapticSelection();
+                  setSettingsVisible(false);
+                  // Test the missed daily streak animation
+                  setBrokenStreakData({ previousStreak: 5, missedDays: ['2024-01-15', '2024-01-16'] });
+                  setShowStreakBrokenAnimation(true);
+                }}
+                style={{ 
+                  backgroundColor: '#FF6B35', // Orange color for test button
+                  marginBottom: 16,
+                  shadowColor: '#000',
+                  shadowOffset: { width: 0, height: 4 },
+                  shadowOpacity: 0.5,
+                  shadowRadius: 6,
+                  elevation: 8,
+                  paddingVertical: 16,
+                  paddingHorizontal: 24,
+                  borderRadius: 12,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+                onPressIn={() => hapticSelection()}
+              >
+                <Text style={{ color: '#FFFFFF', fontSize: 16, fontWeight: '600', textAlign: 'center' }}>
+                  🔥 Test Missed Streak
+                </Text>
+              </TouchableOpacity>
+              
+              {/* Test Regular Streak Animation */}
+              <TouchableOpacity
+                onPress={() => {
+                  hapticSelection();
+                  setSettingsVisible(false);
+                  // Test the regular streak animation
+                  setNewStreak(7);
+                  setShowStreakAnimation(true);
+                }}
+                style={{ 
+                  backgroundColor: '#5b7f67', // Green color for regular streak test
+                  marginBottom: 16,
+                  shadowColor: '#000',
+                  shadowOffset: { width: 0, height: 4 },
+                  shadowOpacity: 0.5,
+                  shadowRadius: 6,
+                  elevation: 8,
+                  paddingVertical: 16,
+                  paddingHorizontal: 24,
+                  borderRadius: 12,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+                onPressIn={() => hapticSelection()}
+              >
+                <Text style={{ color: '#FFFFFF', fontSize: 16, fontWeight: '600', textAlign: 'center' }}>
+                  ⭐ Test Regular Streak
+                </Text>
+              </TouchableOpacity>
+              
               <View style={{ marginTop: 16 }}>
               <Button
                   title={t('close')}
@@ -3947,6 +4339,426 @@ const HomeScreen = ({ navigation, route }) => {
           onAnimationComplete={handleStreakBrokenAnimationComplete}
         />
 
+        {/* Saved Notes Modal */}
+        <Modal
+          visible={showSavedNotesModal}
+          transparent
+          animationType="slide"
+          onRequestClose={() => setShowSavedNotesModal(false)}
+        >
+          <TouchableOpacity 
+            style={styles.modalOverlay}
+            activeOpacity={1}
+            onPress={() => setShowSavedNotesModal(false)}
+          >
+            <TouchableOpacity 
+              style={[styles.modalContent, { backgroundColor: '#5b7f67' }]}
+              activeOpacity={1}
+              onPress={(e) => e.stopPropagation()}
+            >
+              {/* Close X button at top right */}
+              <TouchableOpacity
+                style={{
+                  position: 'absolute',
+                  top: 16,
+                  right: 16,
+                  backgroundColor: '#666666',
+                  borderRadius: 20,
+                  width: 40,
+                  height: 40,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  shadowColor: '#000',
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.3,
+                  shadowRadius: 4,
+                  elevation: 3,
+                }}
+                onPress={() => setShowSavedNotesModal(false)}
+              >
+                <Text style={{ 
+                  color: 'white', 
+                  fontSize: 20, 
+                  fontWeight: 'bold',
+                  lineHeight: 20,
+                }}>
+                  ×
+                </Text>
+              </TouchableOpacity>
+
+              <Text variant="h2" style={{ marginBottom: 16, marginTop: 0, color: '#F5E6C8', textAlign: 'center' }}>
+                {language === 'ar' ? 'الملاحظات المحفوظة' : 'Saved Notes'}
+              </Text>
+              
+              {/* Notes Dropdown Box */}
+              <View style={styles.notesDropdownContainer}>
+                <TouchableOpacity
+                  style={styles.notesDropdownHeader}
+                  onPress={() => {
+                    // Toggle dropdown
+                    setNotesDropdownOpen(!notesDropdownOpen);
+                  }}
+                >
+                  <Text style={styles.notesDropdownTitle}>
+                    {language === 'ar' ? 'اختر السورة' : 'Select Surah'}
+                  </Text>
+                  <Text style={styles.notesDropdownArrow}>
+                    {notesDropdownOpen ? '▼' : '▶'}
+                  </Text>
+                </TouchableOpacity>
+                
+                {notesDropdownOpen && (
+                  <View style={styles.notesDropdownContent}>
+                    <ScrollView style={{ maxHeight: 200 }}>
+                      {savedNotes.length > 0 ? (
+                        // Group notes by surah
+                        Object.entries(
+                          savedNotes.reduce((acc, note) => {
+                            if (!acc[note.surahNumber]) {
+                              acc[note.surahNumber] = [];
+                            }
+                            acc[note.surahNumber].push(note);
+                            return acc;
+                          }, {})
+                        ).map(([surahNumber, notes]) => (
+                          <TouchableOpacity
+                            key={surahNumber}
+                            style={styles.notesDropdownItem}
+                            onPress={() => {
+                              setSelectedSurah(parseInt(surahNumber));
+                              setNotesDropdownOpen(false);
+                            }}
+                          >
+                            <Text style={styles.notesDropdownItemText}>
+                              {getSurahName(parseInt(surahNumber))} ({notes.length} {language === 'ar' ? 'ملاحظة' : 'notes'})
+                            </Text>
+                          </TouchableOpacity>
+                        ))
+                      ) : (
+                        <Text style={styles.notesDropdownEmptyText}>
+                          {language === 'ar' ? 'لا توجد ملاحظات' : 'No notes available'}
+                        </Text>
+                      )}
+                    </ScrollView>
+                  </View>
+                )}
+              </View>
+              
+              <ScrollView style={{ flex: 1, width: '100%' }}>
+                {notesLoading ? (
+                  <View style={{ alignItems: 'center', padding: 20 }}>
+                    <Text style={{ color: '#F5E6C8', fontSize: 16 }}>
+                      {language === 'ar' ? 'جاري التحميل...' : 'Loading...'}
+                    </Text>
+                  </View>
+                ) : savedNotes.length === 0 ? (
+                  <View style={{ alignItems: 'center', padding: 20 }}>
+                    <Text style={{ 
+                      color: '#F5E6C8', 
+                      fontSize: 16, 
+                      textAlign: 'center',
+                      marginBottom: 16,
+                      fontStyle: 'italic'
+                    }}>
+                      {language === 'ar' ? 'لا توجد ملاحظات محفوظة' : 'No saved notes yet'}
+                    </Text>
+                    <Text style={{ 
+                      color: '#CCCCCC', 
+                      fontSize: 14, 
+                      textAlign: 'center',
+                      lineHeight: 20
+                    }}>
+                      {language === 'ar' ? 'ابدأ بكتابة ملاحظات أثناء حفظ القرآن' : 'Start writing notes while memorizing the Quran'}
+                    </Text>
+                  </View>
+                ) : (
+                  <View style={{ width: '100%' }}>
+                    {selectedSurah ? (
+                      // Show notes for selected surah only
+                      <View style={styles.surahSection}>
+                        <Text style={styles.surahSectionTitle}>
+                          {getSurahName(selectedSurah)}
+                        </Text>
+                        {savedNotes
+                          .filter(note => note.surahNumber === selectedSurah)
+                          .map((note, index) => (
+                            <View key={note.id} style={styles.noteCard}>
+                              <View style={styles.noteHeader}>
+                                <Text style={styles.noteTitle}>
+                                  {language === 'ar' ? 'الآية' : 'Ayah'} {note.ayahNumber}
+                                </Text>
+                              </View>
+                              
+                              <Text style={styles.noteContent}>{note.content}</Text>
+                              
+                              {/* Social Features */}
+                              <View style={styles.socialFeatures}>
+                                <TouchableOpacity
+                                  style={styles.socialButton}
+                                  onPress={() => handleFavorite(note.id)}
+                                >
+                                  <Text style={styles.socialButtonText}>
+                                    {note.isFavorited ? '❤️' : '🤍'} {language === 'ar' ? 'مفضل' : 'Favorite'}
+                                  </Text>
+                                </TouchableOpacity>
+                                
+                                <TouchableOpacity
+                                  style={styles.socialButton}
+                                  onPress={() => handleLike(note.id)}
+                                >
+                                  <Text style={styles.socialButtonText}>
+                                    {note.isLiked ? '👍' : '👍'} {note.likes || 0}
+                                  </Text>
+                                </TouchableOpacity>
+                                
+                                <TouchableOpacity
+                                  style={styles.socialButton}
+                                  onPress={() => handleComment(note.id)}
+                                >
+                                  <Text style={styles.socialButtonText}>
+                                    💬 {note.comments || 0}
+                                  </Text>
+                                </TouchableOpacity>
+                              </View>
+                            </View>
+                          ))}
+                      </View>
+                    ) : (
+                      // Show all notes grouped by surah
+                      renderNotesBySurah(savedNotes)
+                    )}
+                  </View>
+                )}
+              </ScrollView>
+
+              {/* Notes Board Button */}
+              <TouchableOpacity
+                style={styles.notesBoardButton}
+                onPress={async () => {
+                  // Add a test note to Notes Board first
+                  try {
+                    const notesBoardKey = 'notes_board';
+                    const existingNotes = await AsyncStorage.getItem(notesBoardKey);
+                    const notesArray = existingNotes ? JSON.parse(existingNotes) : [];
+                    
+                    const testNote = {
+                      id: Date.now().toString(),
+                      surahNumber: 1,
+                      ayahNumber: 1,
+                      content: 'This is a test note to verify the Notes Board is working!',
+                      timestamp: new Date().toISOString(),
+                      author: 'Test User',
+                      surahName: 'Al-Fatihah'
+                    };
+                    
+                    notesArray.unshift(testNote);
+                    await AsyncStorage.setItem(notesBoardKey, JSON.stringify(notesArray));
+                    console.log('[HomeScreen] Added test note to Notes Board');
+                  } catch (error) {
+                    console.error('[HomeScreen] Error adding test note:', error);
+                  }
+                  
+                  // Close the Saved Notes modal first
+                  setShowSavedNotesModal(false);
+                  
+                  // Then navigate to Notes Board screen after a short delay
+                  setTimeout(() => {
+                    navigation.navigate('NotesBoard');
+                  }, 300);
+                }}
+              >
+                <Text style={styles.notesBoardButtonText}>
+                  {language === 'ar' ? 'لوحة الملاحظات' : 'Notes Board'}
+                </Text>
+              </TouchableOpacity>
+            </TouchableOpacity>
+          </TouchableOpacity>
+        </Modal>
+
+        {/* Saved Ayaat Modal */}
+        <Modal
+          visible={showSavedAyaatModal}
+          transparent
+          animationType="slide"
+          onRequestClose={() => setShowSavedAyaatModal(false)}
+        >
+          <TouchableOpacity 
+            style={styles.modalOverlay}
+            activeOpacity={1}
+            onPress={() => setShowSavedAyaatModal(false)}
+          >
+            <TouchableOpacity 
+              style={[styles.modalContent, { backgroundColor: '#5b7f67' }]}
+              activeOpacity={1}
+              onPress={(e) => e.stopPropagation()}
+            >
+              {/* Close X button at top right */}
+              <TouchableOpacity
+                style={{
+                  position: 'absolute',
+                  top: 16,
+                  right: 16,
+                  backgroundColor: '#666666',
+                  borderRadius: 20,
+                  width: 40,
+                  height: 40,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  shadowColor: '#000',
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.3,
+                  shadowRadius: 4,
+                  elevation: 3,
+                }}
+                onPress={() => setShowSavedAyaatModal(false)}
+              >
+                <Text style={{ 
+                  color: 'white', 
+                  fontSize: 20, 
+                  fontWeight: 'bold',
+                  lineHeight: 20,
+                }}>
+                  ×
+                </Text>
+              </TouchableOpacity>
+
+              <Text variant="h2" style={{ marginBottom: 16, marginTop: 0, color: '#F5E6C8', textAlign: 'center' }}>
+                {language === 'ar' ? 'الآيات المحفوظة' : 'Saved Ayaat'}
+              </Text>
+              
+              {/* Lists Dropdown */}
+              <View style={styles.listsDropdownContainer}>
+                <TouchableOpacity
+                  style={styles.listsDropdownHeader}
+                  onPress={() => {
+                    setListsDropdownOpen(!listsDropdownOpen);
+                  }}
+                >
+                  <Text style={styles.listsDropdownTitle}>
+                    {selectedCustomList || (language === 'ar' ? 'اختر القائمة' : 'Select List')}
+                  </Text>
+                  <Text style={styles.listsDropdownArrow}>
+                    {listsDropdownOpen ? '▼' : '▶'}
+                  </Text>
+                </TouchableOpacity>
+                
+                {listsDropdownOpen && (
+                  <View style={styles.listsDropdownContent}>
+                    <ScrollView style={{ maxHeight: 200 }}>
+                      {customLists.length > 0 ? (
+                        customLists.map((listName) => (
+                          <TouchableOpacity
+                            key={listName}
+                            style={[
+                              styles.listsDropdownItem,
+                              selectedCustomList === listName && styles.selectedListsDropdownItem
+                            ]}
+                            onPress={() => {
+                              setSelectedCustomList(listName);
+                              setListsDropdownOpen(false);
+                            }}
+                          >
+                            <Text style={[
+                              styles.listsDropdownItemText,
+                              selectedCustomList === listName && styles.selectedListsDropdownItemText
+                            ]}>
+                              {listName}
+                            </Text>
+                            {selectedCustomList === listName && (
+                              <Text style={styles.checkmark}>✓</Text>
+                            )}
+                          </TouchableOpacity>
+                        ))
+                      ) : (
+                        <Text style={styles.listsDropdownEmptyText}>
+                          {language === 'ar' ? 'لا توجد قوائم مخصصة' : 'No custom lists available'}
+                        </Text>
+                      )}
+                    </ScrollView>
+                  </View>
+                )}
+              </View>
+              
+              {/* Ayaat List */}
+              <ScrollView style={{ flex: 1, width: '100%' }}>
+                {listsLoading ? (
+                  <View style={{ alignItems: 'center', padding: 20 }}>
+                    <Text style={{ color: '#F5E6C8', fontSize: 16 }}>
+                      {language === 'ar' ? 'جاري التحميل...' : 'Loading...'}
+                    </Text>
+                  </View>
+                ) : listAyahs.length === 0 ? (
+                  <View style={{ alignItems: 'center', padding: 20 }}>
+                    <Text style={{ 
+                      color: '#F5E6C8', 
+                      fontSize: 16, 
+                      textAlign: 'center',
+                      marginBottom: 16,
+                      fontStyle: 'italic'
+                    }}>
+                      {language === 'ar' ? 'لا توجد آيات محفوظة في هذه القائمة' : 'No saved ayahs in this list'}
+                    </Text>
+                    <Text style={{ 
+                      color: '#CCCCCC', 
+                      fontSize: 14, 
+                      textAlign: 'center',
+                      lineHeight: 20
+                    }}>
+                      {language === 'ar' ? 'اضغط على أيقونة الإشارة المرجعية في شاشة الحفظ لحفظ الآيات' : 'Tap the bookmark icon in memorization screen to save ayahs'}
+                    </Text>
+                  </View>
+                ) : (
+                  <View style={{ width: '100%' }}>
+                    {listAyahs.map((ayah, index) => (
+                      <TouchableOpacity
+                        key={ayah.id}
+                        style={styles.ayahCard}
+                        onPress={() => {
+                          // Navigate to specific ayah
+                          setShowSavedAyaatModal(false);
+                          setTimeout(() => {
+                            navigation.navigate('Memorization', {
+                              surah: { id: ayah.surahNumber, name: ayah.surahName },
+                              resumeFromIndex: 0,
+                              targetAyah: ayah.ayahNumber
+                            });
+                          }, 300);
+                        }}
+                        activeOpacity={0.8}
+                      >
+                        <View style={styles.ayahInfo}>
+                          <View style={[
+                            styles.ayahHeader,
+                            language === 'ar' && { flexDirection: 'row-reverse' }
+                          ]}>
+                            <Text style={styles.surahNumber}>
+                              {ayah.surahNumber}
+                            </Text>
+                            <Text style={styles.surahName}>
+                              {ayah.surahName}
+                            </Text>
+                          </View>
+                          
+                          <View style={styles.ayahDetails}>
+                            <Text style={styles.ayahNumber}>
+                              {language === 'ar' ? 
+                                `الآية ${ayah.ayahNumber}` : 
+                                `Ayah ${ayah.ayahNumber}`
+                              }
+                            </Text>
+                          </View>
+                        </View>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                )}
+              </ScrollView>
+            </TouchableOpacity>
+          </TouchableOpacity>
+        </Modal>
+
+
+
               </SafeAreaView>
       </ImageBackground>
       
@@ -4009,19 +4821,22 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   progressBar: {
-    height: 20,
-    backgroundColor: 'rgba(51,51,51,0.8)',
-    borderRadius: 10,
+    height: 10, // Made even thinner in height
+    backgroundColor: 'rgba(100,100,100,0.7)', // Darker gray background (not too light)
+    borderRadius: 6,
     overflow: 'hidden',
   },
+  progressShadow: {
+    position: 'absolute',
+    height: '100%',
+    backgroundColor: 'transparent',
+    zIndex: 1,
+  },
   progressFill: {
+    position: 'absolute',
     height: '100%',
     backgroundColor: '#33694e',
-    shadowColor: '#33694e',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.6,
-    shadowRadius: 4,
-    elevation: 4,
+    zIndex: 2,
   },
   statsGrid: {
     flexDirection: 'row',
@@ -4264,6 +5079,214 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     fontFamily: 'Montserrat-Regular',
     textAlign: 'center',
+  },
+  surahSection: {
+    marginBottom: 20,
+  },
+  surahSectionTitle: {
+    color: '#F5E6C8',
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 12,
+    textAlign: 'center',
+    backgroundColor: 'rgba(165,115,36,0.3)',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+  },
+  noteCard: {
+    backgroundColor: 'rgba(128,128,128,0.2)',
+    borderColor: 'rgba(165,115,36,0.6)',
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+  },
+  noteHeader: {
+    marginBottom: 8,
+  },
+  noteTitle: {
+    color: '#5b7f67',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  noteContent: {
+    color: '#F5E6C8',
+    fontSize: 14,
+    lineHeight: 20,
+    marginBottom: 12,
+  },
+  socialFeatures: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(165,115,36,0.3)',
+    paddingTop: 8,
+  },
+  socialButton: {
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 6,
+    backgroundColor: 'rgba(128,128,128,0.2)',
+  },
+  socialButtonText: {
+    color: '#F5E6C8',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  notesDropdownContainer: {
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(165,115,36,0.6)',
+    borderRadius: 8,
+    backgroundColor: 'rgba(128,128,128,0.2)',
+  },
+  notesDropdownHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 16,
+  },
+  notesDropdownTitle: {
+    color: '#F5E6C8',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  notesDropdownArrow: {
+    color: '#F5E6C8',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  notesDropdownContent: {
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(165,115,36,0.3)',
+    backgroundColor: 'rgba(64,64,64,0.3)',
+  },
+  notesDropdownItem: {
+    padding: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(165,115,36,0.2)',
+  },
+  notesDropdownItemText: {
+    color: '#F5E6C8',
+    fontSize: 14,
+  },
+  notesDropdownEmptyText: {
+    color: '#999',
+    fontSize: 14,
+    textAlign: 'center',
+    padding: 16,
+    fontStyle: 'italic',
+  },
+  // Saved Ayaat Modal Styles
+  listsDropdownContainer: {
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(165,115,36,0.6)',
+    borderRadius: 8,
+    backgroundColor: 'rgba(128,128,128,0.2)',
+  },
+  listsDropdownHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 16,
+  },
+  listsDropdownTitle: {
+    color: '#F5E6C8',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  listsDropdownArrow: {
+    color: '#F5E6C8',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  listsDropdownContent: {
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(165,115,36,0.3)',
+    backgroundColor: 'rgba(64,64,64,0.3)',
+  },
+  listsDropdownItem: {
+    padding: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(165,115,36,0.2)',
+  },
+  listsDropdownItemText: {
+    color: '#F5E6C8',
+    fontSize: 14,
+  },
+  selectedListsDropdownItem: {
+    backgroundColor: 'rgba(165,115,36,0.3)',
+  },
+  selectedListsDropdownItemText: {
+    color: '#FFD700',
+    fontWeight: 'bold',
+  },
+  listsDropdownEmptyText: {
+    color: '#999',
+    fontSize: 14,
+    textAlign: 'center',
+    padding: 16,
+    fontStyle: 'italic',
+  },
+  checkmark: {
+    color: '#FFD700',
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginLeft: 8,
+  },
+  ayahCard: {
+    backgroundColor: 'rgba(128,128,128,0.2)',
+    borderColor: 'rgba(165,115,36,0.6)',
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+  },
+  ayahInfo: {
+    flex: 1,
+  },
+  ayahHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+    gap: 12,
+  },
+  surahNumber: {
+    color: '#5b7f67',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  surahName: {
+    color: '#F5E6C8',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  ayahDetails: {
+    marginTop: 4,
+  },
+  ayahNumber: {
+    color: '#CCCCCC',
+    fontSize: 14,
+  },
+  notesBoardButton: {
+    backgroundColor: 'rgba(165,115,36,0.8)',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+    marginTop: 16,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  notesBoardButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });
 

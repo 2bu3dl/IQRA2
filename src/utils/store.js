@@ -98,6 +98,7 @@ export const loadData = async () => {
     let parsedMemorizedAyahs;
     try {
       parsedMemorizedAyahs = memorizedAyahs ? JSON.parse(memorizedAyahs) : initialState.memorizedAyahs;
+      console.log('[store.js] Loaded memorized ayahs:', JSON.stringify(parsedMemorizedAyahs, null, 2));
     } catch (parseError) {
       console.warn('[Store] Failed to parse memorized ayahs, using default:', parseError);
       parsedMemorizedAyahs = initialState.memorizedAyahs;
@@ -395,6 +396,7 @@ export const getCurrentWeekStreak = async () => {
 // Update memorized ayahs
 export const updateMemorizedAyahs = async (surahName, ayahIndex) => {
   try {
+    console.log('[store.js] updateMemorizedAyahs called with:', { surahName, ayahIndex });
     const memorizedAyahsStr = await AsyncStorage.getItem(STORAGE_KEYS.MEMORIZED_AYAHS);
     const memorizedAyahs = memorizedAyahsStr ? JSON.parse(memorizedAyahsStr) : initialState.memorizedAyahs;
 
@@ -424,6 +426,7 @@ export const updateMemorizedAyahs = async (surahName, ayahIndex) => {
       memorizedAyahs[surahName].lastAyahIndex = Math.max(...memorizedAyahs[surahName].completedAyaat);
     }
 
+    console.log('[store.js] Saving memorized ayahs:', JSON.stringify(memorizedAyahs, null, 2));
     await AsyncStorage.setItem(STORAGE_KEYS.MEMORIZED_AYAHS, JSON.stringify(memorizedAyahs));
     return memorizedAyahs;
   } catch (error) {

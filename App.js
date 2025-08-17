@@ -16,6 +16,7 @@ import ProfileDashboard from './src/screens/ProfileDashboard';
 import ProfileScreen from './src/screens/ProfileScreen';
 import LeaderboardScreen from './src/screens/LeaderboardScreen';
 import RecordingsScreen from './src/screens/RecordingsScreen';
+import NotesBoardScreen from './src/screens/NotesBoardScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -81,6 +82,7 @@ function App() {
             <Stack.Screen name="Profile" component={ProfileScreen} />
             <Stack.Screen name="Leaderboard" component={LeaderboardScreen} />
             <Stack.Screen name="Recordings" component={RecordingsScreen} />
+            <Stack.Screen name="NotesBoard" component={NotesBoardScreen} />
           </Stack.Navigator>
         </NavigationContainer>
       </LanguageProvider>

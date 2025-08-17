@@ -97,7 +97,13 @@ const TranslationModal = ({ visible, onClose, currentSurah, currentAyah, onAyahC
 
           <View style={styles.translationContainer}>
             <Text style={styles.ayahInfo}>{`Surah ${currentSurah}, Ayah ${currentAyah}`}</Text>
-            <ScrollView style={styles.translationScroll}>
+            <ScrollView 
+              style={styles.translationScroll}
+              showsVerticalScrollIndicator={true}
+              nestedScrollEnabled={true}
+              scrollEnabled={true}
+              contentContainerStyle={styles.translationScrollContent}
+            >
               <View style={styles.translationText}>
                 {loading ? (
                   <Text style={styles.loadingText}>{t('loading')}</Text>
@@ -238,6 +244,11 @@ const styles = StyleSheet.create({
   },
   translationScroll: {
     flex: 1,
+    maxHeight: 300,
+  },
+  translationScrollContent: {
+    flexGrow: 1,
+    paddingBottom: 20,
   },
   translationText: {
     fontSize: 20,

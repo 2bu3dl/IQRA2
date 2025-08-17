@@ -40,6 +40,144 @@ const MemorizationScreen = ({ route, navigation }) => {
   };
   const { surah, resumeFromIndex, targetAyah } = route.params || {};
   const surahNumber = surah?.id || surah?.surah || 1;
+  
+  // Create a consistent surah name for all operations
+  // Use the original surah names that match the storage keys in SurahListScreen
+  const getOriginalSurahName = (surahId) => {
+    const originalNames = {
+      1: 'Al-Fatihah',
+      2: 'Al-Baqarah',
+      3: 'Al-Imran',
+      4: 'An-Nisa',
+      5: 'Al-Ma\'idah',
+      6: 'Al-An\'am',
+      7: 'Al-A\'raf',
+      8: 'Al-Anfal',
+      9: 'At-Tawbah',
+      10: 'Yunus',
+      11: 'Hud',
+      12: 'Yusuf',
+      13: 'Ar-Ra\'d',
+      14: 'Ibrahim',
+      15: 'Al-Hijr',
+      16: 'An-Nahl',
+      17: 'Al-Isra',
+      18: 'Al-Kahf',
+      19: 'Maryam',
+      20: 'Ta-Ha',
+      21: 'Al-Anbya',
+      22: 'Al-Hajj',
+      23: 'Al-Mu\'minun',
+      24: 'An-Nur',
+      25: 'Al-Furqan',
+      26: 'Ash-Shu\'ara',
+      27: 'An-Naml',
+      28: 'Al-Qasas',
+      29: 'Al-Ankabut',
+      30: 'Ar-Rum',
+      31: 'Luqman',
+      32: 'As-Sajdah',
+      33: 'Al-Ahzab',
+      34: 'Saba',
+      35: 'Fatir',
+      36: 'Ya-Sin',
+      37: 'As-Saffat',
+      38: 'Sad',
+      39: 'Az-Zumar',
+      40: 'Ghafir',
+      41: 'Fussilat',
+      42: 'Ash-Shura',
+      43: 'Az-Zukhruf',
+      44: 'Ad-Dukhan',
+      45: 'Al-Jathiyah',
+      46: 'Al-Ahqaf',
+      47: 'Muhammad',
+      48: 'Al-Fath',
+      49: 'Al-Hujurat',
+      50: 'Qaf',
+      51: 'Adh-Dhariyat',
+      52: 'At-Tur',
+      53: 'An-Najm',
+      54: 'Al-Qamar',
+      55: 'Ar-Rahman',
+      56: 'Al-Waqi\'ah',
+      57: 'Al-Hadid',
+      58: 'Al-Mujadila',
+      59: 'Al-Hashr',
+      60: 'Al-Mumtahanah',
+      61: 'As-Saf',
+      62: 'Al-Jumu\'ah',
+      63: 'Al-Munafiqun',
+      64: 'At-Taghabun',
+      65: 'At-Talaq',
+      66: 'At-Tahrim',
+      67: 'Al-Mulk',
+      68: 'Al-Qalam',
+      69: 'Al-Haqqah',
+      70: 'Al-Ma\'arij',
+      71: 'Nuh',
+      72: 'Al-Jinn',
+      73: 'Al-Muzzammil',
+      74: 'Al-Muddathir',
+      75: 'Al-Qiyamah',
+      76: 'Al-Insan',
+      77: 'Al-Mursalat',
+      78: 'An-Naba',
+      79: 'An-Nazi\'at',
+      80: 'Abasa',
+      81: 'At-Takwir',
+      82: 'Al-Infitar',
+      83: 'Al-Mutaffifin',
+      84: 'Al-Inshiqaq',
+      85: 'Al-Buruj',
+      86: 'At-Tariq',
+      87: 'Al-A\'la',
+      88: 'Al-Ghashiyah',
+      89: 'Al-Fajr',
+      90: 'Al-Balad',
+      91: 'Ash-Shams',
+      92: 'Al-Layl',
+      93: 'Ad-Duha',
+      94: 'Ash-Sharh',
+      95: 'At-Tin',
+      96: 'Al-Alaq',
+      97: 'Al-Qadr',
+      98: 'Al-Bayyinah',
+      99: 'Az-Zalzalah',
+      100: 'Al-Adiyat',
+      101: 'Al-Qari\'ah',
+      102: 'At-Takathur',
+      103: 'Al-Asr',
+      104: 'Al-Humazah',
+      105: 'Al-Fil',
+      106: 'Quraish',
+      107: 'Al-Ma\'un',
+      108: 'Al-Kawthar',
+      109: 'Al-Kafirun',
+      110: 'An-Nasr',
+      111: 'Al-Masad',
+      112: 'Al-Ikhlas',
+      113: 'Al-Falaq',
+      114: 'An-Nas',
+    };
+    return originalNames[surahId] || 'Al-Fatihah';
+  };
+  
+  // Try multiple naming conventions to ensure compatibility
+  const surahName = getOriginalSurahName(surahNumber);
+  
+  // Also try to get the name from the surah object if available
+  const alternativeSurahName = surah?.name || 'Al-Fatihah';
+  
+  // Debug logging for surah name consistency
+  console.log('[MemorizationScreen] Surah data:', {
+    surahId: surah?.id,
+    surahNumber: surahNumber,
+    surahName: surahName,
+    alternativeSurahName: alternativeSurahName,
+    originalName: surah?.name,
+    mappedName: getOriginalSurahName(surahNumber)
+  });
 
 
 
@@ -87,6 +225,12 @@ const MemorizationScreen = ({ route, navigation }) => {
   const [isRecording, setIsRecording] = useState(false);
   const [hasRecordings, setHasRecordings] = useState(false);
   const [showRecordingsModal, setShowRecordingsModal] = useState(false);
+  const [showNoteInput, setShowNoteInput] = useState(false);
+  const [currentNoteAyah, setCurrentNoteAyah] = useState(null);
+  const [noteText, setNoteText] = useState('');
+  const [ayahNotes, setAyahNotes] = useState({});
+  const [noteSaved, setNoteSaved] = useState(false);
+  const [showSavedNotesModal, setShowSavedNotesModal] = useState(false);
 
   // Builder Mode state
   const [isBuilderMode, setIsBuilderMode] = useState(false);
@@ -115,6 +259,9 @@ const MemorizationScreen = ({ route, navigation }) => {
         }
         setAyaat(data);
         setIsTextHidden(false);
+        
+        // Load notes for this surah
+        await loadSurahNotes();
     } catch (error) {
         setAyaat([{
           type: 'ayah',
@@ -145,7 +292,7 @@ const MemorizationScreen = ({ route, navigation }) => {
     const checkBookmarkStatus = async () => {
       if (flashcards && flashcards[currentAyahIndex]?.type === 'ayah') {
         const ayahNumber = flashcards.slice(0, currentAyahIndex + 1).filter(a => a.type === 'ayah').length;
-        const inAnyList = await isAyahInAnyList(surah?.name || 'Al-Fatihah', ayahNumber);
+        const inAnyList = await isAyahInAnyList(surahName, ayahNumber);
         setIsCurrentAyahBookmarked(inAnyList);
       }
     };
@@ -166,7 +313,7 @@ const MemorizationScreen = ({ route, navigation }) => {
       const words = flashcards[currentAyahIndex].text.split(' ').filter(word => word.trim());
       setBuilderWords(words);
     }
-        }, [currentAyahIndex, ayaat, surah?.name, flashcards]);
+        }, [currentAyahIndex, ayaat, surahName, flashcards]);
 
   // Reset highlighting state when ayah changes
   React.useEffect(() => {
@@ -199,7 +346,39 @@ const MemorizationScreen = ({ route, navigation }) => {
     if (route?.params?.showRecordings) {
       setShowRecordingsModal(true);
     }
-  }, [route?.params?.showRecordings]);
+      }, [route?.params?.showRecordings]);
+    
+    // Auto-scroll to current ayah when navigation modal opens
+    React.useEffect(() => {
+      if (showGoToModal && ayahListRef.current) {
+        // Wait for the modal to fully render
+        setTimeout(() => {
+          const currentAyah = flashcards[currentAyahIndex];
+          if (currentAyah && ayahListRef.current) {
+            const ayahIndex = getFilteredAyaat().findIndex(ayah => 
+              flashcards.indexOf(ayah) === currentAyahIndex
+            );
+            
+            if (ayahIndex !== -1) {
+              // Calculate the scroll position to center the current ayah
+              const itemHeight = 60; // Approximate height of each ayah item
+              const scrollPosition = Math.max(0, (ayahIndex * itemHeight) - 100);
+              
+              ayahListRef.current.scrollTo({
+                y: scrollPosition,
+                animated: true
+              });
+              
+              console.log('[MemorizationScreen] Auto-scrolled to current ayah:', {
+                currentAyahIndex,
+                ayahIndex,
+                scrollPosition
+              });
+            }
+          }
+        }, 300); // Wait for modal animation to complete
+      }
+    }, [showGoToModal, currentAyahIndex, flashcards]);
 
   // Audio functionality
   useEffect(() => {
@@ -311,10 +490,10 @@ const MemorizationScreen = ({ route, navigation }) => {
       
   // Add this after currentAyahIndex and surah are defined
   React.useEffect(() => {
-    if (surah?.name && currentAyahIndex !== undefined && !isResuming.current && flashcardsLoaded.current) {
-      saveCurrentPosition(surah?.name || 'Al-Fatihah', currentAyahIndex);
+    if (surahName && currentAyahIndex !== undefined && !isResuming.current && flashcardsLoaded.current) {
+      saveCurrentPosition(surahName, currentAyahIndex);
     }
-  }, [surah?.name, currentAyahIndex]);
+  }, [surahName, currentAyahIndex]);
 
   useEffect(() => {
     if (
@@ -436,11 +615,13 @@ const MemorizationScreen = ({ route, navigation }) => {
     setRewardAmount(hasanat);
     setShowReward(true);
     const realAyahIndex = flashcards.slice(0, currentAyahIndex + 1).filter(a => a.type === 'ayah').length - 1;
-            updateMemorizedAyahs(surah?.name || 'Al-Fatihah', realAyahIndex).catch(console.error);
+            // Use the same naming convention as SurahListScreen for consistency
+            console.log('[MemorizationScreen] Updating memorized ayahs for:', surahName, 'ayah index:', realAyahIndex);
+            updateMemorizedAyahs(surahName, realAyahIndex).catch(console.error);
     
     // Track telemetry
     telemetryService.trackHasanatEarned(hasanat, 'ayah_completion');
-          telemetryService.trackMemorizationProgress(surah?.name || 'Al-Fatihah', realAyahIndex + 1, ((realAyahIndex + 1) / ayaat.filter(a => a.type === 'ayah').length) * 100);
+          telemetryService.trackMemorizationProgress(surahName, realAyahIndex + 1, ((realAyahIndex + 1) / ayaat.filter(a => a.type === 'ayah').length) * 100);
   };
 
   const handlePrevious = async () => {
@@ -508,6 +689,11 @@ const MemorizationScreen = ({ route, navigation }) => {
   const cleanSurahName = (name) => {
     if (!name) return ''; // Safety check for undefined/null names
     return name.replace(/^\d+\.?\s*/, ''); // Remove number and period at the beginning
+  };
+  
+  // Function to get display name for UI (uses the original surah names)
+  const getDisplaySurahName = (surahId) => {
+    return getOriginalSurahName(surahId);
   };
 
   // Static audio map for Al-Fatiha and Al-Mulk
@@ -666,7 +852,7 @@ const MemorizationScreen = ({ route, navigation }) => {
     // Refresh bookmark status after modal closes
     if (flashcards && flashcards[currentAyahIndex]?.type === 'ayah') {
       const ayahNumber = flashcards.slice(0, currentAyahIndex + 1).filter(a => a.type === 'ayah').length;
-      const inAnyList = await isAyahInAnyList(surah?.name || 'Al-Fatihah', ayahNumber);
+      const inAnyList = await isAyahInAnyList(surahName, ayahNumber);
       setIsCurrentAyahBookmarked(inAnyList);
     }
   };
@@ -675,7 +861,7 @@ const MemorizationScreen = ({ route, navigation }) => {
     // Refresh bookmark status after modal changes
     if (flashcards && flashcards[currentAyahIndex]?.type === 'ayah') {
       const ayahNumber = flashcards.slice(0, currentAyahIndex + 1).filter(a => a.type === 'ayah').length;
-      const inAnyList = await isAyahInAnyList(surah?.name || 'Al-Fatihah', ayahNumber);
+      const inAnyList = await isAyahInAnyList(surahName, ayahNumber);
       setIsCurrentAyahBookmarked(inAnyList);
     }
   };
@@ -686,7 +872,7 @@ const MemorizationScreen = ({ route, navigation }) => {
     if (flashcards && flashcards[currentAyahIndex]?.type === 'ayah') {
       const ayahNumber = flashcards.slice(0, currentAyahIndex + 1).filter(a => a.type === 'ayah').length;
       console.log('[MemorizationScreen] Checking recordings for ayah:', ayahNumber);
-      const recordings = await audioRecorder.loadRecordings(surah?.name || 'Al-Fatihah', ayahNumber);
+      const recordings = await audioRecorder.loadRecordings(surahName, ayahNumber);
       console.log('[MemorizationScreen] Found recordings:', recordings.length);
       setHasRecordings(recordings.length > 0);
     } else {
@@ -727,7 +913,7 @@ const MemorizationScreen = ({ route, navigation }) => {
           
           const ayahNumber = flashcards.slice(0, currentAyahIndex + 1).filter(a => a.type === 'ayah').length;
           console.log('[MemorizationScreen] Starting recording for ayah:', ayahNumber);
-          await audioRecorder.startRecording(surah?.name || 'Al-Fatihah', ayahNumber);
+          await audioRecorder.startRecording(surahName, ayahNumber);
           setIsRecording(true);
           
           // Start pulse animation
@@ -762,6 +948,91 @@ const MemorizationScreen = ({ route, navigation }) => {
   const handleRecordingsModalClose = () => {
     setShowRecordingsModal(false);
     checkRecordings();
+  };
+
+  const handleNoteIconPress = async (ayahIndex, ayahNumber) => {
+    setCurrentNoteAyah({ index: ayahIndex, number: ayahNumber });
+    
+    // Load existing note if any
+    try {
+      const noteKey = `note_${surahNumber}_${ayahNumber}`;
+      const existingNote = await AsyncStorage.getItem(noteKey);
+      if (existingNote) {
+        setNoteText(existingNote);
+        setNoteSaved(true);
+      } else {
+        setNoteText(''); // Reset note text
+        setNoteSaved(false);
+      }
+    } catch (error) {
+      console.error('[MemorizationScreen] Error loading note:', error);
+      setNoteText(''); // Reset note text on error
+      setNoteSaved(false);
+    }
+    
+    setShowNoteInput(true);
+  };
+
+  const handleNoteSave = async () => {
+    if (currentNoteAyah && noteText.trim()) {
+      try {
+        // Save note to AsyncStorage
+        const noteKey = `note_${surahNumber}_${currentNoteAyah.number}`;
+        await AsyncStorage.setItem(noteKey, noteText.trim());
+        
+        // Update local state
+        setAyahNotes(prev => ({
+          ...prev,
+          [currentNoteAyah.number]: noteText.trim()
+        }));
+        
+        console.log('[MemorizationScreen] Note saved for ayah:', currentNoteAyah.number);
+        setNoteSaved(true);
+        
+        // Keep the note input open - saved state stays until user changes text
+        // No more auto-reset timeout
+      } catch (error) {
+        console.error('[MemorizationScreen] Error saving note:', error);
+        Alert.alert('Error', 'Failed to save note. Please try again.');
+      }
+    }
+  };
+
+  const handleNoteClose = () => {
+    setShowNoteInput(false);
+    setCurrentNoteAyah(null);
+    setNoteText('');
+    setNoteSaved(false);
+  };
+
+  const handleNoteTextChange = (text) => {
+    setNoteText(text);
+    if (noteSaved) {
+      setNoteSaved(false);
+    }
+  };
+
+  const loadSurahNotes = async () => {
+    try {
+      const notes = {};
+      const ayaat = getSurahAyaatWithTransliteration(surahNumber);
+      const ayahData = await ayaat;
+      
+      for (const ayah of ayahData) {
+        if (ayah.type === 'ayah') {
+          const noteKey = `note_${surahNumber}_${ayah.ayah}`;
+          const note = await AsyncStorage.getItem(noteKey);
+          if (note) {
+            notes[ayah.ayah] = note;
+          }
+        }
+      }
+      
+      setAyahNotes(notes);
+      console.log('[MemorizationScreen] Loaded notes for surah:', surahNumber, notes);
+    } catch (error) {
+      console.error('[MemorizationScreen] Error loading surah notes:', error);
+    }
   };
 
   const testRecordingFunctionality = async () => {
@@ -873,10 +1144,10 @@ const MemorizationScreen = ({ route, navigation }) => {
               onPress={async () => {
                 // Explicitly save current position
                 try {
-                          console.log('[DEBUG] About to save position - surah.name:', surah?.name, 'currentAyahIndex:', currentAyahIndex);
-        await saveCurrentPosition(surah?.name || 'Al-Fatihah', currentAyahIndex);
-        await saveLastPosition(surah?.name || 'Al-Fatihah', surahNumber, currentAyahIndex);
-        console.log('[MemorizationScreen] Explicitly saved on Home:', surah?.name, currentAyahIndex);
+                          console.log('[DEBUG] About to save position - surah.name:', surahName, 'currentAyahIndex:', currentAyahIndex);
+        await saveCurrentPosition(surahName, currentAyahIndex);
+        await saveLastPosition(surahName, surahNumber, currentAyahIndex);
+        console.log('[MemorizationScreen] Explicitly saved on Home:', surahName, currentAyahIndex);
                 } catch (error) {
                   console.error('[MemorizationScreen] Error saving current position on Home:', error);
                 }
@@ -891,7 +1162,7 @@ const MemorizationScreen = ({ route, navigation }) => {
         </TouchableOpacity>
         <View style={styles.headerTextContainer}>
               <Text variant="h2" style={{ textAlign: 'center', width: '100%', color: '#5b7f67' }}>
-                {language === 'ar' ? t(`surah_${surahNumber}`) : (cleanSurahName(surah?.name) || 'Surah')}
+                {language === 'ar' ? t(`surah_${surahNumber}`) : (getDisplaySurahName(surahNumber) || 'Surah')}
               </Text>
           <Text variant="body1" style={{ textAlign: 'center', width: '100%', color: '#F5E6C8' }}>
                 {flashcards && flashcards[currentAyahIndex]?.type === 'ayah'
@@ -984,7 +1255,7 @@ const MemorizationScreen = ({ route, navigation }) => {
                     : [FONTS.h2.getFont(language), { color: '#5b7f67', textAlign: 'center', marginBottom: 8 }],
                 ]}
               >
-                {language === 'ar' ? t(`surah_${surahNumber}`) : cleanSurahName(surah?.name || 'Al-Fatihah')}
+                {language === 'ar' ? t(`surah_${surahNumber}`) : getDisplaySurahName(surahNumber)}
               </Text>
             </View>
             */}
@@ -1559,14 +1830,16 @@ const MemorizationScreen = ({ route, navigation }) => {
                 keyboardType="numeric"
                 onSubmitEditing={handleSearchSubmit}
               />
-              <TouchableOpacity style={styles.searchButton} onPress={handleSearchSubmit}>
+              <TouchableOpacity style={[styles.searchButton, { backgroundColor: '#5b7f67' }]} onPress={handleSearchSubmit}>
                 <Image 
                   source={require('../assets/app_icons/search.png')} 
-                  style={{ width: 20, height: 20, tintColor: COLORS.white }}
+                  style={{ width: 20, height: 20, tintColor: '#F5E6C8' }}
                   resizeMode="contain"
                 />
               </TouchableOpacity>
             </View>
+            
+
             
                 <View style={{ marginBottom: 8 }}>
                   <TouchableOpacity style={[styles.surahNavButton, { backgroundColor: '#5b7f67' }]} onPress={() => ayahListRef.current?.scrollTo({ y: 0, animated: true })}>
@@ -1588,7 +1861,8 @@ const MemorizationScreen = ({ route, navigation }) => {
                         
                         // Load data to get memorization progress for the target surah
                         const data = await loadData();
-                        const targetSurahData = data.memorizedAyahs[prevSurah.name];
+                        const targetSurahName = getOriginalSurahName(prevSurah.surah);
+                        const targetSurahData = data.memorizedAyahs[targetSurahName];
                         
                         let resumeFromIndex = 0;
                         console.log('[Navigation Modal - Prev] Target surah data:', targetSurahData);
@@ -1602,7 +1876,7 @@ const MemorizationScreen = ({ route, navigation }) => {
                         
                         // Save current position before navigating
                         try {
-                          await saveCurrentPosition(surah?.name || 'Al-Fatihah', currentAyahIndex);
+                          await saveCurrentPosition(surahName, currentAyahIndex);
                         } catch (error) {
                           console.error('[MemorizationScreen] Error saving position before navigation:', error);
                         }
@@ -1614,7 +1888,7 @@ const MemorizationScreen = ({ route, navigation }) => {
                       }}
                     >
                       <Text variant="body1" style={[styles.surahNavButtonText, { color: '#F5E6C8' }, language === 'ar' && { textAlign: 'center' }] }>
-                        {language === 'ar' ? `${t(`surah_${prevSurah.surah}`)} .${toArabicNumber(prevSurah.surah)}` : `← ${prevSurah.surah}. ${cleanSurahName(prevSurah.name)}`}
+                        {language === 'ar' ? `${t(`surah_${prevSurah.surah}`)} .${toArabicNumber(prevSurah.surah)}` : `← ${prevSurah.surah}. ${getDisplaySurahName(prevSurah.surah)}`}
                       </Text>
                     </TouchableOpacity>
                   )}
@@ -1631,8 +1905,47 @@ const MemorizationScreen = ({ route, navigation }) => {
                     ]}
                     onPress={() => handleGoToAyah(originalIndex)}
                   >
-                        <View style={{ flexDirection: language === 'ar' ? 'row-reverse' : 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
-                          <View style={{ flex: 1, alignItems: 'center' }}>
+                        <View style={{ flexDirection: language === 'ar' ? 'row-reverse' : 'row', alignItems: 'center', width: '100%', position: 'relative' }}>
+                          {/* Note icon on the left - only for actual ayahs */}
+                          {ayah.type === 'ayah' && (
+                            <TouchableOpacity
+                              onPress={() => handleNoteIconPress(originalIndex, ayahNumber)}
+                              style={{ 
+                                position: 'absolute',
+                                left: language === 'ar' ? 'auto' : 8,
+                                right: language === 'ar' ? 8 : 'auto',
+                                zIndex: 1,
+                                padding: 4
+                              }}
+                            >
+                              <Image 
+                                source={require('../assets/app_icons/note.png')} 
+                                style={{ 
+                                  width: 20, 
+                                  height: 20, 
+                                  tintColor: 'rgba(165,115,36,0.6)'
+                                }}
+                                resizeMode="contain"
+                              />
+                              {/* Note indicator dot */}
+                              {ayahNotes[ayahNumber] && (
+                                <View style={{
+                                  position: 'absolute',
+                                  top: -2,
+                                  right: -2,
+                                  width: 8,
+                                  height: 8,
+                                  borderRadius: 4,
+                                  backgroundColor: '#5b7f67',
+                                  borderWidth: 1,
+                                  borderColor: '#F5E6C8'
+                                }} />
+                              )}
+                            </TouchableOpacity>
+                          )}
+                          
+                          {/* Centered ayah label - takes full width for proper centering */}
+                          <View style={{ flex: 1, alignItems: 'center', width: '100%' }}>
                             <Text variant="body1" style={[
                               styles.ayahItemText,
                               currentAyahIndex === originalIndex && { 
@@ -1645,10 +1958,29 @@ const MemorizationScreen = ({ route, navigation }) => {
                               {ayah.type === 'istiadhah' ? (language === 'ar' ? t('istiadhah') : "Isti'adhah") :
                                ayah.type === 'bismillah' ? t('bismillah') :
                                `${t('ayah')} ${toArabicNumber(ayahNumber)}`}
-                    </Text>
+                            </Text>
+                            
+                            {/* Current ayah indicator - underline under the label */}
+                            {currentAyahIndex === originalIndex && (
+                              <View style={{
+                                width: '30%',
+                                height: 2,
+                                backgroundColor: '#5b7f67',
+                                marginTop: 4,
+                                borderRadius: 1,
+                                alignSelf: 'center',
+                              }} />
+                            )}
                           </View>
-                          {ayah.type === 'ayah' && memorizationData?.memorizedAyahs[surah?.name]?.completedAyaat?.includes(ayahNumber) && (
-                            <View style={styles.ayahDot} />
+                          
+                          {/* Completion dot on the right - absolute positioned */}
+                          {ayah.type === 'ayah' && memorizationData?.memorizedAyahs[surahName]?.completedAyaat?.includes(ayahNumber) && (
+                            <View style={[styles.ayahDot, { 
+                              position: 'absolute',
+                              right: language === 'ar' ? 'auto' : 8,
+                              left: language === 'ar' ? 8 : 'auto',
+                              zIndex: 1
+                            }]} />
                           )}
                         </View>
                   </TouchableOpacity>
@@ -1663,7 +1995,8 @@ const MemorizationScreen = ({ route, navigation }) => {
                         
                         // Load data to get memorization progress for the target surah
                         const data = await loadData();
-                        const targetSurahData = data.memorizedAyahs[nextSurah.name];
+                        const targetSurahName = getOriginalSurahName(nextSurah.surah);
+                        const targetSurahData = data.memorizedAyahs[targetSurahName];
                         
                         let resumeFromIndex = 0;
                         console.log('[Navigation Modal - Next] Target surah data:', targetSurahData);
@@ -1677,7 +2010,7 @@ const MemorizationScreen = ({ route, navigation }) => {
                         
                         // Save current position before navigating
                         try {
-                          await saveCurrentPosition(surah?.name || 'Al-Fatihah', currentAyahIndex);
+                          await saveCurrentPosition(surahName, currentAyahIndex);
                         } catch (error) {
                           console.error('[MemorizationScreen] Error saving position before navigation:', error);
                         }
@@ -1689,7 +2022,7 @@ const MemorizationScreen = ({ route, navigation }) => {
                       }}
                     >
                       <Text variant="body1" style={[styles.surahNavButtonText, { color: '#F5E6C8' }, language === 'ar' && { textAlign: 'center' }] }>
-                        {language === 'ar' ? `${t(`surah_${nextSurah.surah}`)} .${toArabicNumber(nextSurah.surah)}` : `${nextSurah.surah}. ${cleanSurahName(nextSurah.name)} →`}
+                        {language === 'ar' ? `${t(`surah_${nextSurah.surah}`)} .${toArabicNumber(nextSurah.surah)}` : `${nextSurah.surah}. ${getDisplaySurahName(nextSurah.surah)} →`}
                       </Text>
                     </TouchableOpacity>
                   )}
@@ -1699,6 +2032,163 @@ const MemorizationScreen = ({ route, navigation }) => {
               <Image 
                 source={require('../assets/app_icons/down-up.png')} 
                 style={{ width: 24, height: 24, tintColor: 'rgba(64, 64, 64, 0.9)' }}
+                resizeMode="contain"
+              />
+            </TouchableOpacity>
+            
+            {/* Note Input Section */}
+            {showNoteInput && currentNoteAyah && (
+              <View style={styles.noteInputContainer}>
+                <Text style={styles.noteInputLabel}>
+                  {language === 'ar' ? `[${surahNumber}: ${currentNoteAyah.number}] ملاحظة` : `[${surahNumber}: ${currentNoteAyah.number}] Note`}
+                </Text>
+                <TextInput
+                  style={styles.noteInput}
+                  placeholder={language === 'ar' ? 'اكتب ملاحظتك هنا...' : 'Write your note here...'}
+                  placeholderTextColor="#999"
+                  value={noteText}
+                  onChangeText={handleNoteTextChange}
+                  multiline
+                  numberOfLines={4}
+                />
+                <View style={styles.noteButtonsContainer}>
+                  <TouchableOpacity
+                    style={[styles.noteButton, styles.noteCancelButton]}
+                    onPress={handleNoteClose}
+                  >
+                    <Text style={styles.noteButtonText}>
+                      {language === 'ar' ? 'إلغاء' : 'Cancel'}
+                    </Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[styles.noteButton, styles.noteSaveButton]}
+                    onPress={handleNoteSave}
+                  >
+                    <Text style={[
+                      styles.noteButtonText,
+                      noteSaved && { color: '#F5E6C8' }
+                    ]}>
+                      {noteSaved ? (language === 'ar' ? 'تم الحفظ' : 'Saved') : (language === 'ar' ? 'حفظ' : 'Save')}
+                    </Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[styles.noteButton, styles.noteShareButton]}
+                    onPress={() => {
+                      // Show share options
+                      Alert.alert(
+                        language === 'ar' ? 'خيارات المشاركة' : 'Share Options',
+                        language === 'ar' ? 'اختر كيف تريد مشاركة هذه الملاحظة' : 'Choose how you want to share this note',
+                        [
+                          {
+                            text: language === 'ar' ? 'إلغاء' : 'Cancel',
+                            style: 'cancel',
+                          },
+                          {
+                            text: language === 'ar' ? 'نشر على لوحة الملاحظات' : 'Post on Notes Board',
+                            onPress: async () => {
+                              try {
+                                // Save note to Notes Board
+                                const noteKey = `note_${surahNumber}_${currentNoteAyah.number}`;
+                                const noteContent = noteText.trim();
+                                
+                                if (noteContent) {
+                                  // Save to Notes Board storage
+                                  const notesBoardKey = 'notes_board';
+                                  const existingNotes = await AsyncStorage.getItem(notesBoardKey);
+                                  const notesArray = existingNotes ? JSON.parse(existingNotes) : [];
+                                  
+                                  const newNote = {
+                                    id: Date.now().toString(),
+                                    surahNumber: surahNumber,
+                                    ayahNumber: currentNoteAyah.number,
+                                    content: noteContent,
+                                    timestamp: new Date().toISOString(),
+                                    author: 'User', // This can be enhanced later with user authentication
+                                    surahName: getDisplaySurahName(surahNumber)
+                                  };
+                                  
+                                  notesArray.push(newNote);
+                                  await AsyncStorage.setItem(notesBoardKey, JSON.stringify(notesArray));
+                                  
+                                  Alert.alert(
+                                    language === 'ar' ? 'تم النشر' : 'Posted!',
+                                    language === 'ar' ? 'تم نشر ملاحظتك على لوحة الملاحظات' : 'Your note has been posted to the Notes Board!'
+                                  );
+                                } else {
+                                  Alert.alert(
+                                    language === 'ar' ? 'خطأ' : 'Error',
+                                    language === 'ar' ? 'لا يمكن نشر ملاحظة فارغة' : 'Cannot post an empty note'
+                                  );
+                                }
+                              } catch (error) {
+                                console.error('[MemorizationScreen] Error posting to Notes Board:', error);
+                                Alert.alert(
+                                  language === 'ar' ? 'خطأ' : 'Error',
+                                  language === 'ar' ? 'فشل في نشر الملاحظة' : 'Failed to post note'
+                                );
+                              }
+                            },
+                          },
+                          {
+                            text: language === 'ar' ? 'مشاركة مع الأصدقاء' : 'Share with Friends',
+                            onPress: () => {
+                              // Share with friends functionality
+                              console.log('Sharing with friends for ayah:', currentNoteAyah.number);
+                              // This can be implemented with native sharing
+                            },
+                          },
+                        ]
+                      );
+                    }}
+                  >
+                    <Text style={styles.noteButtonText}>
+                      {language === 'ar' ? 'مشاركة' : 'Share'}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            )}
+            
+            {/* Go to Current Ayah Button */}
+            <TouchableOpacity 
+              style={{
+                backgroundColor: '#5b7f67',
+                paddingHorizontal: 16,
+                paddingVertical: 12,
+                borderRadius: 8,
+                marginTop: 16,
+                width: '90%',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexDirection: 'row',
+              }}
+              onPress={() => {
+                if (ayahListRef.current) {
+                  const currentAyah = flashcards[currentAyahIndex];
+                  if (currentAyah) {
+                    const ayahIndex = getFilteredAyaat().findIndex(ayah => 
+                      flashcards.indexOf(ayah) === currentAyahIndex
+                    );
+                    
+                    if (ayahIndex !== -1) {
+                      const itemHeight = 60;
+                      const scrollPosition = Math.max(0, (ayahIndex * itemHeight) - 100);
+                      
+                      ayahListRef.current.scrollTo({
+                        y: scrollPosition,
+                        animated: true
+                      });
+                    }
+                  }
+                }
+              }}
+            >
+              <Text style={{ color: '#F5E6C8', fontWeight: 'bold', marginRight: 8 }}>
+                {language === 'ar' ? 'اذهب للآية الحالية' : 'Go to Current Ayah'}
+              </Text>
+              <Image 
+                source={require('../assets/app_icons/navigation.png')} 
+                style={{ width: 16, height: 16, tintColor: '#F5E6C8' }}
                 resizeMode="contain"
               />
             </TouchableOpacity>
@@ -1813,7 +2303,7 @@ const MemorizationScreen = ({ route, navigation }) => {
       <RecordingsModal
         visible={showFullSurahRecordingsModal}
         onClose={() => setShowFullSurahRecordingsModal(false)}
-        surahName={surah?.name || 'Al-Fatihah'}
+        surahName={surahName}
         ayahNumber="full-surah"
         onRecordingChange={() => {
           // Refresh recordings when they change
@@ -1978,7 +2468,7 @@ const MemorizationScreen = ({ route, navigation }) => {
           <BookmarkModal
             visible={showBookmarkModal}
             onClose={handleBookmarkModalClose}
-            surahName={surah?.name || 'Al-Fatihah'}
+            surahName={surahName}
             surahNumber={surahNumber}
             ayahNumber={flashcards && flashcards[currentAyahIndex]?.type === 'ayah' ? flashcards.slice(0, currentAyahIndex + 1).filter(a => a.type === 'ayah').length : null}
             onBookmarkChange={handleBookmarkChange}
@@ -1988,7 +2478,7 @@ const MemorizationScreen = ({ route, navigation }) => {
           <RecordingsModal
             visible={showRecordingsModal}
             onClose={handleRecordingsModalClose}
-            surahName={surah?.name || 'Al-Fatihah'}
+            surahName={surahName}
             ayahNumber={flashcards && flashcards[currentAyahIndex]?.type === 'ayah' ? flashcards.slice(0, currentAyahIndex + 1).filter(a => a.type === 'ayah').length : null}
             onRecordingChange={checkRecordings}
           />
@@ -2101,6 +2591,8 @@ const MemorizationScreen = ({ route, navigation }) => {
               </TouchableOpacity>
             </TouchableOpacity>
           </Modal>
+
+
     </SafeAreaView>
       </ImageBackground>
     </View>
@@ -2273,14 +2765,18 @@ const styles = StyleSheet.create({
   },
   searchInput: {
     flex: 1,
-    padding: SIZES.small,
+    padding: SIZES.small / 3,
     fontSize: 16,
+    height: 28,
   },
   searchButton: {
     backgroundColor: COLORS.primary,
     borderRadius: SIZES.base,
-    padding: SIZES.small,
+    padding: SIZES.small / 3,
     marginLeft: SIZES.small,
+    height: 28,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   audioSection: {
     marginVertical: SIZES.medium,
@@ -2383,6 +2879,67 @@ const styles = StyleSheet.create({
     height: 6,
     borderRadius: 3,
     backgroundColor: '#5b7f67',
+  },
+  noteInputContainer: {
+    backgroundColor: '#F5E6C8',
+    borderWidth: 2,
+    borderColor: '#5b7f67',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+    marginHorizontal: 4,
+    width: '95%',
+    alignSelf: 'center',
+  },
+  noteInputLabel: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#5b7f67',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  noteInput: {
+    borderWidth: 1,
+    borderColor: '#5b7f67',
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 16,
+    minHeight: 80,
+    textAlignVertical: 'top',
+    backgroundColor: '#FFFFFF',
+    color: '#333',
+    marginBottom: 12,
+  },
+  noteButtonsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 8,
+  },
+  noteButton: {
+    flex: 1,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  noteCancelButton: {
+    backgroundColor: '#CCCCCC',
+  },
+  noteSaveButton: {
+    backgroundColor: '#5b7f67',
+  },
+  noteShareButton: {
+    backgroundColor: 'rgba(165,115,36,0.8)',
+  },
+  noteButtonText: {
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+    fontSize: 14,
   },
   headerButtons: {
     flexDirection: 'column',

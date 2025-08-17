@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useMemo } from 'react';
+import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import {
   View,
   Text as RNText,
@@ -13,6 +13,8 @@ import {
   StyleSheet,
   Animated,
   Platform,
+  Easing,
+  Dimensions,
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useLanguage } from '../utils/languageContext';
@@ -253,6 +255,7 @@ const SurahListScreen = ({ navigation, route }) => {
   const [activeTab, setActiveTab] = useState(0);
   const [juzFilter, setJuzFilter] = useState({ isActive: false });
   const [previousJuzFilter, setPreviousJuzFilter] = useState({ isActive: false }); // Store previous Juz state
+  const [isSearchBarHidden, setIsSearchBarHidden] = useState(false);
 
   // Check if we're in Juz mode - now using state instead of route params
   const isJuzMode = juzFilter.isActive;
@@ -285,21 +288,19 @@ const SurahListScreen = ({ navigation, route }) => {
 
   // Function to animate tabs when selection changes
   const animateTabs = (selectedTabId) => {
+    // Normal tab animations - like standard iOS tabs
     const animations = tabs.map((tab, index) => {
       const isSelected = tab.id === selectedTabId;
-      const distance = Math.abs(index - selectedTabId);
-      const maxDistance = Math.max(selectedTabId, tabs.length - 1 - selectedTabId);
-      
-      // Calculate animation value based on distance from selected tab
-      const animationValue = isSelected ? 1 : Math.max(0, 1 - (distance / maxDistance) * 0.4);
       
       return Animated.timing(tabAnimations[index], {
-        toValue: animationValue,
-        duration: 500,
-        useNativeDriver: false,
+        toValue: isSelected ? 1 : 0.7, // Normal: selected = 1, others = 0.7
+        duration: 200, // Standard iOS tab animation duration
+        useNativeDriver: true,
+        easing: Easing.out(Easing.cubic),
       });
     });
     
+    // Run tab animations
     Animated.parallel(animations).start();
   };
 
@@ -313,14 +314,89 @@ const SurahListScreen = ({ navigation, route }) => {
 
   // Animated values for tab animations
   const tabAnimations = useRef(tabs.map(() => new Animated.Value(0))).current;
+  
+  // Add slide animation for content
+  const contentSlideAnimation = useRef(new Animated.Value(0)).current;
 
   // Initialize animations on mount
   useEffect(() => {
     animateTabs(activeTab);
   }, []);
+  
+  // Add swipe functionality for tabs
+  const tabSwipeResponder = useRef(null);
+  const pageSwipeResponder = useRef(null);
+  
+  useEffect(() => {
+    // PanResponder for tab bar area - slide finger across tabs
+    tabSwipeResponder.current = PanResponder.create({
+      onStartShouldSetPanResponder: () => false, // Never capture on initial touch
+      onMoveShouldSetPanResponder: (evt, gestureState) => {
+        // Only respond to horizontal swipes on tab bar
+        return Math.abs(gestureState.dx) > Math.abs(gestureState.dy) && Math.abs(gestureState.dx) > 10;
+      },
+      onPanResponderGrant: (evt) => {
+        // Don't change selection on initial touch - let tab buttons handle it
+      },
+      onPanResponderMove: (evt, gestureState) => {
+        // Slide finger across tabs to change
+        const screenWidth = Dimensions.get('window').width;
+        const tabWidth = screenWidth / tabs.length;
+        const fingerX = evt.nativeEvent.pageX;
+        const newTabIndex = Math.floor(fingerX / tabWidth);
+        const clampedTabIndex = Math.max(0, Math.min(newTabIndex, tabs.length - 1));
+        
+        if (clampedTabIndex !== activeTab) {
+          console.log('Switching to tab:', clampedTabIndex);
+          setActiveTab(clampedTabIndex);
+          animateTabs(clampedTabIndex);
+        }
+      },
+      onPanResponderRelease: () => {
+        // Tab selection is already updated during move
+      }
+    });
+    
+    // PanResponder for above tab area - page swiping like iPhone
+    pageSwipeResponder.current = PanResponder.create({
+      onStartShouldSetPanResponder: () => false, // Never capture on initial touch
+      onMoveShouldSetPanResponder: (evt, gestureState) => {
+        // Only respond to horizontal swipes above tab bar
+        return Math.abs(gestureState.dx) > Math.abs(gestureState.dy) && Math.abs(gestureState.dx) > 50;
+      },
+      onPanResponderGrant: (evt) => {
+        // Don't change selection on initial touch
+      },
+      onPanResponderMove: (evt, gestureState) => {
+        // Page swiping - one page at a time
+        const screenWidth = Dimensions.get('window').width;
+        const swipeThreshold = screenWidth * 0.3; // 30% of screen width
+        
+        if (Math.abs(gestureState.dx) > swipeThreshold) {
+          if (gestureState.dx > 0 && activeTab > 0) {
+            // Swipe right - go to previous tab
+            const newTab = activeTab - 1;
+            setActiveTab(newTab);
+            animateTabs(newTab);
+          } else if (gestureState.dx < 0 && activeTab < tabs.length - 1) {
+            // Swipe left - go to next tab
+            const newTab = activeTab + 1;
+            setActiveTab(newTab);
+            animateTabs(newTab);
+          }
+        }
+      },
+      onPanResponderRelease: () => {
+        // Tab selection is already updated during move
+      }
+    });
+  }, [activeTab, tabs.length]);
 
   const renderTabBar = () => (
-    <View style={styles.tabBar}>
+    <View 
+      style={styles.tabBar}
+      {...(tabSwipeResponder.current?.panHandlers || {})}
+    >
       {tabs.map((tab, index) => {
         const isSelected = activeTab === tab.id;
         const animationValue = tabAnimations[index];
@@ -337,19 +413,13 @@ const SurahListScreen = ({ navigation, route }) => {
                   {
                     scale: animationValue.interpolate({
                       inputRange: [0, 1],
-                      outputRange: [0.7, 1.15],
-                    })
-                  },
-                  {
-                    translateX: animationValue.interpolate({
-                      inputRange: [0, 1],
-                      outputRange: [isSelected ? 0 : (index < activeTab ? -18 : 18), 0],
+                      outputRange: [0.7, 1.0],
                     })
                   }
                 ],
                 opacity: animationValue.interpolate({
                   inputRange: [0, 1],
-                  outputRange: [0.5, 1],
+                  outputRange: [0.7, 1],
                 })
               }
             ]}
@@ -362,34 +432,26 @@ const SurahListScreen = ({ navigation, route }) => {
                   paddingHorizontal: SIZES.extraSmall,
                 }
               ]}
+              activeOpacity={0.7}
               onPress={() => {
+                console.log('Tab pressed:', tab.id, 'Current activeTab:', activeTab);
                 // haptic feedback removed;
+                
+                // Immediately switch to the selected tab
+                setActiveTab(tab.id);
+                animateTabs(tab.id);
                 
                 if (isJuzMode) {
                   // Handle special actions when in Juz mode
                   if (tab.id === 0) {
                     // Tapping "Surah" acts like "All Surahs" button
                     clearJuzFilter();
-                    animateTabs(0);
                   } else if (tab.id === 1) {
                     // Tapping "Juz" goes back to Juz selection
                     clearJuzFilter();
-                    setActiveTab(1);
-                    animateTabs(1);
                   } else if (tab.id === 2) {
                     // Tapping "Categories" goes to categories
                     clearJuzFilter();
-                    setActiveTab(2);
-                    animateTabs(2);
-                  }
-                } else {
-                  // Normal tab switching or return to previous Juz
-                  if (tab.id === 0 && activeTab === 0 && previousJuzFilter.isActive) {
-                    // Tapping Surah tab again when already on it - return to previous Juz
-                    returnToPreviousJuz();
-                  } else {
-                    setActiveTab(tab.id);
-                    animateTabs(tab.id);
                   }
                 }
               }}
@@ -412,11 +474,23 @@ const SurahListScreen = ({ navigation, route }) => {
   const renderTabContent = () => {
     switch (activeTab) {
       case 0:
-        return <AllSurahsTab navigation={navigation} route={route} searchText={searchText} isJuzMode={isJuzMode} juzData={juzData} />;
+        return <AllSurahsTab 
+          navigation={navigation} 
+          route={route} 
+          searchText={searchText} 
+          isJuzMode={isJuzMode} 
+          juzData={juzData}
+          isSearchBarHidden={isSearchBarHidden}
+          setIsSearchBarHidden={setIsSearchBarHidden}
+        />;
       case 1:
         return <JuzWheelTab navigation={navigation} setJuzFilter={setJuzFilter} setPreviousJuzFilter={setPreviousJuzFilter} setActiveTab={setActiveTab} setSearchText={setSearchText} language={language} />;
       case 2:
-        return <ThemesTab navigation={navigation} />;
+        return <ThemesTab 
+          navigation={navigation} 
+          isSearchBarHidden={isSearchBarHidden}
+          setIsSearchBarHidden={setIsSearchBarHidden}
+        />;
               case 3:
           return <ListsTab navigation={navigation} route={route} searchText={searchText} />;
       default:
@@ -431,9 +505,12 @@ const SurahListScreen = ({ navigation, route }) => {
         style={styles.backgroundImage}
         imageStyle={{ opacity: 0.2 }}
       >
-        <SafeAreaView style={[styles.container, { backgroundColor: 'transparent' }]}>
+        <View style={[styles.container, { backgroundColor: 'transparent' }]}>
           {/* Header */}
-          <View style={styles.header}>
+          <View 
+            style={styles.header}
+            {...(pageSwipeResponder.current?.panHandlers || {})}
+          >
             <View style={styles.headerBlurContainer}>
               <View style={styles.headerTextContainer}>
                 {isJuzMode ? (
@@ -482,15 +559,57 @@ const SurahListScreen = ({ navigation, route }) => {
                   </>
                 )}
               </View>
+              
+              {/* Search icon in header when search bar is hidden */}
+              {activeTab === 0 && isSearchBarHidden && (
+                <TouchableOpacity 
+                  style={{ 
+                    position: 'absolute',
+                    top: 70,
+                    right: language === 'ar' ? 20 : 20,
+                    zIndex: 1000
+                  }}
+                  onPress={() => setIsSearchBarHidden(false)}
+                >
+                  <Image 
+                    source={require('../assets/app_icons/search.png')} 
+                    style={{ width: 24, height: 24, tintColor: 'rgba(165,115,36,0.8)' }}
+                    resizeMode="contain"
+                  />
+                </TouchableOpacity>
+              )}
+              
+              {/* Search icon in header when search bar is hidden for Topics tab */}
+              {activeTab === 2 && isSearchBarHidden && (
+                <TouchableOpacity 
+                  style={{ 
+                    position: 'absolute',
+                    top: 70,
+                    right: language === 'ar' ? 20 : 20,
+                    zIndex: 9999
+                  }}
+                  onPress={() => setIsSearchBarHidden(false)}
+                >
+                  <Image 
+                    source={require('../assets/app_icons/search.png')} 
+                    style={{ width: 24, height: 24, tintColor: 'rgba(165,115,36,0.8)' }}
+                    resizeMode="contain"
+                  />
+                </TouchableOpacity>
+              )}
             </View>
           </View>
 
           {/* Search bar - only show for All Surahs tab */}
-          {activeTab === 0 && (
+          {activeTab === 0 && !isSearchBarHidden && (
             <View style={[styles.searchContainer, { 
-              top: isJuzMode ? (language === 'ar' ? 180 : 160) : (language === 'ar' ? 160 : 140), // Brought down search box in Surah tab
+              position: 'absolute',
+              top: isJuzMode ? (language === 'ar' ? 180 : 160) : (language === 'ar' ? 157 : 137), // Brought down search box in Surah tab
+              left: SIZES.medium,
+              right: SIZES.medium,
+              zIndex: 10,
               flexDirection: isJuzMode ? 'row' : 'column',
-              alignItems: isJuzMode ? 'center' : 'stretch'
+              alignItems: isJuzMode ? 'center' : 'stretch',
             }]}>
               <View style={[styles.searchInputContainer, { 
                 backgroundColor: isSearchFocused ? 'rgba(245, 230, 200, 0.2)' : 'rgba(245, 230, 200, 0.15)', // Made even more transparent
@@ -498,11 +617,6 @@ const SurahListScreen = ({ navigation, route }) => {
                 marginRight: isJuzMode ? SIZES.small : 0,
                 ...(Platform.OS === 'android' && { paddingVertical: SIZES.small / 4 })
               }]}>
-                <Image 
-                  source={require('../assets/app_icons/search.png')} 
-                  style={{ width: 20, height: 20, tintColor: 'rgba(165,115,36,0.8)', marginRight: SIZES.small }}
-                  resizeMode="contain"
-                />
                 <TextInput
                   style={[styles.searchInput, { 
                     fontFamily: 'KFGQPC Uthman Taha Naskh', 
@@ -524,14 +638,31 @@ const SurahListScreen = ({ navigation, route }) => {
                   onFocus={() => setIsSearchFocused(true)}
                   onBlur={() => setIsSearchFocused(false)}
                 />
+                
+                {/* Search icon on the right side */}
+                <Image 
+                  source={require('../assets/app_icons/search.png')} 
+                  style={{ 
+                    width: 20, 
+                    height: 20, 
+                    tintColor: 'rgba(165,115,36,0.8)', 
+                    marginLeft: SIZES.small,
+                    position: 'absolute',
+                    right: 12
+                  }}
+                  resizeMode="contain"
+                />
+                
                 {searchText.length > 0 && (
                   <TouchableOpacity onPress={() => setSearchText('')} style={styles.clearButton}>
                     <Ionicons name="close-circle" size={20} color="#666" />
                   </TouchableOpacity>
-                )}
-              </View>
-              
-              {/* Show "All Surahs" button when in Juz mode */}
+                                  )}
+                </View>
+                
+
+                
+                {/* Show "All Surahs" button when in Juz mode */}
               {isJuzMode && (
                 <TouchableOpacity 
                   style={styles.allSurahsButton}
@@ -621,14 +752,14 @@ const SurahListScreen = ({ navigation, route }) => {
               />
             </TouchableOpacity>
           </View>
-        </SafeAreaView>
+        </View>
       </ImageBackground>
     </View>
   );
 };
 
 // Phase 1: All Surahs Tab Component
-const AllSurahsTab = ({ navigation, route, searchText, isJuzMode, juzData }) => {
+const AllSurahsTab = ({ navigation, route, searchText, isJuzMode, juzData, isSearchBarHidden, setIsSearchBarHidden }) => {
   const { language, t } = useLanguage();
   
   // Helper to convert numbers to Arabic-Indic if needed
@@ -648,6 +779,9 @@ const AllSurahsTab = ({ navigation, route, searchText, isJuzMode, juzData }) => 
   const [selectedSurahId, setSelectedSurahId] = useState(null);
   const [contentHeight, setContentHeight] = useState(1);
   const [visibleHeight, setVisibleHeight] = useState(1);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+
   const flatListRef = useRef(null);
   const scrollBarRef = useRef(null);
   const scrollY = useRef(new Animated.Value(0)).current;
@@ -889,26 +1023,109 @@ const AllSurahsTab = ({ navigation, route, searchText, isJuzMode, juzData }) => 
   };
 
   // Ensure loadScreenData is defined at the top level
-    const loadScreenData = async () => {
+  // Helper function to find the best matching storage key for a surah
+  const findBestStorageKey = useCallback((surahId, surahName, cleanedName) => {
+    const storageKeys = Object.keys(data.memorizedAyahs);
+    
+    // Get the original surah name from ORIGINAL_SURAH_NAMES
+    const originalName = ORIGINAL_SURAH_NAMES[surahId];
+    
+    // Create comprehensive list of possible storage keys
+    const possibleKeys = [
+      // Original names from ORIGINAL_SURAH_NAMES (what SurahListScreen expects)
+      originalName, // "Al-Baqarah"
+      `Surah ${originalName}`, // "Surah Al-Baqarah"
+      
+      // Names from getAllSurahs() (what MemorizationScreen might save)
+      surahName, // "2 Al-Baqara"
+      cleanedName, // "Al-Baqara"
+      `Surah ${cleanedName}`, // "Surah Al-Baqara"
+      `Surah ${surahName}`, // "Surah 2 Al-Baqara"
+      
+      // Alternative variations
+      surahId.toString(), // "2"
+      `Surah ${surahId}`, // "Surah 2"
+      
+      // Remove prefixes
+      cleanedName.replace(/^Surah\s+/i, ''),
+      originalName.replace(/^Surah\s+/i, ''),
+      
+      // Handle common variations
+      originalName.replace(/^Al-/, ''), // "Baqarah" instead of "Al-Baqarah"
+      cleanedName.replace(/^Al-/, ''), // "Baqara" instead of "Al-Baqara"
+      
+      // Handle numbers
+      `${surahId} ${originalName}`, // "2 Al-Baqarah"
+      `${surahId} ${cleanedName}`, // "2 Al-Baqara"
+    ];
+    
+    // Find the first matching key
+    const matchingKey = possibleKeys.find(key => storageKeys.includes(key));
+    
+    if (surahId === 2 || surahId === 3) {
+      console.log(`[SurahListScreen] Finding storage key for Surah ${surahId}:`, {
+        surahName,
+        cleanedName,
+        originalName,
+        possibleKeys,
+        storageKeys: storageKeys.filter(key => 
+          key.toLowerCase().includes(cleanedName.toLowerCase()) || 
+          key.toLowerCase().includes(originalName.toLowerCase()) ||
+          key.toLowerCase().includes(surahId.toString())
+        ),
+        matchingKey
+      });
+    }
+    
+    return matchingKey;
+  }, [data.memorizedAyahs]);
+
+  const loadScreenData = async () => {
+    try {
+      console.log('[SurahListScreen] Loading screen data...');
       const loadedData = await loadData();
+      console.log('[SurahListScreen] Loaded data:', loadedData.memorizedAyahs);
+      console.log('[SurahListScreen] All storage keys:', Object.keys(loadedData.memorizedAyahs));
+      console.log('[SurahListScreen] Setting new data state...');
       setData(loadedData);
-    };
+      setRefreshKey(prev => prev + 1); // Force re-render
+      console.log('[SurahListScreen] Data state updated, refresh key incremented');
+    } catch (error) {
+      console.error('[SurahListScreen] Error loading data:', error);
+    }
+  };
 
   useEffect(() => {
     loadScreenData();
 
     // Refresh data when screen comes into focus
-    const unsubscribe = navigation.addListener('focus', loadScreenData);
-    return unsubscribe;
+    const unsubscribeFocus = navigation.addListener('focus', () => {
+      console.log('[SurahListScreen] Screen focused, refreshing data...');
+      loadScreenData();
+    });
+
+    // Also refresh when screen becomes visible (for better reliability)
+    const unsubscribeBlur = navigation.addListener('blur', () => {
+      console.log('[SurahListScreen] Screen blurred');
+    });
+
+    return () => {
+      unsubscribeFocus();
+      unsubscribeBlur();
+    };
   }, [navigation]);
 
   // Handle refresh parameter from navigation and clear it after use
   useEffect(() => {
     if (route.params?.refresh) {
+      console.log('[SurahListScreen] Refresh parameter detected, refreshing data...');
       loadScreenData();
-      navigation.setParams({ refresh: false });
+      // Clear the parameter after a short delay to ensure data is loaded
+      setTimeout(() => {
+        navigation.setParams({ refresh: undefined });
+      }, 100);
     }
-  }, [route.params?.refresh]);
+  }, [route.params?.refresh, navigation]);
 
   // Check if we're coming from MemorizationScreen with current surah info
   useEffect(() => {
@@ -950,25 +1167,51 @@ const AllSurahsTab = ({ navigation, route, searchText, isJuzMode, juzData }) => 
 
   // Use offline Quran data for surah list - memoized to prevent re-creation on every render
   const surahs = useMemo(() => {
-    let allSurahs = getAllSurahs().map(({ surah, name, ayaat }) => {
-      const cleanedName = name.replace(/^\d+\s+/, ''); // Remove the number prefix from the name
-      return {
-    id: surah,
-        name: cleanedName,
-        originalName: name, // Keep the original name for progress lookup
-    totalAyahs: surah === 1 ? 7 : ayaat.length,
-    memorizedAyahs: Math.min(
-      data.memorizedAyahs[name]?.memorized || data.memorizedAyahs[cleanedName]?.memorized || 0,
-      surah === 1 ? 7 : ayaat.length
-    ),
-      };
-    });
+    console.log('[SurahListScreen] Recalculating surahs, memorizedAyahs:', data.memorizedAyahs);
+    
+          let allSurahs = getAllSurahs().map(({ surah, name, ayaat }) => {
+        const cleanedName = name.replace(/^\d+\s+/, ''); // Remove the number prefix from the name
+        
+        // Use the ORIGINAL_SURAH_NAMES for consistent storage key matching
+        const originalName = ORIGINAL_SURAH_NAMES[surah];
+        
+        // Use the helper function to find the best matching storage key
+        const storageKey = findBestStorageKey(surah, name, originalName);
+        const memorizedCount = storageKey ? data.memorizedAyahs[storageKey]?.memorized || 0 : 0;
+        
+        // Debug logging for surahs 2 and 3 specifically
+        if (surah === 2 || surah === 3) {
+          console.log(`[SurahListScreen] Surah ${surah} (${cleanedName}):`, {
+            originalName: name,
+            cleanedName: cleanedName,
+            mappedOriginalName: originalName,
+            storageKey: storageKey,
+            storageNames: Object.keys(data.memorizedAyahs).filter(key => 
+              key.toLowerCase().includes(cleanedName.toLowerCase()) || 
+              key.toLowerCase().includes(originalName.toLowerCase()) ||
+              key.toLowerCase().includes(name.toLowerCase())
+            ),
+            memorizedCount: memorizedCount,
+            totalAyaat: surah === 1 ? 7 : ayaat.length,
+            allStorageKeys: Object.keys(data.memorizedAyahs)
+          });
+        }
+        
+        return {
+          id: surah,
+          name: cleanedName,
+          originalName: originalName, // Use the consistent name for progress lookup
+          totalAyahs: surah === 1 ? 7 : ayaat.length,
+          memorizedAyahs: Math.min(memorizedCount, surah === 1 ? 7 : ayaat.length),
+        };
+      });
 
     // Filter by Juz if in Juz mode
     if (isJuzMode && juzData) {
       allSurahs = allSurahs.filter(surah => juzData.surahs.includes(surah.id));
     }
 
+    console.log('[SurahListScreen] Calculated surahs:', allSurahs.slice(0, 3).map(s => ({ id: s.id, name: s.name, memorized: s.memorizedAyahs, total: s.totalAyahs })));
     return allSurahs;
   }, [data.memorizedAyahs, isJuzMode, juzData]); // Only recreate when memorized data changes or Juz mode changes
 
@@ -1158,19 +1401,27 @@ const AllSurahsTab = ({ navigation, route, searchText, isJuzMode, juzData }) => 
 
   return (
     <View style={{ flex: 1 }}>
-          <View style={styles.contentContainer}>
+          <View style={[styles.contentContainer, { height: '100%' }]}>
             <Animated.FlatList
               ref={flatListRef}
               data={filteredSurahs}
-        renderItem={renderSurahItem}
-        keyExtractor={(item) => item.id.toString()}
-        contentContainerStyle={styles.list}
+              renderItem={renderSurahItem}
+              keyExtractor={(item) => item.id.toString()}
+              key={refreshKey} // Force re-render when data changes
+              contentContainerStyle={styles.list}
               showsVerticalScrollIndicator={false}
-              onScroll={Animated.event(
-                [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-                { useNativeDriver: false }
-              )}
-              scrollEventThrottle={16}
+              contentInsetAdjustmentBehavior="never"
+
+              
+
+              onScroll={(event) => {
+                // Update scrollY for scroll bar animation
+                scrollY.setValue(event.nativeEvent.contentOffset.y);
+                // Real-time search bar hide/show based on scroll position
+                const currentScrollY = event.nativeEvent.contentOffset.y;
+                setIsSearchBarHidden(currentScrollY > 50);
+              }}
+              scrollEventThrottle={8}
               onContentSizeChange={(w, h) => setContentHeight(h)}
               onLayout={e => setVisibleHeight(e.nativeEvent.layout.height)}
               initialNumToRender={20}
@@ -1368,16 +1619,44 @@ const JuzWheelTab = ({ navigation, setJuzFilter, setPreviousJuzFilter, setActive
                    const isSelected = i + 1 === selectedJuz;
                    
                    return (
-                     <Line
-                       key={i}
-                       x1={outerX}
-                       y1={outerY}
-                       x2={innerX}
-                       y2={innerY}
-                       stroke={isSelected ? '#33694e' : 'rgba(165, 115, 36, 0.4)'}
-                       strokeWidth={isSelected ? 3 : 2}
-                       strokeLinecap="round"
-                     />
+                     <React.Fragment key={i}>
+                       {/* Glow effect for selected juz */}
+                       {isSelected && (
+                         <>
+                           <Line
+                             key={`glow1_${i}`}
+                             x1={outerX}
+                             y1={outerY}
+                             x2={innerX}
+                             y2={innerY}
+                             stroke="rgba(51, 105, 78, 0.4)"
+                             strokeWidth={4}
+                             strokeLinecap="round"
+                           />
+                           <Line
+                             key={`glow2_${i}`}
+                             x1={outerX}
+                             y1={outerY}
+                             x2={innerX}
+                             y2={innerY}
+                             stroke="rgba(51, 105, 78, 0.3)"
+                             strokeWidth={3}
+                             strokeLinecap="round"
+                           />
+                         </>
+                       )}
+                       {/* Main line */}
+                       <Line
+                         key={`main_${i}`}
+                         x1={outerX}
+                         y1={outerY}
+                         x2={innerX}
+                         y2={innerY}
+                         stroke={isSelected ? '#33694e' : 'rgba(165, 115, 36, 0.4)'}
+                         strokeWidth={isSelected ? 3 : 2}
+                         strokeLinecap="round"
+                       />
+                     </React.Fragment>
                    );
                  })}
                  
@@ -1387,6 +1666,13 @@ const JuzWheelTab = ({ navigation, setJuzFilter, setPreviousJuzFilter, setActive
                    fill="rgba(51, 105, 78, 0.2)"
                    stroke="#33694e"
                    strokeWidth="2"
+                 />
+                 {/* Glow effect for central button */}
+                 <Polygon
+                   points={generatePolygonPoints(150, 150, 75)}
+                   fill="transparent"
+                   stroke="rgba(51, 105, 78, 0.4)"
+                   strokeWidth="1"
                  />
                </Svg>
 
@@ -1423,7 +1709,7 @@ const JuzWheelTab = ({ navigation, setJuzFilter, setPreviousJuzFilter, setActive
 };
 
 // Phase 3: Themes/Categories Tab Component
-const ThemesTab = ({ navigation }) => {
+const ThemesTab = ({ navigation, isSearchBarHidden, setIsSearchBarHidden }) => {
   const { language, t } = useLanguage();
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [selectedSubcategory, setSelectedSubcategory] = useState(null);
@@ -1588,9 +1874,10 @@ const ThemesTab = ({ navigation }) => {
   return (
     <View style={styles.themesTabContent}>
       {/* Search bar for themes - positioned absolutely like Surah tab */}
-      <View style={[styles.themeSearchContainer, {
-        top: language === 'ar' ? 80 : 60 // Brought down search bar in categories tab
-      }]}>
+      {!isSearchBarHidden && (
+        <View style={[styles.themeSearchContainer, {
+          top: language === 'ar' ? 113 : 93 // Brought down search bar in categories tab more
+        }]}>
         <View style={[styles.themeSearchInputContainer, {
           backgroundColor: isSearchFocused ? 'rgba(245, 230, 200, 0.15)' : 'rgba(245, 230, 200, 0.1)',
                           ...(Platform.OS === 'android' && { paddingVertical: SIZES.small / 4 })
@@ -1620,10 +1907,11 @@ const ThemesTab = ({ navigation }) => {
           {searchTheme.length > 0 && (
             <TouchableOpacity onPress={() => setSearchTheme('')} style={styles.clearThemeButton}>
               <Ionicons name="close-circle" size={20} color="rgba(255, 255, 255, 0.6)" />
-          </TouchableOpacity>
+            </TouchableOpacity>
           )}
         </View>
       </View>
+      )}
       
       <Animated.FlatList
         ref={flatListRef}
@@ -1634,11 +1922,14 @@ const ThemesTab = ({ navigation }) => {
         showsVerticalScrollIndicator={false}
         bounces={true}
         style={styles.categoriesScrollView}
-        onScroll={Animated.event(
-          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-          { useNativeDriver: false }
-        )}
-        scrollEventThrottle={16}
+        onScroll={(event) => {
+          // Update scrollY for scroll bar animation
+          scrollY.setValue(event.nativeEvent.contentOffset.y);
+          // Real-time search bar hide/show based on scroll position
+          const currentScrollY = event.nativeEvent.contentOffset.y;
+          setIsSearchBarHidden(currentScrollY > 50);
+        }}
+        scrollEventThrottle={8}
         onContentSizeChange={(w, h) => setContentHeight(h)}
         onLayout={e => setVisibleHeight(e.nativeEvent.layout.height)}
         ListEmptyComponent={() => (
@@ -1779,7 +2070,7 @@ const ListsTab = ({ navigation, route, searchText }) => {
         styles.selectListLabel,
         language === 'ar' && { 
           marginTop: SIZES.extraLarge * 2,
-          textAlign: 'left',
+          textAlign: 'center',
           fontSize: 18
         },
         Platform.OS === 'android' && { marginTop: SIZES.extraLarge * 4 }
@@ -1912,11 +2203,13 @@ const styles = StyleSheet.create({
     textShadowRadius: 2,
   },
 
+
   list: {
     padding: SIZES.medium,
-    paddingTop: 180, // Reduced further for shorter header
+    paddingTop: 180, // Bring items back down to original position
     marginTop: 0, // Removed margin to allow content to show through headers
     paddingBottom: SIZES.extraLarge * 12, // Increased significantly more for proper tab clearance
+    minHeight: '100%', // Ensure list takes full height
   },
   surahCard: {
     marginBottom: 4,
@@ -2001,7 +2294,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     borderRadius: 20,
-    padding: SIZES.small,
+    padding: SIZES.small / 2, // Reduced padding to make search bar thinner
     borderWidth: 1,
     borderColor: '#C0C0C0',
   },
@@ -2038,6 +2331,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textAlign: 'center',
   },
+
   continueButton: {
     padding: SIZES.medium,
     backgroundColor: 'rgba(51, 105, 78, 0.8)',
@@ -2083,8 +2377,8 @@ const styles = StyleSheet.create({
     left: 0,
   },
   contentContainer: {
-    flexDirection: 'row',
     flex: 1,
+    height: '100%',
   },
   headerBlurContainer: {
     flex: 1,
@@ -2559,10 +2853,11 @@ const styles = StyleSheet.create({
   bookmarksTabContent: {
     flex: 1,
     backgroundColor: 'transparent',
+    paddingTop: SIZES.large, // Brought content closer to dropdown
   },
   bookmarksList: {
     padding: SIZES.medium,
-    paddingTop: SIZES.small,
+    paddingTop: SIZES.extraSmall, // Brought content closer to dropdown
     paddingBottom: SIZES.extraLarge * 12,
   },
   bookmarkInfo: {
@@ -2632,7 +2927,7 @@ const styles = StyleSheet.create({
                 dropdownContainer: {
                   paddingHorizontal: SIZES.medium,
                   paddingVertical: SIZES.small,
-                  paddingTop: Platform.OS === 'android' ? SIZES.extraLarge * 4 : SIZES.extraLarge * 2,
+                  paddingTop: Platform.OS === 'android' ? SIZES.extraLarge * 6 : SIZES.extraLarge * 4, // Lowered dropdown
                   zIndex: 1000,
                 },
                 dropdownButton: {

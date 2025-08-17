@@ -2,26 +2,42 @@ import React, { useEffect, useRef, useState } from 'react';
 import { View, StyleSheet, Animated, Dimensions } from 'react-native';
 import Text from './Text';
 import { useLanguage } from '../utils/languageContext';
+import { getCurrentWeekActivity } from '../utils/store';
 
 const { width, height } = Dimensions.get('window');
 
 const StreakAnimation = ({ visible, newStreak, onAnimationComplete }) => {
   const { language, t } = useLanguage();
   const [displayNumber, setDisplayNumber] = useState(0);
+  const [weekActivity, setWeekActivity] = useState([false, false, false, false, false, false, false]);
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.5)).current;
   const flipAnim = useRef(new Animated.Value(0)).current;
+  const dotsAnim = useRef(new Animated.Value(0)).current;
   
   const safePrev = Math.max(0, newStreak - 1);
   const safeNew = newStreak;
+
+  const loadWeekActivity = async () => {
+    try {
+      const activity = await getCurrentWeekActivity();
+      setWeekActivity(activity);
+    } catch (error) {
+      console.error('[StreakAnimation] Error loading week activity:', error);
+    }
+  };
 
   useEffect(() => {
     if (visible) {
       console.log('StreakAnimation: Starting flip animation from', safePrev, 'to', safeNew);
       
+      // Load weekly activity data
+      loadWeekActivity();
+      
       // Reset state
       setDisplayNumber(safePrev);
       flipAnim.setValue(0);
+      dotsAnim.setValue(0);
       
       // Start fade in and scale up
       Animated.parallel([
@@ -33,6 +49,11 @@ const StreakAnimation = ({ visible, newStreak, onAnimationComplete }) => {
         Animated.timing(scaleAnim, {
           toValue: 1,
           duration: 400,
+          useNativeDriver: true,
+        }),
+        Animated.timing(dotsAnim, {
+          toValue: 1,
+          duration: 600,
           useNativeDriver: true,
         }),
       ]).start(() => {
@@ -128,6 +149,34 @@ const StreakAnimation = ({ visible, newStreak, onAnimationComplete }) => {
             </Animated.Text>
             <Text style={styles.streakLabel}>{t('days')}</Text>
           </View>
+          
+          {/* Weekly indicator with day dots */}
+          <Animated.View style={[
+            styles.weeklyIndicatorContainer,
+            {
+              opacity: dotsAnim,
+              transform: [{
+                translateY: dotsAnim.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [20, 0],
+                })
+              }]
+            }
+          ]}>
+            <View style={styles.weeklyDotsContainer}>
+              {weekActivity.map((isActive, index) => (
+                <View key={index} style={styles.dayContainer}>
+                  <View style={[
+                    styles.dayCircle,
+                    isActive ? styles.dayCircleActive : styles.dayCircleInactive
+                  ]} />
+                </View>
+              ))}
+            </View>
+            <Text style={styles.weeklyText}>
+              {language === 'ar' ? 'هذا الأسبوع' : 'This Week'}
+            </Text>
+          </Animated.View>
         </View>
       </Animated.View>
     </View>
@@ -145,8 +194,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 1000,
-    paddingTop: height * 0.1, // Add top padding to prevent going off screen
-    paddingBottom: height * 0.1, // Add bottom padding
+    paddingTop: height * 0.15, // Increased top padding to move it up more
+    paddingBottom: height * 0.15, // Increased bottom padding for better centering
   },
   container: {
     width: width * 0.8,
@@ -189,6 +238,36 @@ const styles = StyleSheet.create({
   },
   streakLabel: {
     fontSize: 18,
+    color: '#5b7f67',
+    textAlign: 'center',
+  },
+  weeklyIndicatorContainer: {
+    marginTop: 20,
+    alignItems: 'center',
+  },
+  weeklyDotsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    width: '100%',
+    marginBottom: 10,
+  },
+  dayContainer: {
+    alignItems: 'center',
+  },
+  dayCircle: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#5b7f67',
+  },
+  dayCircleActive: {
+    backgroundColor: '#FFD700',
+  },
+  dayCircleInactive: {
+    backgroundColor: '#5b7f67',
+  },
+  weeklyText: {
+    fontSize: 16,
     color: '#5b7f67',
     textAlign: 'center',
   },

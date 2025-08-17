@@ -242,11 +242,17 @@ const StreakBrokenAnimation = ({ visible, previousStreak, missedDays = [], onAni
 
 const styles = StyleSheet.create({
   overlay: {
-    flex: 1,
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
     backgroundColor: 'rgba(0,0,0,0.6)',
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 20,
+    paddingTop: height * 0.25, // Increased top padding to move it up much more
+    paddingBottom: height * 0.15, // Keep bottom padding for balance
   },
   container: {
     width: width * 0.85,

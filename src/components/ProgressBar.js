@@ -42,12 +42,28 @@ const styles = StyleSheet.create({
   background: {
     position: 'absolute',
     width: '100%',
-    backgroundColor: 'rgba(200, 200, 200, 0.3)',
+    backgroundColor: 'rgba(180, 180, 180, 0.4)', // Lighter gray background
     borderRadius: SIZES.base,
   },
   progress: {
     backgroundColor: '#33694e',
     borderRadius: SIZES.base,
+    // Enhanced inner shadow effect for better visibility
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.7,
+    shadowRadius: 6,
+    elevation: 6,
+    // Add subtle border for better definition with inset effect
+    borderWidth: 1,
+    borderColor: 'rgba(0, 0, 0, 0.3)',
+    // Create inset effect with darker top/left borders
+    borderTopWidth: 1,
+    borderLeftWidth: 1,
+    borderTopColor: 'rgba(0, 0, 0, 0.4)',
+    borderLeftColor: 'rgba(0, 0, 0, 0.4)',
+    borderRightWidth: 0,
+    borderBottomWidth: 0,
   },
 });
 
