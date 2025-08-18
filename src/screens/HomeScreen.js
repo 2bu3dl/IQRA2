@@ -2,6 +2,17 @@ import React, { useEffect, useState, useRef } from 'react';
 import { View, StyleSheet, SafeAreaView, Image, ImageBackground, Modal, TouchableOpacity, Dimensions, Alert, TextInput, Animated, ScrollView, FlatList, Platform, PanResponder } from 'react-native';
 import { useAuth } from '../utils/authContext';
 import { COLORS as BASE_COLORS, SIZES, FONTS } from '../utils/theme';
+import { 
+  SCREEN_SIZES, 
+  getResponsiveFontSize, 
+  getResponsiveSpacing, 
+  getResponsiveDimension, 
+  getScreenMultiplier,
+  RESPONSIVE_FONT_SIZES,
+  RESPONSIVE_SPACING,
+  RESPONSIVE_ICON_SIZES,
+  getResponsivePosition
+} from '../utils/responsive';
 import Text from '../components/Text';
 import Button from '../components/Button';
 import Card from '../components/Card';
@@ -29,32 +40,32 @@ const formatLargeNumber = (num) => {
   if (num >= 1000000000) {
     return {
       text: (num / 1000000000).toFixed(1).replace(/\.0$/, '') + 'B',
-      fontSize: 18
+      fontSize: getResponsiveFontSize(18)
     };
   } else if (num >= 10000000) {
     return {
       text: (num / 1000000).toFixed(1).replace(/\.0$/, '') + 'M',
-      fontSize: 20
+      fontSize: getResponsiveFontSize(20)
     };
   } else if (num >= 1000000) {
     return {
       text: (num / 1000000).toFixed(1).replace(/\.0$/, '') + 'M',
-      fontSize: 22
+      fontSize: getResponsiveFontSize(22)
     };
   } else if (num >= 100000) {
     return {
       text: num.toLocaleString(),
-      fontSize: 24
+      fontSize: getResponsiveFontSize(24)
     };
   } else if (num >= 10000) {
     return {
       text: num.toLocaleString(),
-      fontSize: 26
+      fontSize: getResponsiveFontSize(26)
     };
   } else {
     return {
       text: num.toLocaleString(),
-      fontSize: 28
+      fontSize: getResponsiveFontSize(28)
     };
   }
 };
@@ -63,17 +74,17 @@ const formatStreakNumber = (num) => {
   if (num >= 1000) {
     return {
       text: num.toLocaleString(),
-      fontSize: 28
+      fontSize: getResponsiveFontSize(28)
     };
   } else if (num >= 100) {
     return {
       text: num.toString(),
-      fontSize: 32
+      fontSize: getResponsiveFontSize(32)
     };
   } else {
     return {
       text: num.toString(),
-      fontSize: 36
+      fontSize: getResponsiveFontSize(36)
     };
   }
 };
@@ -86,8 +97,8 @@ const HomeScreen = ({ navigation, route }) => {
   
   // Get screen dimensions for responsive layout
   const { width, height } = Dimensions.get('window');
-  const isSmallScreen = height < 700;
-  const isMediumScreen = height < 850;
+  const isSmallScreen = SCREEN_SIZES.SMALL;
+  const isMediumScreen = SCREEN_SIZES.MEDIUM;
   
   const toArabicNumber = (num) => {
     if (language !== 'ar') return num.toString();
@@ -136,6 +147,12 @@ const HomeScreen = ({ navigation, route }) => {
   const [listAyahs, setListAyahs] = useState([]);
   const [listsLoading, setListsLoading] = useState(false);
   const [listsDropdownOpen, setListsDropdownOpen] = useState(false);
+  const [pressedStatBox, setPressedStatBox] = useState(null); // 'progress', 'hasanat', 'streak'
+  const [pressedSavedAyaat, setPressedSavedAyaat] = useState(false);
+  const [pressedRecordings, setPressedRecordings] = useState(false);
+  const [pressedSavedNotes, setPressedSavedNotes] = useState(false);
+  const [pressedMemorizationLeaderboard, setPressedMemorizationLeaderboard] = useState(false);
+  const [pressedStreakLeaderboard, setPressedStreakLeaderboard] = useState(false);
   
   // Helper functions for notes
   const getSurahName = (surahNumber) => {
@@ -948,7 +965,8 @@ const HomeScreen = ({ navigation, route }) => {
                       borderRadius: SIZES.base,
                       flexDirection: 'column',
                       width: '100%',
-                      height: '100%'
+                      height: '100%',
+                      marginTop: 20 // Added margin to bring button down
                     }}
                   onPress={() => {
                     telemetryService.trackUserInteraction('button_click', { 
@@ -980,14 +998,14 @@ const HomeScreen = ({ navigation, route }) => {
                     shadowOpacity: memorizeButtonHeld ? GLOW_CONFIG.iconContainer.shadowOpacity[Platform.OS].pressed : GLOW_CONFIG.iconContainer.shadowOpacity[Platform.OS].normal,
                     elevation: memorizeButtonHeld ? GLOW_CONFIG.iconContainer.elevation[Platform.OS].pressed : GLOW_CONFIG.iconContainer.elevation[Platform.OS].normal,
                   }]}>
-                    <Image source={require('../assets/openQuran.png')} style={[styles.buttonIcon, { width: Platform.OS === 'android' ? 52 : 45, height: Platform.OS === 'android' ? 52 : 45 }]} resizeMode="contain" />
+                    <Image source={require('../assets/openQuran.png')} style={[styles.buttonIcon, { width: RESPONSIVE_ICON_SIZES.button, height: RESPONSIVE_ICON_SIZES.button }]} resizeMode="contain" />
                   </View>
                   <View style={{ 
                     backgroundColor: 'rgba(0,0,0,0.8)', 
                     borderRadius: 8, 
-                    paddingHorizontal: 16, 
-                    paddingTop: language === 'ar' ? 8 : 12,
-                    paddingBottom: language === 'ar' ? 12 : 8,
+                    paddingHorizontal: 20, 
+                    paddingTop: language === 'ar' ? 12 : 16,
+                    paddingBottom: language === 'ar' ? 16 : 12,
                     alignItems: 'center', 
                     justifyContent: 'center', 
                     shadowColor: '#fae29f', 
@@ -995,7 +1013,7 @@ const HomeScreen = ({ navigation, route }) => {
                     shadowOpacity: pressed ? GLOW_CONFIG.textButton.shadowOpacity[Platform.OS].pressed : GLOW_CONFIG.textButton.shadowOpacity[Platform.OS].normal, 
                     shadowRadius: pressed ? GLOW_CONFIG.textButton.shadowRadius[Platform.OS].pressed : GLOW_CONFIG.textButton.shadowRadius[Platform.OS].normal, 
                     elevation: pressed ? GLOW_CONFIG.textButton.elevation[Platform.OS].pressed : GLOW_CONFIG.textButton.elevation[Platform.OS].normal,
-                    minHeight: language === 'ar' ? 80 : 60
+                    minHeight: language === 'ar' ? 100 : 80
                   }}>
                     <Text style={[{
                       marginTop: language === 'ar' ? 4 : 0,
@@ -1003,11 +1021,11 @@ const HomeScreen = ({ navigation, route }) => {
                       color: '#fae29f', 
                       width: '100%', 
                       fontWeight: 'bold', 
-                      fontSize: memorizeButtonHeld ? 26 : 22, 
+                      fontSize: memorizeButtonHeld ? getResponsiveFontSize(26) : getResponsiveFontSize(22), 
                       textShadowColor: '#fae29f', 
                       textShadowOffset: { width: 0, height: 0 }, 
                       textShadowRadius: GLOW_CONFIG.text.shadowRadius,
-                      lineHeight: language === 'ar' ? 36 : 26,
+                      lineHeight: memorizeButtonHeld ? (language === 'ar' ? 40 : 30) : (language === 'ar' ? 36 : 26),
                       fontFamily: 'Montserrat-Bold'
                     }]}>{memorizeButtonHeld ? t('b2ithnAllah') : t('quran_memorize')}</Text>
                   </View>
@@ -1026,8 +1044,8 @@ const HomeScreen = ({ navigation, route }) => {
                 id: 'saved_content',
                 content: (
                   <View style={{
-                    marginTop: isSmallScreen ? 20 : (isMediumScreen ? 25 : 30),
-                    marginBottom: SIZES.medium,
+                    marginTop: getResponsiveSpacing(isSmallScreen ? 40 : (isMediumScreen ? 45 : 50)),
+                    marginBottom: RESPONSIVE_SPACING.md,
                     flex: 1,
                     alignItems: 'center',
                     width: '100%',
@@ -1035,14 +1053,14 @@ const HomeScreen = ({ navigation, route }) => {
                     {/* Saved Content Header */}
                     <View style={{
                       alignItems: 'center',
-                      marginBottom: SIZES.small,
+                      marginBottom: RESPONSIVE_SPACING.sm,
                     }}>
                       <Text variant="h2" style={{
                         textAlign: 'center',
                         color: '#5b7f67',
                         fontWeight: 'bold',
-                        fontSize: 20,
-                        marginBottom: 6,
+                        fontSize: getResponsiveFontSize(20),
+                        marginBottom: getResponsiveSpacing(6),
                         textShadowColor: '#000000',
                         textShadowOffset: { width: 0, height: 1 },
                         textShadowRadius: 2,
@@ -1064,9 +1082,9 @@ const HomeScreen = ({ navigation, route }) => {
                       <TouchableOpacity
                         style={{
                           flex: 0.48,
-                          backgroundColor: 'rgba(128,128,128,0.3)',
-                          borderColor: 'rgba(165,115,36,0.8)',
-                          borderWidth: 1,
+                          backgroundColor: pressedSavedAyaat ? 'rgba(91,127,103,0.4)' : 'rgba(91,127,103,0.2)',
+                          borderColor: pressedSavedAyaat ? '#5b7f67' : 'rgba(165,115,36,0.8)',
+                          borderWidth: 2,
                           borderRadius: SIZES.base,
                           padding: SIZES.small,
                           shadowColor: '#000000',
@@ -1082,40 +1100,109 @@ const HomeScreen = ({ navigation, route }) => {
                           hapticSelection();
                           setShowSavedAyaatModal(true);
                         }}
+                        onPressIn={() => setPressedSavedAyaat(true)}
+                        onPressOut={() => setPressedSavedAyaat(false)}
+                        activeOpacity={0.9}
                       >
-                        <Text style={{
-                          textAlign: 'center',
-                          color: '#5b7f67',
-                          fontWeight: 'bold',
-                          fontSize: 16,
-                          marginBottom: 8,
-                        }}>
-                          Saved Ayaat
-                        </Text>
-                        <Text style={{
-                          textAlign: 'center',
-                          color: '#F5E6C8',
-                          fontSize: 14,
-                          marginBottom: 4,
-                        }}>
-                          12 saved
-                        </Text>
-                        <Text style={{
-                          textAlign: 'center',
-                          color: '#CCCCCC',
-                          fontSize: 12,
-                        }}>
-                          Tap to view
-                        </Text>
+                        <View style={{ alignItems: 'center', justifyContent: 'center' }}>
+                          <View style={{ borderBottomWidth: 2, borderBottomColor: 'rgba(51,51,51,0.6)', paddingBottom: 4, marginBottom: 8 }}>
+                            <Text style={{
+                              textAlign: 'center',
+                              color: pressedSavedAyaat ? '#5b7f67' : 'rgba(165,115,36,0.8)',
+                              fontWeight: 'bold',
+                              fontSize: getResponsiveFontSize(16),
+                              textShadowColor: '#000000',
+                              textShadowOffset: { width: 0, height: 1 },
+                              textShadowRadius: 3,
+                              shadowColor: '#000',
+                              shadowOffset: { width: 0, height: 1 },
+                              shadowOpacity: 0.3,
+                              shadowRadius: 3,
+                              transform: [{ translateY: pressedSavedAyaat ? 3 : 0 }],
+                            }}>
+                              Saved Ayaat
+                            </Text>
+                          </View>
+                          <Text style={{
+                            textAlign: 'center',
+                            color: '#F5E6C8',
+                            fontSize: getResponsiveFontSize(14),
+                            marginBottom: getResponsiveSpacing(4),
+                          }}>
+                            12 saved
+                          </Text>
+                        </View>
                       </TouchableOpacity>
 
-                      {/* Recitation Recordings */}
+                      {/* Saved Notes */}
                       <TouchableOpacity
                         style={{
                           flex: 0.48,
-                          backgroundColor: 'rgba(128,128,128,0.3)',
-                          borderColor: 'rgba(165,115,36,0.8)',
-                          borderWidth: 1,
+                          backgroundColor: pressedSavedNotes ? 'rgba(91,127,103,0.4)' : 'rgba(91,127,103,0.2)',
+                          borderColor: pressedSavedNotes ? '#5b7f67' : 'rgba(165,115,36,0.8)',
+                          borderWidth: 2,
+                          borderRadius: SIZES.base,
+                          padding: SIZES.small,
+                          shadowColor: '#000000',
+                          shadowOffset: { width: 4, height: 4 },
+                          shadowOpacity: 0.6,
+                          shadowRadius: 6,
+                          elevation: 8,
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          minHeight: 120,
+                        }}
+                        onPress={() => {
+                          hapticSelection();
+                          setShowSavedNotesModal(true);
+                        }}
+                        onPressIn={() => setPressedSavedNotes(true)}
+                        onPressOut={() => setPressedSavedNotes(false)}
+                        activeOpacity={0.9}
+                      >
+                        <View style={{ alignItems: 'center', justifyContent: 'center' }}>
+                          <View style={{ borderBottomWidth: 2, borderBottomColor: 'rgba(51,51,51,0.6)', paddingBottom: 4, marginBottom: 8 }}>
+                            <Text style={{
+                              textAlign: 'center',
+                              color: pressedSavedNotes ? '#5b7f67' : 'rgba(165,115,36,0.8)',
+                              fontWeight: 'bold',
+                              fontSize: getResponsiveFontSize(16),
+                              textShadowColor: '#000000',
+                              textShadowOffset: { width: 0, height: 1 },
+                              textShadowRadius: 3,
+                              shadowColor: '#000',
+                              shadowOffset: { width: 0, height: 1 },
+                              shadowOpacity: 0.3,
+                              shadowRadius: 3,
+                              transform: [{ translateY: pressedSavedNotes ? 3 : 0 }],
+                            }}>
+                              Saved Notes
+                            </Text>
+                          </View>
+                          <Text style={{
+                            textAlign: 'center',
+                            color: '#F5E6C8',
+                            fontSize: getResponsiveFontSize(14),
+                            marginBottom: getResponsiveSpacing(4),
+                          }}>
+                            {savedNotes.length} notes
+                          </Text>
+                        </View>
+                      </TouchableOpacity>
+                    </View>
+
+                    {/* Recitation Recordings Section */}
+                    <View style={{
+                      marginTop: 16,
+                      width: '90%',
+                      alignSelf: 'center',
+                    }}>
+                      <TouchableOpacity
+                        style={{
+                          flex: 0.48,
+                          backgroundColor: pressedRecordings ? 'rgba(91,127,103,0.4)' : 'rgba(91,127,103,0.2)',
+                          borderColor: pressedRecordings ? '#5b7f67' : 'rgba(165,115,36,0.8)',
+                          borderWidth: 2,
                           borderRadius: SIZES.base,
                           padding: SIZES.small,
                           shadowColor: '#000000',
@@ -1131,85 +1218,38 @@ const HomeScreen = ({ navigation, route }) => {
                           hapticSelection();
                           setRecordingsModalVisible(true);
                         }}
+                        onPressIn={() => setPressedRecordings(true)}
+                        onPressOut={() => setPressedRecordings(false)}
+                        activeOpacity={0.9}
                       >
-                        <Text style={{
-                          textAlign: 'center',
-                          color: '#5b7f67',
-                          fontWeight: 'bold',
-                          fontSize: 16,
-                          marginBottom: 8,
-                        }}>
-                          Recordings
-                        </Text>
-                        <Text style={{
-                          textAlign: 'center',
-                          color: '#F5E6C8',
-                          fontSize: 14,
-                          marginBottom: 4,
-                        }}>
-                          8 recordings
-                        </Text>
-                        <Text style={{
-                          textAlign: 'center',
-                          color: '#CCCCCC',
-                          fontSize: 12,
-                        }}>
-                          Tap to view
-                        </Text>
-                      </TouchableOpacity>
-                    </View>
-
-                    {/* Saved Notes Section */}
-                    <View style={{
-                      marginTop: 16,
-                      width: '90%',
-                      alignSelf: 'center',
-                    }}>
-                      <TouchableOpacity
-                        style={{
-                          backgroundColor: 'rgba(128,128,128,0.3)',
-                          borderColor: 'rgba(165,115,36,0.8)',
-                          borderWidth: 1,
-                          borderRadius: SIZES.base,
-                          padding: SIZES.small,
-                          shadowColor: '#000000',
-                          shadowOffset: { width: 0, height: 4 },
-                          shadowOpacity: 0.6,
-                          shadowRadius: 6,
-                          elevation: 8,
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          minHeight: 80,
-                        }}
-                        onPress={() => {
-                          hapticSelection();
-                          setShowSavedNotesModal(true);
-                        }}
-                      >
-                        <Text style={{
-                          textAlign: 'center',
-                          color: '#5b7f67',
-                          fontWeight: 'bold',
-                          fontSize: 16,
-                          marginBottom: 8,
-                        }}>
-                          {language === 'ar' ? 'الملاحظات المحفوظة' : 'Saved Notes'}
-                        </Text>
-                        <Text style={{
-                          textAlign: 'center',
-                          color: '#F5E6C8',
-                          fontSize: 14,
-                          marginBottom: 4,
-                        }}>
-                          {language === 'ar' ? 'عرض جميع الملاحظات' : 'View all notes'}
-                        </Text>
-                        <Text style={{
-                          textAlign: 'center',
-                          color: '#CCCCCC',
-                          fontSize: 12,
-                        }}>
-                          {language === 'ar' ? 'انقر للعرض' : 'Tap to view'}
-                        </Text>
+                        <View style={{ alignItems: 'center', justifyContent: 'center' }}>
+                          <View style={{ borderBottomWidth: 2, borderBottomColor: 'rgba(51,51,51,0.6)', paddingBottom: 4, marginBottom: 8 }}>
+                            <Text style={{
+                              textAlign: 'center',
+                              color: pressedRecordings ? '#5b7f67' : 'rgba(165,115,36,0.8)',
+                              fontWeight: 'bold',
+                              fontSize: getResponsiveFontSize(16),
+                              textShadowColor: '#000000',
+                              textShadowOffset: { width: 0, height: 1 },
+                              textShadowRadius: 3,
+                              shadowColor: '#000',
+                              shadowOffset: { width: 0, height: 1 },
+                              shadowOpacity: 0.3,
+                              shadowRadius: 3,
+                              transform: [{ translateY: pressedRecordings ? 3 : 0 }],
+                            }}>
+                              Recitation Recordings
+                            </Text>
+                          </View>
+                          <Text style={{
+                            textAlign: 'center',
+                            color: '#F5E6C8',
+                            fontSize: getResponsiveFontSize(14),
+                            marginBottom: getResponsiveSpacing(4),
+                          }}>
+                            8 recordings
+                          </Text>
+                        </View>
                       </TouchableOpacity>
                     </View>
                   </View>
@@ -1219,7 +1259,7 @@ const HomeScreen = ({ navigation, route }) => {
                 id: 'stats',
                 content: (
                   <View style={{
-                    marginTop: isSmallScreen ? 5 : (isMediumScreen ? 10 : 15),
+                    marginTop: isSmallScreen ? 25 : (isMediumScreen ? 30 : 35),
                     marginBottom: 40,
                     alignItems: 'center',
                     width: '100%',
@@ -1231,13 +1271,15 @@ const HomeScreen = ({ navigation, route }) => {
                         hapticSelection();
                         setProgressModalVisible(true);
                       }}
+                      onPressIn={() => setPressedStatBox('progress')}
+                      onPressOut={() => setPressedStatBox(null)}
                       activeOpacity={0.9}
                     >
                       <Card variant="elevated" style={{
                         marginBottom: 0,
-                        backgroundColor: 'rgba(128,128,128,0.3)',
-                        borderColor: 'rgba(165,115,36,0.8)',
-                        borderWidth: 1,
+                        backgroundColor: pressedStatBox === 'progress' ? 'rgba(91,127,103,0.4)' : 'rgba(91,127,103,0.2)',
+                        borderColor: pressedStatBox === 'progress' ? '#5b7f67' : 'rgba(165,115,36,0.8)',
+                        borderWidth: 2,
                         padding: SIZES.small,
                         shadowColor: '#000000',
                         shadowOffset: { width: 4, height: 4 },
@@ -1250,19 +1292,20 @@ const HomeScreen = ({ navigation, route }) => {
                       }}>
                         <View style={{ alignItems: 'center' }}>
                           <View style={{ borderBottomWidth: 2, borderBottomColor: 'rgba(51,51,51,0.6)', paddingBottom: 4, marginBottom: 12 }}>
-                                                        <Text variant="h2" style={[FONTS.h2.getFont(language), {
-                              textAlign: 'center',
-                              color: '#5b7f67',
-                              fontWeight: 'bold',
-                              fontSize: 22,
-                              textShadowColor: '#000000',
-                              textShadowOffset: { width: 0, height: 1 },
-                              textShadowRadius: 3,
-                              shadowColor: '#000',
-                              shadowOffset: { width: 0, height: 1 },
-                              shadowOpacity: 0.3,
-                              shadowRadius: 3,
-                            }]}>{t('memorization_progress')}</Text>
+                                                                                      <Text variant="h2" style={[FONTS.h2.getFont(language), {
+                                textAlign: 'center',
+                                color: pressedStatBox === 'progress' ? 'rgba(165,115,36,0.8)' : '#5b7f67',
+                                fontWeight: 'bold',
+                                fontSize: 22,
+                                textShadowColor: '#000000',
+                                textShadowOffset: { width: 0, height: 1 },
+                                textShadowRadius: 3,
+                                shadowColor: '#000',
+                                shadowOffset: { width: 0, height: 1 },
+                                shadowOpacity: 0.3,
+                                shadowRadius: 3,
+                                transform: [{ translateY: pressedStatBox === 'progress' ? 3 : 0 }],
+                              }]}>{t('memorization_progress')}</Text>
                           </View>
                         </View>
                         <Text variant="body1" style={{ marginBottom: SIZES.small, textAlign: 'center' }}>
@@ -1355,10 +1398,10 @@ const HomeScreen = ({ navigation, route }) => {
                     }}>
                       <Card style={{
                         flex: 0.50,
-                        padding: 8,
-                        backgroundColor: 'rgba(128,128,128,0.3)',
-                        borderColor: 'rgba(165,115,36,0.8)',
-                        borderWidth: 1,
+                        padding: SIZES.small,
+                        backgroundColor: pressedStatBox === 'hasanat' ? 'rgba(91,127,103,0.4)' : 'rgba(91,127,103,0.2)',
+                        borderColor: pressedStatBox === 'hasanat' ? '#5b7f67' : 'rgba(165,115,36,0.8)',
+                        borderWidth: 2,
                         borderRadius: SIZES.base,
                         alignItems: 'center',
                         justifyContent: 'center',
@@ -1367,7 +1410,7 @@ const HomeScreen = ({ navigation, route }) => {
                         shadowOpacity: 0.6,
                         shadowRadius: 6,
                         elevation: 8,
-                        height: isSmallScreen ? 160 : 180,
+                        height: isSmallScreen ? 140 : 160,
                         marginHorizontal: 0
                       }}>
                         <TouchableOpacity
@@ -1375,10 +1418,28 @@ const HomeScreen = ({ navigation, route }) => {
                             hapticSelection();
                             setHasanatModalVisible(true);
                           }}
+                          onPressIn={() => setPressedStatBox('hasanat')}
+                          onPressOut={() => setPressedStatBox(null)}
                           activeOpacity={0.9}
                           style={{ width: '100%', height: '100%', alignItems: 'center', justifyContent: 'center' }}
                         >
-                          <Text variant="h3" style={{ textAlign: 'center', color: '#CCCCCC', fontSize: 16, marginTop: 10 }}>{t('hasanat_gains')}</Text>
+                          <View style={{ alignItems: 'center' }}>
+                            <View style={{ borderBottomWidth: 2, borderBottomColor: 'rgba(51,51,51,0.6)', paddingBottom: 4, marginBottom: 8 }}>
+                              <Text variant="h2" style={[FONTS.h2.getFont(language), {
+                                textAlign: 'center',
+                                color: pressedStatBox === 'hasanat' ? '#5b7f67' : 'rgba(165,115,36,0.8)',
+                                fontWeight: 'bold',
+                                fontSize: 18,
+                                textShadowColor: '#000000',
+                                textShadowOffset: { width: 0, height: 1 },
+                                textShadowRadius: 3,
+                                shadowColor: '#000',
+                                shadowOffset: { width: 0, height: 1 },
+                                shadowOpacity: 0.3,
+                                shadowRadius: 3,
+                                transform: [{ translateY: pressedStatBox === 'hasanat' ? 3 : 0 }],
+                              }]}>{t('hasanat_gains')}</Text>
+                            </View>
                           <View style={{ backgroundColor: 'rgba(0,0,0,0.75)', borderRadius: 8, paddingHorizontal: 16, paddingVertical: 8, alignSelf: 'center', marginVertical: 8 }}>
                             <Text variant="h1" style={{ 
                               color: 'rgba(245,200,96,0.8)', 
@@ -1392,14 +1453,15 @@ const HomeScreen = ({ navigation, route }) => {
                           </View>
                           <Text variant="body2" color="textSecondary" style={{ textAlign: 'center' }}>+{toArabicNumber(formatLargeNumber(data.todayHasanat).text)} {t('today_hasanat')}</Text>
                           <Text variant="body2" style={{ textAlign: 'center', color: '#F5E6C8', marginTop: 4, marginBottom: 2 }}>{t('insha2allah')}</Text>
+                          </View>
                         </TouchableOpacity>
                       </Card>
                       <Card style={{
                         flex: 0.50,
-                        padding: 8,
-                        backgroundColor: 'rgba(128,128,128,0.3)',
-                        borderColor: 'rgba(165,115,36,0.8)',
-                        borderWidth: 1,
+                        padding: SIZES.small,
+                        backgroundColor: pressedStatBox === 'streak' ? 'rgba(91,127,103,0.4)' : 'rgba(91,127,103,0.2)',
+                        borderColor: pressedStatBox === 'streak' ? '#5b7f67' : 'rgba(165,115,36,0.8)',
+                        borderWidth: 2,
                         borderRadius: SIZES.base,
                         alignItems: 'center',
                         justifyContent: 'center',
@@ -1408,7 +1470,7 @@ const HomeScreen = ({ navigation, route }) => {
                         shadowOpacity: 0.6,
                         shadowRadius: 6,
                         elevation: 8,
-                        height: isSmallScreen ? 160 : 180,
+                        height: isSmallScreen ? 140 : 160,
                         marginHorizontal: 0
                       }}>
                         <TouchableOpacity
@@ -1416,11 +1478,28 @@ const HomeScreen = ({ navigation, route }) => {
                             hapticSelection();
                             setStreakModalVisible(true);
                           }}
+                          onPressIn={() => setPressedStatBox('streak')}
+                          onPressOut={() => setPressedStatBox(null)}
                           activeOpacity={0.9}
                           style={{ width: '100%', height: '100%', alignItems: 'center', justifyContent: 'center' }}
                         >
-                          <View style={{ marginTop: 8 }}>
-                              <Text variant="h3" style={{ textAlign: 'center', color: '#CCCCCC', marginTop: 10, fontSize: 16 }}>{t('streak')}</Text>
+                          <View style={{ alignItems: 'center' }}>
+                            <View style={{ borderBottomWidth: 2, borderBottomColor: 'rgba(51,51,51,0.6)', paddingBottom: 4, marginBottom: 8 }}>
+                              <Text variant="h2" style={[FONTS.h2.getFont(language), {
+                                textAlign: 'center',
+                                color: pressedStatBox === 'streak' ? '#5b7f67' : 'rgba(165,115,36,0.8)',
+                                fontWeight: 'bold',
+                                fontSize: 18,
+                                textShadowColor: '#000000',
+                                textShadowOffset: { width: 0, height: 1 },
+                                textShadowRadius: 3,
+                                shadowColor: '#000',
+                                shadowOffset: { width: 0, height: 1 },
+                                shadowOpacity: 0.3,
+                                shadowRadius: 3,
+                                marginTop: pressedStatBox === 'streak' ? 8 : 4,
+                              }]}>{t('streak')}</Text>
+                            </View>
                               <View style={{ backgroundColor: 'rgba(0,0,0,0.75)', borderRadius: 8, paddingHorizontal: 16, paddingVertical: 8, alignSelf: 'center', marginVertical: 8, alignItems: 'center', justifyContent: 'center' }}>
                                 <Text variant="h1" style={{ color: '#5b7f67', textAlign: 'center', fontWeight: 'bold', fontSize: formatStreakNumber(data.streak).fontSize, lineHeight: formatStreakNumber(data.streak).fontSize * 1.2 }} numberOfLines={1} ellipsizeMode="tail">{toArabicNumber(formatStreakNumber(data.streak).text)}</Text>
                               </View>
@@ -1437,8 +1516,8 @@ const HomeScreen = ({ navigation, route }) => {
                 id: 'leaderboard',
                 content: (
                   <View style={{
-                    marginTop: isSmallScreen ? 20 : (isMediumScreen ? 25 : 30),
-                    marginBottom: SIZES.medium,
+                    marginTop: getResponsiveSpacing(isSmallScreen ? 40 : (isMediumScreen ? 45 : 50)),
+                    marginBottom: RESPONSIVE_SPACING.md,
                     flex: 1,
                     alignItems: 'center',
                     width: '100%',
@@ -1446,14 +1525,14 @@ const HomeScreen = ({ navigation, route }) => {
                                                              {/* Leaderboards Header */}
                      <View style={{
                        alignItems: 'center',
-                       marginBottom: SIZES.small,
+                       marginBottom: RESPONSIVE_SPACING.sm,
                      }}>
                        <Text variant="h2" style={{
                          textAlign: 'center',
                          color: '#5b7f67',
                          fontWeight: 'bold',
-                         fontSize: 20,
-                         marginBottom: 6,
+                         fontSize: getResponsiveFontSize(20),
+                         marginBottom: getResponsiveSpacing(6),
                          textShadowColor: '#000000',
                          textShadowOffset: { width: 0, height: 1 },
                          textShadowRadius: 2,
@@ -1479,6 +1558,9 @@ const HomeScreen = ({ navigation, route }) => {
                            hapticSelection();
                            navigation.navigate('Leaderboard');
                          }}
+                         onPressIn={() => setPressedMemorizationLeaderboard(true)}
+                         onPressOut={() => setPressedMemorizationLeaderboard(false)}
+                         isPressed={pressedMemorizationLeaderboard}
                          limit={3}
                        />
 
@@ -1490,6 +1572,9 @@ const HomeScreen = ({ navigation, route }) => {
                            hapticSelection();
                            navigation.navigate('Leaderboard');
                          }}
+                         onPressIn={() => setPressedStreakLeaderboard(true)}
+                         onPressOut={() => setPressedStreakLeaderboard(false)}
+                         isPressed={pressedStreakLeaderboard}
                          limit={3}
                        />
                      </View>
@@ -4878,6 +4963,7 @@ const styles = StyleSheet.create({
   },
   buttonIconContainer: {
     padding: Platform.OS === 'android' ? SIZES.small : SIZES.small,
+    marginTop: 5,
     ...(Platform.OS === 'ios' && {
       shadowColor: '#fae29f',
       shadowOffset: { width: 0, height: 0 },

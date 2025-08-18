@@ -1,3 +1,5 @@
+import { getResponsiveFontSize } from './responsive';
+
 export const COLORS = {
   primary: '#388E3C', // Forest green
   secondary: '#8D6E63', // Earthy brown
@@ -61,17 +63,17 @@ const getFontFamily = (language, weight = 'regular') => {
 };
 
 export const FONTS = {
-  h1: { fontSize: SIZES.h1, lineHeight: 36, getFont: (language) => ({ fontFamily: getFontFamily(language, 'bold') }) },
-  h2: { fontSize: SIZES.h2, lineHeight: 30, getFont: (language) => ({ fontFamily: getFontFamily(language, 'bold') }) },
-  h3: { fontSize: SIZES.h3, lineHeight: 24, getFont: (language) => ({ fontFamily: getFontFamily(language, 'bold') }) },
-  h4: { fontSize: SIZES.h4, lineHeight: 22, getFont: (language) => ({ fontFamily: getFontFamily(language, 'bold') }) },
-  body1: { fontSize: SIZES.body1, lineHeight: 24, getFont: (language) => ({ fontFamily: getFontFamily(language) }) },
-  body2: { fontSize: SIZES.body2, lineHeight: 20, getFont: (language) => ({ fontFamily: getFontFamily(language) }) },
-  body3: { fontSize: SIZES.body3, lineHeight: 16, getFont: (language) => ({ fontFamily: getFontFamily(language) }) },
+  h1: { fontSize: getResponsiveFontSize(SIZES.h1), lineHeight: getResponsiveFontSize(36), getFont: (language) => ({ fontFamily: getFontFamily(language, 'bold') }) },
+  h2: { fontSize: getResponsiveFontSize(SIZES.h2), lineHeight: getResponsiveFontSize(30), getFont: (language) => ({ fontFamily: getFontFamily(language, 'bold') }) },
+  h3: { fontSize: getResponsiveFontSize(SIZES.h3), lineHeight: getResponsiveFontSize(24), getFont: (language) => ({ fontFamily: getFontFamily(language, 'bold') }) },
+  h4: { fontSize: getResponsiveFontSize(SIZES.h4), lineHeight: getResponsiveFontSize(22), getFont: (language) => ({ fontFamily: getFontFamily(language, 'bold') }) },
+  body1: { fontSize: getResponsiveFontSize(SIZES.body1), lineHeight: getResponsiveFontSize(24), getFont: (language) => ({ fontFamily: getFontFamily(language) }) },
+  body2: { fontSize: getResponsiveFontSize(SIZES.body2), lineHeight: getResponsiveFontSize(20), getFont: (language) => ({ fontFamily: getFontFamily(language) }) },
+  body3: { fontSize: getResponsiveFontSize(SIZES.body3), lineHeight: getResponsiveFontSize(16), getFont: (language) => ({ fontFamily: getFontFamily(language) }) },
   arabic: { 
     fontFamily: 'UthmanTN_v2-0', 
-    fontSize: 28, 
-    lineHeight: 40,
+    fontSize: getResponsiveFontSize(28), 
+    lineHeight: getResponsiveFontSize(40),
     writingDirection: 'rtl',
     textAlign: 'center',
     includeFontPadding: false

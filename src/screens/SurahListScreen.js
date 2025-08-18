@@ -20,6 +20,14 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useLanguage } from '../utils/languageContext';
 import Svg, { Polygon, Line } from 'react-native-svg';
 import { COLORS as BASE_COLORS, SIZES, FONTS } from '../utils/theme';
+import { 
+  getResponsiveContainerDimensions, 
+  getResponsivePosition,
+  getResponsiveFontSize,
+  getResponsiveSpacing,
+  RESPONSIVE_FONT_SIZES,
+  RESPONSIVE_SPACING
+} from '../utils/responsive';
 import Text from '../components/Text';
 import Card from '../components/Card';
 import ProgressBar from '../components/ProgressBar';
@@ -517,10 +525,10 @@ const SurahListScreen = ({ navigation, route }) => {
                   // Juz mode header
                   <>
                     <RNText variant="h1" style={[
-                      { fontFamily: 'KFGQPC Uthman Taha Naskh', fontSize: 40, fontWeight: 'bold', color: '#F5E6C8', marginTop: 50, marginBottom: 8, textShadowColor: '#000', textShadowOffset: { width: 1, height: 1 }, textShadowRadius: 3 }
+                      { fontFamily: 'KFGQPC Uthman Taha Naskh', fontSize: getResponsiveFontSize(40), fontWeight: 'bold', color: '#F5E6C8', marginTop: getResponsiveSpacing(50), marginBottom: getResponsiveSpacing(8), textShadowColor: '#000', textShadowOffset: { width: 1, height: 1 }, textShadowRadius: 3 }
                     ]}>{juzTitle}</RNText>
                     <RNText variant="body1" style={[
-                      { fontFamily: language === 'ar' ? 'KFGQPC Uthman Taha Naskh' : 'Montserrat-Regular', fontSize: 16, color: '#CCCCCC', textAlign: 'center', marginBottom: 16 }
+                      { fontFamily: language === 'ar' ? 'KFGQPC Uthman Taha Naskh' : 'Montserrat-Regular', fontSize: getResponsiveFontSize(16), color: '#CCCCCC', textAlign: 'center', marginBottom: getResponsiveSpacing(16) }
                     ]}>{juzSubtitle}</RNText>
 
                   </>
@@ -653,11 +661,7 @@ const SurahListScreen = ({ navigation, route }) => {
                   resizeMode="contain"
                 />
                 
-                {searchText.length > 0 && (
-                  <TouchableOpacity onPress={() => setSearchText('')} style={styles.clearButton}>
-                    <Ionicons name="close-circle" size={20} color="#666" />
-                  </TouchableOpacity>
-                                  )}
+                {/* Clear button removed as requested */}
                 </View>
                 
 
@@ -777,6 +781,7 @@ const AllSurahsTab = ({ navigation, route, searchText, isJuzMode, juzData, isSea
     },
   });
   const [selectedSurahId, setSelectedSurahId] = useState(null);
+  const [pressedSurahId, setPressedSurahId] = useState(null);
   const [contentHeight, setContentHeight] = useState(1);
   const [visibleHeight, setVisibleHeight] = useState(1);
   const [refreshKey, setRefreshKey] = useState(0);
@@ -1134,15 +1139,29 @@ const AllSurahsTab = ({ navigation, route, searchText, isJuzMode, juzData, isSea
       
       // More robust scrolling with multiple attempts
       const scrollToSurah = (attempts = 0) => {
-        const surahIndex = surahs.findIndex(s => s.id === route.params.currentSurahId);
+        const surahIndex = filteredSurahs.findIndex(s => s.id === route.params.currentSurahId);
         
         if (surahIndex !== -1 && flatListRef.current) {
           try {
-            flatListRef.current.scrollToIndex({
-              index: surahIndex,
-              animated: true,
-              viewPosition: 0.5, // Show the item in the middle of the screen
-            });
+            console.log(`[SurahListScreen] Scrolling to surah index: ${surahIndex}, surah ID: ${route.params.currentSurahId}`);
+            
+            // For surahs at the top (index 0-2), just scroll to top
+            if (surahIndex <= 2) {
+              console.log(`[SurahListScreen] Top surah detected, scrolling to top`);
+              flatListRef.current.scrollToOffset({
+                offset: 0,
+                animated: true,
+              });
+            } else {
+              // For other surahs, try to center them
+              console.log(`[SurahListScreen] Attempting scrollToIndex with viewPosition: 0.5`);
+              flatListRef.current.scrollToIndex({
+                index: surahIndex,
+                animated: true,
+                viewPosition: 0.5, // Center the item
+              });
+            }
+            
             // Clear the selected surah after scrolling to remove green border
             setTimeout(() => setSelectedSurahId(null), 1000);
           } catch (error) {
@@ -1158,7 +1177,7 @@ const AllSurahsTab = ({ navigation, route, searchText, isJuzMode, juzData, isSea
       };
       
       // Start scrolling after a delay to ensure list is rendered
-      setTimeout(() => scrollToSurah(), 300);
+      setTimeout(() => scrollToSurah(), 1200);
       
       // Clear the parameter after use to prevent re-scrolling
       navigation.setParams({ currentSurahId: undefined });
@@ -1235,6 +1254,7 @@ const AllSurahsTab = ({ navigation, route, searchText, isJuzMode, juzData, isSea
 
   const renderSurahItem = ({ item, index }) => {
     const isSelected = selectedSurahId === item.id;
+    const isPressed = pressedSurahId === item.id;
     const isCompleted = item.memorizedAyahs === item.totalAyahs && item.totalAyahs > 0;
     
     return (
@@ -1257,13 +1277,11 @@ const AllSurahsTab = ({ navigation, route, searchText, isJuzMode, juzData, isSea
             styles.surahCard, 
             {
               backgroundColor: 'rgba(0, 0, 0, 0.4)', // Less transparent black background for readability
-              borderColor: isSelected ? COLORS.primary : 'rgba(165,115,36,0.8)',
-              borderWidth: isSelected ? 2 : 1,
+              borderColor: isSelected ? COLORS.primary : (isPressed ? COLORS.primary : (isCompleted ? '#fae29f' : 'rgba(165,115,36,0.8)')),
+              borderWidth: isSelected ? 2 : (isPressed || isCompleted ? 2 : 1),
               marginHorizontal: isCompleted ? 0 : SIZES.medium,
-              // Add softer glowing border effect for completed surahs
-              ...(isCompleted && {
-                borderColor: '#fae29f',
-                borderWidth: 2,
+              // Add softer glowing border effect for completed surahs (only when not selected or pressed)
+              ...(isCompleted && !isSelected && !isPressed && {
                 shadowColor: '#fae29f',
                 shadowOffset: { width: 0, height: 0 },
                 shadowOpacity: 0.6,
@@ -1272,8 +1290,10 @@ const AllSurahsTab = ({ navigation, route, searchText, isJuzMode, juzData, isSea
               }),
             }
           ]}
+          onPressIn={() => setPressedSurahId(item.id)}
+          onPressOut={() => setPressedSurahId(null)}
           onPress={() => navigation.navigate('Memorization', { surah: item })}
-          activeOpacity={0.8}
+          activeOpacity={0.6}
         >
       <View style={styles.surahInfo}>
             <View style={{ 
@@ -1291,14 +1311,14 @@ const AllSurahsTab = ({ navigation, route, searchText, isJuzMode, juzData, isSea
                       fontFamily: 'KFGQPC Uthman Taha Naskh', 
                       fontSize: 24, // Increased from 20 to make surah names larger
                       lineHeight: 28, // Adjusted line height accordingly
-                      color: isSelected ? COLORS.primary : '#F5E6C8', 
+                      color: (isSelected || isPressed) ? COLORS.primary : '#F5E6C8', 
                       textAlign: 'right', 
                       flex: 1,
                       writingDirection: 'rtl',
                       includeFontPadding: false,
                       textAlignVertical: 'center'
                     }
-                  : [FONTS.h3.getFont(language), { color: isSelected ? COLORS.primary : '#F5E6C8', textAlign: 'left', fontSize: 22 }], // Increased English size too
+                  : [FONTS.h3.getFont(language), { color: (isSelected || isPressed) ? COLORS.primary : '#F5E6C8', textAlign: 'left', fontSize: 22 }], // Increased English size too
               ]} lang={language === 'ar' ? 'ar' : undefined}>
                 {language === 'ar' ? t(`surah_${item.id}`) : item.name}
               </RNText>
@@ -1350,13 +1370,7 @@ const AllSurahsTab = ({ navigation, route, searchText, isJuzMode, juzData, isSea
                 completed={isCompleted}
               />
             </View>
-            {isSelected && (
-              <View style={styles.currentIndicator}>
-                <RNText variant="body2" color="primary" style={[FONTS.body2.getFont(language), styles.currentText]}>
-                  {t('memorize')}
-                </RNText>
-              </View>
-            )}
+            {/* Removed Memorize label to prevent box expansion while keeping green highlighting */}
           </View>
         </TouchableOpacity>
       </View>
@@ -1430,22 +1444,36 @@ const AllSurahsTab = ({ navigation, route, searchText, isJuzMode, juzData, isSea
               updateCellsBatchingPeriod={16}
               removeClippedSubviews={true}
               getItemLayout={(data, index) => ({
-                length: 120, // Approximate height of each surah item
-                offset: 120 * index,
+                length: 150, // Approximate height of each surah item
+                offset: 150 * index,
                 index,
               })}
               onScrollToIndexFailed={(info) => {
                 console.warn('Failed to scroll to index:', info);
                 // Try alternative scrolling method
                 if (route.params?.currentSurahId) {
-                  const surahIndex = surahs.findIndex(s => s.id === route.params.currentSurahId);
+                  const surahIndex = filteredSurahs.findIndex(s => s.id === route.params.currentSurahId);
                   if (surahIndex !== -1 && flatListRef.current) {
-                    // Use scrollToOffset as fallback
-                    const estimatedOffset = surahIndex * 150; // Approximate item height
-                    flatListRef.current.scrollToOffset({
-                      offset: estimatedOffset,
-                      animated: true,
-                    });
+                    // For surahs at the top (index 0-2), just scroll to top
+                    if (surahIndex <= 2) {
+                      console.log(`[SurahListScreen] onScrollToIndexFailed - Top surah detected, scrolling to top`);
+                      flatListRef.current.scrollToOffset({
+                        offset: 0,
+                        animated: true,
+                      });
+                    } else {
+                      // Use scrollToOffset as fallback with centering for other surahs
+                      const screenHeight = Dimensions.get('window').height;
+                      const itemHeight = 150; // Approximate item height
+                      const estimatedOffset = surahIndex * itemHeight;
+                      const centeredOffset = Math.max(0, estimatedOffset - (screenHeight / 2) + (itemHeight / 2));
+                      console.log(`[SurahListScreen] onScrollToIndexFailed - Using fallback scrollToOffset: ${centeredOffset}`);
+                      
+                      flatListRef.current.scrollToOffset({
+                        offset: centeredOffset,
+                        animated: true,
+                      });
+                    }
                   }
                 }
               }}
@@ -1470,7 +1498,7 @@ const JuzWheelTab = ({ navigation, setJuzFilter, setPreviousJuzFilter, setActive
     return num.toString().replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]);
   };
   const panResponder = useRef(null);
-  const [containerLayout, setContainerLayout] = useState({ width: 300, height: 300 });
+  const [containerLayout, setContainerLayout] = useState(getResponsiveContainerDimensions(300, 300));
   const lastHapticTime = useRef(0); // Add reference to track last haptic feedback time
 
   const handleJuzPress = () => {
@@ -1584,7 +1612,7 @@ const JuzWheelTab = ({ navigation, setJuzFilter, setPreviousJuzFilter, setActive
         onLayout={e => setContainerLayout(e.nativeEvent.layout)}
       >
                        {/* Background hexagon */}
-               <Svg width={300} height={300} style={styles.polygonSvg}>
+               <Svg width={containerLayout.width} height={containerLayout.height} style={styles.polygonSvg}>
                  <Polygon
                    points={generatePolygonPoints(150, 150, 140)}
                    fill="rgba(165, 115, 36, 0.1)"
@@ -1904,11 +1932,7 @@ const ThemesTab = ({ navigation, isSearchBarHidden, setIsSearchBarHidden }) => {
             onFocus={() => setIsSearchFocused(true)}
             onBlur={() => setIsSearchFocused(false)}
           />
-          {searchTheme.length > 0 && (
-            <TouchableOpacity onPress={() => setSearchTheme('')} style={styles.clearThemeButton}>
-              <Ionicons name="close-circle" size={20} color="rgba(255, 255, 255, 0.6)" />
-            </TouchableOpacity>
-          )}
+          {/* Clear button removed as requested */}
         </View>
       </View>
       )}
@@ -2297,6 +2321,8 @@ const styles = StyleSheet.create({
     padding: SIZES.small / 2, // Reduced padding to make search bar thinner
     borderWidth: 1,
     borderColor: '#C0C0C0',
+    minHeight: 40, // Fixed height to prevent dimension changes
+    height: 40, // Fixed height to prevent dimension changes
   },
   searchIcon: {
     marginRight: SIZES.small,
@@ -2309,9 +2335,7 @@ const styles = StyleSheet.create({
     textShadowOffset: { width: 1, height: 1 },
     textShadowRadius: 2,
   },
-  clearButton: {
-    padding: SIZES.small,
-  },
+  // clearButton style removed as clear button is no longer used
   allSurahsButton: {
     backgroundColor: 'rgba(51, 105, 78, 0.8)',
     paddingHorizontal: SIZES.medium,
@@ -2612,6 +2636,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#C0C0C0', // Match Surah search
     backgroundColor: 'transparent', // Match Surah search
+    minHeight: 40, // Fixed height to prevent dimension changes
+    height: 40, // Fixed height to prevent dimension changes
   },
   themeSearchInput: {
     flex: 1,
@@ -2622,9 +2648,7 @@ const styles = StyleSheet.create({
     textShadowOffset: { width: 1, height: 1 },
     textShadowRadius: 2,
   },
-  clearThemeButton: {
-    padding: SIZES.small,
-  },
+  // clearThemeButton style removed as clear button is no longer used
   categoriesList: {
     paddingTop: Platform.OS === 'android' ? 200 : 160, // Brought down first category box
     paddingBottom: SIZES.extraLarge * 8, // Increased significantly more for proper tab clearance

@@ -1,6 +1,13 @@
 import React, { useState, useRef, memo, useMemo, useEffect, useCallback } from 'react';
 import { View, StyleSheet, SafeAreaView, TouchableOpacity, Modal, Animated, Image, ScrollView, TextInput, ImageBackground, TouchableWithoutFeedback, Alert, Pressable, Easing, Platform } from 'react-native';
 import { COLORS as BASE_COLORS, SIZES, FONTS } from '../utils/theme';
+import { 
+  getResponsiveArabicFontSize, 
+  getResponsiveWordWidth, 
+  getResponsiveFontSize,
+  getResponsiveSpacing,
+  RESPONSIVE_FONT_SIZES
+} from '../utils/responsive';
 import Text from '../components/Text';
 import Button from '../components/Button';
 import CardOrig from '../components/Card';
@@ -213,7 +220,7 @@ const MemorizationScreen = ({ route, navigation }) => {
   const [currentPlayingAyah, setCurrentPlayingAyah] = useState(null);
   const [isRepeating, setIsRepeating] = useState(false);
   const spinAnim = useRef(new Animated.Value(0)).current;
-  const [ayahFontSize, setAyahFontSize] = useState(40);
+  const [ayahFontSize, setAyahFontSize] = useState(getResponsiveArabicFontSize(40));
   const [isBoldFont, setIsBoldFont] = useState(false);
   const [isCurrentAyahBookmarked, setIsCurrentAyahBookmarked] = useState(false);
   const [showBookmarkModal, setShowBookmarkModal] = useState(false);
@@ -1357,9 +1364,9 @@ const MemorizationScreen = ({ route, navigation }) => {
                                 marginVertical: 4,
                                 textAlign: 'center',
                                 includeFontPadding: false,
-                                width: `${word.length * (ayahFontSize * 0.6)}px`, // Fixed width for all elements
-                                minWidth: `${word.length * (ayahFontSize * 0.6)}px`,
-                                maxWidth: `${word.length * (ayahFontSize * 0.6)}px`,
+                                width: getResponsiveWordWidth(word.length, ayahFontSize), // Responsive width for all elements
+                                minWidth: getResponsiveWordWidth(word.length, ayahFontSize),
+                                maxWidth: getResponsiveWordWidth(word.length, ayahFontSize),
                               }]}
                               allowFontScaling={false}
                               lang="ar"
@@ -1406,7 +1413,7 @@ const MemorizationScreen = ({ route, navigation }) => {
             {flashcards[currentAyahIndex]?.type === 'bismillah' && language === 'en' && (
               <Text
                 variant="body2"
-                style={[styles.transliterationText, { color: COLORS.primary, fontWeight: 'bold', marginTop: 8 }]}
+                style={[styles.transliterationText, { color: '#5b7f67', fontWeight: 'bold', marginTop: 8 }]}
                 align="center"
               >
                 {flashcards[currentAyahIndex]?.translation}

@@ -10,8 +10,19 @@ const LeaderboardCard = ({
   title, 
   onPress, 
   limit = 3,
-  showLoading = true 
+  showLoading = true,
+  onPressIn,
+  onPressOut,
+  isPressed = false
 }) => {
+  // Determine colors based on type
+  const getTitleColor = () => {
+    return isPressed ? '#5b7f67' : 'rgba(165,115,36,0.8)'; // Green when pressed, orange by default
+  };
+
+  const getBackgroundColor = () => {
+    return isPressed ? 'rgba(91,127,103,0.4)' : 'rgba(91,127,103,0.2)'; // Green background for all leaderboards
+  };
   const { user } = useAuth();
   const [leaderboardData, setLeaderboardData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -79,9 +90,9 @@ const LeaderboardCard = ({
       <TouchableOpacity
         style={{
           flex: 0.48,
-          backgroundColor: 'rgba(128,128,128,0.3)',
-          borderColor: 'rgba(165,115,36,0.8)',
-          borderWidth: 1,
+          backgroundColor: getBackgroundColor(),
+          borderColor: isPressed ? '#5b7f67' : 'rgba(165,115,36,0.8)',
+          borderWidth: 2,
           borderRadius: SIZES.base,
           padding: SIZES.small,
           shadowColor: '#000000',
@@ -94,6 +105,9 @@ const LeaderboardCard = ({
           minHeight: 160,
         }}
         onPress={onPress}
+        onPressIn={onPressIn}
+        onPressOut={onPressOut}
+        activeOpacity={1}
       >
         <ActivityIndicator size="small" color="#5b7f67" />
         <Text style={{ marginTop: 8, color: '#CCCCCC', fontSize: 12 }}>
@@ -107,9 +121,9 @@ const LeaderboardCard = ({
     <TouchableOpacity
       style={{
         flex: 0.48,
-        backgroundColor: 'rgba(128,128,128,0.3)',
-        borderColor: 'rgba(165,115,36,0.8)',
-        borderWidth: 1,
+        backgroundColor: getBackgroundColor(),
+        borderColor: isPressed ? '#5b7f67' : 'rgba(165,115,36,0.8)',
+        borderWidth: 2,
         borderRadius: SIZES.base,
         padding: SIZES.small,
         shadowColor: '#000000',
@@ -120,16 +134,28 @@ const LeaderboardCard = ({
         minHeight: 160,
       }}
       onPress={onPress}
+      onPressIn={onPressIn}
+      onPressOut={onPressOut}
+      activeOpacity={1}
     >
-      <Text style={{
-        textAlign: 'center',
-        color: '#5b7f67',
-        fontWeight: 'bold',
-        fontSize: 16,
-        marginBottom: 8,
-      }}>
-        {title}
-      </Text>
+      <View style={{ borderBottomWidth: 2, borderBottomColor: 'rgba(51,51,51,0.6)', paddingBottom: 4, marginBottom: 8 }}>
+        <Text style={{
+          textAlign: 'center',
+          color: getTitleColor(),
+          fontWeight: 'bold',
+          fontSize: 16,
+          transform: [{ translateY: isPressed ? 3 : 0 }],
+          textShadowColor: '#000000',
+          textShadowOffset: { width: 0, height: 1 },
+          textShadowRadius: 3,
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 1 },
+          shadowOpacity: 0.3,
+          shadowRadius: 3,
+        }}>
+          {title}
+        </Text>
+      </View>
       
       {/* Top 3 Preview */}
       <View style={{ marginBottom: SIZES.small }}>

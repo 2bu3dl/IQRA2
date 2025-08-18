@@ -49,7 +49,11 @@ const HighlightedArabicText = ({
         style={[
           styles.arabicWord, 
           baseWordStyle,
-          { color: highlightedIndex === index ? '#FFA500' : '#5b7f67' }
+          { 
+            color: isPlaying 
+              ? (highlightedIndex === index ? 'rgba(165,115,36,0.8)' : '#5b7f67') // Orange for highlighted word, green for others when playing
+              : '#333333' // Super dark gray when not playing
+          }
         ]}
         allowFontScaling={false}
         lang="ar"
