@@ -424,26 +424,28 @@ const MemorizationScreen = ({ route, navigation }) => {
   const flashcards = useMemo(() => {
     if (!ayaat || !Array.isArray(ayaat)) return [];
     const cards = [];
-      // 1. Isti'adhah
+    
+    // 1. Isti'adhah
     cards.push({
-        type: 'istiadhah',
-        text: 'أَعُوذُ بِاللَّهِ مِنَ الشَّيْطَانِ الرَّجِيمِ',
+      type: 'istiadhah',
+      text: 'أَعُوذُ بِاللَّهِ مِنَ الشَّيْطَانِ الرَّجِيمِ',
       transliteration: "A'udhu billahi min ash-shaytan ir-rajim",
       translation: 'I seek protection/refuge in Allah from shay6an, the accursed outcast (eternally expelled and rejected from divine mercy)'
-      });
-      // 2. Bismillah (if not Al-Fatihah and not Surah 9)
-      if (surahNumber !== 1 && surahNumber !== 9) {
+    });
+    // 2. Bismillah (if not Al-Fatihah and not Surah 9)
+    if (surahNumber !== 1 && surahNumber !== 9) {
       cards.push({
-          type: 'bismillah',
-          text: 'بِسْمِ اللّٰهِ الرَّحْمٰنِ الرَّحِیْمِ',
+        type: 'bismillah',
+        text: 'بِسْمِ اللّٰهِ الرَّحْمٰنِ الرَّحِیْمِ',
         transliteration: 'Bismillāhir-Raḥmānir-Raḥīm',
         translation: 'In the name of Allah, the Entirely Merciful, the Especially Merciful.'
-        });
-      }
-      // 3. All ayat as normal
+      });
+    }
+    
+    // 3. All ayat as normal
     for (let i = 0; i < ayaat.length; i++) {
       cards.push({ ...ayaat[i], type: 'ayah' });
-      }
+    }
     return cards;
   }, [ayaat, surahNumber]);
 
@@ -703,7 +705,7 @@ const MemorizationScreen = ({ route, navigation }) => {
     return getOriginalSurahName(surahId);
   };
 
-  // Static audio map for Al-Fatiha and Al-Mulk
+  // Static audio map for Al-Fatiha, Al-Kahf, and Al-Mulk
   const audioMap = {
     // Al-Fatiha (Surah 1)
     '001_001': require('../assets/AlFatiha_Mishary/001001.mp3'),
@@ -713,6 +715,117 @@ const MemorizationScreen = ({ route, navigation }) => {
     '001_005': require('../assets/AlFatiha_Mishary/001005.mp3'),
     '001_006': require('../assets/AlFatiha_Mishary/001006.mp3'),
     '001_007': require('../assets/AlFatiha_Mishary/001007.mp3'),
+    // Al-Kahf (Surah 18) - Abdur-Rahman as-Sudais
+    '018_001': require('../assets/AlKahf_Sudais/018001.mp3'),
+    '018_002': require('../assets/AlKahf_Sudais/018002.mp3'),
+    '018_003': require('../assets/AlKahf_Sudais/018003.mp3'),
+    '018_004': require('../assets/AlKahf_Sudais/018004.mp3'),
+    '018_005': require('../assets/AlKahf_Sudais/018005.mp3'),
+    '018_006': require('../assets/AlKahf_Sudais/018006.mp3'),
+    '018_007': require('../assets/AlKahf_Sudais/018007.mp3'),
+    '018_008': require('../assets/AlKahf_Sudais/018008.mp3'),
+    '018_009': require('../assets/AlKahf_Sudais/018009.mp3'),
+    '018_010': require('../assets/AlKahf_Sudais/018010.mp3'),
+    '018_011': require('../assets/AlKahf_Sudais/018011.mp3'),
+    '018_012': require('../assets/AlKahf_Sudais/018012.mp3'),
+    '018_013': require('../assets/AlKahf_Sudais/018013.mp3'),
+    '018_014': require('../assets/AlKahf_Sudais/018014.mp3'),
+    '018_015': require('../assets/AlKahf_Sudais/018015.mp3'),
+    '018_016': require('../assets/AlKahf_Sudais/018016.mp3'),
+    '018_017': require('../assets/AlKahf_Sudais/018017.mp3'),
+    '018_018': require('../assets/AlKahf_Sudais/018018.mp3'),
+    '018_019': require('../assets/AlKahf_Sudais/018019.mp3'),
+    '018_020': require('../assets/AlKahf_Sudais/018020.mp3'),
+    '018_021': require('../assets/AlKahf_Sudais/018021.mp3'),
+    '018_022': require('../assets/AlKahf_Sudais/018022.mp3'),
+    '018_023': require('../assets/AlKahf_Sudais/018023.mp3'),
+    '018_024': require('../assets/AlKahf_Sudais/018024.mp3'),
+    '018_025': require('../assets/AlKahf_Sudais/018025.mp3'),
+    '018_026': require('../assets/AlKahf_Sudais/018026.mp3'),
+    '018_027': require('../assets/AlKahf_Sudais/018027.mp3'),
+    '018_028': require('../assets/AlKahf_Sudais/018028.mp3'),
+    '018_029': require('../assets/AlKahf_Sudais/018029.mp3'),
+    '018_030': require('../assets/AlKahf_Sudais/018030.mp3'),
+    '018_031': require('../assets/AlKahf_Sudais/018031.mp3'),
+    '018_032': require('../assets/AlKahf_Sudais/018032.mp3'),
+    '018_033': require('../assets/AlKahf_Sudais/018033.mp3'),
+    '018_034': require('../assets/AlKahf_Sudais/018034.mp3'),
+    '018_035': require('../assets/AlKahf_Sudais/018035.mp3'),
+    '018_036': require('../assets/AlKahf_Sudais/018036.mp3'),
+    '018_037': require('../assets/AlKahf_Sudais/018037.mp3'),
+    '018_038': require('../assets/AlKahf_Sudais/018038.mp3'),
+    '018_039': require('../assets/AlKahf_Sudais/018039.mp3'),
+    '018_040': require('../assets/AlKahf_Sudais/018040.mp3'),
+    '018_041': require('../assets/AlKahf_Sudais/018041.mp3'),
+    '018_042': require('../assets/AlKahf_Sudais/018042.mp3'),
+    '018_043': require('../assets/AlKahf_Sudais/018043.mp3'),
+    '018_044': require('../assets/AlKahf_Sudais/018044.mp3'),
+    '018_045': require('../assets/AlKahf_Sudais/018045.mp3'),
+    '018_046': require('../assets/AlKahf_Sudais/018046.mp3'),
+    '018_047': require('../assets/AlKahf_Sudais/018047.mp3'),
+    '018_048': require('../assets/AlKahf_Sudais/018048.mp3'),
+    '018_049': require('../assets/AlKahf_Sudais/018049.mp3'),
+    '018_050': require('../assets/AlKahf_Sudais/018050.mp3'),
+    '018_051': require('../assets/AlKahf_Sudais/018051.mp3'),
+    '018_052': require('../assets/AlKahf_Sudais/018052.mp3'),
+    '018_053': require('../assets/AlKahf_Sudais/018053.mp3'),
+    '018_054': require('../assets/AlKahf_Sudais/018054.mp3'),
+    '018_055': require('../assets/AlKahf_Sudais/018055.mp3'),
+    '018_056': require('../assets/AlKahf_Sudais/018056.mp3'),
+    '018_057': require('../assets/AlKahf_Sudais/018057.mp3'),
+    '018_058': require('../assets/AlKahf_Sudais/018058.mp3'),
+    '018_059': require('../assets/AlKahf_Sudais/018059.mp3'),
+    '018_060': require('../assets/AlKahf_Sudais/018060.mp3'),
+    '018_061': require('../assets/AlKahf_Sudais/018061.mp3'),
+    '018_062': require('../assets/AlKahf_Sudais/018062.mp3'),
+    '018_063': require('../assets/AlKahf_Sudais/018063.mp3'),
+    '018_064': require('../assets/AlKahf_Sudais/018064.mp3'),
+    '018_065': require('../assets/AlKahf_Sudais/018065.mp3'),
+    '018_066': require('../assets/AlKahf_Sudais/018066.mp3'),
+    '018_067': require('../assets/AlKahf_Sudais/018067.mp3'),
+    '018_068': require('../assets/AlKahf_Sudais/018068.mp3'),
+    '018_069': require('../assets/AlKahf_Sudais/018069.mp3'),
+    '018_070': require('../assets/AlKahf_Sudais/018070.mp3'),
+    '018_071': require('../assets/AlKahf_Sudais/018071.mp3'),
+    '018_072': require('../assets/AlKahf_Sudais/018072.mp3'),
+    '018_073': require('../assets/AlKahf_Sudais/018073.mp3'),
+    '018_074': require('../assets/AlKahf_Sudais/018074.mp3'),
+    '018_075': require('../assets/AlKahf_Sudais/018075.mp3'),
+    '018_076': require('../assets/AlKahf_Sudais/018076.mp3'),
+    '018_077': require('../assets/AlKahf_Sudais/018077.mp3'),
+    '018_078': require('../assets/AlKahf_Sudais/018078.mp3'),
+    '018_079': require('../assets/AlKahf_Sudais/018079.mp3'),
+    '018_080': require('../assets/AlKahf_Sudais/018080.mp3'),
+    '018_081': require('../assets/AlKahf_Sudais/018081.mp3'),
+    '018_082': require('../assets/AlKahf_Sudais/018082.mp3'),
+    '018_083': require('../assets/AlKahf_Sudais/018083.mp3'),
+    '018_084': require('../assets/AlKahf_Sudais/018084.mp3'),
+    '018_085': require('../assets/AlKahf_Sudais/018085.mp3'),
+    '018_086': require('../assets/AlKahf_Sudais/018086.mp3'),
+    '018_087': require('../assets/AlKahf_Sudais/018087.mp3'),
+    '018_088': require('../assets/AlKahf_Sudais/018088.mp3'),
+    '018_089': require('../assets/AlKahf_Sudais/018089.mp3'),
+    '018_090': require('../assets/AlKahf_Sudais/018090.mp3'),
+    '018_091': require('../assets/AlKahf_Sudais/018091.mp3'),
+    '018_092': require('../assets/AlKahf_Sudais/018092.mp3'),
+    '018_093': require('../assets/AlKahf_Sudais/018093.mp3'),
+    '018_094': require('../assets/AlKahf_Sudais/018094.mp3'),
+    '018_095': require('../assets/AlKahf_Sudais/018095.mp3'),
+    '018_096': require('../assets/AlKahf_Sudais/018096.mp3'),
+    '018_097': require('../assets/AlKahf_Sudais/018097.mp3'),
+    '018_098': require('../assets/AlKahf_Sudais/018098.mp3'),
+    '018_099': require('../assets/AlKahf_Sudais/018099.mp3'),
+    '018_100': require('../assets/AlKahf_Sudais/018100.mp3'),
+    '018_101': require('../assets/AlKahf_Sudais/018101.mp3'),
+    '018_102': require('../assets/AlKahf_Sudais/018102.mp3'),
+    '018_103': require('../assets/AlKahf_Sudais/018103.mp3'),
+    '018_104': require('../assets/AlKahf_Sudais/018104.mp3'),
+    '018_105': require('../assets/AlKahf_Sudais/018105.mp3'),
+    '018_106': require('../assets/AlKahf_Sudais/018106.mp3'),
+    '018_107': require('../assets/AlKahf_Sudais/018107.mp3'),
+    '018_108': require('../assets/AlKahf_Sudais/018108.mp3'),
+    '018_109': require('../assets/AlKahf_Sudais/018109.mp3'),
+    '018_110': require('../assets/AlKahf_Sudais/018110.mp3'),
     // Al-Mulk (Surah 67)
     '067_001': require('../assets/AlMulk_AlGhamdi/067001.mp3'),
     '067_002': require('../assets/AlMulk_AlGhamdi/067002.mp3'),
@@ -744,6 +857,26 @@ const MemorizationScreen = ({ route, navigation }) => {
     '067_028': require('../assets/AlMulk_AlGhamdi/067028.mp3'),
     '067_029': require('../assets/AlMulk_AlGhamdi/067029.mp3'),
     '067_030': require('../assets/AlMulk_AlGhamdi/067030.mp3'),
+    // Al-Alaq (Surah 96) - Mostafa Ismaeel
+    '096_001': require('../assets/AlAlaq_MostafaIsmaeel/096001.mp3'),
+    '096_002': require('../assets/AlAlaq_MostafaIsmaeel/096002.mp3'),
+    '096_003': require('../assets/AlAlaq_MostafaIsmaeel/096003.mp3'),
+    '096_004': require('../assets/AlAlaq_MostafaIsmaeel/096004.mp3'),
+    '096_005': require('../assets/AlAlaq_MostafaIsmaeel/096005.mp3'),
+    '096_006': require('../assets/AlAlaq_MostafaIsmaeel/096006.mp3'),
+    '096_007': require('../assets/AlAlaq_MostafaIsmaeel/096007.mp3'),
+    '096_008': require('../assets/AlAlaq_MostafaIsmaeel/096008.mp3'),
+    '096_009': require('../assets/AlAlaq_MostafaIsmaeel/096009.mp3'),
+    '096_010': require('../assets/AlAlaq_MostafaIsmaeel/096010.mp3'),
+    '096_011': require('../assets/AlAlaq_MostafaIsmaeel/096011.mp3'),
+    '096_012': require('../assets/AlAlaq_MostafaIsmaeel/096012.mp3'),
+    '096_013': require('../assets/AlAlaq_MostafaIsmaeel/096013.mp3'),
+    '096_014': require('../assets/AlAlaq_MostafaIsmaeel/096014.mp3'),
+    '096_015': require('../assets/AlAlaq_MostafaIsmaeel/096015.mp3'),
+    '096_016': require('../assets/AlAlaq_MostafaIsmaeel/096016.mp3'),
+    '096_017': require('../assets/AlAlaq_MostafaIsmaeel/096017.mp3'),
+    '096_018': require('../assets/AlAlaq_MostafaIsmaeel/096018.mp3'),
+    '096_019': require('../assets/AlAlaq_MostafaIsmaeel/096019.mp3'),
   };
 
   function getAyahAudioUri(surahNumber, ayahNumber) {

@@ -153,193 +153,60 @@ export const alMulkMetadata = {
   }
 };
 
-// Audio metadata for Surah Al-Kahf (Surah 18)
+// Audio metadata for Surah Al-Kahf (Surah 18) - Simple metadata with proper text
 export const alKahfMetadata = {
   "surah": 18,
   "name": "Al-Kahf",
   "ayaat": {
     "1": {
       "ayah": 1,
-      "text": "ٱلحمد لله ٱلذىٓ أنزل على عبده ٱلكتـب ولم يجعل",
+      "text": "ٱلْحَمْدُ لِلَّهِ ٱلَّذِىٓ أَنزَلَ عَلَىٰ عَبْدِهِ ٱلْكِتَـٰبَ وَلَمْ يَجْعَل لَّهُۥ عِوَجَا ۜ",
       "words": [
-        {
-          "text": "ٱلحمد",
-          "startTime": 0,
-          "endTime": 0.29,
-          "index": 0
-        },
-        {
-          "text": "لله",
-          "startTime": 0.95,
-          "endTime": 1,
-          "index": 1
-        },
-        {
-          "text": "ٱلذىٓ",
-          "startTime": 2.01,
-          "endTime": 2.76,
-          "index": 2
-        },
-        {
-          "text": "أنزل",
-          "startTime": 2.76,
-          "endTime": 2.88,
-          "index": 3
-        },
-        {
-          "text": "على",
-          "startTime": 3.97,
-          "endTime": 4.01,
-          "index": 4
-        },
-        {
-          "text": "عبده",
-          "startTime": 4.01,
-          "endTime": 4.29,
-          "index": 5
-        },
-        {
-          "text": "ٱلكتـب",
-          "startTime": 5.96,
-          "endTime": 6.58,
-          "index": 6
-        },
-        {
-          "text": "ولم",
-          "startTime": 7.01,
-          "endTime": 7.12,
-          "index": 7
-        },
-        {
-          "text": "يجعل",
-          "startTime": 7.12,
-          "endTime": 7.18,
-          "index": 8
-        }
+        { "text": "ٱلْحَمْدُ", "startTime": 0, "endTime": 1.5, "index": 0 },
+        { "text": "لِلَّهِ", "startTime": 1.5, "endTime": 2.8, "index": 1 },
+        { "text": "ٱلَّذِىٓ", "startTime": 2.8, "endTime": 4.2, "index": 2 },
+        { "text": "أَنزَلَ", "startTime": 4.2, "endTime": 5.5, "index": 3 },
+        { "text": "عَلَىٰ", "startTime": 5.5, "endTime": 6.8, "index": 4 },
+        { "text": "عَبْدِهِ", "startTime": 6.8, "endTime": 8.2, "index": 5 },
+        { "text": "ٱلْكِتَـٰبَ", "startTime": 8.2, "endTime": 9.8, "index": 6 },
+        { "text": "وَلَمْ", "startTime": 9.8, "endTime": 11.0, "index": 7 },
+        { "text": "يَجْعَل", "startTime": 11.0, "endTime": 12.5, "index": 8 },
+        { "text": "لَّهُۥ", "startTime": 12.5, "endTime": 13.8, "index": 9 },
+        { "text": "عِوَجَا", "startTime": 13.8, "endTime": 15.2, "index": 10 }
       ],
-      "totalDuration": 7.18
+      "totalDuration": 15.2
     },
     "2": {
       "ayah": 2,
-      "text": "له عوجا قيما لينذر بأسا شديدا من لدنه ويبشر",
+      "text": "قَيِّمًا لِّيُنذِرَ بَأْسًا شَدِيدًا مِّن لَّدُنْهُ وَيُبَشِّرَ ٱلْمُؤْمِنِينَ ٱلَّذِينَ يَعْمَلُونَ ٱلصَّـٰلِحَـٰتِ أَنَّ لَهُمْ أَجْرًا حَسَنًا",
       "words": [
-        {
-          "text": "له",
-          "startTime": 7.64,
-          "endTime": 7.67,
-          "index": 0
-        },
-        {
-          "text": "عوجا",
-          "startTime": 8.28,
-          "endTime": 8.66,
-          "index": 1
-        },
-        {
-          "text": "قيما",
-          "startTime": 8.96,
-          "endTime": 9.15,
-          "index": 2
-        },
-        {
-          "text": "لينذر",
-          "startTime": 9.65,
-          "endTime": 9.86,
-          "index": 3
-        },
-        {
-          "text": "بأسا",
-          "startTime": 10.64,
-          "endTime": 10.8,
-          "index": 4
-        },
-        {
-          "text": "شديدا",
-          "startTime": 10.94,
-          "endTime": 11.18,
-          "index": 5
-        },
-        {
-          "text": "من",
-          "startTime": 12.23,
-          "endTime": 12.75,
-          "index": 6
-        },
-        {
-          "text": "لدنه",
-          "startTime": 12.87,
-          "endTime": 13.09,
-          "index": 7
-        },
-        {
-          "text": "ويبشر",
-          "startTime": 14.07,
-          "endTime": 14.28,
-          "index": 8
-        }
+        { "text": "قَيِّمًا", "startTime": 0, "endTime": 1.2, "index": 0 },
+        { "text": "لِّيُنذِرَ", "startTime": 1.2, "endTime": 2.4, "index": 1 },
+        { "text": "بَأْسًا", "startTime": 2.4, "endTime": 3.6, "index": 2 },
+        { "text": "شَدِيدًا", "startTime": 3.6, "endTime": 4.8, "index": 3 },
+        { "text": "مِّن", "startTime": 4.8, "endTime": 6.0, "index": 4 },
+        { "text": "لَّدُنْهُ", "startTime": 6.0, "endTime": 7.2, "index": 5 },
+        { "text": "وَيُبَشِّرَ", "startTime": 7.2, "endTime": 8.4, "index": 6 },
+        { "text": "ٱلْمُؤْمِنِينَ", "startTime": 8.4, "endTime": 9.6, "index": 7 },
+        { "text": "ٱلَّذِينَ", "startTime": 9.6, "endTime": 10.8, "index": 8 },
+        { "text": "يَعْمَلُونَ", "startTime": 10.8, "endTime": 12.0, "index": 9 },
+        { "text": "ٱلصَّـٰلِحَـٰتِ", "startTime": 12.0, "endTime": 13.2, "index": 10 },
+        { "text": "أَنَّ", "startTime": 13.2, "endTime": 14.4, "index": 11 },
+        { "text": "لَهُمْ", "startTime": 14.4, "endTime": 15.6, "index": 12 },
+        { "text": "أَجْرًا", "startTime": 15.6, "endTime": 16.8, "index": 13 },
+        { "text": "حَسَنًا", "startTime": 16.8, "endTime": 18.0, "index": 14 }
       ],
-      "totalDuration": 14.28
+      "totalDuration": 18.0
     },
     "3": {
       "ayah": 3,
-      "text": "ٱلمؤمنين ٱلذين يعملون ٱلصـلحـت أن لهم أجرا حسنا مـكثين",
+      "text": "مَّـٰكِثِينَ فِيهِ أَبَدًا",
       "words": [
-        {
-          "text": "ٱلمؤمنين",
-          "startTime": 14.28,
-          "endTime": 14.85,
-          "index": 0
-        },
-        {
-          "text": "ٱلذين",
-          "startTime": 15.31,
-          "endTime": 15.39,
-          "index": 1
-        },
-        {
-          "text": "يعملون",
-          "startTime": 15.39,
-          "endTime": 15.64,
-          "index": 2
-        },
-        {
-          "text": "ٱلصـلحـت",
-          "startTime": 16.02,
-          "endTime": 16.38,
-          "index": 3
-        },
-        {
-          "text": "أن",
-          "startTime": 17.16,
-          "endTime": 17.18,
-          "index": 4
-        },
-        {
-          "text": "لهم",
-          "startTime": 17.89,
-          "endTime": 18.14,
-          "index": 5
-        },
-        {
-          "text": "أجرا",
-          "startTime": 20.14,
-          "endTime": 20.2,
-          "index": 6
-        },
-        {
-          "text": "حسنا",
-          "startTime": 21.02,
-          "endTime": 21.33,
-          "index": 7
-        },
-        {
-          "text": "مـكثين",
-          "startTime": 21.6,
-          "endTime": 21.97,
-          "index": 8
-        }
+        { "text": "مَّـٰكِثِينَ", "startTime": 0, "endTime": 1.2, "index": 0 },
+        { "text": "فِيهِ", "startTime": 1.2, "endTime": 2.4, "index": 1 },
+        { "text": "أَبَدًا", "startTime": 2.4, "endTime": 3.6, "index": 2 }
       ],
-      "totalDuration": 21.97
+      "totalDuration": 3.6
     },
     "4": {
       "ayah": 4,
@@ -6246,7 +6113,14 @@ export const getAyahMetadata = (surahNumber, ayahNumber) => {
     return alMulkMetadata.ayaat[ayahNumber] || null;
   }
   if (surahNumber === 18) {
-    return alKahfMetadata.ayaat[ayahNumber] || null;
+    // Always use measured-audio, per-word timing for Al-Kahf
+    const { createSimpleWordTiming } = require('./simpleWordTiming');
+    return createSimpleWordTiming(ayahNumber);
+  }
+  if (surahNumber === 96) {
+    // Always use measured-audio, per-word timing for Al-Alaq
+    const { createAlAlaqWordTiming } = require('./simpleWordTiming');
+    return createAlAlaqWordTiming(ayahNumber);
   }
   return null;
 };

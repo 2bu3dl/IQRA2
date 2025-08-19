@@ -49,6 +49,12 @@ const initialState = {
       lastAyahIndex: 0,
       completedAyaat: [],
     },
+    'Al-Kahf': {
+      total: 110,
+      memorized: 0,
+      lastAyahIndex: 0,
+      completedAyaat: [],
+    },
   },
 };
 

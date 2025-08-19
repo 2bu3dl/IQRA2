@@ -1259,7 +1259,7 @@ const HomeScreen = ({ navigation, route }) => {
                 id: 'stats',
                 content: (
                   <View style={{
-                    marginTop: isSmallScreen ? 25 : (isMediumScreen ? 30 : 35),
+                    marginTop: isSmallScreen ? 85 : (isMediumScreen ? 90 : 95),
                     marginBottom: 40,
                     alignItems: 'center',
                     width: '100%',
@@ -1410,7 +1410,7 @@ const HomeScreen = ({ navigation, route }) => {
                         shadowOpacity: 0.6,
                         shadowRadius: 6,
                         elevation: 8,
-                        height: isSmallScreen ? 140 : 160,
+                        height: isSmallScreen ? 160 : 180,
                         marginHorizontal: 0
                       }}>
                         <TouchableOpacity
@@ -1470,7 +1470,7 @@ const HomeScreen = ({ navigation, route }) => {
                         shadowOpacity: 0.6,
                         shadowRadius: 6,
                         elevation: 8,
-                        height: isSmallScreen ? 140 : 160,
+                        height: isSmallScreen ? 160 : 180,
                         marginHorizontal: 0
                       }}>
                         <TouchableOpacity
