@@ -6,6 +6,7 @@ import { LanguageProvider } from './src/utils/languageContext';
 import { AuthProvider } from './src/utils/authContext';
 import { Linking, LogBox } from 'react-native';
 import { supabase } from './src/utils/supabase';
+// Removed debugging import
 
 // Import screens
 import HomeScreen from './src/screens/HomeScreen';
@@ -17,6 +18,7 @@ import ProfileScreen from './src/screens/ProfileScreen';
 import LeaderboardScreen from './src/screens/LeaderboardScreen';
 import RecordingsScreen from './src/screens/RecordingsScreen';
 import NotesBoardScreen from './src/screens/NotesBoardScreen';
+// Removed debug component imports
 
 const Stack = createNativeStackNavigator();
 
@@ -27,6 +29,8 @@ function App() {
     'Warning: The legacy architecture is deprecated',
     'Warning: Please migrate to the new architecture',
   ]);
+
+  // Removed debugging initialization
 
   useEffect(() => {
     // Handle deep links for email confirmation
@@ -83,6 +87,7 @@ function App() {
             <Stack.Screen name="Leaderboard" component={LeaderboardScreen} />
             <Stack.Screen name="Recordings" component={RecordingsScreen} />
             <Stack.Screen name="NotesBoard" component={NotesBoardScreen} />
+            {/* Removed debug screens */}
           </Stack.Navigator>
         </NavigationContainer>
       </LanguageProvider>

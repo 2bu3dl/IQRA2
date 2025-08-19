@@ -1,4 +1,5 @@
 import { getResponsiveFontSize } from './responsive';
+import { getRecommendedArabicFont } from './fontChecker';
 
 export const COLORS = {
   primary: '#388E3C', // Forest green
@@ -54,7 +55,11 @@ const KSA_FONT_CANDIDATES = [
 
 const getFontFamily = (language, weight = 'regular') => {
   if (language === 'ar') {
-    return KSA_FONT_CANDIDATES;
+    // Use KFGQPC fonts for Arabic text (these are working)
+    if (weight === 'bold') {
+      return 'KFGQPC Uthman Taha Naskh Bold';
+    }
+    return 'KFGQPC Uthman Taha Naskh';
   }
   if (weight === 'bold') {
     return 'Montserrat-Bold';
@@ -71,7 +76,15 @@ export const FONTS = {
   body2: { fontSize: getResponsiveFontSize(SIZES.body2), lineHeight: getResponsiveFontSize(20), getFont: (language) => ({ fontFamily: getFontFamily(language) }) },
   body3: { fontSize: getResponsiveFontSize(SIZES.body3), lineHeight: getResponsiveFontSize(16), getFont: (language) => ({ fontFamily: getFontFamily(language) }) },
   arabic: { 
-    fontFamily: 'UthmanTN_v2-0', 
+    fontFamily: getRecommendedArabicFont(), 
+    fontSize: getResponsiveFontSize(28), 
+    lineHeight: getResponsiveFontSize(40),
+    writingDirection: 'rtl',
+    textAlign: 'center',
+    includeFontPadding: false
+  },
+  arabicBold: { 
+    fontFamily: 'UthmanTNB_v2-0', 
     fontSize: getResponsiveFontSize(28), 
     lineHeight: getResponsiveFontSize(40),
     writingDirection: 'rtl',

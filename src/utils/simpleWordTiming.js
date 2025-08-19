@@ -3,8 +3,12 @@
 
 import quranRaw from '../assets/quran.json';
 
+// Removed debugging code
+
 // Get Al Kahf ayahs
 const alKahfAyaat = quranRaw.filter(item => item.surah === 18);
+
+// Removed debugging analysis
 
 // Audio durations for Al Kahf ayahs (in seconds) — measured via afinfo
 const alKahfAudioDurations = {
@@ -156,7 +160,9 @@ const getAlAlaqAudioDuration = (ayahNumber) => {
 // Create simple word timing based on letter count for Al-Kahf
 export const createSimpleWordTiming = (ayahNumber) => {
   const ayahData = alKahfAyaat.find(item => item.ayah === ayahNumber);
-  if (!ayahData) return null;
+  if (!ayahData) {
+    return null;
+  }
   
   const text = ayahData.text;
   const words = text.split(' ').filter(word => word.trim());
@@ -178,11 +184,7 @@ export const createSimpleWordTiming = (ayahNumber) => {
     };
   });
   
-  // Calculate total letter count
-  const totalLetters = wordsWithLetterCount.reduce((sum, word) => sum + word.letterCount, 0);
-  
   // Create fast, even timing that matches audio duration exactly
-  // Make it even faster to ensure it reaches the last word
   const wordDuration = targetDuration / words.length;
   let currentTime = 0;
   

@@ -1,5 +1,7 @@
 // Audio metadata for word-by-word highlighting
 // Timing data for Surah Al-Fatihah (Surah 1)
+// NOTE: This metadata now uses EXACT text from source Quran data
+// to ensure perfect matching for audio highlighting
 
 export const alFatihahMetadata = {
   surah: 1,
@@ -7,79 +9,79 @@ export const alFatihahMetadata = {
   ayaat: {
     1: {
       ayah: 1,
-      text: "بِسْمِ اللّٰهِ الرَّحْمٰنِ الرَّحِیْمِ",
+      text: "بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ",
       words: [
         { text: "بِسْمِ", startTime: 0, endTime: 1.2, index: 0 },
-        { text: "اللّٰهِ", startTime: 1.2, endTime: 2.4, index: 1 },
-        { text: "الرَّحْمٰنِ", startTime: 2.4, endTime: 4.0, index: 2 },
-        { text: "الرَّحِیْمِ", startTime: 4.0, endTime: 5.6, index: 3 }
+        { text: "ٱللَّهِ", startTime: 1.2, endTime: 2.4, index: 1 },
+        { text: "ٱلرَّحْمَـٰنِ", startTime: 2.4, endTime: 4.0, index: 2 },
+        { text: "ٱلرَّحِيمِ", startTime: 4.0, endTime: 5.6, index: 3 }
       ],
       totalDuration: 5.6
     },
     2: {
       ayah: 2,
-      text: "الْحَمْدُ لِلّٰهِ رَبِّ الْعٰلَمِیْنَ",
+      text: "ٱلْحَمْدُ لِلَّهِ رَبِّ ٱلْعَـٰلَمِينَ",
       words: [
-        { text: "الْحَمْدُ", startTime: 0, endTime: 1.5, index: 0 },
-        { text: "لِلّٰهِ", startTime: 1.5, endTime: 2.8, index: 1 },
+        { text: "ٱلْحَمْدُ", startTime: 0, endTime: 1.5, index: 0 },
+        { text: "لِلَّهِ", startTime: 1.5, endTime: 2.8, index: 1 },
         { text: "رَبِّ", startTime: 2.8, endTime: 3.8, index: 2 },
-        { text: "الْعٰلَمِیْنَ", startTime: 3.8, endTime: 5.5, index: 3 }
+        { text: "ٱلْعَـٰلَمِينَ", startTime: 3.8, endTime: 5.5, index: 3 }
       ],
       totalDuration: 5.5
     },
     3: {
       ayah: 3,
-      text: "الرَّحْمٰنِ الرَّحِیْمِ",
+      text: "ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ",
       words: [
-        { text: "الرَّحْمٰنِ", startTime: 0, endTime: 1.8, index: 0 },
-        { text: "الرَّحِیْمِ", startTime: 1.8, endTime: 3.2, index: 1 }
+        { text: "ٱلرَّحْمَـٰنِ", startTime: 0, endTime: 1.8, index: 0 },
+        { text: "ٱلرَّحِيمِ", startTime: 1.8, endTime: 3.2, index: 1 }
       ],
       totalDuration: 3.2
     },
     4: {
       ayah: 4,
-      text: "مٰلِکِ یَوْمِ الدِّیْنِ",
+      text: "مَـٰلِكِ يَوْمِ ٱلدِّينِ",
       words: [
-        { text: "مٰلِکِ", startTime: 0, endTime: 1.3, index: 0 },
-        { text: "یَوْمِ", startTime: 1.3, endTime: 2.2, index: 1 },
-        { text: "الدِّیْنِ", startTime: 2.2, endTime: 3.8, index: 2 }
+        { text: "مَـٰلِكِ", startTime: 0, endTime: 1.3, index: 0 },
+        { text: "يَوْمِ", startTime: 1.3, endTime: 2.2, index: 1 },
+        { text: "ٱلدِّينِ", startTime: 2.2, endTime: 3.8, index: 2 }
       ],
       totalDuration: 3.8
     },
     5: {
       ayah: 5,
-      text: "إِیَّاکَ نَعْبُدُ وَإِیَّاکَ نَسْتَعِیْنُ",
+      text: "إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ",
       words: [
-        { text: "إِیَّاکَ", startTime: 0, endTime: 1.5, index: 0 },
+        { text: "إِيَّاكَ", startTime: 0, endTime: 1.5, index: 0 },
         { text: "نَعْبُدُ", startTime: 1.5, endTime: 2.8, index: 1 },
-        { text: "وَإِیَّاکَ", startTime: 2.8, endTime: 4.2, index: 2 },
-        { text: "نَسْتَعِیْنُ", startTime: 4.2, endTime: 5.8, index: 3 }
+        { text: "وَإِيَّاكَ", startTime: 2.8, endTime: 4.2, index: 2 },
+        { text: "نَسْتَعِينُ", startTime: 4.2, endTime: 5.8, index: 3 }
       ],
       totalDuration: 5.8
     },
     6: {
       ayah: 6,
-      text: "اِهْدِنَا الصِّرٰطَ الْمُسْتَقِیْمَ",
+      text: "ٱهْدِنَا ٱلصِّرَٰطَ ٱلْمُسْتَقِيمَ",
       words: [
-        { text: "اِهْدِنَا", startTime: 0, endTime: 1.6, index: 0 },
-        { text: "الصِّرٰطَ", startTime: 1.6, endTime: 3.0, index: 1 },
-        { text: "الْمُسْتَقِیْمَ", startTime: 3.0, endTime: 4.8, index: 2 }
+        { text: "ٱهْدِنَا", startTime: 0, endTime: 1.6, index: 0 },
+        { text: "ٱلصِّرَٰطَ", startTime: 1.6, endTime: 3.0, index: 1 },
+        { text: "ٱلْمُسْتَقِيمَ", startTime: 3.0, endTime: 4.8, index: 2 }
       ],
       totalDuration: 4.8
     },
     7: {
       ayah: 7,
-      text: "صِرٰطَ الَّذِیْنَ أَنْعَمْتَ عَلَیْهِمْ غَیْرِ الْمَغْضُوْبِ عَلَیْهِمْ وَلَا الضَّآلِّیْنَ",
+      text: "صِرَٰطَ ٱلَّذِينَ أَنْعَمْتَ عَلَيْهِمْ غَيْرِ ٱلْمَغْضُوبِ عَلَيْهِمْ وَلَا ٱلضَّآلِّينَ",
       words: [
-        { text: "صِرٰطَ", startTime: 0, endTime: 1.2, index: 0 },
-        { text: "الَّذِیْنَ", startTime: 1.2, endTime: 2.5, index: 1 },
+        { text: "صِرَٰطَ", startTime: 0, endTime: 1.2, index: 0 },
+        { text: "ٱلَّذِينَ", startTime: 1.2, endTime: 2.5, index: 1 },
         { text: "أَنْعَمْتَ", startTime: 2.5, endTime: 3.8, index: 2 },
-        { text: "عَلَیْهِمْ", startTime: 3.8, endTime: 5.2, index: 3 },
-        { text: "غَیْرِ", startTime: 5.2, endTime: 6.0, index: 4 },
-        { text: "الْمَغْضُوْبِ", startTime: 6.0, endTime: 7.8, index: 5 },
-        { text: "عَلَیْهِمْ", startTime: 7.8, endTime: 9.2, index: 6 },
+        { text: "عَلَيْهِمْ", startTime: 3.8, endTime: 5.2, index: 3 },
+        { text: "غَيْرِ", startTime: 5.2, endTime: 6.0, index: 4 },
+        { text: "ٱلْمَغْضُوبِ", startTime: 6.0, endTime: 7.8, index: 5 },
+        { text: "عَلَيْهِمْ", startTime: 7.8, endTime: 9.2, index: 6 },
         { text: "وَلَا", startTime: 9.2, endTime: 10.0, index: 7 },
-        { text: "الضَّآلِّیْنَ", startTime: 10.0, endTime: 11.8, index: 8 }
+        { text: "ٱلضَّآلِّينَ", startTime: 10.0, endTime: 11.8, index: 8 }
       ],
       totalDuration: 11.8
     }
@@ -6107,7 +6109,12 @@ export const alKahfMetadata = {
 // Helper function to get metadata for a specific ayah
 export const getAyahMetadata = (surahNumber, ayahNumber) => {
   if (surahNumber === 1) {
-    return alFatihahMetadata.ayaat[ayahNumber] || null;
+    const metadata = alFatihahMetadata.ayaat[ayahNumber];
+    if (metadata) {
+      // Return exact metadata - no normalization needed since text is now identical to source
+      return metadata;
+    }
+    return null;
   }
   if (surahNumber === 67) {
     return alMulkMetadata.ayaat[ayahNumber] || null;
@@ -6129,12 +6136,12 @@ export const getAyahMetadata = (surahNumber, ayahNumber) => {
 export const getSpecialCardMetadata = (cardType) => {
   if (cardType === 'bismillah') {
     return {
-      text: "بِسْمِ اللّٰهِ الرَّحْمٰنِ الرَّحِیْمِ",
+      text: "بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ",
       words: [
         { text: "بِسْمِ", startTime: 0, endTime: 1.2, index: 0 },
-        { text: "اللّٰهِ", startTime: 1.2, endTime: 2.4, index: 1 },
-        { text: "الرَّحْمٰنِ", startTime: 2.4, endTime: 4.0, index: 2 },
-        { text: "الرَّحِیْمِ", startTime: 4.0, endTime: 5.6, index: 3 }
+        { text: "ٱللَّهِ", startTime: 1.2, endTime: 2.4, index: 1 },
+        { text: "ٱلرَّحْمَـٰنِ", startTime: 2.4, endTime: 4.0, index: 2 },
+        { text: "ٱلرَّحِيمِ", startTime: 4.0, endTime: 5.6, index: 3 }
       ],
       totalDuration: 5.6
     };

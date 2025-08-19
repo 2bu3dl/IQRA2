@@ -786,6 +786,8 @@ const HomeScreen = ({ navigation, route }) => {
                 />
               </View>
             </TouchableOpacity>
+            
+            {/* Removed debug buttons */}
           </View>
           <View style={styles.customDivider}>
             <View style={styles.dividerLine} />

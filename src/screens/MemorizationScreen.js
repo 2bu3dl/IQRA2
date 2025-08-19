@@ -31,6 +31,8 @@ import { triggerHaptic, hapticSelection, hapticImpactMedium } from '../utils/hap
 import Slider from '@react-native-community/slider';
 import Svg, { Polygon } from 'react-native-svg';
 import HighlightedArabicText from '../components/HighlightedArabicText';
+// Removed debugging imports
+// Removed unused import since we're using exact source text
 import { getAyahMetadata, getSpecialCardMetadata } from '../utils/audioMetadata';
 
 const COLORS = { ...BASE_COLORS, primary: '#6BA368', accent: '#FFD700' };
@@ -41,6 +43,8 @@ const ProgressBar = memo(ProgressBarOrig);
 const MemorizationScreen = ({ route, navigation }) => {
   console.log('[DEBUG] MemorizationScreen mounted');
   const { language, t } = useLanguage();
+
+  // Removed debugging initialization
   const toArabicNumber = (num) => {
     if (language !== 'ar') return num.toString();
     return num.toString().replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]);
@@ -422,29 +426,47 @@ const MemorizationScreen = ({ route, navigation }) => {
 
   // Memoize flashcards so they're only rebuilt when surahNumber or ayaat changes
   const flashcards = useMemo(() => {
-    if (!ayaat || !Array.isArray(ayaat)) return [];
+    debugLog('=== CREATING FLASHCARDS ===');
+    debugLog('Ayaat:', ayaat);
+    debugLog('Surah number:', surahNumber);
+    
+    if (!ayaat || !Array.isArray(ayaat)) {
+      debugLog('No ayaat data available');
+      return [];
+    }
+    
     const cards = [];
     
     // 1. Isti'adhah
+    const istiadhahText = 'أَعُوذُ بِاللَّهِ مِنَ الشَّيْطَانِ الرَّجِيمِ';
+    analyzeArabicText(istiadhahText, 'Isti\'adhah Text');
     cards.push({
       type: 'istiadhah',
-      text: 'أَعُوذُ بِاللَّهِ مِنَ الشَّيْطَانِ الرَّجِيمِ',
+      text: istiadhahText,
       transliteration: "A'udhu billahi min ash-shaytan ir-rajim",
       translation: 'I seek protection/refuge in Allah from shay6an, the accursed outcast (eternally expelled and rejected from divine mercy)'
     });
+    
     // 2. Bismillah (if not Al-Fatihah and not Surah 9)
     if (surahNumber !== 1 && surahNumber !== 9) {
+      const bismillahText = 'بِسْمِ اللّٰهِ الرَّحْمٰنِ الرَّحِیْمِ';
+      analyzeArabicText(bismillahText, 'Bismillah Text');
       cards.push({
         type: 'bismillah',
-        text: 'بِسْمِ اللّٰهِ الرَّحْمٰنِ الرَّحِیْمِ',
+        text: bismillahText,
         transliteration: 'Bismillāhir-Raḥmānir-Raḥīm',
         translation: 'In the name of Allah, the Entirely Merciful, the Especially Merciful.'
       });
     }
     
-    // 3. All ayat as normal
+        // 3. All ayat as normal
     for (let i = 0; i < ayaat.length; i++) {
-      cards.push({ ...ayaat[i], type: 'ayah' });
+      const ayah = ayaat[i];
+      if (ayah.text) {
+        cards.push({ ...ayah, text: ayah.text, type: 'ayah' });
+      } else {
+        cards.push({ ...ayah, type: 'ayah' });
+      }
     }
     return cards;
   }, [ayaat, surahNumber]);
@@ -505,13 +527,7 @@ const MemorizationScreen = ({ route, navigation }) => {
   }, [surahName, currentAyahIndex]);
 
   useEffect(() => {
-    if (
-      surahNumber === 2 &&
-      flashcards[currentAyahIndex]?.type === 'ayah' &&
-      flashcards[currentAyahIndex]?.ayah === 4
-    ) {
-      console.log('[DEBUG] Surah 2, Ayah 4 text:', flashcards[currentAyahIndex]?.text);
-    }
+    // Removed Surah 2 Ayah 4 debugging
   }, [surahNumber, currentAyahIndex, flashcards]);
 
   const animateFlashcard = (toValue) => {
