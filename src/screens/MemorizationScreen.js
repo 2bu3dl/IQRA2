@@ -41,7 +41,6 @@ const Card = memo(CardOrig);
 const ProgressBar = memo(ProgressBarOrig);
 
 const MemorizationScreen = ({ route, navigation }) => {
-  console.log('[DEBUG] MemorizationScreen mounted');
   const { language, t } = useLanguage();
 
   // Removed debugging initialization
@@ -426,12 +425,7 @@ const MemorizationScreen = ({ route, navigation }) => {
 
   // Memoize flashcards so they're only rebuilt when surahNumber or ayaat changes
   const flashcards = useMemo(() => {
-    debugLog('=== CREATING FLASHCARDS ===');
-    debugLog('Ayaat:', ayaat);
-    debugLog('Surah number:', surahNumber);
-    
     if (!ayaat || !Array.isArray(ayaat)) {
-      debugLog('No ayaat data available');
       return [];
     }
     
@@ -439,7 +433,6 @@ const MemorizationScreen = ({ route, navigation }) => {
     
     // 1. Isti'adhah
     const istiadhahText = 'أَعُوذُ بِاللَّهِ مِنَ الشَّيْطَانِ الرَّجِيمِ';
-    analyzeArabicText(istiadhahText, 'Isti\'adhah Text');
     cards.push({
       type: 'istiadhah',
       text: istiadhahText,
@@ -450,7 +443,6 @@ const MemorizationScreen = ({ route, navigation }) => {
     // 2. Bismillah (if not Al-Fatihah and not Surah 9)
     if (surahNumber !== 1 && surahNumber !== 9) {
       const bismillahText = 'بِسْمِ اللّٰهِ الرَّحْمٰنِ الرَّحِیْمِ';
-      analyzeArabicText(bismillahText, 'Bismillah Text');
       cards.push({
         type: 'bismillah',
         text: bismillahText,
@@ -1300,7 +1292,6 @@ const MemorizationScreen = ({ route, navigation }) => {
               onPress={async () => {
                 // Explicitly save current position
                 try {
-                          console.log('[DEBUG] About to save position - surah.name:', surahName, 'currentAyahIndex:', currentAyahIndex);
         await saveCurrentPosition(surahName, currentAyahIndex);
         await saveLastPosition(surahName, surahNumber, currentAyahIndex);
         console.log('[MemorizationScreen] Explicitly saved on Home:', surahName, currentAyahIndex);
@@ -2475,12 +2466,22 @@ const MemorizationScreen = ({ route, navigation }) => {
         onRequestClose={() => setShowStreakAnimation(false)}
       >
         <TouchableOpacity 
-          style={styles.modalOverlay}
+          style={[styles.modalOverlay, { justifyContent: 'center' }]}
           activeOpacity={1}
           onPress={() => setShowStreakAnimation(false)}
         >
           <TouchableOpacity 
-            style={styles.modalContent}
+            style={[styles.modalContent, { 
+              justifyContent: 'center',
+              borderTopLeftRadius: 32,
+              borderTopRightRadius: 32,
+              borderBottomLeftRadius: 32,
+              borderBottomRightRadius: 32,
+              width: '90%',
+              maxWidth: 400,
+              height: 'auto',
+              minHeight: 300
+            }]}
             activeOpacity={1}
             onPress={(e) => e.stopPropagation()}
           >
@@ -2488,6 +2489,7 @@ const MemorizationScreen = ({ route, navigation }) => {
               visible={showStreakAnimation}
               newStreak={newStreak}
               onAnimationComplete={handleStreakAnimationComplete}
+              isModal={true}
             />
           </TouchableOpacity>
         </TouchableOpacity>

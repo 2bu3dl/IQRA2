@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Platform } from 'react-native';
 import quranRaw from '../assets/quran.json';
 
 // Keys for AsyncStorage
@@ -168,7 +169,20 @@ export const addHasanat = async (amount) => {
       // Don't override last_activity_date here as updateStreak already handles it
     ]);
 
-    console.log('[store.js] addHasanat:', { amount, newTotal, newToday, today, newStreak });
+    // Auto-sync to cloud if available
+    try {
+      const { autoSync } = await import('./cloudStore');
+      await autoSync({ 
+        totalHasanat: newTotal, 
+        todayHasanat: newToday, 
+        streak: newStreak,
+        lastActivityDate: today 
+      });
+    } catch (error) {
+      // Auto-sync failed, but don't break the main function
+      // Silent fail - don't spam console
+    }
+    
     return { totalHasanat: newTotal, todayHasanat: newToday, streak: newStreak };
   } catch (error) {
     console.error('Error adding hasanat:', error);
@@ -180,7 +194,6 @@ export const addHasanat = async (amount) => {
 export const getCurrentStreak = async () => {
   try {
     const streak = await AsyncStorage.getItem(STORAGE_KEYS.STREAK);
-    console.log('[store.js] getCurrentStreak:', streak);
     return parseInt(streak || '0') || 0;
   } catch (error) {
     console.error('Error getting current streak:', error);
@@ -219,21 +232,29 @@ export const updateStreak = async () => {
         newStreak = 1;
       }
 
-          await Promise.all([
-      AsyncStorage.setItem(STORAGE_KEYS.LAST_ACTIVITY_DATE, today),
-      AsyncStorage.setItem(STORAGE_KEYS.STREAK, newStreak.toString()),
-      AsyncStorage.setItem(STORAGE_KEYS.STREAK_UPDATED_TODAY, today),
-    ]);
-    
-    // Also update weekly activity
-    await updateWeeklyActivity();
+      // Reset the streak broken shown flag since user is now active
+      await resetStreakBrokenShown();
 
-      console.log('[updateStreak] Streak updated:', {
-        lastActivityDate,
-        today,
-        newStreak,
-        isConsecutive: lastActivityDate ? isConsecutiveDay(lastActivityDate, today) : false
-      });
+      await Promise.all([
+        AsyncStorage.setItem(STORAGE_KEYS.LAST_ACTIVITY_DATE, today),
+        AsyncStorage.setItem(STORAGE_KEYS.STREAK, newStreak.toString()),
+        AsyncStorage.setItem(STORAGE_KEYS.STREAK_UPDATED_TODAY, today),
+      ]);
+      
+      // Also update weekly activity
+      await updateWeeklyActivity();
+
+      // Auto-sync to cloud if available
+      try {
+        const { autoSync } = await import('./cloudStore');
+        await autoSync({ 
+          streak: newStreak,
+          lastActivityDate: today 
+        });
+      } catch (error) {
+        // Auto-sync failed, but don't break the main function
+        // Silent fail - don't spam console
+      }
 
       return { streak: newStreak };
     }
@@ -332,7 +353,8 @@ export const getCurrentWeekActivity = async () => {
       const dayDate = new Date(weekStart);
       dayDate.setDate(weekStart.getDate() + i);
       const dayString = getDateString(dayDate);
-      weekActivity.push(!!currentWeekData[dayString]);
+      const isActive = !!currentWeekData[dayString];
+      weekActivity.push(isActive);
     }
     
     return weekActivity;
@@ -483,11 +505,62 @@ export const resetProgress = async () => {
       AsyncStorage.setItem(STORAGE_KEYS.STREAK, '0'),
       AsyncStorage.setItem(STORAGE_KEYS.MEMORIZED_AYAHS, JSON.stringify(initialState.memorizedAyahs)),
       AsyncStorage.removeItem(STORAGE_KEYS.STREAK_UPDATED_TODAY),
+      AsyncStorage.removeItem(STORAGE_KEYS.STREAK_BROKEN_SHOWN),
+      AsyncStorage.removeItem(STORAGE_KEYS.LAST_STREAK_CHECK),
     ]);
     return true;
   } catch (error) {
     console.error('Error resetting progress:', error);
     return false;
+  }
+};
+
+// Export all progress data for backup or transfer
+export const exportProgressData = async () => {
+  try {
+    const data = await loadData();
+    const exportData = {
+      ...data,
+      exportDate: new Date().toISOString(),
+      version: '1.0',
+      deviceInfo: {
+        platform: Platform.OS,
+        timestamp: Date.now(),
+      }
+    };
+    
+    return { success: true, data: exportData };
+  } catch (error) {
+    console.error('[Store] Error exporting progress data:', error);
+    return { success: false, error: error.message };
+  }
+};
+
+// Import progress data from backup or transfer
+export const importProgressData = async (importData) => {
+  try {
+    // Validate import data
+    if (!importData || typeof importData !== 'object') {
+      throw new Error('Invalid import data format');
+    }
+    
+    // Save imported data to storage
+    await Promise.all([
+      AsyncStorage.setItem(STORAGE_KEYS.TOTAL_HASANAT, String(importData.totalHasanat || 0)),
+      AsyncStorage.setItem(STORAGE_KEYS.TODAY_HASANAT, String(importData.todayHasanat || 0)),
+      AsyncStorage.setItem(STORAGE_KEYS.LAST_ACTIVITY_DATE, importData.lastActivityDate || ''),
+      AsyncStorage.setItem(STORAGE_KEYS.STREAK, String(importData.streak || 0)),
+      AsyncStorage.setItem(STORAGE_KEYS.MEMORIZED_AYAHS, JSON.stringify(importData.memorizedAyahs || {})),
+      AsyncStorage.setItem(STORAGE_KEYS.BOOKMARKED_AYAHS, JSON.stringify(importData.bookmarkedAyahs || {})),
+      AsyncStorage.setItem(STORAGE_KEYS.CUSTOM_LISTS, JSON.stringify(importData.customLists || {})),
+      AsyncStorage.setItem(STORAGE_KEYS.WEEKLY_ACTIVITY, JSON.stringify(importData.weeklyActivity || {})),
+    ]);
+    
+    console.log('[Store] Progress data imported successfully');
+    return { success: true };
+  } catch (error) {
+    console.error('[Store] Error importing progress data:', error);
+    return { success: false, error: error.message };
   }
 };
 
@@ -809,6 +882,9 @@ export const checkStreakBroken = async () => {
       
       // Calculate previous streak (before it was broken)
       const previousStreak = streak;
+      
+      // Actually reset the streak to 0 when it's broken
+      await AsyncStorage.setItem(STORAGE_KEYS.STREAK, '0');
       
       // Mark that we've shown the broken streak popup for today
       await AsyncStorage.setItem(STORAGE_KEYS.STREAK_BROKEN_SHOWN, today);

@@ -17,7 +17,7 @@ import Text from '../components/Text';
 import Button from '../components/Button';
 import Card from '../components/Card';
 import { loadData, resetProgress, checkStreakBroken, getCustomLists, getListSurahs } from '../utils/store';
-import { syncProgressData } from '../utils/cloudStore';
+import { syncProgressData, saveProgressToCloud, replaceCloudData, backupCloudData, getOfflineQueueStatus, manualSync, isOnline } from '../utils/cloudStore';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useLanguage } from '../utils/languageContext';
@@ -130,6 +130,16 @@ const HomeScreen = ({ navigation, route }) => {
   const [confirmResetVisible, setConfirmResetVisible] = useState(false);
   const [resetType, setResetType] = useState('all'); // 'all' or 'today'
   const [includeRecordings, setIncludeRecordings] = useState(false);
+  
+  // Progress merge confirmation modal
+  const [progressMergeVisible, setProgressMergeVisible] = useState(false);
+  const [anonymousProgressData, setAnonymousProgressData] = useState(null);
+  
+  // Offline status and sync
+  const [networkStatus, setNetworkStatus] = useState(true);
+  const [offlineQueueStatus, setOfflineQueueStatus] = useState({ pendingOperations: 0, lastSync: null });
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [isProgressSynced, setIsProgressSynced] = useState(false);
   const [memorizeButtonHeld, setMemorizeButtonHeld] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
   const [progressModalVisible, setProgressModalVisible] = useState(false);
@@ -623,6 +633,9 @@ const HomeScreen = ({ navigation, route }) => {
           missedDays: brokenStreakInfo.missedDays || []
         });
         setShowStreakBrokenAnimation(true);
+        
+        // Reload screen data to immediately show streak as 0
+        await loadScreenData();
       }
     } catch (error) {
       logger.error('HomeScreen', 'Error checking broken streak', error);
@@ -636,17 +649,186 @@ const HomeScreen = ({ navigation, route }) => {
     }
   }, [route.params?.refresh]);
 
+  // Manual sync function
+  const handleManualSync = async () => {
+    try {
+      setIsSyncing(true);
+      const result = await manualSync();
+      
+      if (result.success) {
+        Alert.alert('Sync Complete', result.message);
+        // Refresh offline queue status
+        const queueStatus = await getOfflineQueueStatus();
+        setOfflineQueueStatus(queueStatus);
+        
+        // Update progress sync status
+        await checkProgressSyncStatus();
+      } else {
+        Alert.alert('Sync Failed', result.error);
+      }
+    } catch (error) {
+      console.error('[HomeScreen] Manual sync error', error);
+      Alert.alert('Sync Error', 'Failed to sync progress');
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
+  // Check for anonymous progress when user logs in
+  const checkAnonymousProgress = async () => {
+    try {
+      // Check if we've already shown this dialog for this user
+      const userId = user?.id;
+      if (!userId) return false;
+      
+      const anonymousProgressShownKey = `anonymous_progress_shown_${userId}`;
+      const hasBeenShown = await AsyncStorage.getItem(anonymousProgressShownKey);
+      
+      if (hasBeenShown === 'true') {
+        console.log('[HomeScreen] Anonymous progress dialog already shown for user:', userId);
+        return false; // Already shown, don't show again
+      }
+      
+      // Load local data to check for anonymous progress
+      const localData = await loadData();
+      
+      // Check if there's meaningful progress to merge
+      const hasAnonymousProgress = localData.totalHasanat > 0 || 
+                                 localData.streak > 0 || 
+                                 Object.keys(localData.memorizedAyahs).some(surah => 
+                                   localData.memorizedAyahs[surah].memorized > 0
+                                 );
+      
+      if (hasAnonymousProgress) {
+        setAnonymousProgressData(localData);
+        setProgressMergeVisible(true);
+        return true; // Has anonymous progress
+      }
+      return false; // No anonymous progress
+    } catch (error) {
+      console.error('[HomeScreen] Error checking anonymous progress:', error);
+      return false;
+    }
+  };
+
+    const checkProgressSyncStatus = async () => {
+    try {
+      if (!isAuthenticated) {
+        setIsProgressSynced(false);
+        return;
+      }
+      
+      // Check if there are pending operations in offline queue
+      const queueStatus = await getOfflineQueueStatus();
+      if (queueStatus.pendingOperations > 0) {
+        setIsProgressSynced(false);
+        return;
+      }
+      
+      // Check if we have recent sync activity
+      if (queueStatus.lastSync) {
+        const lastSyncTime = new Date(queueStatus.lastSync);
+        const now = new Date();
+        const timeDiff = now - lastSyncTime;
+        
+        // Consider synced if last sync was within the last 5 minutes
+        if (timeDiff < 5 * 60 * 1000) {
+          setIsProgressSynced(true);
+          return;
+        }
+      }
+      
+      // Default to synced if no pending operations and online
+      setIsProgressSynced(true);
+    } catch (error) {
+      console.error('[HomeScreen] Error checking progress sync status:', error);
+      setIsProgressSynced(false);
+    }
+  };
+
+  const checkOnlineStatus = async () => {
+    try {
+      console.log('[HomeScreen] Checking online status...');
+      const online = await isOnline();
+      console.log('[HomeScreen] Online status result:', online);
+      
+      setNetworkStatus(online);
+      
+      if (online) {
+        console.log('[HomeScreen] Online - checking queue and sync status...');
+        // Check offline queue status
+        const queueStatus = await getOfflineQueueStatus();
+        setOfflineQueueStatus(queueStatus);
+        
+        // Check progress sync status
+        await checkProgressSyncStatus();
+      } else {
+        console.log('[HomeScreen] Offline - setting progress as not synced');
+        // Offline - progress is not synced
+        setIsProgressSynced(false);
+      }
+    } catch (error) {
+      console.error('[HomeScreen] Error checking online status:', error);
+      // Default to offline on error
+      setNetworkStatus(false);
+      setIsProgressSynced(false);
+    }
+  };
+
+  // Check online status periodically
+  useEffect(() => {
+    // Check immediately and then every 30 seconds
+    checkOnlineStatus();
+    const interval = setInterval(async () => {
+      const wasOffline = !networkStatus;
+      const nowOnline = await isOnline();
+      
+      // If we just came back online, trigger sync
+      if (wasOffline && nowOnline) {
+        handleManualSync();
+      }
+      
+      setNetworkStatus(nowOnline);
+      
+      if (nowOnline) {
+        const queueStatus = await getOfflineQueueStatus();
+        setOfflineQueueStatus(queueStatus);
+        
+        // Check progress sync status
+        await checkProgressSyncStatus();
+      } else {
+        // Offline - progress is not synced
+        setIsProgressSynced(false);
+      }
+    }, 30000);
+    
+    return () => clearInterval(interval);
+  }, []);
+  
+  // Debug settings modal state changes
+  useEffect(() => {
+    console.log('[HomeScreen] Settings modal visibility changed to:', settingsVisible);
+  }, [settingsVisible]);
+
   // Auto-sync when user logs in/out
   useEffect(() => {
     if (isAuthenticated) {
-      logger.log('HomeScreen', 'User logged in, syncing progress');
-      syncProgressData().then(result => {
-        if (result.success) {
-          logger.log('HomeScreen', 'Auto-sync successful');
-          loadScreenData(); // Reload data after sync
+      // Immediately check network status when user logs in
+      checkOnlineStatus();
+      
+      checkAnonymousProgress().then(hasAnonymousProgress => {
+        if (!hasAnonymousProgress) {
+          // No anonymous progress, proceed with normal sync
+          syncProgressData().then(result => {
+            if (result.success) {
+              loadScreenData();
+              // Update progress sync status after successful sync
+              checkProgressSyncStatus();
+            }
+          }).catch(error => {
+            console.error('[HomeScreen] Auto-sync failed:', error);
+          });
         }
-      }).catch(error => {
-        logger.error('HomeScreen', 'Auto-sync failed', error);
       });
     }
   }, [isAuthenticated]);
@@ -703,6 +885,8 @@ const HomeScreen = ({ navigation, route }) => {
     >
       <SafeAreaView style={[styles.container, { backgroundColor: 'transparent' }]}>
         <View style={styles.header}>
+
+          
           <View style={styles.logoContainer}>
             <TouchableOpacity style={styles.introButton} onPress={() => setInfoVisible(true)} onPressIn={() => hapticSelection()}>
               <View style={{
@@ -2367,6 +2551,63 @@ const HomeScreen = ({ navigation, route }) => {
                 fontWeight: 'bold'
               }}>{t('settings')}</Text>
               
+              {/* Offline Status */}
+              <View style={styles.offlineStatusRow}>
+                <Text style={styles.offlineStatusLabel}>Current Status:</Text>
+                <View style={styles.offlineStatusContent}>
+                  <View style={styles.statusIndicatorsContainer}>
+                    {/* Offline Indicator */}
+                    <View style={[
+                      styles.offlineIndicator,
+                      networkStatus && styles.dimmedIndicator
+                    ]}>
+                      <Text style={[
+                        styles.offlineText,
+                        networkStatus && styles.dimmedText
+                      ]}>Offline</Text>
+                      {!networkStatus && offlineQueueStatus.pendingOperations > 0 && (
+                        <Text style={styles.offlineQueueText}>
+                          {offlineQueueStatus.pendingOperations} pending
+                        </Text>
+                      )}
+                    </View>
+                    
+                    {/* Online Indicator */}
+                    <View style={[
+                      styles.onlineIndicator,
+                      !networkStatus && styles.dimmedIndicator
+                    ]}>
+                      <Text style={[
+                        styles.onlineText,
+                        !networkStatus && styles.dimmedText
+                      ]}>Online</Text>
+                      {networkStatus && offlineQueueStatus.pendingOperations > 0 && (
+                        <TouchableOpacity 
+                          style={styles.syncButton}
+                          onPress={handleManualSync}
+                          disabled={isSyncing}
+                        >
+                          <Text style={styles.syncButtonText}>
+                            {isSyncing ? 'Syncing...' : `Sync ${offlineQueueStatus.pendingOperations}`}
+                          </Text>
+                        </TouchableOpacity>
+                      )}
+                    </View>
+                  </View>
+                </View>
+              </View>
+              
+              {/* Progress Sync Status */}
+              <Text style={[styles.progressSyncText, { marginTop: -8 }]}>
+                Progress{' '}
+                <Text style={[
+                  styles.progressSyncStatus,
+                  isProgressSynced ? styles.syncedStatus : styles.notSyncedStatus
+                ]}>
+                  {isProgressSynced ? 'synced' : 'not synced'}
+                </Text>
+              </Text>
+              
               {/* Language Selection */}
               <Text variant="h3" style={{ 
                 marginBottom: 8, 
@@ -2418,10 +2659,13 @@ const HomeScreen = ({ navigation, route }) => {
                     marginBottom: 12,
                     textAlign: 'center'
                   }}>
-                    {t('logged_in_as')} {user?.email}
+                    {t('logged_in_as')}{' '}
+                    <Text style={styles.usernameText}>
+                      {user?.email?.split('@')[0] || 'user'}
+                    </Text>
                   </Text>
                   
-                  <View style={{ flexDirection: 'row', gap: 12, marginBottom: 8 }}>
+                  <View style={{ flexDirection: 'row', gap: 8, marginBottom: 8, marginHorizontal: -10 }}>
                     <Button
                       title={t('logout')}
                       onPress={async () => {
@@ -2446,6 +2690,7 @@ const HomeScreen = ({ navigation, route }) => {
                       title="Profile"
                       onPress={() => {
                         hapticSelection();
+                        setSettingsVisible(false);
                         navigation.navigate('Profile');
                       }}
                       style={{ 
@@ -2466,11 +2711,14 @@ const HomeScreen = ({ navigation, route }) => {
                   onPress={() => {
                     hapticSelection();
                     setSettingsVisible(false);
-                    navigation.navigate('Auth');
+                                        navigation.navigate('Auth', {
+                      isModal: true
+                    });
                   }}
                   style={{ 
                     backgroundColor: '#D3D3D3',
                     marginBottom: 16,
+                    marginHorizontal: 20,
                     shadowColor: '#000',
                     shadowOffset: { width: 0, height: 4 },
                     shadowOpacity: 0.5,
@@ -2546,65 +2794,7 @@ const HomeScreen = ({ navigation, route }) => {
                   )}
                 </Text>
               </TouchableOpacity>
-              {/* Temporary Test Button */}
-              <TouchableOpacity
-                onPress={() => {
-                  hapticSelection();
-                  setSettingsVisible(false);
-                  // Test the missed daily streak animation
-                  setBrokenStreakData({ previousStreak: 5, missedDays: ['2024-01-15', '2024-01-16'] });
-                  setShowStreakBrokenAnimation(true);
-                }}
-                style={{ 
-                  backgroundColor: '#FF6B35', // Orange color for test button
-                  marginBottom: 16,
-                  shadowColor: '#000',
-                  shadowOffset: { width: 0, height: 4 },
-                  shadowOpacity: 0.5,
-                  shadowRadius: 6,
-                  elevation: 8,
-                  paddingVertical: 16,
-                  paddingHorizontal: 24,
-                  borderRadius: 12,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-                onPressIn={() => hapticSelection()}
-              >
-                <Text style={{ color: '#FFFFFF', fontSize: 16, fontWeight: '600', textAlign: 'center' }}>
-                  🔥 Test Missed Streak
-                </Text>
-              </TouchableOpacity>
-              
-              {/* Test Regular Streak Animation */}
-              <TouchableOpacity
-                onPress={() => {
-                  hapticSelection();
-                  setSettingsVisible(false);
-                  // Test the regular streak animation
-                  setNewStreak(7);
-                  setShowStreakAnimation(true);
-                }}
-                style={{ 
-                  backgroundColor: '#5b7f67', // Green color for regular streak test
-                  marginBottom: 16,
-                  shadowColor: '#000',
-                  shadowOffset: { width: 0, height: 4 },
-                  shadowOpacity: 0.5,
-                  shadowRadius: 6,
-                  elevation: 8,
-                  paddingVertical: 16,
-                  paddingHorizontal: 24,
-                  borderRadius: 12,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-                onPressIn={() => hapticSelection()}
-              >
-                <Text style={{ color: '#FFFFFF', fontSize: 16, fontWeight: '600', textAlign: 'center' }}>
-                  ⭐ Test Regular Streak
-                </Text>
-              </TouchableOpacity>
+
               
               <View style={{ marginTop: 16 }}>
               <Button
@@ -2619,6 +2809,117 @@ const HomeScreen = ({ navigation, route }) => {
                     elevation: 8,
                   }}
               />
+              </View>
+            </TouchableOpacity>
+          </TouchableOpacity>
+        </Modal>
+
+        {/* Progress Merge Confirmation Modal */}
+        <Modal
+          visible={progressMergeVisible}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setProgressMergeVisible(false)}
+        >
+          <TouchableOpacity 
+            style={styles.confirmModalOverlay}
+            activeOpacity={1}
+            onPress={() => setProgressMergeVisible(false)}
+          >
+            <View style={styles.confirmModalBackdrop} />
+            <TouchableOpacity 
+              style={styles.confirmModalContainer}
+              activeOpacity={1}
+              onPress={(e) => e.stopPropagation()}
+            >
+              <View style={styles.confirmModalContent}>
+                <View style={styles.confirmModalHeader}>
+                  <Text style={styles.confirmModalTitle}>
+                    Anonymous Progress Found
+                  </Text>
+                  <Text style={styles.confirmModalSubtitle}>
+                    We found progress data from when you weren't signed in. What would you like to do with it?
+                  </Text>
+                </View>
+
+                {/* Progress Summary */}
+                {anonymousProgressData && (
+                  <View style={styles.progressSummary}>
+                    <Text style={styles.progressSummaryTitle}>Your Anonymous Progress:</Text>
+                    <View style={styles.progressSummaryItem}>
+                      <Text style={styles.progressSummaryLabel}>Total Hasanat:</Text>
+                      <Text style={styles.progressSummaryValue}>{anonymousProgressData.totalHasanat}</Text>
+                    </View>
+                    <View style={styles.progressSummaryItem}>
+                      <Text style={styles.progressSummaryLabel}>Current Streak:</Text>
+                      <Text style={styles.progressSummaryValue}>{anonymousProgressData.streak} days</Text>
+                    </View>
+                    <View style={styles.progressSummaryItem}>
+                      <Text style={styles.progressSummaryLabel}>Memorized Ayaat:</Text>
+                      <Text style={styles.progressSummaryValue}>{anonymousProgressData.memorizedAyaat}</Text>
+                    </View>
+                  </View>
+                )}
+
+                {/* Action Buttons */}
+                <View style={styles.mergeActionButtons}>
+                  <TouchableOpacity
+                    style={styles.disregardButton}
+                    onPress={async () => {
+                      try {
+                        // Mark that anonymous progress dialog has been shown for this user
+                        const userId = user?.id;
+                        if (userId) {
+                          const anonymousProgressShownKey = `anonymous_progress_shown_${userId}`;
+                          await AsyncStorage.setItem(anonymousProgressShownKey, 'true');
+                        }
+                        
+                        // Clear anonymous progress and keep account data
+                        await resetProgress();
+                        setProgressMergeVisible(false);
+                        Alert.alert('Success', 'Anonymous progress has been disregarded.');
+                      } catch (error) {
+                        console.error('[HomeScreen] Error disregarding progress:', error);
+                        Alert.alert('Error', 'Failed to disregard anonymous progress.');
+                      }
+                    }}
+                  >
+                    <Text style={styles.disregardButtonText}>Disregard</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={styles.mergeButton}
+                    onPress={async () => {
+                      try {
+                        // Mark that anonymous progress dialog has been shown for this user
+                        const userId = user?.id;
+                        if (userId) {
+                          const anonymousProgressShownKey = `anonymous_progress_shown_${userId}`;
+                          await AsyncStorage.setItem(anonymousProgressShownKey, 'true');
+                        }
+                        
+                        setProgressMergeVisible(false);
+                        
+                        // Merge anonymous progress with account data
+                        await syncProgressData();
+                        
+                        // Reload screen data
+                        await loadScreenData();
+                        
+                        // Update progress sync status
+                        await checkProgressSyncStatus();
+                        
+                        // Show success message
+                        Alert.alert('Success', 'Your anonymous progress has been merged with your account successfully.');
+                      } catch (error) {
+                        console.error('[HomeScreen] Error merging progress:', error);
+                        Alert.alert('Error', 'Failed to merge progress. Please try again.');
+                      }
+                    }}
+                  >
+                    <Text style={styles.mergeButtonText}>Merge</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
             </TouchableOpacity>
           </TouchableOpacity>
@@ -5128,6 +5429,278 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     width: '100%',
     gap: 15,
+  },
+  
+  // Progress Merge Modal Styles
+  progressSummary: {
+    backgroundColor: 'rgba(91, 127, 103, 0.1)',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(91, 127, 103, 0.2)',
+  },
+  progressSummaryTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#F5E6C8',
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  progressSummaryItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  progressSummaryLabel: {
+    fontSize: 14,
+    color: '#CCCCCC',
+  },
+  progressSummaryValue: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#FFD700',
+  },
+  mergeOptions: {
+    marginBottom: 20,
+  },
+  mergeOption: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    padding: 16,
+    borderRadius: 8,
+    marginBottom: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  mergeOptionSelected: {
+    backgroundColor: 'rgba(91, 127, 103, 0.2)',
+    borderColor: 'rgba(91, 127, 103, 0.5)',
+  },
+  mergeOptionRadio: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: '#CCCCCC',
+    marginRight: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  mergeOptionRadioSelected: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#6BA368',
+  },
+  mergeOptionContent: {
+    flex: 1,
+    paddingTop: 2,
+  },
+  mergeOptionTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+    marginBottom: 6,
+  },
+  mergeOptionDescription: {
+    fontSize: 13,
+    color: '#FFFFFF',
+    lineHeight: 18,
+    opacity: 0.95,
+    marginTop: 2,
+    paddingHorizontal: 4,
+    paddingVertical: 2,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: 4,
+  },
+  
+  // New simplified button styles
+  mergeActionButtons: {
+    flexDirection: 'row',
+    gap: 16,
+    marginTop: 20,
+  },
+  disregardButton: {
+    flex: 1,
+    backgroundColor: 'rgba(220, 20, 60, 0.8)',
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.5,
+    shadowRadius: 6,
+    elevation: 8,
+  },
+  disregardButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  mergeButton: {
+    flex: 1,
+    backgroundColor: '#33694e',
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.5,
+    shadowRadius: 6,
+    elevation: 8,
+  },
+  mergeButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  
+  // Offline Status Styles
+  offlineStatusRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 24,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 25,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+  },
+  offlineStatusLabel: {
+    color: '#CCCCCC',
+    fontSize: 16,
+    fontWeight: '600',
+    marginRight: 12,
+    minWidth: 100,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.3,
+    shadowRadius: 2,
+    textShadowColor: '#000',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 1,
+  },
+  offlineStatusContent: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  statusIndicatorsContainer: {
+    flexDirection: 'row',
+    gap: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  offlineIndicator: {
+    backgroundColor: 'rgba(220, 20, 60, 0.9)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  onlineIndicator: {
+    backgroundColor: '#33694e',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  dimmedIndicator: {
+    backgroundColor: 'rgba(128, 128, 128, 0.4)',
+    shadowOpacity: 0.1,
+    elevation: 2,
+  },
+  dimmedText: {
+    color: 'rgba(0, 0, 0, 0.4)',
+  },
+  offlineText: {
+    color: '#000000',
+    fontSize: 11,
+    fontWeight: 'bold',
+  },
+  onlineText: {
+    color: '#FFFFFF',
+    fontSize: 11,
+    fontWeight: 'bold',
+  },
+  offlineQueueText: {
+    color: '#FFFFFF',
+    fontSize: 9,
+    marginTop: 1,
+  },
+  syncButton: {
+    backgroundColor: 'rgba(91, 127, 103, 0.9)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 5,
+    marginTop: 3,
+  },
+  syncButtonText: {
+    color: '#FFFFFF',
+    fontSize: 10,
+    fontWeight: 'bold',
+  },
+  
+  // Progress Sync Styles
+  progressSyncText: {
+    color: '#CCCCCC',
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 16,
+    textAlign: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.3,
+    shadowRadius: 2,
+    textShadowColor: '#000',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 1,
+  },
+  progressSyncStatus: {
+    fontWeight: 'bold',
+    // Softer shadows for the status text
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 1,
+    textShadowColor: '#000',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 1,
+  },
+  syncedStatus: {
+    color: '#33694e', // Green color for synced (matches Profile button)
+  },
+  notSyncedStatus: {
+    color: 'rgba(220,20,60,0.9)', // Red color for not synced (matches Logout button)
+  },
+  
+  // Username text style
+  usernameText: {
+    fontWeight: 'bold',
+    color: '#FFFFFF',
   },
   confirmModalCancelButton: {
     flex: 1,

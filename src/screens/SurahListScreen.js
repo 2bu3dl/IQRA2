@@ -261,9 +261,16 @@ const SurahListScreen = ({ navigation, route }) => {
   const [searchText, setSearchText] = useState('');
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [activeTab, setActiveTab] = useState(0);
+  const lastTabSwitchTime = useRef(0);
   const [juzFilter, setJuzFilter] = useState({ isActive: false });
   const [previousJuzFilter, setPreviousJuzFilter] = useState({ isActive: false }); // Store previous Juz state
   const [isSearchBarHidden, setIsSearchBarHidden] = useState(false);
+
+  // Animation values for home and continue buttons
+  const homeButtonScale = useRef(new Animated.Value(1)).current;
+  const homeButtonOpacity = useRef(new Animated.Value(1)).current;
+  const continueButtonScale = useRef(new Animated.Value(1)).current;
+  const continueButtonOpacity = useRef(new Animated.Value(1)).current;
 
   // Check if we're in Juz mode - now using state instead of route params
   const isJuzMode = juzFilter.isActive;
@@ -292,6 +299,43 @@ const SurahListScreen = ({ navigation, route }) => {
       setJuzFilter(previousJuzFilter);
       // haptic feedback removed;
     }
+  };
+
+  // Button animation functions
+  const animateButtonPress = (buttonType) => {
+    const scaleValue = buttonType === 'home' ? homeButtonScale : continueButtonScale;
+    const opacityValue = buttonType === 'home' ? homeButtonOpacity : continueButtonOpacity;
+    
+    Animated.parallel([
+      Animated.timing(scaleValue, {
+        toValue: 0.95,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+      Animated.timing(opacityValue, {
+        toValue: 0.8,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  };
+  
+  const animateButtonRelease = (buttonType) => {
+    const scaleValue = buttonType === 'home' ? homeButtonScale : continueButtonScale;
+    const opacityValue = buttonType === 'home' ? homeButtonOpacity : continueButtonOpacity;
+    
+    Animated.parallel([
+      Animated.timing(scaleValue, {
+        toValue: 1,
+        duration: 150,
+        useNativeDriver: true,
+      }),
+      Animated.timing(opacityValue, {
+        toValue: 1,
+        duration: 150,
+        useNativeDriver: true,
+      }),
+    ]).start();
   };
 
   // Function to animate tabs when selection changes
@@ -351,13 +395,18 @@ const SurahListScreen = ({ navigation, route }) => {
         const screenWidth = Dimensions.get('window').width;
         const tabWidth = screenWidth / tabs.length;
         const fingerX = evt.nativeEvent.pageX;
+        
         const newTabIndex = Math.floor(fingerX / tabWidth);
         const clampedTabIndex = Math.max(0, Math.min(newTabIndex, tabs.length - 1));
         
         if (clampedTabIndex !== activeTab) {
-          console.log('Switching to tab:', clampedTabIndex);
-          setActiveTab(clampedTabIndex);
-          animateTabs(clampedTabIndex);
+          const now = Date.now();
+          if (now - lastTabSwitchTime.current > 200) { // 200ms debounce
+            console.log('Switching to tab:', clampedTabIndex);
+            lastTabSwitchTime.current = now;
+            setActiveTab(clampedTabIndex);
+            animateTabs(clampedTabIndex);
+          }
         }
       },
       onPanResponderRelease: () => {
@@ -381,16 +430,21 @@ const SurahListScreen = ({ navigation, route }) => {
         const swipeThreshold = screenWidth * 0.3; // 30% of screen width
         
         if (Math.abs(gestureState.dx) > swipeThreshold) {
-          if (gestureState.dx > 0 && activeTab > 0) {
-            // Swipe right - go to previous tab
-            const newTab = activeTab - 1;
-            setActiveTab(newTab);
-            animateTabs(newTab);
-          } else if (gestureState.dx < 0 && activeTab < tabs.length - 1) {
-            // Swipe left - go to next tab
-            const newTab = activeTab + 1;
-            setActiveTab(newTab);
-            animateTabs(newTab);
+          const now = Date.now();
+          if (now - lastTabSwitchTime.current > 200) { // 200ms debounce
+            if (gestureState.dx > 0 && activeTab > 0) {
+              // Swipe right - go to previous tab
+              const newTab = activeTab - 1;
+              lastTabSwitchTime.current = now;
+              setActiveTab(newTab);
+              animateTabs(newTab);
+            } else if (gestureState.dx < 0 && activeTab < tabs.length - 1) {
+              // Swipe left - go to next tab
+              const newTab = activeTab + 1;
+              lastTabSwitchTime.current = now;
+              setActiveTab(newTab);
+              animateTabs(newTab);
+            }
           }
         }
       },
@@ -409,60 +463,65 @@ const SurahListScreen = ({ navigation, route }) => {
         const isSelected = activeTab === tab.id;
         const animationValue = tabAnimations[index];
         
+        // Calculate scale based on distance from active tab
+        const distanceFromActive = Math.abs(tab.id - activeTab);
+        const distanceScale = distanceFromActive === 0 
+          ? 1.25  // Active tab: 25% larger (keep current good size)
+          : Math.max(0.92, 1.0 - (distanceFromActive * 0.04)); // Others: more noticeable reduction based on distance
+        
         return (
-          <Animated.View
+          <TouchableOpacity
             key={tab.id}
             style={[
               styles.tabButton,
               activeTab === tab.id && styles.activeTabButton,
               language === 'ar' && { marginHorizontal: 4 },
               {
-                transform: [
-                  {
-                    scale: animationValue.interpolate({
-                      inputRange: [0, 1],
-                      outputRange: [0.7, 1.0],
-                    })
-                  }
-                ],
-                opacity: animationValue.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: [0.7, 1],
-                })
+                transform: [{ scale: distanceScale }]
               }
             ]}
+            activeOpacity={1}
+            onPressIn={() => {
+              // Switch tab immediately on touch down for instant response
+              if (activeTab !== tab.id) {
+                setActiveTab(tab.id);
+                animateTabs(tab.id);
+              }
+            }}
+            onPress={() => {
+              console.log('Tab pressed:', tab.id, 'Current activeTab:', activeTab);
+              // haptic feedback removed;
+              
+              // Handle Juz mode logic
+              if (isJuzMode) {
+                // Handle special actions when in Juz mode
+                if (tab.id === 0) {
+                  // Tapping "Surah" acts like "All Surahs" button
+                  clearJuzFilter();
+                } else if (tab.id === 1) {
+                  // Tapping "Juz" goes back to Juz selection
+                  clearJuzFilter();
+                } else if (tab.id === 2) {
+                  // Tapping "Categories" goes to categories
+                  clearJuzFilter();
+                }
+              }
+            }}
           >
-            <TouchableOpacity
+            <Animated.View
               style={[
                 styles.tabButtonInner,
                 language === 'ar' && {
                   paddingVertical: 4,
                   paddingHorizontal: SIZES.extraSmall,
+                },
+                {
+                  opacity: animationValue.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [0.7, 1],
+                  })
                 }
               ]}
-              activeOpacity={0.7}
-              onPress={() => {
-                console.log('Tab pressed:', tab.id, 'Current activeTab:', activeTab);
-                // haptic feedback removed;
-                
-                // Immediately switch to the selected tab
-                setActiveTab(tab.id);
-                animateTabs(tab.id);
-                
-                if (isJuzMode) {
-                  // Handle special actions when in Juz mode
-                  if (tab.id === 0) {
-                    // Tapping "Surah" acts like "All Surahs" button
-                    clearJuzFilter();
-                  } else if (tab.id === 1) {
-                    // Tapping "Juz" goes back to Juz selection
-                    clearJuzFilter();
-                  } else if (tab.id === 2) {
-                    // Tapping "Categories" goes to categories
-                    clearJuzFilter();
-                  }
-                }
-              }}
             >
               <RNText style={[
                 styles.tabText,
@@ -472,8 +531,8 @@ const SurahListScreen = ({ navigation, route }) => {
                 {t(tab.titleKey)}
                 {tab.id === 0 && isJuzMode && ' ⬢'} {/* Use hexagon instead of sparkle */}
               </RNText>
-            </TouchableOpacity>
-          </Animated.View>
+            </Animated.View>
+          </TouchableOpacity>
         );
       })}
     </View>
@@ -620,7 +679,7 @@ const SurahListScreen = ({ navigation, route }) => {
               alignItems: isJuzMode ? 'center' : 'stretch',
             }]}>
               <View style={[styles.searchInputContainer, { 
-                backgroundColor: isSearchFocused ? 'rgba(245, 230, 200, 0.2)' : 'rgba(245, 230, 200, 0.15)', // Made even more transparent
+                backgroundColor: isSearchFocused ? 'rgba(91, 127, 103, 0.3)' : 'rgba(91, 127, 103, 0.2)', // Changed to green shades
                 flex: isJuzMode ? 1 : undefined,
                 marginRight: isJuzMode ? SIZES.small : 0,
                 ...(Platform.OS === 'android' && { paddingVertical: SIZES.small / 4 })
@@ -698,12 +757,25 @@ const SurahListScreen = ({ navigation, route }) => {
                 // haptic feedback removed;
                 navigation.navigate('Home');
               }}
+              onPressIn={() => animateButtonPress('home')}
+              onPressOut={() => animateButtonRelease('home')}
+              activeOpacity={1}
             >
-              <Image
-                source={language === 'ar' ? require('../assets/IQRA2iconArabicoctagon.png') : require('../assets/IQRA2iconoctagon.png')}
-                style={[styles.homeIcon]}
-              />
+              <Animated.View style={[
+                styles.homeButtonInner,
+                {
+                  transform: [{ scale: homeButtonScale }],
+                  opacity: homeButtonOpacity,
+                }
+              ]}>
+              <View style={styles.homeIconContainer}>
+                <Image
+                  source={language === 'ar' ? require('../assets/IQRA2iconArabicoctagon.png') : require('../assets/IQRA2iconoctagon.png')}
+                  style={[styles.homeIcon]}
+                />
+              </View>
               <RNText style={[FONTS.body2.getFont(language), styles.homeButtonText]}>{t('home')}</RNText>
+              </Animated.View>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -740,20 +812,33 @@ const SurahListScreen = ({ navigation, route }) => {
                   navigation.navigate('Memorization', { surah: { id: 1 } });
                 }
               }}
+              onPressIn={() => animateButtonPress('continue')}
+              onPressOut={() => animateButtonRelease('continue')}
+              activeOpacity={1}
             >
+              <Animated.View style={[
+                styles.continueButtonInner,
+                {
+                  transform: [{ scale: continueButtonScale }],
+                  opacity: continueButtonOpacity,
+                }
+              ]}>
               <RNText style={[FONTS.body2.getFont(language), styles.continueButtonText]}>{t('continue')}</RNText>
-              <Image 
-                source={require('../assets/app_icons/down-up.png')} 
-                style={{
-                  width: 36, 
-                  height: 36, 
-                  tintColor: 'rgba(165,115,36,1.0)',
-                  marginLeft: language === 'ar' ? 0 : 12,
-                  marginRight: language === 'ar' ? 12 : 0,
-                  transform: [{ rotate: language === 'ar' ? '90deg' : '-90deg' }],
-                }}
-                resizeMode="contain"
-              />
+              <View style={styles.continueIconContainer}>
+                <Image 
+                  source={require('../assets/app_icons/down-up.png')} 
+                  style={{
+                    width: 36, 
+                    height: 36, 
+                    tintColor: 'rgba(165,115,36,1.0)',
+                    marginLeft: language === 'ar' ? 0 : 12,
+                    marginRight: language === 'ar' ? 12 : 0,
+                    transform: [{ rotate: language === 'ar' ? '90deg' : '-90deg' }],
+                  }}
+                  resizeMode="contain"
+                />
+              </View>
+              </Animated.View>
             </TouchableOpacity>
           </View>
         </View>
@@ -785,7 +870,6 @@ const AllSurahsTab = ({ navigation, route, searchText, isJuzMode, juzData, isSea
   const [contentHeight, setContentHeight] = useState(1);
   const [visibleHeight, setVisibleHeight] = useState(1);
   const [refreshKey, setRefreshKey] = useState(0);
-
 
   const flatListRef = useRef(null);
   const scrollBarRef = useRef(null);
@@ -1907,7 +1991,7 @@ const ThemesTab = ({ navigation, isSearchBarHidden, setIsSearchBarHidden }) => {
           top: language === 'ar' ? 113 : 93 // Brought down search bar in categories tab more
         }]}>
         <View style={[styles.themeSearchInputContainer, {
-          backgroundColor: isSearchFocused ? 'rgba(245, 230, 200, 0.15)' : 'rgba(245, 230, 200, 0.1)',
+          backgroundColor: isSearchFocused ? 'rgba(91, 127, 103, 0.25)' : 'rgba(91, 127, 103, 0.15)',
                           ...(Platform.OS === 'android' && { paddingVertical: SIZES.small / 4 })
         }]}>
           <Image 
@@ -2376,6 +2460,32 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginLeft: SIZES.small,
   },
+  continueIconContainer: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4,
+    shadowRadius: 6,
+    elevation: 8,
+  },
+  homeIconContainer: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4,
+    shadowRadius: 6,
+    elevation: 8,
+  },
+  homeButtonInner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+  },
+  continueButtonInner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+  },
   scrollBarContainer: {
     position: 'absolute',
     right: 10,
@@ -2437,7 +2547,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: SIZES.medium,
     borderRadius: SIZES.small,
     backgroundColor: 'rgba(0, 0, 0, 0.3)', // Thinner, slightly transparent black
-    transform: [{ scale: 1 }], // Default scale
     marginHorizontal: 8, // Add spacing between tabs
   },
   tabButtonInner: {
@@ -2448,7 +2557,7 @@ const styles = StyleSheet.create({
   },
   activeTabButton: {
     backgroundColor: 'rgba(165,115,36,0.8)',
-                    transform: [{ scale: 1.3 }], // Make selected tab larger
+    zIndex: 10, // Ensure active tab appears above others
   },
   tabText: {
     color: '#999',

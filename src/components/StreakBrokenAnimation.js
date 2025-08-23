@@ -226,6 +226,9 @@ const StreakBrokenAnimation = ({ visible, previousStreak, missedDays = [], onAni
                       dayState === 'active' && styles.dayCircleActive,
                       dayState === 'inactive' && styles.dayCircleInactive
                     ]} />
+                    <Text style={styles.dayLabel}>
+                      {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][index]}
+                    </Text>
                   </View>
                 );
               })}
@@ -305,46 +308,58 @@ const styles = StyleSheet.create({
   weeklyIndicatorContainer: {
     alignItems: 'center',
     marginTop: 25,
+    paddingHorizontal: 10,
+    paddingVertical: 15,
+    backgroundColor: 'rgba(255, 68, 68, 0.1)',
+    borderRadius: 15,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 68, 68, 0.2)',
   },
   weeklyDotsContainer: {
     flexDirection: 'row',
-    justifyContent: 'center',
+    justifyContent: 'space-around',
     alignItems: 'center',
-    paddingHorizontal: 10,
+    paddingHorizontal: 20,
+    width: '100%',
+    marginBottom: 10,
   },
   dayContainer: {
     alignItems: 'center',
     marginHorizontal: 4,
   },
   dayCircle: {
-    width: 16,
-    height: 16,
-    borderRadius: 8,
+    width: 14,
+    height: 14,
+    borderRadius: 7,
     borderWidth: 2,
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 2,
-    elevation: 2,
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+    elevation: 3,
   },
   dayCircleInactive: {
-    backgroundColor: '#FFD700', // Orange color for inactive days
-    borderColor: '#FFD700',
-    shadowColor: '#000',
-    shadowOpacity: 0.2,
+    backgroundColor: '#CCCCCC',
+    borderColor: '#999999',
+    shadowColor: '#999999',
   },
   dayCircleActive: {
-    backgroundColor: '#6BA368', // Green color for active days
+    backgroundColor: '#6BA368',
     borderColor: '#6BA368',
     shadowColor: '#6BA368',
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.5,
+    shadowRadius: 4,
+    elevation: 4,
   },
   dayCircleMissed: {
-    backgroundColor: '#FF4444', // Red color for missed days
+    backgroundColor: '#FF4444',
     borderColor: '#FF4444',
     shadowColor: '#FF4444',
-    shadowOpacity: 0.5,
-    // Add pulsing effect for missed days
-    borderWidth: 3,
+    shadowOpacity: 0.6,
+    shadowRadius: 5,
+    elevation: 5,
+    borderWidth: 2,
+    // Add subtle pulsing effect for missed days
+    transform: [{ scale: 1.1 }],
   },
   missedDaysText: {
     fontSize: 14,
@@ -352,6 +367,14 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 8,
     fontWeight: '600',
+    opacity: 0.9,
+  },
+  dayLabel: {
+    fontSize: 11,
+    color: '#FF4444',
+    marginTop: 6,
+    textAlign: 'center',
+    fontWeight: '500',
     opacity: 0.9,
   },
 });

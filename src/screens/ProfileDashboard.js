@@ -18,6 +18,7 @@ import Card from '../components/Card';
 import { supabase } from '../utils/supabase';
 import { hapticSelection } from '../utils/hapticFeedback';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const ProfileDashboard = ({ navigation, onClose }) => {
   const { user, logout } = useAuth();
@@ -25,9 +26,7 @@ const ProfileDashboard = ({ navigation, onClose }) => {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [username, setUsername] = useState('');
-  const [displayName, setDisplayName] = useState('');
   const [email, setEmail] = useState('');
-  const [isEditing, setIsEditing] = useState(false);
   const [isEditingUsername, setIsEditingUsername] = useState(false);
   const [userStats, setUserStats] = useState({
     totalHasanat: 0,
@@ -39,7 +38,7 @@ const ProfileDashboard = ({ navigation, onClose }) => {
 
   useEffect(() => {
     loadUserProfile();
-    loadUserStats();
+    loadUserProgress();
   }, []);
 
   const loadUserProfile = async () => {
@@ -53,104 +52,118 @@ const ProfileDashboard = ({ navigation, onClose }) => {
         try {
           const { data: profile, error } = await supabase
             .from('user_profiles')
-            .select('username, display_name, created_at')
+            .select('username, created_at')
             .eq('user_id', user.id)
             .single();
 
           if (profile) {
             setUsername(profile.username || '');
-            setDisplayName(profile.display_name || '');
           } else {
-            // Profile should be created automatically by trigger, but if it doesn't exist,
-            // we'll create it manually as a fallback
-            const { error: createError } = await supabase
-              .from('user_profiles')
-              .insert({
-                user_id: user.id,
-                email: user.email,
-                username: user.email?.split('@')[0] || 'user',
-                display_name: user.email?.split('@')[0] || 'User'
-              });
-
-            if (!createError) {
-              setUsername(user.email?.split('@')[0] || 'user');
-              setDisplayName(user.email?.split('@')[0] || 'User');
-            } else {
-              console.error('[ProfileDashboard] Error creating profile:', createError);
-              // Set default values
-              setUsername(user.email?.split('@')[0] || 'user');
-              setDisplayName(user.email?.split('@')[0] || 'User');
+            // No profile found, create one with default values
+            const emailPrefix = user.email?.split('@')[0] || 'user';
+            setUsername(emailPrefix);
+            
+            // Try to create profile
+            try {
+              await supabase
+                .from('user_profiles')
+                .insert({
+                  user_id: user.id,
+                  email: user.email,
+                  username: emailPrefix,
+                  created_at: new Date().toISOString()
+                });
+            } catch (createError) {
+              console.log('[ProfileDashboard] Profile creation failed, using local state only');
             }
           }
         } catch (error) {
-          console.error('[ProfileDashboard] Error loading profile:', error);
-          // Set default values even if database fails
-          setUsername(user.email?.split('@')[0] || 'user');
-          setDisplayName(user.email?.split('@')[0] || 'User');
+          // Table might not exist or other error, use default values
+          console.log('[ProfileDashboard] Using default profile values');
+          const emailPrefix = user.email?.split('@')[0] || 'user';
+          setUsername(emailPrefix);
         }
       }
     } catch (error) {
       console.error('[ProfileDashboard] Error loading profile:', error);
+      // Set default values on error
+      setUsername('user');
     } finally {
       setLoading(false);
     }
   };
 
-  const loadUserStats = async () => {
+  const loadUserProgress = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        // Get user stats from leaderboard_stats table
-        const { data: stats, error } = await supabase
-          .from('leaderboard_stats')
-          .select('*')
-          .eq('user_id', user.id)
-          .single();
+      // Load actual progress data from AsyncStorage
+      const [
+        totalHasanat,
+        memorizedAyahsStr,
+        streak,
+        lastActivityDate
+      ] = await Promise.all([
+        AsyncStorage.getItem('total_hasanat'),
+        AsyncStorage.getItem('memorized_ayahs'),
+        AsyncStorage.getItem('streak'),
+        AsyncStorage.getItem('last_activity_date')
+      ]);
 
-        if (stats) {
-          setUserStats({
-            totalHasanat: stats.total_hasanat || 0,
-            memorizedAyaat: stats.total_ayaat_memorized || 0,
-            currentStreak: stats.current_streak || 0,
-            bestStreak: stats.best_streak || 0,
-            joinDate: stats.last_activity || new Date().toISOString(),
+      const totalHasanatValue = parseInt(totalHasanat || '0');
+      const currentStreak = parseInt(streak || '0');
+      
+      // Calculate total memorized ayaat from memorized data
+      let totalMemorizedAyaat = 0;
+      if (memorizedAyahsStr) {
+        try {
+          const memorizedAyahs = JSON.parse(memorizedAyahsStr);
+          Object.keys(memorizedAyahs).forEach(surahName => {
+            const surahData = memorizedAyahs[surahName];
+            if (surahData && surahData.memorized > 0) {
+              totalMemorizedAyaat += surahData.memorized;
+            }
           });
+        } catch (parseError) {
+          console.log('[ProfileDashboard] Error parsing memorized ayaat:', parseError);
         }
       }
-    } catch (error) {
-      console.error('[ProfileDashboard] Error loading stats:', error);
-    }
-  };
 
-  const handleSaveDisplayName = async () => {
-    if (!displayName.trim()) {
-      Alert.alert('Error', 'Display name cannot be empty');
-      return;
-    }
-
-    try {
-      setSaving(true);
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const { error } = await supabase
-          .from('user_profiles')
-          .upsert({
-            user_id: user.id,
-            email: user.email,
-            display_name: displayName.trim()
-          });
-
-        if (error) throw error;
-
-        hapticSelection();
-        Alert.alert('Success', 'Display name updated successfully!');
-        setIsEditing(false);
+      // Get best streak from leaderboard_stats if available
+      let bestStreak = currentStreak;
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data: stats } = await supabase
+            .from('leaderboard_stats')
+            .select('best_streak')
+            .eq('user_id', user.id)
+            .single();
+          
+          if (stats && stats.best_streak > bestStreak) {
+            bestStreak = stats.best_streak;
+          }
+        }
+      } catch (error) {
+        // Use current streak as best streak if can't get from database
+        bestStreak = currentStreak;
       }
+
+      setUserStats({
+        totalHasanat: totalHasanatValue,
+        memorizedAyaat: totalMemorizedAyaat,
+        currentStreak: currentStreak,
+        bestStreak: bestStreak,
+        joinDate: lastActivityDate || new Date().toISOString(),
+      });
     } catch (error) {
-      console.error('[ProfileDashboard] Error saving display name:', error);
-      Alert.alert('Error', 'Failed to update display name');
-    } finally {
-      setSaving(false);
+      console.error('[ProfileDashboard] Error loading progress:', error);
+      // Set default values on error
+      setUserStats({
+        totalHasanat: 0,
+        memorizedAyaat: 0,
+        currentStreak: 0,
+        bestStreak: 0,
+        joinDate: new Date().toISOString(),
+      });
     }
   };
 
@@ -165,28 +178,32 @@ const ProfileDashboard = ({ navigation, onClose }) => {
       setSaving(true);
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
-        // Check if username is already taken by another user
-        const { data: existingUser, error: checkError } = await supabase
-          .from('user_profiles')
-          .select('user_id')
-          .eq('username', username.trim())
-          .neq('user_id', user.id)
-          .single();
+        try {
+          // Check if username is already taken by another user
+          const { data: existingUser, error: checkError } = await supabase
+            .from('user_profiles')
+            .select('user_id')
+            .eq('username', username.trim())
+            .neq('user_id', user.id)
+            .single();
 
-        if (existingUser) {
-          Alert.alert('Error', 'Username is already taken');
-          return;
+          if (existingUser) {
+            Alert.alert('Error', 'Username is already taken');
+            return;
+          }
+
+          const { error } = await supabase
+            .from('user_profiles')
+            .upsert({
+              user_id: user.id,
+              email: user.email,
+              username: username.trim()
+            });
+
+          if (error) throw error;
+        } catch (dbError) {
+          console.log('[ProfileDashboard] Username update failed, using local state only');
         }
-
-        const { error } = await supabase
-          .from('user_profiles')
-          .upsert({
-            user_id: user.id,
-            email: user.email,
-            username: username.trim()
-          });
-
-        if (error) throw error;
 
         hapticSelection();
         Alert.alert('Success', 'Username updated successfully!');
@@ -270,11 +287,10 @@ const ProfileDashboard = ({ navigation, onClose }) => {
           <View style={styles.profileHeader}>
             <View style={styles.avatarContainer}>
               <Text style={styles.avatarText}>
-                {displayName.charAt(0).toUpperCase()}
+                {username.charAt(0).toUpperCase()}
               </Text>
             </View>
             <View style={styles.profileInfo}>
-              <Text style={styles.displayName}>{displayName}</Text>
               <Text style={styles.username}>@{username}</Text>
               <Text style={styles.email}>{email}</Text>
             </View>
@@ -284,12 +300,6 @@ const ProfileDashboard = ({ navigation, onClose }) => {
                 style={styles.editButton}
               >
                 <Ionicons name="person" size={20} color="#5b7f67" />
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => setIsEditing(true)}
-                style={styles.editButton}
-              >
-                <Ionicons name="pencil" size={20} color="#5b7f67" />
               </TouchableOpacity>
             </View>
           </View>
@@ -329,40 +339,6 @@ const ProfileDashboard = ({ navigation, onClose }) => {
               </View>
             </View>
           )}
-
-          {/* Edit Display Name */}
-          {isEditing && (
-            <View style={styles.editSection}>
-              <Text style={styles.editLabel}>Display Name:</Text>
-              <TextInput
-                style={styles.nameInput}
-                value={displayName}
-                onChangeText={setDisplayName}
-                placeholder="Enter display name"
-                placeholderTextColor="#999"
-                maxLength={30}
-              />
-              <View style={styles.editButtons}>
-                <TouchableOpacity
-                  onPress={() => setIsEditing(false)}
-                  style={[styles.editBtn, styles.cancelBtn]}
-                >
-                  <Text style={styles.cancelBtnText}>Cancel</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  onPress={handleSaveDisplayName}
-                  style={[styles.editBtn, styles.saveBtn]}
-                  disabled={saving}
-                >
-                  {saving ? (
-                    <ActivityIndicator size="small" color="#fff" />
-                  ) : (
-                    <Text style={styles.saveBtnText}>Save</Text>
-                  )}
-                </TouchableOpacity>
-              </View>
-            </View>
-          )}
         </Card>
 
         {/* Stats Cards */}
@@ -371,16 +347,22 @@ const ProfileDashboard = ({ navigation, onClose }) => {
             <Text style={styles.statLabel}>Total Hasanat</Text>
             <Text style={styles.statValue}>{formatLargeNumber(userStats.totalHasanat)}</Text>
           </Card>
-
-          <Card style={styles.statCard}>
-            <Text style={styles.statLabel}>Ayaat Memorized</Text>
-            <Text style={styles.statValue}>{userStats.memorizedAyaat}</Text>
-          </Card>
+          
+          <View style={styles.statDivider} />
 
           <Card style={styles.statCard}>
             <Text style={styles.statLabel}>Current Streak</Text>
             <Text style={styles.statValue}>{userStats.currentStreak} days</Text>
           </Card>
+          
+          <View style={styles.statDivider} />
+
+          <Card style={styles.statCard}>
+            <Text style={styles.statLabel}>Ayaat Memorized</Text>
+            <Text style={styles.statValue}>{userStats.memorizedAyaat}</Text>
+          </Card>
+          
+          <View style={styles.statDivider} />
 
           <Card style={styles.statCard}>
             <Text style={styles.statLabel}>Best Streak</Text>
@@ -476,16 +458,10 @@ const styles = StyleSheet.create({
   profileInfo: {
     flex: 1,
   },
-  displayName: {
+  username: {
     color: '#F5E6C8',
     fontSize: 20,
     fontWeight: 'bold',
-    marginBottom: 4,
-  },
-  username: {
-    color: '#5b7f67',
-    fontSize: 16,
-    fontWeight: '500',
     marginBottom: 4,
   },
   email: {
@@ -517,10 +493,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginBottom: SIZES.medium,
   },
-  editButtons: {
-    flexDirection: 'row',
-    gap: SIZES.small,
-  },
   editBtn: {
     flex: 1,
     padding: 12,
@@ -543,15 +515,19 @@ const styles = StyleSheet.create({
   },
   statsContainer: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: SIZES.small,
+    alignItems: 'center',
     marginBottom: SIZES.large,
   },
   statCard: {
     flex: 1,
-    minWidth: '45%',
     alignItems: 'center',
     padding: SIZES.medium,
+  },
+  statDivider: {
+    width: 2,
+    height: 60,
+    backgroundColor: 'rgba(165,115,36,1)',
+    marginHorizontal: SIZES.small,
   },
   statLabel: {
     color: '#CCCCCC',

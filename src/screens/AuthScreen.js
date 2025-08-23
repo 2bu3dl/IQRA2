@@ -11,6 +11,7 @@ import {
   ImageBackground,
   SafeAreaView,
 } from 'react-native';
+import { useRoute } from '@react-navigation/native';
 import { useAuth } from '../utils/authContext';
 import { useLanguage } from '../utils/languageContext';
 import Button from '../components/Button';
@@ -20,7 +21,15 @@ import { COLORS, SIZES, FONTS } from '../utils/theme';
 import { TextInput } from 'react-native';
 import { validateEmail, validatePassword, validatePasswordConfirmation, logValidationAttempt } from '../utils/validation';
 
-const AuthScreen = ({ navigation, onClose, isModal = false }) => {
+const AuthScreen = ({ navigation, isModal = false }) => {
+  // Read navigation parameters for modal mode
+  const route = useRoute();
+  const routeParams = route.params;
+  const modalMode = routeParams?.isModal || isModal;
+  
+  // Debug logging
+  console.log('[AuthScreen] Route params:', routeParams);
+  console.log('[AuthScreen] Modal mode:', modalMode);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -67,13 +76,26 @@ const AuthScreen = ({ navigation, onClose, isModal = false }) => {
     if (!result.success) {
       Alert.alert(t('error'), result.error);
     } else {
-      // Success - navigation will be handled by auth state change
-      Alert.alert(
-        t('success'), 
-        isLogin ? t('login_successful') : t('registration_successful')
-      );
-      if (isModal && onClose) {
-        onClose();
+      // Success - close modal first, then show success message
+      console.log('[AuthScreen] Login success, modalMode:', modalMode);
+      if (modalMode) {
+        console.log('[AuthScreen] In modal mode, going back to settings');
+        // Go back to previous screen (settings modal)
+        navigation.goBack();
+        // Show success message after going back
+        setTimeout(() => {
+          Alert.alert(
+            t('success'), 
+            isLogin ? t('login_successful') : t('registration_successful')
+          );
+        }, 300);
+      } else {
+        console.log('[AuthScreen] Not in modal mode, showing alert normally');
+        // Not in modal mode, show alert normally
+        Alert.alert(
+          t('success'), 
+          isLogin ? t('login_successful') : t('registration_successful')
+        );
       }
     }
   };
@@ -252,9 +274,11 @@ const AuthScreen = ({ navigation, onClose, isModal = false }) => {
                 <TouchableOpacity
                   style={styles.cardModalSkipButton}
                   onPress={() => {
-                    if (isModal && onClose) {
-                      onClose();
+                    if (modalMode) {
+                      // In modal mode, go back to previous screen (settings modal)
+                      navigation.goBack();
                     } else {
+                      // Not in modal mode, navigate to home
                       navigation.navigate('Home');
                     }
                   }}

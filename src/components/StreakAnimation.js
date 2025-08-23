@@ -6,7 +6,7 @@ import { getCurrentWeekActivity } from '../utils/store';
 
 const { width, height } = Dimensions.get('window');
 
-const StreakAnimation = ({ visible, newStreak, onAnimationComplete }) => {
+const StreakAnimation = ({ visible, newStreak, onAnimationComplete, isModal = false }) => {
   const { language, t } = useLanguage();
   const [displayNumber, setDisplayNumber] = useState(0);
   const [weekActivity, setWeekActivity] = useState([false, false, false, false, false, false, false]);
@@ -128,19 +128,22 @@ const StreakAnimation = ({ visible, newStreak, onAnimationComplete }) => {
   });
 
   return (
-    <View style={styles.overlay}>
+    <View style={[
+      styles.overlay,
+      isModal ? styles.overlayModal : styles.overlayDirect
+    ]}>
       <Animated.View style={[
-        styles.container,
+        isModal ? styles.containerModal : styles.container,
         {
           opacity: fadeAnim,
           transform: [{ scale: scaleAnim }]
         }
       ]}>
-        <View style={styles.content}>
-          <Text style={styles.title}>{t('daily_streak')}</Text>
+        <View style={isModal ? styles.contentModal : styles.content}>
+          <Text style={isModal ? styles.titleModal : styles.title}>{t('daily_streak')}</Text>
           <View style={styles.streakContainer}>
             <Animated.Text style={[
-              styles.streakNumber,
+              isModal ? styles.streakNumberModal : styles.streakNumber,
               {
                 transform: [{ rotateY: flipInterpolate }]
               }
@@ -152,7 +155,7 @@ const StreakAnimation = ({ visible, newStreak, onAnimationComplete }) => {
           
           {/* Weekly indicator with day dots */}
           <Animated.View style={[
-            styles.weeklyIndicatorContainer,
+            isModal ? styles.weeklyIndicatorContainerModal : styles.weeklyIndicatorContainer,
             {
               opacity: dotsAnim,
               transform: [{
@@ -170,6 +173,9 @@ const StreakAnimation = ({ visible, newStreak, onAnimationComplete }) => {
                     styles.dayCircle,
                     isActive ? styles.dayCircleActive : styles.dayCircleInactive
                   ]} />
+                  <Text style={styles.dayLabel}>
+                    {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][index]}
+                  </Text>
                 </View>
               ))}
             </View>
@@ -185,21 +191,32 @@ const StreakAnimation = ({ visible, newStreak, onAnimationComplete }) => {
 
 const styles = StyleSheet.create({
   overlay: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1000,
+  },
+  overlayModal: {
+    flex: 1,
+    backgroundColor: 'transparent',
+  },
+  overlayDirect: {
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
     bottom: 0,
     backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 1000,
-    paddingTop: height * 0.15, // Increased top padding to move it up more
-    paddingBottom: height * 0.15, // Increased bottom padding for better centering
+    paddingTop: height * 0.15,
+    paddingBottom: height * 0.15,
   },
   container: {
     width: width * 0.8,
     maxWidth: 300,
+    alignItems: 'center',
+  },
+  containerModal: {
+    width: '100%',
+    maxWidth: 350,
     alignItems: 'center',
   },
   content: {
@@ -215,7 +232,29 @@ const styles = StyleSheet.create({
     shadowRadius: 20,
     elevation: 10,
   },
+  contentModal: {
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    borderRadius: 20,
+    padding: 30,
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#FFD700',
+    shadowColor: '#FFD700',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.5,
+    shadowRadius: 20,
+    elevation: 10,
+    width: '100%',
+  },
   title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#5b7f67',
+    marginBottom: 20,
+    textAlign: 'center',
+    textDecorationLine: 'underline',
+  },
+  titleModal: {
     fontSize: 24,
     fontWeight: 'bold',
     color: '#5b7f67',
@@ -236,6 +275,14 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     alignSelf: 'center',
   },
+  streakNumberModal: {
+    fontSize: 100,
+    fontWeight: 'bold',
+    color: '#D4AF37',
+    textAlign: 'center',
+    marginBottom: 8,
+    alignSelf: 'center',
+  },
   streakLabel: {
     fontSize: 18,
     color: '#5b7f67',
@@ -245,31 +292,53 @@ const styles = StyleSheet.create({
     marginTop: 20,
     alignItems: 'center',
   },
+  weeklyIndicatorContainerModal: {
+    marginTop: 20,
+    alignItems: 'center',
+  },
   weeklyDotsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
     width: '100%',
     marginBottom: 10,
+    paddingHorizontal: 20,
   },
   dayContainer: {
     alignItems: 'center',
+    marginHorizontal: 4,
   },
   dayCircle: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
+    width: 12,
+    height: 12,
+    borderRadius: 6,
     backgroundColor: '#5b7f67',
+    borderWidth: 1,
+    borderColor: '#333333',
   },
   dayCircleActive: {
     backgroundColor: '#FFD700',
+    borderColor: '#FFD700',
+    shadowColor: '#FFD700',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.8,
+    shadowRadius: 4,
+    elevation: 5,
   },
   dayCircleInactive: {
-    backgroundColor: '#5b7f67',
+    backgroundColor: '#CCCCCC',
+    borderColor: '#999999',
   },
   weeklyText: {
     fontSize: 16,
     color: '#5b7f67',
     textAlign: 'center',
+  },
+  dayLabel: {
+    fontSize: 11,
+    color: '#5b7f67',
+    marginTop: 6,
+    textAlign: 'center',
+    fontWeight: '500',
   },
 });
 

@@ -334,7 +334,6 @@ export const createAlAlaqWordTiming = (ayahNumber) => {
 // Function to add audio duration for an ayah
 export const addAudioDuration = (ayahNumber, duration) => {
   alKahfAudioDurations[ayahNumber] = duration;
-  console.log(`Added audio duration for ayah ${ayahNumber}: ${duration}s`);
 };
 
 // Export function to create all Al Kahf timing data
@@ -351,5 +350,4 @@ export const createAllAlKahfSimpleTiming = () => {
   return allTiming;
 };
 
-console.log('Simple word timing system ready');
-console.log('Current audio durations:', alKahfAudioDurations);
+
