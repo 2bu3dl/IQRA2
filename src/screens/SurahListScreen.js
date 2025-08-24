@@ -375,89 +375,45 @@ const SurahListScreen = ({ navigation, route }) => {
     animateTabs(activeTab);
   }, []);
   
-  // Add swipe functionality for tabs
-  const tabSwipeResponder = useRef(null);
-  const pageSwipeResponder = useRef(null);
+  // Simple touch tracking for drag-to-switch
+  const [isDragging, setIsDragging] = useState(false);
+  const lastTouchX = useRef(0);
   
-  useEffect(() => {
-    // PanResponder for tab bar area - slide finger across tabs
-    tabSwipeResponder.current = PanResponder.create({
-      onStartShouldSetPanResponder: () => false, // Never capture on initial touch
-      onMoveShouldSetPanResponder: (evt, gestureState) => {
-        // Only respond to horizontal swipes on tab bar
-        return Math.abs(gestureState.dx) > Math.abs(gestureState.dy) && Math.abs(gestureState.dx) > 10;
-      },
-      onPanResponderGrant: (evt) => {
-        // Don't change selection on initial touch - let tab buttons handle it
-      },
-      onPanResponderMove: (evt, gestureState) => {
-        // Slide finger across tabs to change
-        const screenWidth = Dimensions.get('window').width;
-        const tabWidth = screenWidth / tabs.length;
-        const fingerX = evt.nativeEvent.pageX;
-        
-        const newTabIndex = Math.floor(fingerX / tabWidth);
-        const clampedTabIndex = Math.max(0, Math.min(newTabIndex, tabs.length - 1));
-        
-        if (clampedTabIndex !== activeTab) {
-          const now = Date.now();
-          if (now - lastTabSwitchTime.current > 200) { // 200ms debounce
-            console.log('Switching to tab:', clampedTabIndex);
-            lastTabSwitchTime.current = now;
-            setActiveTab(clampedTabIndex);
-            animateTabs(clampedTabIndex);
-          }
-        }
-      },
-      onPanResponderRelease: () => {
-        // Tab selection is already updated during move
-      }
-    });
+  const handleTouchMove = (evt) => {
+    if (!isDragging) return;
     
-    // PanResponder for above tab area - page swiping like iPhone
-    pageSwipeResponder.current = PanResponder.create({
-      onStartShouldSetPanResponder: () => false, // Never capture on initial touch
-      onMoveShouldSetPanResponder: (evt, gestureState) => {
-        // Only respond to horizontal swipes above tab bar
-        return Math.abs(gestureState.dx) > Math.abs(gestureState.dy) && Math.abs(gestureState.dx) > 50;
-      },
-      onPanResponderGrant: (evt) => {
-        // Don't change selection on initial touch
-      },
-      onPanResponderMove: (evt, gestureState) => {
-        // Page swiping - one page at a time
-        const screenWidth = Dimensions.get('window').width;
-        const swipeThreshold = screenWidth * 0.3; // 30% of screen width
-        
-        if (Math.abs(gestureState.dx) > swipeThreshold) {
-          const now = Date.now();
-          if (now - lastTabSwitchTime.current > 200) { // 200ms debounce
-            if (gestureState.dx > 0 && activeTab > 0) {
-              // Swipe right - go to previous tab
-              const newTab = activeTab - 1;
-              lastTabSwitchTime.current = now;
-              setActiveTab(newTab);
-              animateTabs(newTab);
-            } else if (gestureState.dx < 0 && activeTab < tabs.length - 1) {
-              // Swipe left - go to next tab
-              const newTab = activeTab + 1;
-              lastTabSwitchTime.current = now;
-              setActiveTab(newTab);
-              animateTabs(newTab);
-            }
-          }
-        }
-      },
-      onPanResponderRelease: () => {
-        // Tab selection is already updated during move
-      }
-    });
-  }, [activeTab, tabs.length]);
+    const touchX = evt.nativeEvent.pageX;
+    const screenWidth = Dimensions.get('window').width;
+    const tabWidth = screenWidth / tabs.length;
+    
+    // Calculate which tab the finger is currently over
+    const currentTabIndex = Math.floor(touchX / tabWidth);
+    const clampedTabIndex = Math.max(0, Math.min(currentTabIndex, tabs.length - 1));
+    
+    // Switch to the tab under the finger
+    if (clampedTabIndex !== activeTab) {
+      setActiveTab(clampedTabIndex);
+      animateTabs(clampedTabIndex);
+    }
+    
+    lastTouchX.current = touchX;
+  };
+  
+  const handleTouchStart = (evt) => {
+    setIsDragging(true);
+    lastTouchX.current = evt.nativeEvent.pageX;
+  };
+  
+  const handleTouchEnd = () => {
+    setIsDragging(false);
+  };
 
   const renderTabBar = () => (
     <View 
       style={styles.tabBar}
-      {...(tabSwipeResponder.current?.panHandlers || {})}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
     >
       {tabs.map((tab, index) => {
         const isSelected = activeTab === tab.id;
@@ -487,6 +443,11 @@ const SurahListScreen = ({ navigation, route }) => {
                 setActiveTab(tab.id);
                 animateTabs(tab.id);
               }
+            }}
+            onLongPress={() => {
+              // Enable drag-to-switch mode
+              setActiveTab(tab.id);
+              animateTabs(tab.id);
             }}
             onPress={() => {
               console.log('Tab pressed:', tab.id, 'Current activeTab:', activeTab);
@@ -576,7 +537,6 @@ const SurahListScreen = ({ navigation, route }) => {
           {/* Header */}
           <View 
             style={styles.header}
-            {...(pageSwipeResponder.current?.panHandlers || {})}
           >
             <View style={styles.headerBlurContainer}>
               <View style={styles.headerTextContainer}>
