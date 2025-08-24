@@ -52,6 +52,37 @@ export const validateEmail = (email) => {
   return { isValid: true, value: trimmedEmail };
 };
 
+export const validateEmailOrUsername = (identifier) => {
+  if (!identifier || typeof identifier !== 'string') {
+    return { isValid: false, error: 'Email or username is required' };
+  }
+  
+  const trimmedIdentifier = identifier.trim();
+  if (trimmedIdentifier.length === 0) {
+    return { isValid: false, error: 'Email or username is required' };
+  }
+  
+  if (trimmedIdentifier.length > 254) {
+    return { isValid: false, error: ERROR_MESSAGES.LENGTH_TOO_LONG };
+  }
+  
+  // Check if it's an email
+  if (PATTERNS.EMAIL.test(trimmedIdentifier)) {
+    return { isValid: true, value: trimmedIdentifier, type: 'email' };
+  }
+  
+  // Check if it's a valid username
+  if (PATTERNS.USERNAME.test(trimmedIdentifier)) {
+    return { isValid: true, value: trimmedIdentifier, type: 'username' };
+  }
+  
+  // If neither, provide helpful error message
+  return { 
+    isValid: false, 
+    error: 'Please enter a valid email address or username (3-20 characters, letters, numbers, underscore, or dash only)' 
+  };
+};
+
 export const validateUsername = (username) => {
   if (!username || typeof username !== 'string') {
     return { isValid: false, error: ERROR_MESSAGES.USERNAME_REQUIRED };

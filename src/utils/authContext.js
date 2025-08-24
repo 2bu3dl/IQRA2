@@ -1,6 +1,6 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import { Alert } from 'react-native';
-import { supabase } from './supabase';
+import { supabase, makeSupabaseRequest } from './supabase';
 import logger from './logger';
 
 export const AuthContext = createContext();
@@ -54,14 +54,25 @@ export const AuthProvider = ({ children }) => {
         return { success: true, user: data.user };
       } else {
         // Login with username - we need to find the user by username first
-        const { data: profile, error: profileError } = await supabase
-          .from('user_profiles')
-          .select('email')
-          .eq('username', identifier)
-          .single();
+        logger.log('Auth', 'Attempting username login', { username: identifier });
+        
+        // Use makeSupabaseRequest instead of direct supabase client
+        const profileResult = await makeSupabaseRequest(`user_profiles?select=email,username&username=eq.${identifier}`);
+        
+        if (!profileResult.success) {
+          logger.error('Auth', 'Username lookup error', profileResult.error);
+          return { success: false, error: 'Error looking up username. Please try again.' };
+        }
+        
+        if (!profileResult.data || profileResult.data.length === 0) {
+          return { success: false, error: 'Username not found. Please check your username or try logging in with your email address.' };
+        }
+        
+        const profile = profileResult.data[0];
 
-        if (profileError || !profile) {
-          return { success: false, error: 'Username not found' };
+        if (!profile || !profile.email) {
+          logger.error('Auth', 'Username found but no email', { profile });
+          return { success: false, error: 'Username found but no associated email. Please contact support.' };
         }
 
         // Login with the email associated with the username
@@ -170,6 +181,28 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Check if username exists (for debugging and user guidance)
+  const checkUsernameExists = async (username) => {
+    try {
+      const profileResult = await makeSupabaseRequest(`user_profiles?select=username,email&username=eq.${username}`);
+      
+      if (!profileResult.success) {
+        logger.error('Auth', 'Username check error', profileResult.error);
+        return { exists: false, message: 'Error checking username' };
+      }
+      
+      if (!profileResult.data || profileResult.data.length === 0) {
+        return { exists: false, message: 'Username not found' };
+      }
+      
+      const data = profileResult.data[0];
+      return { exists: true, message: 'Username found', data };
+    } catch (error) {
+      logger.error('Auth', 'Username check error', error);
+      return { exists: false, message: 'Error checking username' };
+    }
+  };
+
   const value = {
     user,
     loading,
@@ -177,6 +210,7 @@ export const AuthProvider = ({ children }) => {
     register,
     logout,
     resetPassword,
+    checkUsernameExists,
     isAuthenticated: !!user
   };
 

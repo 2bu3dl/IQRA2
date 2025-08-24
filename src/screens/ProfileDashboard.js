@@ -263,7 +263,7 @@ const ProfileDashboard = ({ navigation, onClose }) => {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color={COLORS.primary} />
-        <Text style={styles.loadingText}>Loading profile...</Text>
+        <Text style={styles.loadingText}>{t('loading')}</Text>
       </View>
     );
   }
@@ -277,7 +277,7 @@ const ProfileDashboard = ({ navigation, onClose }) => {
             <Ionicons name="close" size={24} color="#F5E6C8" />
           </TouchableOpacity>
           <Text variant="h1" style={styles.title}>
-            Profile
+            {t('profile')}
           </Text>
           <View style={styles.placeholder} />
         </View>
@@ -307,12 +307,12 @@ const ProfileDashboard = ({ navigation, onClose }) => {
           {/* Edit Username */}
           {isEditingUsername && (
             <View style={styles.editSection}>
-              <Text style={styles.editLabel}>Username:</Text>
+              <Text style={styles.editLabel}>{t('username')}</Text>
               <TextInput
                 style={styles.nameInput}
                 value={username}
                 onChangeText={setUsername}
-                placeholder="Enter username"
+                placeholder={t('enter_username')}
                 placeholderTextColor="#999"
                 maxLength={20}
                 autoCapitalize="none"
@@ -321,19 +321,19 @@ const ProfileDashboard = ({ navigation, onClose }) => {
               <View style={styles.editButtons}>
                 <TouchableOpacity
                   onPress={() => setIsEditingUsername(false)}
-                  style={[styles.editBtn, styles.cancelBtn]}
+                  style={[styles.editBtn, styles.cancelBtn, language === 'ar' && styles.editBtnArabic]}
                 >
-                  <Text style={styles.cancelBtnText}>Cancel</Text>
+                  <Text style={[styles.cancelBtnText, language === 'ar' && styles.editBtnTextArabic]}>{t('cancel')}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   onPress={handleSaveUsername}
-                  style={[styles.editBtn, styles.saveBtn]}
+                  style={[styles.editBtn, styles.saveBtn, language === 'ar' && styles.editBtnArabic]}
                   disabled={saving}
                 >
                   {saving ? (
                     <ActivityIndicator size="small" color="#fff" />
                   ) : (
-                    <Text style={styles.saveBtnText}>Save</Text>
+                    <Text style={[styles.saveBtnText, language === 'ar' && styles.editBtnTextArabic]}>{t('save')}</Text>
                   )}
                 </TouchableOpacity>
               </View>
@@ -344,29 +344,29 @@ const ProfileDashboard = ({ navigation, onClose }) => {
         {/* Stats Cards */}
         <View style={styles.statsContainer}>
           <Card style={styles.statCard}>
-            <Text style={styles.statLabel}>Total Hasanat</Text>
+            <Text style={styles.statLabel}>{t('total_hasanat')}</Text>
             <Text style={styles.statValue}>{formatLargeNumber(userStats.totalHasanat)}</Text>
           </Card>
           
           <View style={styles.statDivider} />
 
           <Card style={styles.statCard}>
-            <Text style={styles.statLabel}>Current Streak</Text>
-            <Text style={styles.statValue}>{userStats.currentStreak} days</Text>
+            <Text style={styles.statLabel}>{t('current_streak')}</Text>
+            <Text style={styles.statValue}>{userStats.currentStreak} {t('days')}</Text>
           </Card>
           
           <View style={styles.statDivider} />
 
           <Card style={styles.statCard}>
-            <Text style={styles.statLabel}>Ayaat Memorized</Text>
+            <Text style={styles.statLabel}>{t('ayaat_memorized')}</Text>
             <Text style={styles.statValue}>{userStats.memorizedAyaat}</Text>
           </Card>
           
           <View style={styles.statDivider} />
 
           <Card style={styles.statCard}>
-            <Text style={styles.statLabel}>Best Streak</Text>
-            <Text style={styles.statValue}>{userStats.bestStreak} days</Text>
+            <Text style={styles.statLabel}>{t('best_streak')}</Text>
+            <Text style={styles.statValue}>{userStats.bestStreak} {t('days')}</Text>
           </Card>
         </View>
 
@@ -386,10 +386,10 @@ const ProfileDashboard = ({ navigation, onClose }) => {
         {/* Actions */}
         <View style={styles.actionsContainer}>
           <Button
-            title="Logout"
+            title={t('logout')}
             onPress={handleLogout}
-            style={styles.logoutButton}
-            textStyle={styles.logoutButtonText}
+            style={[styles.logoutButton, language === 'ar' && styles.logoutButtonArabic]}
+            textStyle={[styles.logoutButtonText, language === 'ar' && styles.logoutButtonTextArabic]}
           />
         </View>
       </ScrollView>
@@ -499,6 +499,11 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: 'center',
   },
+  editBtnArabic: {
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+  },
   cancelBtn: {
     backgroundColor: 'rgba(255,255,255,0.1)',
   },
@@ -511,6 +516,10 @@ const styles = StyleSheet.create({
   },
   saveBtnText: {
     color: '#fff',
+    fontWeight: 'bold',
+  },
+  editBtnTextArabic: {
+    fontSize: 16,
     fontWeight: 'bold',
   },
   statsContainer: {
@@ -573,9 +582,17 @@ const styles = StyleSheet.create({
   logoutButton: {
     backgroundColor: '#FF6B6B',
   },
+  logoutButtonArabic: {
+    paddingVertical: 16,
+    paddingHorizontal: 32,
+    borderRadius: 12,
+  },
   logoutButtonText: {
     color: '#fff',
     fontWeight: 'bold',
+  },
+  logoutButtonTextArabic: {
+    fontSize: 18,
   },
 });
 

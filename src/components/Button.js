@@ -15,7 +15,7 @@ const Button = ({
 }) => {
   const getButtonStyle = () => {
     const baseStyle = {
-      borderRadius: SIZES.base,
+      borderRadius: 20,
       alignItems: 'center',
       justifyContent: 'center',
     };

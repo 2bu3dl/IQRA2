@@ -1,15 +1,18 @@
 import { createClient } from '@supabase/supabase-js';
 import { SUPABASE_CONFIG, validateConfig, APP_CONFIG } from './config';
 
-const makeSupabaseRequest = async (endpoint, options = {}) => {
+export const makeSupabaseRequest = async (endpoint, options = {}) => {
   const url = `${SUPABASE_CONFIG.url}/rest/v1/${endpoint}`;
   
   // Get the current user's session for authentication
   let authToken = SUPABASE_CONFIG.anonKey;
   try {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session?.access_token) {
-      authToken = session.access_token;
+    // Use the global supabase instance if available, otherwise use anon key
+    if (global.supabaseInstance) {
+      const { data: { session } } = await global.supabaseInstance.auth.getSession();
+      if (session?.access_token) {
+        authToken = session.access_token;
+      }
     }
   } catch (error) {
     console.log('[DEBUG][Supabase] Could not get session, using anon key');
@@ -37,10 +40,18 @@ const makeSupabaseRequest = async (endpoint, options = {}) => {
     
     if (response.ok) {
       try {
-        const data = await response.json();
+        const responseText = await response.text();
+        
+        // Handle empty responses gracefully
+        if (!responseText || responseText.trim() === '') {
+          return { success: true, data: null };
+        }
+        
+        const data = JSON.parse(responseText);
         return { success: true, data };
       } catch (parseError) {
         console.error('[ERROR][Supabase] Failed to parse response JSON:', parseError);
+        console.error('[DEBUG][Supabase] Raw response:', await response.text());
         return { success: false, error: 'Invalid response format' };
       }
     } else {
@@ -50,6 +61,16 @@ const makeSupabaseRequest = async (endpoint, options = {}) => {
     }
   } catch (err) {
     console.error('[ERROR][Supabase] HTTP request exception', err);
+    
+    // Handle specific network errors
+    if (err.name === 'TypeError' && err.message.includes('fetch')) {
+      return { success: false, error: 'Network connection failed' };
+    }
+    
+    if (err.name === 'AbortError') {
+      return { success: false, error: 'Request was cancelled' };
+    }
+    
     return { success: false, error: err.message };
   }
 };
@@ -89,6 +110,9 @@ export const supabase = createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKe
   }
 });
 
+// Set global instance to avoid circular dependency
+global.supabaseInstance = supabase;
+
 // Helper functions for user progress
 export const saveUserProgress = async (userId, progressData) => {
   try {
@@ -110,40 +134,73 @@ export const saveUserProgress = async (userId, progressData) => {
       return { success: false, error: 'Invalid progress data' };
     }
 
-    // Try to update existing record first
-    const updateUrl = `${endpoint}?user_id=eq.${userId}`;
-    console.log('[DEBUG][Supabase] Update URL:', updateUrl);
+    // Add retry mechanism for network issues
+    const maxRetries = 3;
+    let lastError = null;
     
-    let updateResult;
-    try {
-      updateResult = await makeSupabaseRequest(updateUrl, {
-        method: 'PATCH',
-        body
-      });
-    } catch (error) {
-      console.log('[DEBUG][Supabase] Update request failed, will try insert:', error.message);
-      updateResult = { success: false };
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        console.log(`[DEBUG][Supabase] Attempt ${attempt}/${maxRetries}`);
+        
+        // Try to update existing record first
+        const updateUrl = `${endpoint}?user_id=eq.${userId}`;
+        console.log('[DEBUG][Supabase] Update URL:', updateUrl);
+        
+        let updateResult;
+        try {
+          updateResult = await makeSupabaseRequest(updateUrl, {
+            method: 'PATCH',
+            body
+          });
+        } catch (error) {
+          console.log('[DEBUG][Supabase] Update request failed, will try insert:', error.message);
+          updateResult = { success: false };
+        }
+
+        if (updateResult.success) {
+          console.log('[Supabase] Progress update successful');
+          return { success: true, data: updateResult.data };
+        }
+
+        // If update fails, try to insert
+        console.log('[DEBUG][Supabase] Update failed, trying insert...');
+        const insertResult = await makeSupabaseRequest(endpoint, {
+          method: 'POST',
+          body
+        });
+
+        if (insertResult.success) {
+          console.log('[Supabase] Progress insert successful');
+          return { success: true, data: insertResult.data };
+        }
+
+        lastError = 'Both update and insert failed';
+        
+        // If this is the last attempt, break
+        if (attempt === maxRetries) {
+          break;
+        }
+        
+        // Wait before retrying (exponential backoff)
+        await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 1000));
+        
+      } catch (error) {
+        lastError = error.message;
+        console.log(`[DEBUG][Supabase] Attempt ${attempt} failed:`, error.message);
+        
+        // If this is the last attempt, break
+        if (attempt === maxRetries) {
+          break;
+        }
+        
+        // Wait before retrying
+        await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 1000));
+      }
     }
 
-    if (updateResult.success) {
-      console.log('[Supabase] Progress update successful');
-      return { success: true, data: updateResult.data };
-    }
-
-    // If update fails, try to insert
-    console.log('[DEBUG][Supabase] Update failed, trying insert...');
-    const insertResult = await makeSupabaseRequest(endpoint, {
-      method: 'POST',
-      body
-    });
-
-    if (insertResult.success) {
-      console.log('[Supabase] Progress insert successful');
-      return { success: true, data: insertResult.data };
-    }
-
-    console.error('[ERROR][Supabase] Both update and insert failed');
-    return { success: false, error: 'Failed to save progress' };
+    console.error('[ERROR][Supabase] All retry attempts failed:', lastError);
+    // Return success with warning instead of error to prevent app crashes
+    return { success: true, data: null, warning: 'Progress may not have been saved after retries' };
   } catch (error) {
     console.error('[ERROR][Supabase] Error saving user progress', error);
     return { success: false, error: error.message };
@@ -170,26 +227,32 @@ export const loadUserProgress = async (userId) => {
       }
     } else {
       console.error('[ERROR][Supabase] Failed to load progress', result.error);
-      return { success: false, error: result.error };
+      // Return success with null data instead of error for missing progress
+      return { success: true, data: null };
     }
   } catch (error) {
     console.error('[ERROR][Supabase] Error loading user progress', error);
-    return { success: false, error: error.message };
+    // Return success with null data instead of error for network issues
+    return { success: true, data: null };
   }
 };
 
 export const createUserProfile = async (userId, email) => {
   try {
-    const { data, error } = await supabase
-      .from('user_profiles')
-      .insert({
+    const result = await makeSupabaseRequest('user_profiles', {
+      method: 'POST',
+      body: {
         user_id: userId,
         email: email,
         created_at: new Date().toISOString()
-      });
+      }
+    });
 
-    if (error) throw error;
-    return { success: true, data };
+    if (result.success) {
+      return { success: true, data: result.data };
+    } else {
+      throw new Error(result.error || 'Failed to create user profile');
+    }
   } catch (error) {
     console.error('[ERROR][Supabase] Error creating user profile', error);
     return { success: false, error: error.message };

@@ -7,7 +7,7 @@ const Card = ({ children, style, variant = 'default', padding = 'medium', onPres
   const getCardStyle = () => {
     const baseStyle = {
       backgroundColor: COLORS.background,
-      borderRadius: SIZES.base,
+      borderRadius: 20,
     };
 
     const variantStyles = {

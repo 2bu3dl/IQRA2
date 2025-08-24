@@ -19,7 +19,7 @@ import Text from '../components/Text';
 import Card from '../components/Card';
 import { COLORS, SIZES, FONTS } from '../utils/theme';
 import { TextInput } from 'react-native';
-import { validateEmail, validatePassword, validatePasswordConfirmation, logValidationAttempt } from '../utils/validation';
+import { validateEmailOrUsername, validatePassword, validatePasswordConfirmation, logValidationAttempt } from '../utils/validation';
 
 const AuthScreen = ({ navigation, isModal = false }) => {
   // Read navigation parameters for modal mode
@@ -30,7 +30,7 @@ const AuthScreen = ({ navigation, isModal = false }) => {
   // Debug logging
   console.log('[AuthScreen] Route params:', routeParams);
   console.log('[AuthScreen] Modal mode:', modalMode);
-  const [email, setEmail] = useState('');
+  const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isLogin, setIsLogin] = useState(true);
@@ -40,11 +40,11 @@ const AuthScreen = ({ navigation, isModal = false }) => {
   const { language, t } = useLanguage();
 
   const handleAuth = async () => {
-    // Validate email
-    const emailValidation = validateEmail(email);
-    logValidationAttempt('email', email, emailValidation.isValid, 'auth');
-    if (!emailValidation.isValid) {
-      Alert.alert(t('error'), emailValidation.error);
+    // Validate email or username
+    const identifierValidation = validateEmailOrUsername(identifier);
+    logValidationAttempt('identifier', identifier, identifierValidation.isValid, 'auth');
+    if (!identifierValidation.isValid) {
+      Alert.alert(t('error'), identifierValidation.error);
       return;
     }
 
@@ -68,13 +68,23 @@ const AuthScreen = ({ navigation, isModal = false }) => {
 
     let result;
     if (isLogin) {
-      result = await login(emailValidation.value, passwordValidation.value);
+      result = await login(identifierValidation.value, passwordValidation.value);
     } else {
-      result = await register(emailValidation.value, passwordValidation.value);
+      // For registration, we need to ensure it's an email
+      if (identifierValidation.type !== 'email') {
+        Alert.alert(t('error'), 'Registration requires an email address. Please enter your email address.');
+        return;
+      }
+      result = await register(identifierValidation.value, passwordValidation.value);
     }
 
     if (!result.success) {
-      Alert.alert(t('error'), result.error);
+      // Provide more helpful error messages for username issues
+      let errorMessage = result.error;
+      if (result.error.includes('Username not found')) {
+        errorMessage = 'Username not found. Please check your username or try logging in with your email address instead.';
+      }
+      Alert.alert(t('error'), errorMessage);
     } else {
       // Success - close modal first, then show success message
       console.log('[AuthScreen] Login success, modalMode:', modalMode);
@@ -101,10 +111,18 @@ const AuthScreen = ({ navigation, isModal = false }) => {
   };
 
   const handleForgotPassword = async () => {
-    const emailValidation = validateEmail(email);
-    logValidationAttempt('email', email, emailValidation.isValid, 'forgot_password');
+    // For password reset, we need to validate that it's an email
+    const emailValidation = validateEmailOrUsername(identifier);
+    logValidationAttempt('identifier', identifier, emailValidation.isValid, 'forgot_password');
+    
     if (!emailValidation.isValid) {
       Alert.alert(t('error'), emailValidation.error);
+      return;
+    }
+    
+    // Check if it's an email (required for password reset)
+    if (emailValidation.type !== 'email') {
+      Alert.alert(t('error'), 'Password reset requires an email address. Please enter your email address.');
       return;
     }
 
@@ -144,8 +162,8 @@ const AuthScreen = ({ navigation, isModal = false }) => {
                       style={[styles.cardModalInput, { textAlign: language === 'ar' ? 'right' : 'left' }]}
                       placeholder={t('email')}
                       placeholderTextColor="rgba(255,255,255,0.6)"
-                      value={email}
-                      onChangeText={setEmail}
+                      value={identifier}
+                      onChangeText={setIdentifier}
                       keyboardType="email-address"
                       autoCapitalize="none"
                       autoCorrect={false}
@@ -202,14 +220,15 @@ const AuthScreen = ({ navigation, isModal = false }) => {
                 <View style={styles.cardModalForm}>
                   <TextInput
                     style={[styles.cardModalInput, { textAlign: language === 'ar' ? 'right' : 'left' }]}
-                    placeholder={t('email')}
+                    placeholder={t('email_or_username')}
                     placeholderTextColor="rgba(255,255,255,0.6)"
-                    value={email}
-                    onChangeText={setEmail}
-                    keyboardType="email-address"
+                    value={identifier}
+                    onChangeText={setIdentifier}
+                    keyboardType="default"
                     autoCapitalize="none"
                     autoCorrect={false}
                   />
+
 
                   <TextInput
                     style={[styles.cardModalInput, { textAlign: language === 'ar' ? 'right' : 'left' }]}
@@ -341,12 +360,15 @@ const styles = StyleSheet.create({
     marginBottom: 30,
   },
   cardModalTitle: {
-    color: '#FFA500',
+    color: '#F5E6C8',
     marginBottom: 8,
     textAlign: 'center',
     fontSize: 28,
     fontWeight: 'bold',
     fontFamily: 'Montserrat-Bold',
+    textShadowColor: '#D4A574',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 2,
   },
   cardModalSubtitle: {
     color: '#CCCCCC',
@@ -369,6 +391,7 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontFamily: 'Montserrat-Regular',
   },
+
   cardModalPrimaryButton: {
     marginBottom: 16,
     backgroundColor: '#33694e',

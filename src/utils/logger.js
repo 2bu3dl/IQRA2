@@ -1,12 +1,11 @@
 // Centralized logging system for IQRA2 app
 // This prevents sensitive data exposure and allows logging control
 
-import { APP_CONFIG } from './config';
-
 class Logger {
   constructor() {
-    this.isEnabled = APP_CONFIG.enableLogging;
-    this.isDebugMode = APP_CONFIG.debugMode;
+    // Default to enabled for debugging, can be overridden later
+    this.isEnabled = true;
+    this.isDebugMode = true;
   }
 
   // Safe logging that doesn't expose sensitive data
@@ -77,6 +76,16 @@ class Logger {
 
   setDebugMode(enabled) {
     this.isDebugMode = enabled;
+  }
+
+  // Update config from external source
+  updateConfig(config) {
+    if (config && typeof config.enableLogging === 'boolean') {
+      this.isEnabled = config.enableLogging;
+    }
+    if (config && typeof config.debugMode === 'boolean') {
+      this.isDebugMode = config.debugMode;
+    }
   }
 }
 

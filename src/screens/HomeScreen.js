@@ -414,7 +414,6 @@ const HomeScreen = ({ navigation, route }) => {
   
   // Page indicator touch functionality
   const dotsLayout = useRef({ width: 0, x: 0 });
-  const [isDraggingDots, setIsDraggingDots] = useState(false);
   
   // Streak animation state
   const [showStreakAnimation, setShowStreakAnimation] = useState(false);
@@ -503,10 +502,8 @@ const HomeScreen = ({ navigation, route }) => {
     }
   };
 
-  // Simple touch tracking for dots drag-to-switch
-  const handleDotsTouchMove = (evt) => {
-    if (!isDraggingDots) return;
-    
+  // Simple first-touch dot navigation (no dragging)
+  const handleDotsTouchStart = (evt) => {
     const touchX = evt.nativeEvent.pageX;
     const dotsWidth = dotsLayout.current.width;
     const dotsX = dotsLayout.current.x;
@@ -517,29 +514,21 @@ const HomeScreen = ({ navigation, route }) => {
       const dotWidth = dotsWidth / 3; // 3 pages
       
       // Calculate which page the touch is over
-      const pageIndex = Math.floor(relativeX / dotWidth);
+      const pageIndex = Math.round(relativeX / dotWidth);
       const clampedPageIndex = Math.max(0, Math.min(2, pageIndex));
       
-      // Switch to the page under the finger
+      // Switch to the page under the finger immediately
       if (clampedPageIndex !== currentPage) {
         setCurrentPage(clampedPageIndex);
-        // Scroll FlatList to the corresponding page
         if (flatListRef.current) {
           flatListRef.current.scrollToIndex({
             index: clampedPageIndex,
-            animated: true
+            animated: true,
+            viewPosition: 0.5
           });
         }
       }
     }
-  };
-  
-  const handleDotsTouchStart = (evt) => {
-    setIsDraggingDots(true);
-  };
-  
-  const handleDotsTouchEnd = () => {
-    setIsDraggingDots(false);
   };
 
   // Goal calculation helpers
@@ -590,6 +579,8 @@ const HomeScreen = ({ navigation, route }) => {
       logger.error('HomeScreen', 'Error saving goal data', error);
     }
   };
+
+
 
   // Scroll to default page on mount
   useEffect(() => {
@@ -948,6 +939,7 @@ const HomeScreen = ({ navigation, route }) => {
             </TouchableOpacity>
             {(() => {
               const [logoPressed, setLogoPressed] = useState(false);
+  const [showArabicIcon, setShowArabicIcon] = useState(false);
               
               return (
                 <Animated.View style={[styles.logoTextContainer, {
@@ -972,12 +964,18 @@ const HomeScreen = ({ navigation, route }) => {
                       // Toggle the modal - if it's open, close it; if it's closed, open it
                       setIntroVisible(!introVisible);
                     }}
-                    onPressIn={() => setLogoPressed(true)}
-                    onPressOut={() => setLogoPressed(false)}
+                    onPressIn={() => {
+                      setLogoPressed(true);
+                      setShowArabicIcon(true);
+                    }}
+                    onPressOut={() => {
+                      setLogoPressed(false);
+                      setShowArabicIcon(false);
+                    }}
                     activeOpacity={0.8}
                   >
               <Image 
-                source={logoPressed ? require('../assets/IQRA2iconArabicoctagon.png') : (language === 'ar' ? require('../assets/IQRA2iconArabicoctagon.png') : require('../assets/IQRA2iconoctagon.png'))} 
+                source={showArabicIcon ? require('../assets/IQRA2iconArabicoctagon.png') : (language === 'ar' ? require('../assets/IQRA2iconArabicoctagon.png') : require('../assets/IQRA2iconoctagon.png'))} 
                 style={[styles.logo]} 
               />
                   </TouchableOpacity>
@@ -1267,7 +1265,7 @@ const HomeScreen = ({ navigation, route }) => {
                           backgroundColor: pressedSavedAyaat ? 'rgba(91,127,103,0.4)' : 'rgba(91,127,103,0.2)',
                           borderColor: pressedSavedAyaat ? '#5b7f67' : 'rgba(165,115,36,0.8)',
                           borderWidth: 2,
-                          borderRadius: SIZES.base,
+                          borderRadius: 20,
                           padding: SIZES.small,
                           shadowColor: '#000000',
                           shadowOffset: { width: 4, height: 4 },
@@ -1323,7 +1321,7 @@ const HomeScreen = ({ navigation, route }) => {
                           backgroundColor: pressedSavedNotes ? 'rgba(91,127,103,0.4)' : 'rgba(91,127,103,0.2)',
                           borderColor: pressedSavedNotes ? '#5b7f67' : 'rgba(165,115,36,0.8)',
                           borderWidth: 2,
-                          borderRadius: SIZES.base,
+                          borderRadius: 20,
                           padding: SIZES.small,
                           shadowColor: '#000000',
                           shadowOffset: { width: 4, height: 4 },
@@ -1385,7 +1383,7 @@ const HomeScreen = ({ navigation, route }) => {
                           backgroundColor: pressedRecordings ? 'rgba(91,127,103,0.4)' : 'rgba(91,127,103,0.2)',
                           borderColor: pressedRecordings ? '#5b7f67' : 'rgba(165,115,36,0.8)',
                           borderWidth: 2,
-                          borderRadius: SIZES.base,
+                          borderRadius: 20,
                           padding: SIZES.small,
                           shadowColor: '#000000',
                           shadowOffset: { width: 4, height: 4 },
@@ -1584,7 +1582,7 @@ const HomeScreen = ({ navigation, route }) => {
                         backgroundColor: pressedStatBox === 'hasanat' ? 'rgba(91,127,103,0.4)' : 'rgba(91,127,103,0.2)',
                         borderColor: pressedStatBox === 'hasanat' ? '#5b7f67' : 'rgba(165,115,36,0.8)',
                         borderWidth: 2,
-                        borderRadius: SIZES.base,
+                        borderRadius: 20,
                         alignItems: 'center',
                         justifyContent: 'center',
                         shadowColor: '#000000',
@@ -1644,7 +1642,7 @@ const HomeScreen = ({ navigation, route }) => {
                         backgroundColor: pressedStatBox === 'streak' ? 'rgba(91,127,103,0.4)' : 'rgba(91,127,103,0.2)',
                         borderColor: pressedStatBox === 'streak' ? '#5b7f67' : 'rgba(165,115,36,0.8)',
                         borderWidth: 2,
-                        borderRadius: SIZES.base,
+                        borderRadius: 20,
                         alignItems: 'center',
                         justifyContent: 'center',
                         shadowColor: '#000000',
@@ -1768,9 +1766,24 @@ const HomeScreen = ({ navigation, route }) => {
             pagingEnabled
             showsHorizontalScrollIndicator={false}
             bounces={false}
-            decelerationRate="fast"
+            decelerationRate={0.8}
             snapToInterval={Dimensions.get('window').width}
             snapToAlignment="center"
+            scrollEventThrottle={16}
+            removeClippedSubviews={true}
+            maxToRenderPerBatch={1}
+            windowSize={3}
+            onScroll={(event) => {
+              // Update dots immediately during scroll for responsive feedback
+              const scrollX = event.nativeEvent.contentOffset.x;
+              const screenWidth = Dimensions.get('window').width;
+              const pageIndex = Math.round(scrollX / screenWidth);
+              const clampedPageIndex = Math.max(0, Math.min(2, pageIndex));
+              
+              if (clampedPageIndex !== currentPage) {
+                setCurrentPage(clampedPageIndex);
+              }
+            }}
             onMomentumScrollEnd={(event) => {
               const pageIndex = Math.round(event.nativeEvent.contentOffset.x / Dimensions.get('window').width);
               setCurrentPage(pageIndex);
@@ -1806,8 +1819,6 @@ const HomeScreen = ({ navigation, route }) => {
              marginBottom: 10
              }}
              onTouchStart={handleDotsTouchStart}
-             onTouchMove={handleDotsTouchMove}
-             onTouchEnd={handleDotsTouchEnd}
              onLayout={(e) => {
                const { width, x } = e.nativeEvent.layout;
                dotsLayout.current = { width, x };
@@ -1821,21 +1832,13 @@ const HomeScreen = ({ navigation, route }) => {
                backgroundColor: currentPage === 0 ? '#5b7f67' : 'rgba(165,115,36,0.8)',
                marginHorizontal: 4
                }}
-               onPressIn={() => {
-                 setCurrentPage(0);
-                 if (flatListRef.current) {
-                   flatListRef.current.scrollToIndex({
-                     index: 0,
-                     animated: true
-                   });
-                 }
-               }}
                onPress={() => {
                  setCurrentPage(0);
                  if (flatListRef.current) {
                    flatListRef.current.scrollToIndex({
                      index: 0,
-                     animated: true
+                     animated: true,
+                     viewPosition: 0.5
                    });
                  }
                }}
@@ -1848,21 +1851,13 @@ const HomeScreen = ({ navigation, route }) => {
                backgroundColor: currentPage === 1 ? '#5b7f67' : 'rgba(165,115,36,0.8)',
                marginHorizontal: 4
                }}
-               onPressIn={() => {
-                 setCurrentPage(1);
-                 if (flatListRef.current) {
-                   flatListRef.current.scrollToIndex({
-                     index: 1,
-                     animated: true
-                   });
-                 }
-               }}
                onPress={() => {
                  setCurrentPage(1);
                  if (flatListRef.current) {
                    flatListRef.current.scrollToIndex({
                      index: 1,
-                     animated: true
+                     animated: true,
+                     viewPosition: 0.5
                    });
                  }
                }}
@@ -1875,21 +1870,13 @@ const HomeScreen = ({ navigation, route }) => {
                backgroundColor: currentPage === 2 ? '#5b7f67' : 'rgba(165,115,36,0.8)',
                marginHorizontal: 4
                }}
-               onPressIn={() => {
-                 setCurrentPage(2);
-                 if (flatListRef.current) {
-                   flatListRef.current.scrollToIndex({
-                     index: 2,
-                     animated: true
-                   });
-                 }
-               }}
                onPress={() => {
                  setCurrentPage(2);
                  if (flatListRef.current) {
                    flatListRef.current.scrollToIndex({
                      index: 2,
-                     animated: true
+                     animated: true,
+                     viewPosition: 0.5
                    });
                  }
                }}
@@ -1913,6 +1900,7 @@ const HomeScreen = ({ navigation, route }) => {
               }]}>
                 {(() => {
                   const [introLogoPressed, setIntroLogoPressed] = useState(false);
+                const [introShowArabicIcon, setIntroShowArabicIcon] = useState(false);
                   
                   return (
                     <View style={[styles.logoTextContainer, {
@@ -1938,12 +1926,18 @@ const HomeScreen = ({ navigation, route }) => {
                           height: 140,
                         }}
                         onPress={() => setIntroVisible(false)}
-                        onPressIn={() => setIntroLogoPressed(true)}
-                        onPressOut={() => setIntroLogoPressed(false)}
+                        onPressIn={() => {
+                          setIntroLogoPressed(true);
+                          setIntroShowArabicIcon(true);
+                        }}
+                        onPressOut={() => {
+                          setIntroLogoPressed(false);
+                          setIntroShowArabicIcon(false);
+                        }}
                         activeOpacity={0.8}
                       >
                         <Image 
-                          source={introLogoPressed ? require('../assets/IQRA2iconArabicoctagon.png') : (language === 'ar' ? require('../assets/IQRA2iconArabicoctagon.png') : require('../assets/IQRA2iconoctagon.png'))} 
+                          source={introShowArabicIcon ? require('../assets/IQRA2iconArabicoctagon.png') : (language === 'ar' ? require('../assets/IQRA2iconArabicoctagon.png') : require('../assets/IQRA2iconoctagon.png'))} 
                           style={styles.logo} 
                           resizeMode="contain" 
                         />
@@ -2586,7 +2580,7 @@ const HomeScreen = ({ navigation, route }) => {
               
               {/* Offline Status */}
               <View style={styles.offlineStatusRow}>
-                <Text style={styles.offlineStatusLabel}>Current Status:</Text>
+                <Text style={[styles.offlineStatusLabel, { textAlign: language === 'ar' ? 'right' : 'left' }]}>{t('current_status')}</Text>
                 <View style={styles.offlineStatusContent}>
                   <View style={styles.statusIndicatorsContainer}>
                     {/* Offline Indicator */}
@@ -2597,10 +2591,10 @@ const HomeScreen = ({ navigation, route }) => {
                       <Text style={[
                         styles.offlineText,
                         networkStatus && styles.dimmedText
-                      ]}>Offline</Text>
+                      ]}>{t('offline')}</Text>
                       {!networkStatus && offlineQueueStatus.pendingOperations > 0 && (
                         <Text style={styles.offlineQueueText}>
-                          {offlineQueueStatus.pendingOperations} pending
+                          {offlineQueueStatus.pendingOperations} {t('pending')}
                         </Text>
                       )}
                     </View>
@@ -2613,7 +2607,7 @@ const HomeScreen = ({ navigation, route }) => {
                       <Text style={[
                         styles.onlineText,
                         !networkStatus && styles.dimmedText
-                      ]}>Online</Text>
+                      ]}>{t('online')}</Text>
                       {networkStatus && offlineQueueStatus.pendingOperations > 0 && (
                         <TouchableOpacity 
                           style={styles.syncButton}
@@ -2621,7 +2615,7 @@ const HomeScreen = ({ navigation, route }) => {
                           disabled={isSyncing}
                         >
                           <Text style={styles.syncButtonText}>
-                            {isSyncing ? 'Syncing...' : `Sync ${offlineQueueStatus.pendingOperations}`}
+                            {isSyncing ? t('syncing') : `${t('sync')} ${offlineQueueStatus.pendingOperations}`}
                           </Text>
                         </TouchableOpacity>
                       )}
@@ -2631,13 +2625,13 @@ const HomeScreen = ({ navigation, route }) => {
               </View>
               
               {/* Progress Sync Status */}
-              <Text style={[styles.progressSyncText, { marginTop: -8 }]}>
-                Progress{' '}
+              <Text style={[styles.progressSyncText, { marginTop: -8, textAlign: language === 'ar' ? 'right' : 'left' }]}>
+                {t('progress')}{' '}
                 <Text style={[
                   styles.progressSyncStatus,
                   isProgressSynced ? styles.syncedStatus : styles.notSyncedStatus
                 ]}>
-                  {isProgressSynced ? 'synced' : 'not synced'}
+                  {isProgressSynced ? t('synced') : t('not_synced')}
                 </Text>
               </Text>
               
@@ -5268,7 +5262,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(128,128,128,0.3)',
     borderColor: 'rgba(165,115,36,0.8)',
     borderWidth: 1,
-    borderRadius: SIZES.base,
+    borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#000000',
@@ -5289,7 +5283,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: 'transparent',
-    borderRadius: SIZES.base,
+    borderRadius: 20,
   },
   gridButtonText: {
     marginTop: SIZES.small,
