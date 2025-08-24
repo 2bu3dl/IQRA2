@@ -412,9 +412,9 @@ const HomeScreen = ({ navigation, route }) => {
     }
   }, [selectedCustomList]);
   
-  // Page indicator swipe functionality
-  const dotsSwipeResponder = useRef(null);
+  // Page indicator touch functionality
   const dotsLayout = useRef({ width: 0, x: 0 });
+  const [isDraggingDots, setIsDraggingDots] = useState(false);
   
   // Streak animation state
   const [showStreakAnimation, setShowStreakAnimation] = useState(false);
@@ -501,6 +501,45 @@ const HomeScreen = ({ navigation, route }) => {
     } catch (error) {
       Alert.alert('Error', `Test failed: ${error.message}`);
     }
+  };
+
+  // Simple touch tracking for dots drag-to-switch
+  const handleDotsTouchMove = (evt) => {
+    if (!isDraggingDots) return;
+    
+    const touchX = evt.nativeEvent.pageX;
+    const dotsWidth = dotsLayout.current.width;
+    const dotsX = dotsLayout.current.x;
+    
+    if (dotsWidth > 0) {
+      // Calculate relative position within the dots container
+      const relativeX = touchX - dotsX;
+      const dotWidth = dotsWidth / 3; // 3 pages
+      
+      // Calculate which page the touch is over
+      const pageIndex = Math.floor(relativeX / dotWidth);
+      const clampedPageIndex = Math.max(0, Math.min(2, pageIndex));
+      
+      // Switch to the page under the finger
+      if (clampedPageIndex !== currentPage) {
+        setCurrentPage(clampedPageIndex);
+        // Scroll FlatList to the corresponding page
+        if (flatListRef.current) {
+          flatListRef.current.scrollToIndex({
+            index: clampedPageIndex,
+            animated: true
+          });
+        }
+      }
+    }
+  };
+  
+  const handleDotsTouchStart = (evt) => {
+    setIsDraggingDots(true);
+  };
+  
+  const handleDotsTouchEnd = () => {
+    setIsDraggingDots(false);
   };
 
   // Goal calculation helpers
@@ -912,11 +951,11 @@ const HomeScreen = ({ navigation, route }) => {
               
               return (
                 <Animated.View style={[styles.logoTextContainer, {
-              shadowColor: '#fae29f',
-              shadowOffset: { width: 0, height: 0 },
-                  shadowOpacity: logoPressed ? 0.6 : 0.3,
-                  shadowRadius: logoPressed ? 16 : 8,
-                  elevation: logoPressed ? 12 : 6,
+                  shadowColor: '#fae29f',
+                  shadowOffset: { width: 0, height: 0 },
+                  shadowOpacity: logoPressed ? GLOW_CONFIG.iconContainer.shadowOpacity[Platform.OS].pressed : GLOW_CONFIG.iconContainer.shadowOpacity[Platform.OS].normal,
+                  shadowRadius: logoPressed ? GLOW_CONFIG.iconContainer.shadowRadius[Platform.OS].pressed : GLOW_CONFIG.iconContainer.shadowRadius[Platform.OS].normal,
+                  elevation: logoPressed ? GLOW_CONFIG.iconContainer.elevation[Platform.OS].pressed : GLOW_CONFIG.iconContainer.elevation[Platform.OS].normal,
                 }]}>
                   <TouchableOpacity
                     style={{
@@ -938,7 +977,7 @@ const HomeScreen = ({ navigation, route }) => {
                     activeOpacity={0.8}
                   >
               <Image 
-                source={language === 'ar' ? require('../assets/IQRA2iconArabicoctagon.png') : require('../assets/IQRA2iconoctagon.png')} 
+                source={logoPressed ? require('../assets/IQRA2iconArabicoctagon.png') : (language === 'ar' ? require('../assets/IQRA2iconArabicoctagon.png') : require('../assets/IQRA2iconoctagon.png'))} 
                 style={[styles.logo]} 
               />
                   </TouchableOpacity>
@@ -1065,50 +1104,7 @@ const HomeScreen = ({ navigation, route }) => {
                 }
               }, []);
 
-              // Initialize dots swipe responder
-              useEffect(() => {
-                dotsSwipeResponder.current = PanResponder.create({
-                  onStartShouldSetPanResponder: () => true,
-                  onMoveShouldSetPanResponder: (evt, gestureState) => {
-                    // Only respond to horizontal swipes
-                    return Math.abs(gestureState.dx) > Math.abs(gestureState.dy) && Math.abs(gestureState.dx) > 5;
-                  },
-                  onPanResponderGrant: (evt) => {
-                    // Don't change page on initial touch
-                  },
-                  onPanResponderMove: (evt, gestureState) => {
-                    // Calculate which page the finger is currently over
-                    const touchX = evt.nativeEvent.pageX;
-                    const dotsWidth = dotsLayout.current.width;
-                    const dotsX = dotsLayout.current.x;
-                    
-                    if (dotsWidth > 0) {
-                      // Calculate relative position within the dots container
-                      const relativeX = touchX - dotsX;
-                      const dotWidth = dotsWidth / 3; // 3 pages
-                      
-                      // Calculate which page the touch is over
-                      const pageIndex = Math.floor(relativeX / dotWidth);
-                      const clampedPageIndex = Math.max(0, Math.min(2, pageIndex));
-                      
-                      // Switch to the page under the finger
-                      if (clampedPageIndex !== currentPage) {
-                        setCurrentPage(clampedPageIndex);
-                        // Scroll FlatList to the corresponding page
-                        if (flatListRef.current) {
-                          flatListRef.current.scrollToIndex({
-                            index: clampedPageIndex,
-                            animated: true
-                          });
-                        }
-                      }
-                    }
-                  },
-                  onPanResponderRelease: (evt, gestureState) => {
-                    // No need to do anything on release since we're switching during move
-                  },
-                });
-              }, [currentPage]);
+
               
               return (
                 <Animated.View
@@ -1809,7 +1805,9 @@ const HomeScreen = ({ navigation, route }) => {
              marginTop: -8,
              marginBottom: 10
              }}
-             {...(dotsSwipeResponder.current?.panHandlers || {})}
+             onTouchStart={handleDotsTouchStart}
+             onTouchMove={handleDotsTouchMove}
+             onTouchEnd={handleDotsTouchEnd}
              onLayout={(e) => {
                const { width, x } = e.nativeEvent.layout;
                dotsLayout.current = { width, x };
@@ -1822,6 +1820,15 @@ const HomeScreen = ({ navigation, route }) => {
                borderRadius: 4,
                backgroundColor: currentPage === 0 ? '#5b7f67' : 'rgba(165,115,36,0.8)',
                marginHorizontal: 4
+               }}
+               onPressIn={() => {
+                 setCurrentPage(0);
+                 if (flatListRef.current) {
+                   flatListRef.current.scrollToIndex({
+                     index: 0,
+                     animated: true
+                   });
+                 }
                }}
                onPress={() => {
                  setCurrentPage(0);
@@ -1841,6 +1848,15 @@ const HomeScreen = ({ navigation, route }) => {
                backgroundColor: currentPage === 1 ? '#5b7f67' : 'rgba(165,115,36,0.8)',
                marginHorizontal: 4
                }}
+               onPressIn={() => {
+                 setCurrentPage(1);
+                 if (flatListRef.current) {
+                   flatListRef.current.scrollToIndex({
+                     index: 1,
+                     animated: true
+                   });
+                 }
+               }}
                onPress={() => {
                  setCurrentPage(1);
                  if (flatListRef.current) {
@@ -1858,6 +1874,15 @@ const HomeScreen = ({ navigation, route }) => {
                borderRadius: 4,
                backgroundColor: currentPage === 2 ? '#5b7f67' : 'rgba(165,115,36,0.8)',
                marginHorizontal: 4
+               }}
+               onPressIn={() => {
+                 setCurrentPage(2);
+                 if (flatListRef.current) {
+                   flatListRef.current.scrollToIndex({
+                     index: 2,
+                     animated: true
+                   });
+                 }
                }}
                onPress={() => {
                  setCurrentPage(2);
@@ -1886,38 +1911,46 @@ const HomeScreen = ({ navigation, route }) => {
                 marginTop: 17,
                 backgroundColor: 'rgba(192,192,192,0.95)',
               }]}>
-                <View style={[styles.logoTextContainer, {
-                  shadowColor: '#fae29f',
-                  shadowOffset: { width: 0, height: 0 },
-                  shadowOpacity: 0.3,
-                  shadowRadius: 8,
-                  elevation: 6,
-                  marginBottom: 20,
-                  position: 'absolute',
-                  top: 10,
-                  left: 0,
-                  right: 0,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  zIndex: 1000,
-                }]}>
-                  <TouchableOpacity
-                    style={{
+                {(() => {
+                  const [introLogoPressed, setIntroLogoPressed] = useState(false);
+                  
+                  return (
+                    <View style={[styles.logoTextContainer, {
+                      shadowColor: '#fae29f',
+                      shadowOffset: { width: 0, height: 0 },
+                      shadowOpacity: introLogoPressed ? 0.6 : 0.3,
+                      shadowRadius: introLogoPressed ? 16 : 8,
+                      elevation: introLogoPressed ? 12 : 6,
+                      marginBottom: 20,
+                      position: 'absolute',
+                      top: 10,
+                      left: 0,
+                      right: 0,
                       alignItems: 'center',
                       justifyContent: 'center',
-                      width: 140,
-                      height: 140,
-                    }}
-                    onPress={() => setIntroVisible(false)}
-                    activeOpacity={0.8}
-                  >
-                    <Image 
-                      source={language === 'ar' ? require('../assets/IQRA2iconArabicoctagon.png') : require('../assets/IQRA2iconoctagon.png')} 
-                      style={styles.logo} 
-                      resizeMode="contain" 
-                    />
-                  </TouchableOpacity>
-                </View>
+                      zIndex: 1000,
+                    }]}>
+                      <TouchableOpacity
+                        style={{
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          width: 140,
+                          height: 140,
+                        }}
+                        onPress={() => setIntroVisible(false)}
+                        onPressIn={() => setIntroLogoPressed(true)}
+                        onPressOut={() => setIntroLogoPressed(false)}
+                        activeOpacity={0.8}
+                      >
+                        <Image 
+                          source={introLogoPressed ? require('../assets/IQRA2iconArabicoctagon.png') : (language === 'ar' ? require('../assets/IQRA2iconArabicoctagon.png') : require('../assets/IQRA2iconoctagon.png'))} 
+                          style={styles.logo} 
+                          resizeMode="contain" 
+                        />
+                      </TouchableOpacity>
+                    </View>
+                  );
+                })()}
                 {/* Spacer to push content down and align with main screen icon */}
                 <View style={{ height: 120, width: '100%', zIndex: 1 }} />
                 <Text style={{ 
@@ -5175,17 +5208,15 @@ const styles = StyleSheet.create({
   logoTextContainer: {
     flexDirection: 'column',
     alignItems: 'center',
+    // Use negative margins to create shadow space without shifting components
+    marginHorizontal: Platform.OS === 'ios' ? -15 : -10,
+    marginVertical: Platform.OS === 'ios' ? -10 : -8,
   },
   logo: {
     width: 120,
     height: 120,
     borderRadius: 80,
-    ...(Platform.OS === 'ios' && {
-      shadowColor: '#fae29f',
-      shadowOffset: { width: 0, height: 0 },
-      shadowOpacity: 0.6,
-      shadowRadius: 12,
-    }),
+    // Remove individual logo shadows since they're now handled by the container
   },
   introButton: {
     padding: SIZES.small,
@@ -5210,7 +5241,7 @@ const styles = StyleSheet.create({
   },
   progressBar: {
     height: 10, // Made even thinner in height
-    backgroundColor: 'rgba(100,100,100,0.7)', // Darker gray background (not too light)
+    backgroundColor: 'rgba(80,80,80,0.8)', // Even darker gray background for better contrast
     borderRadius: 6,
     overflow: 'hidden',
   },
