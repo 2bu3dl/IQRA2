@@ -163,29 +163,28 @@ export const getLeaderboardData = async (type = LEADERBOARD_TYPES.MEMORIZATION, 
     if (result.success) {
       console.log('[getLeaderboardData] Success:', result.data.length, 'records');
       
-      // Get user profiles to add usernames
-      const userProfilesResult = await makeSupabaseRequest('user_profiles?select=user_id,username,display_name');
+      // Get user profiles to add usernames and profile pictures
+      const userProfilesResult = await makeSupabaseRequest('user_profiles?select=user_id,username,display_name,profile_letter,letter_color,background_color');
       let userProfiles = {};
       
       if (userProfilesResult.success && userProfilesResult.data) {
-        console.log('[getLeaderboardData] User profiles loaded:', userProfilesResult.data.length);
         userProfilesResult.data.forEach(profile => {
           userProfiles[profile.user_id] = profile;
         });
-        console.log('[getLeaderboardData] User profiles map:', Object.keys(userProfiles));
-      } else {
-        console.log('[getLeaderboardData] Failed to load user profiles:', userProfilesResult.error);
       }
       
       // Merge leaderboard data with user profiles
       const enrichedData = result.data.map(user => {
         const profile = userProfiles[user.user_id];
-        console.log(`[getLeaderboardData] User ${user.user_id}: profile=`, profile);
-        return {
+        const enrichedUser = {
           ...user,
           username: profile?.username || null,
-          display_name: profile?.display_name || null
+          display_name: profile?.display_name || null,
+          profile_letter: profile?.profile_letter || 'ء',
+          letter_color: profile?.letter_color || '#6BA368',
+          background_color: profile?.background_color || '#F5E6C8'
         };
+        return enrichedUser;
       });
       
       console.log('[getLeaderboardData] Enriched data sample:', enrichedData[0]);
@@ -471,17 +470,11 @@ export const formatLeaderboardData = (data, type) => {
     // Try to get username from user_profiles table, fallback to user ID
     let displayName = `User ${user.user_id.slice(0, 8)}`;
     
-    console.log(`[formatLeaderboardData] User ${user.user_id}: username=${user.username}, display_name=${user.display_name}`);
-    
-    // If we have username data, use it
-    if (user.username) {
-      displayName = user.username;
-      console.log(`[formatLeaderboardData] Using username: ${displayName}`);
-    } else if (user.display_name) {
+    // If we have display_name data, use it (prefer display_name over username)
+    if (user.display_name && user.display_name.trim() !== '') {
       displayName = user.display_name;
-      console.log(`[formatLeaderboardData] Using display_name: ${displayName}`);
-    } else {
-      console.log(`[formatLeaderboardData] Using fallback: ${displayName}`);
+    } else if (user.username && user.username.trim() !== '') {
+      displayName = user.username;
     }
 
     return {
@@ -490,7 +483,10 @@ export const formatLeaderboardData = (data, type) => {
       value: displayValue,
       label: displayLabel,
       userId: user.user_id,
-      lastActivity: user.last_activity
+      lastActivity: user.last_activity,
+      profileLetter: user.profile_letter || 'ء',
+      letterColor: user.letter_color || '#6BA368',
+      backgroundColor: user.background_color || '#F5E6C8'
     };
   });
 };

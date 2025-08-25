@@ -22,10 +22,11 @@ import { makeSupabaseRequest } from '../utils/supabase';
 import { hapticSelection } from '../utils/hapticFeedback';
 import { validateUsername, validateDisplayName, logValidationAttempt } from '../utils/validation';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import AchievementsCard from '../components/AchievementsCard';
 
 const COLORS = { ...BASE_COLORS, primary: '#6BA368', accent: '#FFD700' };
 
-const ProfileScreen = ({ navigation }) => {
+const ProfileScreen = ({ navigation, route }) => {
   const { user, logout } = useAuth();
   const { language, t } = useLanguage();
   const [loading, setLoading] = useState(false);
@@ -84,13 +85,17 @@ const ProfileScreen = ({ navigation }) => {
     totalAyaat: 0,
     memorizedAyaat: 0
   });
+  
+  // Get the user ID to display (either from route params or current user)
+  const targetUserId = route?.params?.userId || user?.id;
+  const isViewingOwnProfile = !route?.params?.userId || route?.params?.userId === user?.id;
 
   useEffect(() => {
-    if (user) {
+    if (targetUserId) {
       loadUserProfile();
       loadUserStats();
     }
-  }, [user]);
+  }, [targetUserId]);
 
   // Scroll to selected letter when modal opens
   useEffect(() => {
@@ -113,12 +118,16 @@ const ProfileScreen = ({ navigation }) => {
   const loadUserProfile = async () => {
     try {
       setLoading(true);
-      if (user) {
-        setEmail(user.email || '');
+      
+      if (targetUserId) {
+        // If viewing own profile, use current user's email, otherwise we'll get it from profile
+        if (isViewingOwnProfile) {
+          setEmail(user?.email || '');
+        }
 
         // Get user profile from user_profiles table
         try {
-          const result = await makeSupabaseRequest(`user_profiles?select=*&user_id=eq.${user.id}`);
+          const result = await makeSupabaseRequest(`user_profiles?select=*&user_id=eq.${targetUserId}`);
           
           if (result.success && result.data && result.data.length > 0) {
             const profile = result.data[0];
@@ -168,36 +177,43 @@ const ProfileScreen = ({ navigation }) => {
 
   const loadUserStats = async () => {
     try {
-      if (user) {
-        // Get user progress from user_progress table (this has the real data)
-        const result = await makeSupabaseRequest(`user_progress?select=progress_data&user_id=eq.${user.id}&order=updated_at.desc&limit=1`);
+      if (targetUserId) {
+        // First try to get stats from leaderboard_stats table (this has the most up-to-date data)
+        const leaderboardResult = await makeSupabaseRequest(`leaderboard_stats?select=*&user_id=eq.${targetUserId}`);
         
-        if (result.success && result.data && result.data.length > 0) {
-          const progressData = result.data[0].progress_data;
+        if (leaderboardResult.success && leaderboardResult.data && leaderboardResult.data.length > 0) {
+          const leaderboardData = leaderboardResult.data[0];
           
-          // Extract stats from the JSON progress data
+          // Use leaderboard stats which are more reliable
           setStats({
-            totalHasanat: progressData.totalHasanat || 0,
-            streak: progressData.streak || 0,
-            totalAyaat: progressData.totalAyaat || 0,
-            memorizedAyaat: progressData.memorizedAyaat || 0
-          });
-          
-          console.log('[ProfileScreen] Loaded stats from progress:', {
-            totalHasanat: progressData.totalHasanat,
-            streak: progressData.streak,
-            totalAyaat: progressData.totalAyaat,
-            memorizedAyaat: progressData.memorizedAyaat
+            totalHasanat: leaderboardData.total_hasanat || 0,
+            streak: leaderboardData.current_streak || 0,
+            totalAyaat: leaderboardData.total_ayaat_memorized || 0,
+            memorizedAyaat: leaderboardData.total_ayaat_memorized || 0
           });
         } else {
-          // Set default stats if no progress data found
-          setStats({
-            totalHasanat: 0,
-            streak: 0,
-            totalAyaat: 0,
-            memorizedAyaat: 0
-          });
-          console.log('[ProfileScreen] No progress data found, using defaults');
+          // Fallback to user_progress table if no leaderboard data
+                      const progressResult = await makeSupabaseRequest(`user_progress?select=progress_data&user_id=eq.${targetUserId}&order=updated_at.desc&limit=1`);
+            
+            if (progressResult.success && progressResult.data && progressResult.data.length > 0) {
+              const progressData = progressResult.data[0].progress_data;
+              
+              // Extract stats from the JSON progress data
+              setStats({
+                totalHasanat: progressData.totalHasanat || 0,
+                streak: progressData.streak || 0,
+                totalAyaat: progressData.totalAyaat || 0,
+                memorizedAyaat: progressData.memorizedAyaat || 0
+              });
+            } else {
+              // Set default stats if no data found
+              setStats({
+                totalHasanat: 0,
+                streak: 0,
+                totalAyaat: 0,
+                memorizedAyaat: 0
+              });
+            }
         }
       }
     } catch (error) {
@@ -213,7 +229,7 @@ const ProfileScreen = ({ navigation }) => {
   };
 
   const saveDisplayName = async (newDisplayName = null) => {
-    if (!user) return;
+    if (!user || !isViewingOwnProfile) return;
 
     // Use newDisplayName if provided, otherwise use current displayName
     const nameToSave = newDisplayName || displayName;
@@ -265,7 +281,7 @@ const ProfileScreen = ({ navigation }) => {
   };
 
   const saveProfileLetter = async (letter) => {
-    if (!user) return;
+    if (!user || !isViewingOwnProfile) return;
 
     try {
       setSaving(true);
@@ -294,7 +310,7 @@ const ProfileScreen = ({ navigation }) => {
   };
 
   const saveProfileColors = async (newLetterColor, newBackgroundColor) => {
-    if (!user) return;
+    if (!user || !isViewingOwnProfile) return;
 
     try {
       setSaving(true);
@@ -324,7 +340,7 @@ const ProfileScreen = ({ navigation }) => {
   };
 
   const saveUsername = async () => {
-    if (!user) return;
+    if (!user || !isViewingOwnProfile) return;
 
     // Validate username
     const usernameValidation = validateUsername(username);
@@ -413,15 +429,17 @@ const ProfileScreen = ({ navigation }) => {
 
   if (loading) {
     return (
-      <View style={[styles.container, styles.loadingContainer]}>
+      <View style={{ flex: 1, backgroundColor: '#000' }}>
         <ImageBackground 
           source={require('../assets/IQRA2background.png')} 
           style={styles.backgroundImage}
           imageStyle={{ opacity: 0.2 }}
         >
           <SafeAreaView style={styles.container}>
-            <ActivityIndicator size="large" color={COLORS.primary} />
-            <Text style={styles.loadingText}>{t('loading')}</Text>
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color={COLORS.primary} />
+              <Text style={styles.loadingText}>{t('loading')}</Text>
+            </View>
           </SafeAreaView>
         </ImageBackground>
       </View>
@@ -454,39 +472,59 @@ const ProfileScreen = ({ navigation }) => {
             <Text variant="h2" style={styles.headerTitle}>
               {language === 'ar' ? 'الملف الشخصي' : 'Profile'}
             </Text>
-            <TouchableOpacity
-              style={styles.renameButton}
-              onPress={() => {
-                hapticSelection();
-                // Show input dialog for display name
-                Alert.prompt(
-                  language === 'ar' ? 'تغيير اسم العرض' : 'Change Display Name',
-                  language === 'ar' ? 'أدخل اسم العرض الجديد' : 'Enter new display name',
-                  [
-                    {
-                      text: language === 'ar' ? 'إلغاء' : 'Cancel',
-                      style: 'cancel',
-                    },
-                    {
-                      text: language === 'ar' ? 'حفظ' : 'Save',
-                      onPress: (newDisplayName) => {
-                        if (newDisplayName && newDisplayName.trim()) {
-                          setDisplayName(newDisplayName.trim());
-                          saveDisplayName(newDisplayName.trim());
-                        }
+            {!isViewingOwnProfile ? (
+              <TouchableOpacity
+                style={styles.messageButton}
+                onPress={() => {
+                  hapticSelection();
+                  // TODO: Implement messaging functionality
+                  Alert.alert(
+                    language === 'ar' ? 'رسالة' : 'Message',
+                    language === 'ar' ? 'سيتم إضافة ميزة الرسائل قريباً' : 'Messaging feature coming soon!'
+                  );
+                }}
+              >
+                <Ionicons 
+                  name="mail" 
+                  size={24} 
+                  color="#F5E6C8" 
+                />
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity
+                style={styles.renameButton}
+                onPress={() => {
+                  hapticSelection();
+                  // Show input dialog for display name
+                  Alert.prompt(
+                    language === 'ar' ? 'تغيير اسم العرض' : 'Change Display Name',
+                    language === 'ar' ? 'أدخل اسم العرض الجديد' : 'Enter new display name',
+                    [
+                      {
+                        text: language === 'ar' ? 'إلغاء' : 'Cancel',
+                        style: 'cancel',
                       },
-                    },
-                  ],
-                  'plain-text',
-                  displayName || ''
-                );
-              }}
-            >
-              <Image 
-                source={require('../assets/app_icons/rename.png')} 
-                style={styles.renameIcon}
-              />
-            </TouchableOpacity>
+                      {
+                        text: language === 'ar' ? 'حفظ' : 'Save',
+                        onPress: (newDisplayName) => {
+                          if (newDisplayName && newDisplayName.trim()) {
+                            setDisplayName(newDisplayName.trim());
+                            saveDisplayName(newDisplayName.trim());
+                          }
+                        },
+                      },
+                    ],
+                    'plain-text',
+                    displayName || ''
+                  );
+                }}
+              >
+                <Image 
+                  source={require('../assets/app_icons/rename.png')} 
+                  style={styles.renameIcon}
+                />
+              </TouchableOpacity>
+            )}
           </View>
 
           <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
@@ -494,23 +532,34 @@ const ProfileScreen = ({ navigation }) => {
             <Card style={styles.profileCard}>
               <View style={styles.profileHeader}>
                 <View style={styles.avatarContainer}>
-                  <TouchableOpacity 
-                    style={[styles.avatar, { backgroundColor: backgroundColor }]}
-                    onPress={() => {
-                      hapticSelection();
-                      setShowLetterPicker(true);
-                    }}
-                  >
-                    <Text style={[styles.avatarLetter, { color: letterColor }]}>{profileLetter}</Text>
-                  </TouchableOpacity>
+                  {isViewingOwnProfile ? (
+                    <TouchableOpacity 
+                      style={[styles.avatar, { backgroundColor: backgroundColor }]}
+                      onPress={() => {
+                        hapticSelection();
+                        setShowLetterPicker(true);
+                      }}
+                    >
+                      <Text style={[styles.avatarLetter, { color: letterColor }]}>{profileLetter}</Text>
+                    </TouchableOpacity>
+                  ) : (
+                    <View style={[styles.avatar, { backgroundColor: backgroundColor }]}>
+                      <Text style={[styles.avatarLetter, { color: letterColor }]}>{profileLetter}</Text>
+                    </View>
+                  )}
                 </View>
                 <View style={styles.profileInfo}>
-                  <Text variant="h3" style={styles.profileName}>
-                    {displayName || username || (language === 'ar' ? 'مستخدم' : 'User')}
+                  <Text variant="h2" style={styles.profileName}>
+                    {displayName || (language === 'ar' ? 'مستخدم' : 'User')}
                   </Text>
-                  <Text variant="body2" style={styles.profileEmail}>
-                    {email}
+                  <Text variant="h3" style={styles.profileUsername}>
+                    @{username || 'username'}
                   </Text>
+                  {isViewingOwnProfile && (
+                    <Text variant="body2" style={styles.profileEmail}>
+                      {email}
+                    </Text>
+                  )}
                 </View>
               </View>
 
@@ -545,66 +594,73 @@ const ProfileScreen = ({ navigation }) => {
               </View>
             </Card>
 
-            {/* Edit Profile Card */}
-            <Card style={styles.editCard}>
-              <Text variant="h3" style={styles.sectionTitle}>
-                {language === 'ar' ? 'تعديل الملف الشخصي' : 'Edit Profile'}
-              </Text>
-
-
-
-              {/* Username */}
-              <View style={styles.inputGroup}>
-                <Text variant="body1" style={styles.inputLabel}>
-                  {language === 'ar' ? 'اسم المستخدم' : 'Username'}
+            {/* Edit Profile Card - Only show when viewing own profile */}
+            {isViewingOwnProfile && (
+              <Card style={styles.editCard}>
+                <Text variant="h3" style={styles.sectionTitle}>
+                  {language === 'ar' ? 'تعديل الملف الشخصي' : 'Edit Profile'}
                 </Text>
-                <View style={styles.inputRow}>
-                  <TextInput
-                    style={[styles.textInput, { flex: 1, textAlign: 'center' }]}
-                    value={username}
-                    onChangeText={setUsername}
-                    placeholder={language === 'ar' ? 'أدخل اسم المستخدم' : 'Enter username'}
-                    placeholderTextColor="#999"
-                    editable={!saving}
-                    autoCapitalize="none"
-                  />
-                  <Button
-                    title={language === 'ar' ? 'حفظ' : 'Save'}
-                    onPress={saveUsername}
-                    disabled={saving}
-                    style={styles.saveButton}
-                    size="small"
-                  />
+
+
+
+                {/* Username */}
+                <View style={styles.inputGroup}>
+                  <Text variant="body1" style={styles.inputLabel}>
+                    {language === 'ar' ? 'اسم المستخدم' : 'Username'}
+                  </Text>
+                  <View style={styles.inputRow}>
+                    <TextInput
+                      style={[styles.textInput, { flex: 1, textAlign: 'center' }]}
+                      value={username}
+                      onChangeText={setUsername}
+                      placeholder={language === 'ar' ? 'أدخل اسم المستخدم' : 'Enter username'}
+                      placeholderTextColor="#999"
+                      editable={!saving}
+                      autoCapitalize="none"
+                    />
+                    <Button
+                      title={language === 'ar' ? 'حفظ' : 'Save'}
+                      onPress={saveUsername}
+                      disabled={saving}
+                      style={styles.saveButton}
+                      size="small"
+                    />
+                  </View>
                 </View>
-              </View>
-            </Card>
+              </Card>
+            )}
 
-            {/* Account Actions */}
-            <Card style={styles.actionsCard}>
-              <Text variant="h3" style={styles.sectionTitle}>
-                {language === 'ar' ? 'إعدادات الحساب' : 'Account Settings'}
-              </Text>
+            {/* Achievements Card */}
+            <AchievementsCard userStats={stats} targetUserId={targetUserId} />
 
-              <TouchableOpacity
-                style={[
-                  styles.logoutButton,
-                  isLogoutPressed && styles.logoutButtonPressed
-                ]}
-                onPress={handleLogout}
-                onPressIn={() => {
-                  hapticSelection();
-                  setIsLogoutPressed(true);
-                }}
-                onPressOut={() => setIsLogoutPressed(false)}
-              >
-                <Text style={[
-                  styles.logoutButtonText,
-                  isLogoutPressed && { color: '#000000', fontWeight: 'bold' }
-                ]}>
-                  {language === 'ar' ? 'تسجيل الخروج' : 'Logout'}
+            {/* Account Actions - Only show when viewing own profile */}
+            {isViewingOwnProfile && (
+              <Card style={styles.actionsCard}>
+                <Text variant="h3" style={styles.sectionTitle}>
+                  {language === 'ar' ? 'إعدادات الحساب' : 'Account Settings'}
                 </Text>
-              </TouchableOpacity>
-            </Card>
+
+                <TouchableOpacity
+                  style={[
+                    styles.logoutButton,
+                    isLogoutPressed && styles.logoutButtonPressed
+                  ]}
+                  onPress={handleLogout}
+                  onPressIn={() => {
+                    hapticSelection();
+                    setIsLogoutPressed(true);
+                  }}
+                  onPressOut={() => setIsLogoutPressed(false)}
+                >
+                  <Text style={[
+                    styles.logoutButtonText,
+                    isLogoutPressed && { color: '#000000', fontWeight: 'bold' }
+                  ]}>
+                    {language === 'ar' ? 'تسجيل الخروج' : 'Logout'}
+                  </Text>
+                </TouchableOpacity>
+              </Card>
+            )}
           </ScrollView>
         </SafeAreaView>
       </ImageBackground>
@@ -826,6 +882,7 @@ const styles = StyleSheet.create({
     color: '#F5E6C8',
     fontWeight: 'bold',
     textAlign: 'center',
+    flex: 1,
   },
   headerSpacer: {
     width: 40, // Same as back button to center the title
@@ -842,6 +899,13 @@ const styles = StyleSheet.create({
     height: 24,
     tintColor: '#FFFFFF',
   },
+  messageButton: {
+    padding: 8,
+    borderRadius: 25,
+    backgroundColor: 'rgba(165,115,36,0.8)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   scrollView: {
     flex: 1,
     paddingHorizontal: 20,
@@ -852,43 +916,52 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   profileHeader: {
-    flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 20,
   },
   avatarContainer: {
-    marginRight: 16,
+    marginBottom: 20,
   },
   avatar: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+    width: 120,
+    height: 120,
+    borderRadius: 60,
     backgroundColor: '#F5E6C8',
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 3,
     borderColor: COLORS.primary,
-    padding: 8,
+    padding: 12,
   },
   avatarLetter: {
-    fontSize: 42,
+    fontSize: 64,
     fontWeight: 'bold',
     color: COLORS.primary,
     fontFamily: 'KSAHeavy',
     textAlign: 'center',
     includeFontPadding: false,
-    lineHeight: 42,
+    lineHeight: 64,
   },
   profileInfo: {
-    flex: 1,
+    alignItems: 'center',
   },
   profileName: {
     color: '#3E2723',
     fontWeight: 'bold',
+    marginBottom: 12,
+    textAlign: 'center',
+    fontSize: 32,
+    paddingTop: 4,
+  },
+  profileUsername: {
+    color: '#666',
+    fontWeight: '600',
     marginBottom: 4,
+    textAlign: 'center',
   },
   profileEmail: {
     color: '#666',
+    textAlign: 'center',
   },
   statsContainer: {
     flexDirection: 'row',

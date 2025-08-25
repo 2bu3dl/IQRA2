@@ -180,6 +180,7 @@ const LeaderboardCard = ({
                 {getRankIcon(user.rank)}
               </Text>
             </View>
+
             <View style={{ flex: 1 }}>
               <Text style={{
                 color: '#F5E6C8',

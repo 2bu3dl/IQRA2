@@ -39,7 +39,7 @@ const LeaderboardScreen = ({ navigation }) => {
   const [refreshing, setRefreshing] = useState(false);
   const [userRank, setUserRank] = useState(null);
   const [error, setError] = useState(null);
-  const [showInfoModal] = useState(false);
+  const [showInfoModal, setShowInfoModal] = useState(false);
   const subscriptionRef = useRef(null);
 
   const tabs = [
@@ -145,7 +145,7 @@ const LeaderboardScreen = ({ navigation }) => {
       case 1: return '#FFD700'; // Gold
       case 2: return '#C0C0C0'; // Silver
       case 3: return '#CD7F32'; // Bronze
-      default: return '#F5E6C8';
+      default: return 'rgba(165,115,36,0.8)'; // App theme orange
     }
   };
 
@@ -215,10 +215,11 @@ const LeaderboardScreen = ({ navigation }) => {
               style={styles.profileButton}
               onPress={() => navigation.navigate('Profile', { userId: item.userId })}
             >
-              <Image 
-                source={require('../assets/app_icons/information.png')} 
-                style={styles.profileIcon}
-              />
+              <View style={[styles.profilePic, { backgroundColor: item.backgroundColor }]}>
+                <Text style={[styles.profilePicLetter, { color: item.letterColor }]}>
+                  {item.profileLetter}
+                </Text>
+              </View>
             </TouchableOpacity>
           </View>
           <Text style={styles.userStats}>
@@ -235,19 +236,16 @@ const LeaderboardScreen = ({ navigation }) => {
     if (!user || !userRank) return null;
     
     return (
-      <Card style={styles.userRankBanner}>
+      <View style={styles.userRankBanner}>
         <View style={styles.userRankContent}>
-          <Ionicons name="person" size={24} color={COLORS.primary} />
-          <View style={styles.userRankInfo}>
-            <Text style={styles.userRankTitle}>
-              {language === 'ar' ? 'ترتيبك' : 'Your Rank'}
-            </Text>
-            <Text style={styles.userRankValue}>
-              #{userRank} {language === 'ar' ? 'عالمياً' : 'globally'}
-            </Text>
-          </View>
+          <Text style={styles.userRankTitle}>
+            {language === 'ar' ? 'الترتيب العالمي:' : 'Global Rank:'}
+          </Text>
+          <Text style={styles.userRankValue}>
+            #{userRank}
+          </Text>
         </View>
-      </Card>
+      </View>
     );
   };
 
@@ -268,10 +266,10 @@ const LeaderboardScreen = ({ navigation }) => {
                 navigation.goBack();
               }}
             >
-              <Ionicons 
-                name="arrow-back" 
-                size={24} 
-                color="#F5E6C8" 
+              <Image 
+                source={language === 'ar' ? require('../assets/IQRA2iconArabicoctagon.png') : require('../assets/IQRA2iconoctagon.png')} 
+                style={styles.backButtonIcon}
+                resizeMode="contain"
               />
             </TouchableOpacity>
             <Text variant="h2" style={styles.headerTitle}>
@@ -281,10 +279,9 @@ const LeaderboardScreen = ({ navigation }) => {
               style={styles.infoButton}
               onPress={() => setShowInfoModal(true)}
             >
-              <Ionicons 
-                name="information-circle" 
-                size={24} 
-                color="#F5E6C8" 
+              <Image 
+                source={require('../assets/app_icons/information.png')} 
+                style={styles.infoIcon}
               />
             </TouchableOpacity>
           </View>
@@ -436,12 +433,21 @@ const styles = StyleSheet.create({
   backButton: {
     padding: 8,
     borderRadius: 20,
-    backgroundColor: 'rgba(91, 127, 103, 0.3)',
+    backgroundColor: 'transparent',
+  },
+  backButtonIcon: {
+    width: 48,
+    height: 48,
   },
   infoButton: {
     padding: 8,
     borderRadius: 20,
-    backgroundColor: 'rgba(91, 127, 103, 0.3)',
+    backgroundColor: 'transparent',
+  },
+  infoIcon: {
+    width: 24,
+    height: 24,
+    tintColor: 'rgba(165,115,36,0.8)', // App theme orange
   },
 
   headerTitle: {
@@ -536,24 +542,24 @@ const styles = StyleSheet.create({
   userRankBanner: {
     marginHorizontal: 20,
     marginBottom: 0,
-    backgroundColor: 'rgba(245, 230, 200, 0.95)',
+    backgroundColor: 'rgba(165,115,36,0.8)',
+    borderRadius: 25,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
   },
   userRankContent: {
     flexDirection: 'row',
     alignItems: 'center',
-  },
-  userRankInfo: {
-    marginLeft: 12,
-    flex: 1,
+    justifyContent: 'space-between',
   },
   userRankTitle: {
-    color: '#3E2723',
-    fontSize: 18,
+    color: '#FFFFFF',
+    fontSize: 16,
     fontWeight: '600',
   },
   userRankValue: {
-    color: COLORS.primary,
-    fontSize: 22,
+    color: '#FFFFFF',
+    fontSize: 18,
     fontWeight: 'bold',
   },
   loadingContainer: {
@@ -654,10 +660,11 @@ const styles = StyleSheet.create({
   },
   userName: {
     color: '#3E2723',
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: '600',
     flex: 1,
   },
+
   currentUserText: {
     color: COLORS.primary,
     fontWeight: 'bold',
@@ -675,10 +682,22 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     alignSelf: 'center',
   },
-  profileIcon: {
-    width: 28,
-    height: 28,
-    tintColor: '#666',
+  profilePic: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: COLORS.primary,
+  },
+  profilePicLetter: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    fontFamily: 'KSAHeavy',
+    textAlign: 'center',
+    includeFontPadding: false,
+    lineHeight: 16,
   },
   userStats: {
     color: '#666',
