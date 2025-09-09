@@ -1,0 +1,29 @@
+{
+  "present": [
+    "0x0627",
+    "0x0628",
+    "0x0641",
+    "0x064E",
+    "0x064B",
+    "0x064C",
+    "0x064D",
+    "0x064F",
+    "0x0650",
+    "0x0651",
+    "0x0652"
+  ],
+  "missing": [
+    "0x0671",
+    "0x06E1"
+  ],
+  "font_family": "KFGQPC KSA Heavy",
+  "coverage_analysis": {
+    "has_alef": true,
+    "has_beh": true,
+    "has_feh": true,
+    "has_fatha": true,
+    "has_wasla": false,
+    "has_sukun": false,
+    "has_diacritics": true
+  }
+}

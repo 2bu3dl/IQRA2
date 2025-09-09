@@ -91,7 +91,7 @@ export const supabase = createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKe
     autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: false,
-    flowType: 'pkce',
+    flowType: 'implicit', // Changed from 'pkce' to avoid WebCrypto warnings
     redirectTo: 'iqra2://auth/callback'
   },
   global: {
@@ -255,6 +255,200 @@ export const createUserProfile = async (userId, email) => {
     }
   } catch (error) {
     console.error('[ERROR][Supabase] Error creating user profile', error);
+    return { success: false, error: error.message };
+  }
+};
+
+// Username-based authentication functions
+export const registerWithUsername = async (username, password, email = null) => {
+  try {
+    console.log('[Supabase] Registering with username:', { username, hasEmail: !!email });
+    
+    // For username-only registration, we need to create a temporary email
+    // since Supabase auth requires an email. We'll use a placeholder.
+    const tempEmail = email || `${username}@iqra2.local`;
+    
+    const { data, error } = await supabase.auth.signUp({
+      email: tempEmail,
+      password: password
+    });
+
+    if (error) throw error;
+    
+    if (data.user) {
+      // Update the user profile with the actual username and email (if provided)
+      const updateResult = await makeSupabaseRequest(`user_profiles?id=eq.${data.user.id}`, {
+        method: 'PATCH',
+        body: {
+          username: username,
+          email: email, // This will be null for username-only accounts
+          display_name: username,
+          updated_at: new Date().toISOString()
+        }
+      });
+
+      if (!updateResult.success) {
+        console.warn('[Supabase] Failed to update username in profile:', updateResult.error);
+      }
+
+      console.log('[Supabase] Username registration successful:', { userId: data.user.id, username });
+      return { success: true, user: data.user, username: username };
+    }
+    
+    return { success: false, error: 'Registration failed' };
+  } catch (error) {
+    console.error('[ERROR][Supabase] Username registration error', error);
+    let message = 'Registration failed';
+    
+    if (error.message.includes('User already registered')) {
+      message = 'Username or email is already taken';
+    } else if (error.message.includes('Password') || error.message.includes('pwned')) {
+      message = 'Password is too weak or has been compromised. Please choose a stronger password.';
+    } else if (error.message.includes('rate limit')) {
+      message = 'Too many attempts. Please try again later.';
+    }
+    
+    return { success: false, error: message };
+  }
+};
+
+export const loginWithUsername = async (username, password) => {
+  try {
+    console.log('[Supabase] Attempting username login:', { username });
+    
+    // First, find the user by username
+    const profileResult = await makeSupabaseRequest(`user_profiles?select=id,email,username&username=eq.${username}`);
+    
+    if (!profileResult.success) {
+      console.error('[Supabase] Username lookup error:', profileResult.error);
+      return { success: false, error: 'Error looking up username. Please try again.' };
+    }
+    
+    if (!profileResult.data || profileResult.data.length === 0) {
+      return { success: false, error: 'Username not found. Please check your username.' };
+    }
+    
+    const profile = profileResult.data[0];
+    
+    if (!profile || !profile.email) {
+      console.error('[Supabase] Username found but no email:', { profile });
+      return { success: false, error: 'Account setup incomplete. Please contact support.' };
+    }
+    
+    // Login with the email associated with the username
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: profile.email,
+      password: password
+    });
+
+    if (error) throw error;
+    
+    // Update last login time
+    await makeSupabaseRequest(`user_profiles?id=eq.${data.user.id}`, {
+      method: 'PATCH',
+      body: {
+        last_login: new Date().toISOString()
+      }
+    });
+    
+    console.log('[Supabase] Username login successful:', { userId: data.user.id, username });
+    return { success: true, user: data.user, username: username };
+  } catch (error) {
+    console.error('[ERROR][Supabase] Username login error', error);
+    let message = 'Login failed';
+    
+    if (error.message.includes('Invalid login credentials')) {
+      message = 'Invalid username or password';
+    } else if (error.message.includes('rate limit')) {
+      message = 'Too many login attempts. Please try again later.';
+    }
+    
+    return { success: false, error: message };
+  }
+};
+
+export const updateUsername = async (newUsername) => {
+  try {
+    const result = await makeSupabaseRequest('rpc/update_username', {
+      method: 'POST',
+      body: {
+        new_username: newUsername
+      }
+    });
+
+    if (result.success) {
+      return { success: true, data: result.data };
+    } else {
+      return { success: false, error: result.error || 'Failed to update username' };
+    }
+  } catch (error) {
+    console.error('[ERROR][Supabase] Error updating username', error);
+    return { success: false, error: error.message };
+  }
+};
+
+export const addRecoveryEmail = async (email) => {
+  try {
+    const result = await makeSupabaseRequest('rpc/update_recovery_email', {
+      method: 'POST',
+      body: {
+        email_address: email
+      }
+    });
+
+    if (result.success) {
+      return { success: true, data: result.data };
+    } else {
+      return { success: false, error: result.error || 'Failed to add recovery email' };
+    }
+  } catch (error) {
+    console.error('[ERROR][Supabase] Error adding recovery email', error);
+    return { success: false, error: error.message };
+  }
+};
+
+export const resetPasswordByUsername = async (username) => {
+  try {
+    const result = await makeSupabaseRequest('rpc/reset_password_by_username', {
+      method: 'POST',
+      body: {
+        username_input: username
+      }
+    });
+
+    if (result.success) {
+      return { success: true, data: result.data };
+    } else {
+      return { success: false, error: result.error || 'Failed to reset password' };
+    }
+  } catch (error) {
+    console.error('[ERROR][Supabase] Error resetting password by username', error);
+    return { success: false, error: error.message };
+  }
+};
+
+export const checkUsernameAvailability = async (username) => {
+  try {
+    console.log('[DEBUG] Checking username availability for:', username);
+    
+    // Use the RPC function that bypasses RLS
+    const result = await makeSupabaseRequest(`rpc/check_username_exists`, {
+      method: 'POST',
+      body: { check_username: username }
+    });
+    
+    console.log('[DEBUG] Raw result:', result);
+    
+    if (result.success) {
+      const isAvailable = !result.data; // Function returns true if username exists, false if available
+      console.log('[DEBUG] Username available:', isAvailable, 'Function result:', result.data);
+      return { success: true, available: isAvailable };
+    } else {
+      console.log('[DEBUG] Username check failed:', result.error);
+      return { success: false, error: result.error };
+    }
+  } catch (error) {
+    console.error('[ERROR][Supabase] Error checking username availability', error);
     return { success: false, error: error.message };
   }
 };

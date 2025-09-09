@@ -4,9 +4,9 @@ const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 // Screen size breakpoints
 export const SCREEN_SIZES = {
-  SMALL: SCREEN_HEIGHT < 700,
-  MEDIUM: SCREEN_HEIGHT >= 700 && SCREEN_HEIGHT < 850,
-  LARGE: SCREEN_HEIGHT >= 850,
+  SMALL: SCREEN_HEIGHT < 800,
+  MEDIUM: SCREEN_HEIGHT >= 800 && SCREEN_HEIGHT < 900,
+  LARGE: SCREEN_HEIGHT >= 900,
   EXTRA_LARGE: SCREEN_HEIGHT >= 1000,
 };
 

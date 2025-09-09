@@ -403,7 +403,7 @@ const styles = StyleSheet.create({
     marginBottom: SIZES.large,
   },
   title: {
-    fontFamily: 'KFGQPC Uthman Taha Naskh Bold',
+    fontFamily: 'KFGQPC HAFS Uthmanic Script Regular',
     fontSize: 20,
     color: '#F5E6C8',
   },

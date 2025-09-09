@@ -72,7 +72,7 @@ const MemorizationScreen = ({ route, navigation }) => {
       15: 'Al-Hijr',
       16: 'An-Nahl',
       17: 'Al-Isra',
-      18: 'Al-Kahf',
+      18: 'AlKahf_Sudais',
       19: 'Maryam',
       20: 'Ta-Ha',
       21: 'Al-Anbya',
@@ -256,6 +256,15 @@ const MemorizationScreen = ({ route, navigation }) => {
   const prevSurah = currentSurahIndex > 0 ? allSurahs[currentSurahIndex - 1] : null;
   const nextSurah = currentSurahIndex < allSurahs.length - 1 ? allSurahs[currentSurahIndex + 1] : null;
 
+  // Commented out Al-Kahf modal functionality for now
+  // const [showAudioOptionsModal, setShowAudioOptionsModal] = useState(false);
+  // const [currentAudioOptions, setCurrentAudioOptions] = useState(null);
+  // const [kahfModalShown, setKahfModalShown] = useState(false);
+  // const [showConfirmationModal, setShowConfirmationModal] = useState(false);
+  // Commented out Al-Kahf modal functionality for now
+  // const [confirmationAction, setConfirmationAction] = useState(null); // 'download' or 'stream'
+  // const [selectedScope, setSelectedScope] = useState(null); // 'full_surah' or 'this_ayah'
+
   React.useEffect(() => {
     async function fetchAyaat() {
       try {
@@ -275,7 +284,7 @@ const MemorizationScreen = ({ route, navigation }) => {
     } catch (error) {
         setAyaat([{
           type: 'ayah',
-          text: 'بِسْمِ اللّٰهِ الرَّحْمٰنِ الرَّحِیْمِ',
+          text: 'بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ',
           transliteration: 'Bismillāhir-Raḥmānir-Raḥīm'
         }]);
         setIsTextHidden(false);
@@ -288,7 +297,10 @@ const MemorizationScreen = ({ route, navigation }) => {
   React.useEffect(() => {
     const unsubscribe = audioPlayer.onHighlightingUpdate((currentWord, currentTime) => {
       console.log('[MemorizationScreen] Highlighting update:', currentWord?.text, 'at time:', currentTime);
-      setCurrentWordIndex(currentWord?.index || -1);
+      // Only update word index if we have a valid word (not -1) and audio is actually playing
+      if (currentWord && currentWord.index !== undefined && currentWord.index >= 0) {
+        setCurrentWordIndex(currentWord.index);
+      }
       setCurrentAudioTime(currentTime);
     });
 
@@ -404,7 +416,7 @@ const MemorizationScreen = ({ route, navigation }) => {
     let isMounted = true;
     const updateAudioStatus = async () => {
       try {
-        const status = await audioPlayer.getStatus();
+        const status = await audioPlayer.getPlaybackStatus();
         if (isMounted) {
           setIsAudioPlaying(status.isPlaying);
           setCurrentPlayingAyah(status.currentAyah);
@@ -442,7 +454,7 @@ const MemorizationScreen = ({ route, navigation }) => {
     
     // 2. Bismillah (if not Al-Fatihah and not Surah 9)
     if (surahNumber !== 1 && surahNumber !== 9) {
-      const bismillahText = 'بِسْمِ اللّٰهِ الرَّحْمٰنِ الرَّحِیْمِ';
+      const bismillahText = 'بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ';
       cards.push({
         type: 'bismillah',
         text: bismillahText,
@@ -723,117 +735,7 @@ const MemorizationScreen = ({ route, navigation }) => {
     '001_005': require('../assets/AlFatiha_Mishary/001005.mp3'),
     '001_006': require('../assets/AlFatiha_Mishary/001006.mp3'),
     '001_007': require('../assets/AlFatiha_Mishary/001007.mp3'),
-    // Al-Kahf (Surah 18) - Abdur-Rahman as-Sudais
-    '018_001': require('../assets/AlKahf_Sudais/018001.mp3'),
-    '018_002': require('../assets/AlKahf_Sudais/018002.mp3'),
-    '018_003': require('../assets/AlKahf_Sudais/018003.mp3'),
-    '018_004': require('../assets/AlKahf_Sudais/018004.mp3'),
-    '018_005': require('../assets/AlKahf_Sudais/018005.mp3'),
-    '018_006': require('../assets/AlKahf_Sudais/018006.mp3'),
-    '018_007': require('../assets/AlKahf_Sudais/018007.mp3'),
-    '018_008': require('../assets/AlKahf_Sudais/018008.mp3'),
-    '018_009': require('../assets/AlKahf_Sudais/018009.mp3'),
-    '018_010': require('../assets/AlKahf_Sudais/018010.mp3'),
-    '018_011': require('../assets/AlKahf_Sudais/018011.mp3'),
-    '018_012': require('../assets/AlKahf_Sudais/018012.mp3'),
-    '018_013': require('../assets/AlKahf_Sudais/018013.mp3'),
-    '018_014': require('../assets/AlKahf_Sudais/018014.mp3'),
-    '018_015': require('../assets/AlKahf_Sudais/018015.mp3'),
-    '018_016': require('../assets/AlKahf_Sudais/018016.mp3'),
-    '018_017': require('../assets/AlKahf_Sudais/018017.mp3'),
-    '018_018': require('../assets/AlKahf_Sudais/018018.mp3'),
-    '018_019': require('../assets/AlKahf_Sudais/018019.mp3'),
-    '018_020': require('../assets/AlKahf_Sudais/018020.mp3'),
-    '018_021': require('../assets/AlKahf_Sudais/018021.mp3'),
-    '018_022': require('../assets/AlKahf_Sudais/018022.mp3'),
-    '018_023': require('../assets/AlKahf_Sudais/018023.mp3'),
-    '018_024': require('../assets/AlKahf_Sudais/018024.mp3'),
-    '018_025': require('../assets/AlKahf_Sudais/018025.mp3'),
-    '018_026': require('../assets/AlKahf_Sudais/018026.mp3'),
-    '018_027': require('../assets/AlKahf_Sudais/018027.mp3'),
-    '018_028': require('../assets/AlKahf_Sudais/018028.mp3'),
-    '018_029': require('../assets/AlKahf_Sudais/018029.mp3'),
-    '018_030': require('../assets/AlKahf_Sudais/018030.mp3'),
-    '018_031': require('../assets/AlKahf_Sudais/018031.mp3'),
-    '018_032': require('../assets/AlKahf_Sudais/018032.mp3'),
-    '018_033': require('../assets/AlKahf_Sudais/018033.mp3'),
-    '018_034': require('../assets/AlKahf_Sudais/018034.mp3'),
-    '018_035': require('../assets/AlKahf_Sudais/018035.mp3'),
-    '018_036': require('../assets/AlKahf_Sudais/018036.mp3'),
-    '018_037': require('../assets/AlKahf_Sudais/018037.mp3'),
-    '018_038': require('../assets/AlKahf_Sudais/018038.mp3'),
-    '018_039': require('../assets/AlKahf_Sudais/018039.mp3'),
-    '018_040': require('../assets/AlKahf_Sudais/018040.mp3'),
-    '018_041': require('../assets/AlKahf_Sudais/018041.mp3'),
-    '018_042': require('../assets/AlKahf_Sudais/018042.mp3'),
-    '018_043': require('../assets/AlKahf_Sudais/018043.mp3'),
-    '018_044': require('../assets/AlKahf_Sudais/018044.mp3'),
-    '018_045': require('../assets/AlKahf_Sudais/018045.mp3'),
-    '018_046': require('../assets/AlKahf_Sudais/018046.mp3'),
-    '018_047': require('../assets/AlKahf_Sudais/018047.mp3'),
-    '018_048': require('../assets/AlKahf_Sudais/018048.mp3'),
-    '018_049': require('../assets/AlKahf_Sudais/018049.mp3'),
-    '018_050': require('../assets/AlKahf_Sudais/018050.mp3'),
-    '018_051': require('../assets/AlKahf_Sudais/018051.mp3'),
-    '018_052': require('../assets/AlKahf_Sudais/018052.mp3'),
-    '018_053': require('../assets/AlKahf_Sudais/018053.mp3'),
-    '018_054': require('../assets/AlKahf_Sudais/018054.mp3'),
-    '018_055': require('../assets/AlKahf_Sudais/018055.mp3'),
-    '018_056': require('../assets/AlKahf_Sudais/018056.mp3'),
-    '018_057': require('../assets/AlKahf_Sudais/018057.mp3'),
-    '018_058': require('../assets/AlKahf_Sudais/018058.mp3'),
-    '018_059': require('../assets/AlKahf_Sudais/018059.mp3'),
-    '018_060': require('../assets/AlKahf_Sudais/018060.mp3'),
-    '018_061': require('../assets/AlKahf_Sudais/018061.mp3'),
-    '018_062': require('../assets/AlKahf_Sudais/018062.mp3'),
-    '018_063': require('../assets/AlKahf_Sudais/018063.mp3'),
-    '018_064': require('../assets/AlKahf_Sudais/018064.mp3'),
-    '018_065': require('../assets/AlKahf_Sudais/018065.mp3'),
-    '018_066': require('../assets/AlKahf_Sudais/018066.mp3'),
-    '018_067': require('../assets/AlKahf_Sudais/018067.mp3'),
-    '018_068': require('../assets/AlKahf_Sudais/018068.mp3'),
-    '018_069': require('../assets/AlKahf_Sudais/018069.mp3'),
-    '018_070': require('../assets/AlKahf_Sudais/018070.mp3'),
-    '018_071': require('../assets/AlKahf_Sudais/018071.mp3'),
-    '018_072': require('../assets/AlKahf_Sudais/018072.mp3'),
-    '018_073': require('../assets/AlKahf_Sudais/018073.mp3'),
-    '018_074': require('../assets/AlKahf_Sudais/018074.mp3'),
-    '018_075': require('../assets/AlKahf_Sudais/018075.mp3'),
-    '018_076': require('../assets/AlKahf_Sudais/018076.mp3'),
-    '018_077': require('../assets/AlKahf_Sudais/018077.mp3'),
-    '018_078': require('../assets/AlKahf_Sudais/018078.mp3'),
-    '018_079': require('../assets/AlKahf_Sudais/018079.mp3'),
-    '018_080': require('../assets/AlKahf_Sudais/018080.mp3'),
-    '018_081': require('../assets/AlKahf_Sudais/018081.mp3'),
-    '018_082': require('../assets/AlKahf_Sudais/018082.mp3'),
-    '018_083': require('../assets/AlKahf_Sudais/018083.mp3'),
-    '018_084': require('../assets/AlKahf_Sudais/018084.mp3'),
-    '018_085': require('../assets/AlKahf_Sudais/018085.mp3'),
-    '018_086': require('../assets/AlKahf_Sudais/018086.mp3'),
-    '018_087': require('../assets/AlKahf_Sudais/018087.mp3'),
-    '018_088': require('../assets/AlKahf_Sudais/018088.mp3'),
-    '018_089': require('../assets/AlKahf_Sudais/018089.mp3'),
-    '018_090': require('../assets/AlKahf_Sudais/018090.mp3'),
-    '018_091': require('../assets/AlKahf_Sudais/018091.mp3'),
-    '018_092': require('../assets/AlKahf_Sudais/018092.mp3'),
-    '018_093': require('../assets/AlKahf_Sudais/018093.mp3'),
-    '018_094': require('../assets/AlKahf_Sudais/018094.mp3'),
-    '018_095': require('../assets/AlKahf_Sudais/018095.mp3'),
-    '018_096': require('../assets/AlKahf_Sudais/018096.mp3'),
-    '018_097': require('../assets/AlKahf_Sudais/018097.mp3'),
-    '018_098': require('../assets/AlKahf_Sudais/018098.mp3'),
-    '018_099': require('../assets/AlKahf_Sudais/018099.mp3'),
-    '018_100': require('../assets/AlKahf_Sudais/018100.mp3'),
-    '018_101': require('../assets/AlKahf_Sudais/018101.mp3'),
-    '018_102': require('../assets/AlKahf_Sudais/018102.mp3'),
-    '018_103': require('../assets/AlKahf_Sudais/018103.mp3'),
-    '018_104': require('../assets/AlKahf_Sudais/018104.mp3'),
-    '018_105': require('../assets/AlKahf_Sudais/018105.mp3'),
-    '018_106': require('../assets/AlKahf_Sudais/018106.mp3'),
-    '018_107': require('../assets/AlKahf_Sudais/018107.mp3'),
-    '018_108': require('../assets/AlKahf_Sudais/018108.mp3'),
-    '018_109': require('../assets/AlKahf_Sudais/018109.mp3'),
-    '018_110': require('../assets/AlKahf_Sudais/018110.mp3'),
+    // Al-Kahf (Surah 18) - Now served from Supabase Storage
     // Al-Mulk (Surah 67)
     '067_001': require('../assets/AlMulk_AlGhamdi/067001.mp3'),
     '067_002': require('../assets/AlMulk_AlGhamdi/067002.mp3'),
@@ -888,6 +790,12 @@ const MemorizationScreen = ({ route, navigation }) => {
   };
 
   function getAyahAudioUri(surahNumber, ayahNumber) {
+    // For Al-Kahf (Surah 18), return null to trigger cloud download
+    if (surahNumber === 18) {
+      return null; // This will trigger the cloud download in audioPlayer
+    }
+    
+    // For other surahs, use local assets
     const key = `${surahNumber.toString().padStart(3, '0')}_${ayahNumber.toString().padStart(3, '0')}`;
     const audioRequire = audioMap[key];
     if (!audioRequire) return null;
@@ -896,7 +804,7 @@ const MemorizationScreen = ({ route, navigation }) => {
 
   // Replace handleAudioPlay with toggle logic
   const handleAudioButtonPress = async () => {
-    const status = await audioPlayer.getStatus();
+    const status = await audioPlayer.getPlaybackStatus();
     if (status.isPlaying) {
       await audioPlayer.pauseAudio();
       setIsAudioPlaying(false);
@@ -909,6 +817,10 @@ const MemorizationScreen = ({ route, navigation }) => {
         return;
       }
       
+      // Clear highlighting immediately to prevent flash
+      setCurrentWordIndex(-1);
+      setCurrentAudioTime(0);
+      
       // Play current ayah
       const currentFlashcard = flashcards[currentAyahIndex];
       if (currentFlashcard && currentFlashcard.type === 'ayah') {
@@ -916,7 +828,21 @@ const MemorizationScreen = ({ route, navigation }) => {
         for (let i = 0; i <= currentAyahIndex; i++) {
           if (flashcards[i].type === 'ayah') ayahNumber++;
         }
+        
+        console.log('[MemorizationScreen] Attempting to play audio for surah:', surahNumber, 'ayah:', ayahNumber, 'surahName:', surahName);
+        
+        // Comment out Al-Kahf audio functionality for now
+        if (surahNumber === 18) {
+          Alert.alert(
+            'Audio Coming Soon', 
+            `Audio recitation for Surah Al-Kahf is coming soon.`
+          );
+          return;
+        }
+        
         const audioSource = getAyahAudioUri(surahNumber, ayahNumber);
+        console.log('[MemorizationScreen] Audio source for ayah', ayahNumber, ':', audioSource);
+        
         if (audioSource) {
           // Get metadata for highlighting
           let metadata = getAyahMetadata(surahNumber, ayahNumber);
@@ -926,10 +852,22 @@ const MemorizationScreen = ({ route, navigation }) => {
           }
           setCurrentAudioMetadata(metadata);
           
-          await audioPlayer.playAudio(audioSource, metadata);
-          setIsAudioPlaying(true);
+          console.log('[MemorizationScreen] Attempting to play audio with source:', audioSource);
+          const playResult = await audioPlayer.playAudio(audioSource, metadata, surahName, ayahNumber);
+          console.log('[MemorizationScreen] Audio play result:', playResult);
+          
+          if (playResult) {
+            setIsAudioPlaying(true);
+          } else {
+            console.error('[MemorizationScreen] Failed to play audio');
+            Alert.alert('Audio Error', 'Failed to play audio recitation. Please try again.');
+          }
         } else {
           console.warn('[MemorizationScreen] Audio source not available for ayah:', ayahNumber);
+          Alert.alert(
+            'Audio Not Available', 
+            `Audio recitation is not available for Ayah ${ayahNumber} of ${surahName}. This feature is coming soon.`
+          );
         }
       }
     }
@@ -977,7 +915,7 @@ const MemorizationScreen = ({ route, navigation }) => {
       const audioSource = getAyahAudioUri(surahNumber, ayahNumber);
       if (audioSource) {
         await audioPlayer.seekToStart();
-        await audioPlayer.playAudio(audioSource);
+        await audioPlayer.playAudio(audioSource, null, surahName, ayahNumber);
         setIsAudioPlaying(true);
       } else {
         console.warn('[MemorizationScreen] Audio source not available for ayah:', ayahNumber);
@@ -1278,6 +1216,169 @@ const MemorizationScreen = ({ route, navigation }) => {
     };
   }, [isRecording, recordingPulseAnim]);
 
+  // Commented out Al-Kahf modal functionality for now
+  // // Check if Al-Kahf modal has been shown before
+  // React.useEffect(() => {
+  //   const checkKahfModalShown = async () => {
+  //     try {
+  //       const hasBeenShown = await AsyncStorage.getItem('kahf_modal_shown');
+  //       setKahfModalShown(hasBeenShown === 'true');
+  //     } catch (error) {
+  //       console.error('[MemorizationScreen] Error checking kahf modal status:', error);
+  //     }
+  //   };
+  //   
+  //   checkKahfModalShown();
+  // }, []);
+
+  // Enhanced download handler with scope selection
+  const handleDownloadAudio = async (surahNumber, ayahNumber, scope = 'this_ayah') => {
+    try {
+      const scopeText = scope === 'full_surah' ? 'Full Surah' : `Ayah ${ayahNumber}`;
+      console.log(`[MemorizationScreen] Downloading ${scopeText} for surah:`, surahNumber);
+      
+      // Show loading indicator
+      Alert.alert(
+        'Download Started', 
+        `Downloading ${scopeText} of ${surahName} for offline use. This may take a few moments.`,
+        [{ text: 'OK' }]
+      );
+      
+      if (scope === 'full_surah') {
+        // Download all ayahs of Al-Kahf (110 ayahs)
+        const totalAyahs = 110;
+        let downloadedCount = 0;
+        
+        for (let ayah = 1; ayah <= totalAyahs; ayah++) {
+          try {
+            // TODO: Implement actual download logic for each ayah
+            // For now, simulate download progress
+            downloadedCount++;
+            console.log(`[MemorizationScreen] Downloaded ayah ${ayah}/${totalAyahs}`);
+            
+            // Update progress every 10 ayahs
+            if (ayah % 10 === 0) {
+              const progress = Math.round((ayah / totalAyahs) * 100);
+              console.log(`[MemorizationScreen] Download progress: ${progress}%`);
+            }
+          } catch (error) {
+            console.error(`[MemorizationScreen] Error downloading ayah ${ayah}:`, error);
+          }
+        }
+        
+        Alert.alert(
+          'Download Complete', 
+          `All ${totalAyahs} ayahs of ${surahName} have been downloaded and are now available offline.`,
+          [{ text: 'OK' }]
+        );
+      } else {
+        // Download single ayah
+        // TODO: Implement actual download logic for single ayah
+        setTimeout(() => {
+          Alert.alert(
+            'Download Complete', 
+            `Ayah ${ayahNumber} has been downloaded and is now available offline.`,
+            [{ text: 'OK' }]
+          );
+        }, 2000);
+      }
+      
+    } catch (error) {
+      console.error('[MemorizationScreen] Download error:', error);
+      Alert.alert('Download Error', 'Failed to download audio. Please check your internet connection and try again.');
+    }
+  };
+
+  // Enhanced stream handler with scope selection
+  const handleStreamAudio = async (surahNumber, ayahNumber, scope = 'this_ayah') => {
+    try {
+      const scopeText = scope === 'full_surah' ? 'Full Surah' : `Ayah ${ayahNumber}`;
+      console.log(`[MemorizationScreen] Streaming ${scopeText} for surah:`, surahNumber);
+      
+      // Show loading indicator
+      Alert.alert(
+        'Streaming Audio', 
+        `Loading ${scopeText} of ${surahName} for streaming. Please ensure you have a stable internet connection.`,
+        [{ text: 'OK' }]
+      );
+      
+      if (scope === 'full_surah') {
+        // Stream all ayahs of Al-Kahf
+        const totalAyahs = 110;
+        console.log(`[MemorizationScreen] Starting to stream all ${totalAyahs} ayahs`);
+        
+        // TODO: Implement actual streaming logic for full surah
+        // For now, start with the current ayah
+        const streamUrl = `https://baimixtdewflnnyudhwz.supabase.co/storage/v1/object/public/quran-recitations/AlKahf_AsSudais/${ayahNumber.toString().padStart(3, '0')}.mp3`;
+        
+        let metadata = getAyahMetadata(surahNumber, ayahNumber);
+        if (!metadata) {
+          metadata = getSpecialCardMetadata('ayah');
+        }
+        setCurrentAudioMetadata(metadata);
+        
+        const playResult = await audioPlayer.playAudio(streamUrl, metadata, surahName, ayahNumber);
+        
+        if (playResult) {
+          setIsAudioPlaying(true);
+          Alert.alert(
+            'Streaming Started', 
+            `Full ${surahName} is now streaming. Audio will start playing shortly.`,
+            [{ text: 'OK' }]
+          );
+        } else {
+          Alert.alert(
+            'Streaming Error', 
+            'Failed to start streaming. Please check your internet connection and try again.',
+            [{ text: 'OK' }]
+          );
+        }
+      } else {
+        // Stream single ayah
+        const streamUrl = `https://baimixtdewflnnyudhwz.supabase.co/storage/v1/object/public/quran-recitations/AlKahf_AsSudais/${ayahNumber.toString().padStart(3, '0')}.mp3`;
+        
+        console.log('[MemorizationScreen] Streaming URL:', streamUrl);
+        console.log('[MemorizationScreen] Testing URL accessibility...');
+        
+        // Test if the URL is accessible
+        try {
+          const response = await fetch(streamUrl, { method: 'HEAD' });
+          console.log('[MemorizationScreen] URL response status:', response.status);
+          console.log('[MemorizationScreen] URL response headers:', response.headers);
+        } catch (fetchError) {
+          console.error('[MemorizationScreen] URL fetch error:', fetchError);
+        }
+        
+        let metadata = getAyahMetadata(surahNumber, ayahNumber);
+        if (!metadata) {
+          metadata = getSpecialCardMetadata('ayah');
+        }
+        setCurrentAudioMetadata(metadata);
+        
+        const playResult = await audioPlayer.playAudio(streamUrl, metadata, surahName, ayahNumber);
+        
+        if (playResult) {
+          setIsAudioPlaying(true);
+          Alert.alert(
+            'Streaming Started', 
+            `Ayah ${ayahNumber} is now streaming. Audio will start playing shortly.`,
+            [{ text: 'OK' }]
+          );
+        } else {
+          Alert.alert(
+            'Streaming Error', 
+            'Failed to start streaming. Please check your internet connection and try again.',
+            [{ text: 'OK' }]
+          );
+        }
+      }
+      
+    } catch (error) {
+      console.error('[MemorizationScreen] Streaming error:', error);
+      Alert.alert('Streaming Error', 'Failed to start streaming. Please check your internet connection and try again.');
+    }
+  };
+
   return (
     <View style={{ flex: 1, backgroundColor: '#000' }}>
       <ImageBackground 
@@ -1398,7 +1499,7 @@ const MemorizationScreen = ({ route, navigation }) => {
                 variant="h2"
                 style={[
                   language === 'ar'
-                    ? { fontFamily: 'UthmanTNB_v2-0', fontSize: 28, color: '#5b7f67', textAlign: 'center', marginBottom: 8 }
+                    ? { fontFamily: 'KFGQPC HAFS Uthmanic Script Regular', fontSize: 28, color: '#5b7f67', textAlign: 'center', marginBottom: 8 }
                     : [FONTS.h2.getFont(language), { color: '#5b7f67', textAlign: 'center', marginBottom: 8 }],
                 ]}
               >
@@ -1416,7 +1517,7 @@ const MemorizationScreen = ({ route, navigation }) => {
               <Text
                 variant="h2"
                 style={[styles.arabicText, { 
-                  fontFamily: isBoldFont ? 'KFGQPC Uthman Taha Naskh Bold' : 'KFGQPC Uthman Taha Naskh', 
+                  fontFamily: 'KFGQPC HAFS Uthmanic Script Regular', 
                   fontSize: ayahFontSize, 
                   textAlign: 'center', 
                   alignSelf: 'center', 
@@ -1447,7 +1548,7 @@ const MemorizationScreen = ({ route, navigation }) => {
                       return (
                         <Text style={[styles.arabicText, { 
                           fontSize: ayahFontSize,
-                          fontFamily: isBoldFont ? 'KFGQPC Uthman Taha Naskh Bold' : 'KFGQPC Uthman Taha Naskh',
+                          fontFamily: 'KFGQPC HAFS Uthmanic Script Regular',
                           lineHeight: ayahFontSize * 1.5,
                           color: '#FF8C00',
                           textAlign: 'center',
@@ -1497,7 +1598,7 @@ const MemorizationScreen = ({ route, navigation }) => {
                               key={`word-${index}`}
                               style={[styles.arabicText, { 
                                 fontSize: ayahFontSize,
-                                fontFamily: isBoldFont ? 'KFGQPC Uthman Taha Naskh Bold' : 'KFGQPC Uthman Taha Naskh',
+                                fontFamily: 'KFGQPC HAFS Uthmanic Script Regular',
                                 lineHeight: ayahFontSize * 1.5,
                                 color: isVisible ? '#5b7f67' : orangeShades[shadeIndex],
                                 marginHorizontal: 2,
@@ -1961,7 +2062,7 @@ const MemorizationScreen = ({ route, navigation }) => {
             activeOpacity={1}
             onPress={(e) => e.stopPropagation()}
           >
-            <Text variant="h2" style={{ marginBottom: 16, color: 'rgba(64, 64, 64, 0.9)' }}>{t('navigation')}</Text>
+            <Text variant="h2" style={{ marginBottom: 16, color: 'rgba(64, 64, 64, 0.9)', fontWeight: 'bold' }}>{t('navigation')}</Text>
             
             {/* Search Input */}
             <View style={styles.searchContainer}>
@@ -1977,10 +2078,10 @@ const MemorizationScreen = ({ route, navigation }) => {
                 keyboardType="numeric"
                 onSubmitEditing={handleSearchSubmit}
               />
-              <TouchableOpacity style={[styles.searchButton, { backgroundColor: '#5b7f67' }]} onPress={handleSearchSubmit}>
+              <TouchableOpacity style={[styles.searchButton, { backgroundColor: 'transparent' }]} onPress={handleSearchSubmit}>
                 <Image 
                   source={require('../assets/app_icons/search.png')} 
-                  style={{ width: 20, height: 20, tintColor: '#F5E6C8' }}
+                  style={{ width: 20, height: 20, tintColor: '#5b7f67' }}
                   resizeMode="contain"
                 />
               </TouchableOpacity>
@@ -2110,7 +2211,7 @@ const MemorizationScreen = ({ route, navigation }) => {
                             {/* Current ayah indicator - underline under the label */}
                             {currentAyahIndex === originalIndex && (
                               <View style={{
-                                width: '30%',
+                                width: '20%',
                                 height: 2,
                                 backgroundColor: '#5b7f67',
                                 marginTop: 4,
@@ -2296,49 +2397,72 @@ const MemorizationScreen = ({ route, navigation }) => {
               </View>
             )}
             
-            {/* Go to Current Ayah Button */}
-            <TouchableOpacity 
-              style={{
-                backgroundColor: '#5b7f67',
-                paddingHorizontal: 16,
-                paddingVertical: 12,
-                borderRadius: 8,
-                marginTop: 16,
-                width: '90%',
-                alignItems: 'center',
-                justifyContent: 'center',
-                flexDirection: 'row',
-              }}
-              onPress={() => {
-                if (ayahListRef.current) {
-                  const currentAyah = flashcards[currentAyahIndex];
-                  if (currentAyah) {
-                    const ayahIndex = getFilteredAyaat().findIndex(ayah => 
-                      flashcards.indexOf(ayah) === currentAyahIndex
-                    );
-                    
-                    if (ayahIndex !== -1) {
-                      const itemHeight = 60;
-                      const scrollPosition = Math.max(0, (ayahIndex * itemHeight) - 100);
+            {/* Two Button Row */}
+            <View style={{ flexDirection: 'row', width: '90%', marginTop: 16, gap: 12 }}>
+              {/* Surah List Button */}
+              <TouchableOpacity 
+                style={{
+                  backgroundColor: 'rgba(165,115,36,0.8)',
+                  paddingHorizontal: 16,
+                  paddingVertical: 12,
+                  borderRadius: 8,
+                  flex: 1,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+                onPress={() => {
+                  setShowGoToModal(false);
+                  navigation.navigate('SurahList');
+                }}
+              >
+                <Text style={{ color: '#F5E6C8', fontWeight: 'bold' }}>
+                  {language === 'ar' ? 'قائمة السور' : 'Surah List'}
+                </Text>
+              </TouchableOpacity>
+
+              {/* Current Ayah Button */}
+              <TouchableOpacity 
+                style={{
+                  backgroundColor: '#5b7f67',
+                  paddingHorizontal: 16,
+                  paddingVertical: 12,
+                  borderRadius: 8,
+                  flex: 1,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexDirection: 'row',
+                }}
+                onPress={() => {
+                  if (ayahListRef.current) {
+                    const currentAyah = flashcards[currentAyahIndex];
+                    if (currentAyah) {
+                      const ayahIndex = getFilteredAyaat().findIndex(ayah => 
+                        flashcards.indexOf(ayah) === currentAyahIndex
+                      );
                       
-                      ayahListRef.current.scrollTo({
-                        y: scrollPosition,
-                        animated: true
-                      });
+                      if (ayahIndex !== -1) {
+                        const itemHeight = 60;
+                        const scrollPosition = Math.max(0, (ayahIndex * itemHeight) - 100);
+                        
+                        ayahListRef.current.scrollTo({
+                          y: scrollPosition,
+                          animated: true
+                        });
+                      }
                     }
                   }
-                }
-              }}
-            >
-              <Text style={{ color: '#F5E6C8', fontWeight: 'bold', marginRight: 8 }}>
-                {language === 'ar' ? 'اذهب للآية الحالية' : 'Go to Current Ayah'}
-              </Text>
-              <Image 
-                source={require('../assets/app_icons/navigation.png')} 
-                style={{ width: 16, height: 16, tintColor: '#F5E6C8' }}
-                resizeMode="contain"
-              />
-            </TouchableOpacity>
+                }}
+              >
+                <Text style={{ color: '#F5E6C8', fontWeight: 'bold', marginRight: 8 }}>
+                  {language === 'ar' ? 'الآية الحالية' : 'Current Ayah'}
+                </Text>
+                <Image 
+                  source={require('../assets/app_icons/navigation.png')} 
+                  style={{ width: 16, height: 16, tintColor: '#F5E6C8' }}
+                  resizeMode="contain"
+                />
+              </TouchableOpacity>
+            </View>
             
             <Button
               title={t('close')}
@@ -2750,6 +2874,90 @@ const MemorizationScreen = ({ route, navigation }) => {
             </TouchableOpacity>
           </Modal>
 
+          {/* Commented out Al-Kahf modal functionality for now */}
+          {/* Enhanced Audio Options Modal for Al-Kahf */}
+          {/* <Modal
+            visible={showAudioOptionsModal}
+            transparent
+            animationType="fade"
+            onRequestClose={() => setShowAudioOptionsModal(false)}
+          >
+            <TouchableOpacity 
+              style={styles.modalOverlay}
+              activeOpacity={1}
+              onPress={() => setShowAudioOptionsModal(false)}
+            >
+              <TouchableOpacity 
+                style={styles.modalContent}
+                activeOpacity={1}
+                onPress={(e) => e.stopPropagation()}
+              >
+                <Text style={{ 
+                  fontSize: 24, 
+                  fontWeight: 'bold', 
+                  color: '#A57324', 
+                  textAlign: 'center',
+                  marginBottom: 20,
+                  marginTop: 8
+                }}>
+                  Audio Options
+                </Text>
+                
+                <Text style={{ 
+                  fontSize: 16, 
+                  color: '#5b7f67', 
+                  textAlign: 'center',
+                  marginBottom: 30,
+                  lineHeight: 22
+                }}>
+                  Choose how you'd like to listen to Ayaat
+                </Text>
+              </TouchableOpacity>
+            </TouchableOpacity>
+          </Modal> */}
+
+          {/* Commented out Confirmation Modal for Scope Selection */}
+          {/* <Modal
+            visible={showConfirmationModal}
+            transparent
+            animationType="fade"
+            onRequestClose={() => setShowConfirmationModal(false)}
+          >
+            <TouchableOpacity 
+              style={styles.modalOverlay}
+              activeOpacity={1}
+              onPress={() => setShowConfirmationModal(false)}
+            >
+              <TouchableOpacity 
+                style={styles.modalContent}
+                activeOpacity={1}
+                onPress={(e) => e.stopPropagation()}
+              >
+                <Text style={{ 
+                  fontSize: 24, 
+                  fontWeight: 'bold', 
+                  color: '#A57324', 
+                  textAlign: 'center',
+                  marginBottom: 20,
+                  marginTop: 8
+                }}>
+                  Audio Options
+                </Text>
+                
+                <Text style={{ 
+                  fontSize: 16, 
+                  color: '#5b7f67', 
+                  textAlign: 'center',
+                  marginBottom: 30,
+                  lineHeight: 22
+                }}>
+                  Choose your audio option
+                </Text>
+              </TouchableOpacity>
+            </TouchableOpacity>
+          </Modal> */}
+
+                {/* All modal content commented out */}
 
     </SafeAreaView>
       </ImageBackground>

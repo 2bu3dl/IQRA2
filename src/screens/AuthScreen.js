@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   StyleSheet,
@@ -21,7 +21,7 @@ import { COLORS, SIZES, FONTS } from '../utils/theme';
 import { TextInput } from 'react-native';
 import { validateEmailOrUsername, validatePassword, validatePasswordConfirmation, logValidationAttempt } from '../utils/validation';
 
-const AuthScreen = ({ navigation, isModal = false }) => {
+const AuthScreen = ({ navigation, isModal = false, onClose }) => {
   // Read navigation parameters for modal mode
   const route = useRoute();
   const routeParams = route.params;
@@ -35,51 +35,138 @@ const AuthScreen = ({ navigation, isModal = false }) => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isLogin, setIsLogin] = useState(true);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [authMode, setAuthMode] = useState('username'); // Default to username-only
+  const [optionalEmail, setOptionalEmail] = useState('');
+  const [showOptionalEmail, setShowOptionalEmail] = useState(false);
+  const [usernameStatus, setUsernameStatus] = useState(null); // null, 'checking', 'available', 'taken'
+  const [isCheckingUsername, setIsCheckingUsername] = useState(false);
   
-  const { login, register, resetPassword, loading } = useAuth();
+  const { 
+    login, 
+    register, 
+    registerWithUsernameOnly, 
+    resetPassword, 
+    resetPasswordByUsernameOnly, 
+    checkUsernameAvailability, 
+    loading 
+  } = useAuth();
   const { language, t } = useLanguage();
 
+  // Check username availability with debouncing
+  const checkUsernameAvailabilityDebounced = async (username) => {
+    if (!username || username.length < 3) {
+      setUsernameStatus(null);
+      return;
+    }
+
+    setIsCheckingUsername(true);
+    setUsernameStatus('checking');
+
+    try {
+      const result = await checkUsernameAvailability(username);
+      if (result.success) {
+        setUsernameStatus(result.available ? 'available' : 'taken');
+      } else {
+        setUsernameStatus(null);
+      }
+    } catch (error) {
+      setUsernameStatus(null);
+    } finally {
+      setIsCheckingUsername(false);
+    }
+  };
+
+  // Debounce username checking
+  useEffect(() => {
+    if (!isLogin && identifier.trim()) {
+      const timeoutId = setTimeout(() => {
+        checkUsernameAvailabilityDebounced(identifier.trim());
+      }, 500); // 500ms delay
+
+      return () => clearTimeout(timeoutId);
+    } else {
+      setUsernameStatus(null);
+    }
+  }, [identifier, isLogin]);
+
   const handleAuth = async () => {
-    // Validate email or username
-    const identifierValidation = validateEmailOrUsername(identifier);
-    logValidationAttempt('identifier', identifier, identifierValidation.isValid, 'auth');
-    if (!identifierValidation.isValid) {
-      Alert.alert(t('error'), identifierValidation.error);
-      return;
-    }
+    let result;
 
-    // Validate password
-    const passwordValidation = validatePassword(password);
-    logValidationAttempt('password', password, passwordValidation.isValid, 'auth');
-    if (!passwordValidation.isValid) {
-      Alert.alert(t('error'), passwordValidation.error);
-      return;
-    }
-
-    // Validate password confirmation for registration
-    if (!isLogin) {
-      const confirmValidation = validatePasswordConfirmation(password, confirmPassword);
-      logValidationAttempt('confirmPassword', confirmPassword, confirmValidation.isValid, 'auth');
-      if (!confirmValidation.isValid) {
-        Alert.alert(t('error'), confirmValidation.error);
+    if (isLogin) {
+      // Login logic
+      const identifierValidation = validateEmailOrUsername(identifier);
+      logValidationAttempt('identifier', identifier, identifierValidation.isValid, 'auth');
+      if (!identifierValidation.isValid) {
+        Alert.alert(t('error'), identifierValidation.error);
         return;
       }
-    }
 
-    let result;
-    if (isLogin) {
+      const passwordValidation = validatePassword(password);
+      logValidationAttempt('password', password, passwordValidation.isValid, 'auth');
+      if (!passwordValidation.isValid) {
+        Alert.alert(t('error'), passwordValidation.error);
+        return;
+      }
+
       result = await login(identifierValidation.value, passwordValidation.value);
     } else {
-      // For registration, we need to ensure it's an email
-      if (identifierValidation.type !== 'email') {
-        Alert.alert(t('error'), 'Registration requires an email address. Please enter your email address.');
-        return;
-      }
-      result = await register(identifierValidation.value, passwordValidation.value);
+      // Username-based registration (default)
+        if (!identifier.trim()) {
+          Alert.alert(t('error'), 'Please enter a username.');
+          return;
+        }
+
+        if (identifier.length < 3) {
+          Alert.alert(t('error'), 'Username must be at least 3 characters long.');
+          return;
+        }
+
+        if (!/^[a-zA-Z0-9_]+$/.test(identifier)) {
+          Alert.alert(t('error'), 'Username can only contain letters, numbers, and underscores.');
+          return;
+        }
+
+        // Check username availability
+        const availabilityResult = await checkUsernameAvailability(identifier);
+        if (!availabilityResult.success) {
+          Alert.alert(t('error'), 'Error checking username availability. Please try again.');
+          return;
+        }
+
+        if (!availabilityResult.available) {
+          Alert.alert(t('error'), 'Username is already taken. Please choose a different username.');
+          return;
+        }
+
+        const passwordValidation = validatePassword(password);
+        logValidationAttempt('password', password, passwordValidation.isValid, 'auth');
+        if (!passwordValidation.isValid) {
+          Alert.alert(t('error'), passwordValidation.error);
+          return;
+        }
+
+        const confirmValidation = validatePasswordConfirmation(password, confirmPassword);
+        logValidationAttempt('confirmPassword', confirmPassword, confirmValidation.isValid, 'auth');
+        if (!confirmValidation.isValid) {
+          Alert.alert(t('error'), confirmValidation.error);
+          return;
+        }
+
+        // Validate optional email if provided
+        let emailToUse = null;
+        if (showOptionalEmail && optionalEmail.trim()) {
+          const emailValidation = validateEmailOrUsername(optionalEmail);
+          if (!emailValidation.isValid || emailValidation.type !== 'email') {
+            Alert.alert(t('error'), 'Please enter a valid email address or leave it empty.');
+            return;
+          }
+          emailToUse = emailValidation.value;
+        }
+
+        result = await registerWithUsernameOnly(identifier, passwordValidation.value, emailToUse);
     }
 
     if (!result.success) {
-      // Provide more helpful error messages for username issues
       let errorMessage = result.error;
       if (result.error.includes('Username not found')) {
         errorMessage = 'Username not found. Please check your username or try logging in with your email address instead.';
@@ -87,11 +174,16 @@ const AuthScreen = ({ navigation, isModal = false }) => {
       Alert.alert(t('error'), errorMessage);
     } else {
       // Success - close modal first, then show success message
-      console.log('[AuthScreen] Login success, modalMode:', modalMode);
+      console.log('[AuthScreen] Auth success, modalMode:', modalMode);
       if (modalMode) {
         console.log('[AuthScreen] In modal mode, going back to settings');
-        // Go back to previous screen (settings modal)
-        navigation.goBack();
+        // Go back to previous screen (settings modal) if possible
+        if (navigation.canGoBack()) {
+          navigation.goBack();
+        } else {
+          // If can't go back, navigate to home
+          navigation.navigate('Home');
+        }
         // Show success message after going back
         setTimeout(() => {
           Alert.alert(
@@ -111,27 +203,50 @@ const AuthScreen = ({ navigation, isModal = false }) => {
   };
 
   const handleForgotPassword = async () => {
-    // For password reset, we need to validate that it's an email
-    const emailValidation = validateEmailOrUsername(identifier);
-    logValidationAttempt('identifier', identifier, emailValidation.isValid, 'forgot_password');
-    
-    if (!emailValidation.isValid) {
-      Alert.alert(t('error'), emailValidation.error);
-      return;
-    }
-    
-    // Check if it's an email (required for password reset)
-    if (emailValidation.type !== 'email') {
-      Alert.alert(t('error'), 'Password reset requires an email address. Please enter your email address.');
+    if (!identifier.trim()) {
+      Alert.alert(t('error'), 'Please enter your username or email address.');
       return;
     }
 
-    const result = await resetPassword(emailValidation.value);
-    if (result.success) {
-      Alert.alert(t('success'), t('reset_email_sent'));
-      setShowForgotPassword(false);
+    // Check if it's an email or username
+    const isEmail = identifier.includes('@');
+    
+    if (isEmail) {
+      // Email-based password reset
+      const emailValidation = validateEmailOrUsername(identifier);
+      logValidationAttempt('identifier', identifier, emailValidation.isValid, 'forgot_password');
+      
+      if (!emailValidation.isValid) {
+        Alert.alert(t('error'), emailValidation.error);
+        return;
+      }
+
+      const result = await resetPassword(emailValidation.value);
+      if (result.success) {
+        Alert.alert(t('success'), t('reset_email_sent'));
+        setShowForgotPassword(false);
+      } else {
+        Alert.alert(t('error'), result.error);
+      }
     } else {
-      Alert.alert(t('error'), result.error);
+      // Username-based password reset
+      const result = await resetPasswordByUsernameOnly(identifier);
+      if (result.success) {
+        if (result.data && result.data.email) {
+          Alert.alert(
+            t('success'), 
+            `Password reset instructions have been sent to your email: ${result.data.email}`
+          );
+        } else {
+          Alert.alert(
+            t('error'), 
+            'No email address is associated with this username for password recovery. Please contact support.'
+          );
+        }
+        setShowForgotPassword(false);
+      } else {
+        Alert.alert(t('error'), result.error);
+      }
     }
   };
 
@@ -218,17 +333,64 @@ const AuthScreen = ({ navigation, isModal = false }) => {
                 </View>
 
                 <View style={styles.cardModalForm}>
-                  <TextInput
-                    style={[styles.cardModalInput, { textAlign: language === 'ar' ? 'right' : 'left' }]}
-                    placeholder={t('email_or_username')}
-                    placeholderTextColor="rgba(255,255,255,0.6)"
-                    value={identifier}
-                    onChangeText={setIdentifier}
-                    keyboardType="default"
-                    autoCapitalize="none"
-                    autoCorrect={false}
-                  />
+                  {/* Authentication Mode Toggle removed - username-only by default */}
 
+                  <View style={styles.usernameInputContainer}>
+                    <TextInput
+                      style={[styles.cardModalInput, { textAlign: language === 'ar' ? 'right' : 'left' }]}
+                      placeholder={
+                        isLogin 
+                          ? t('email_or_username')
+                          : 'Username'
+                      }
+                      placeholderTextColor="rgba(255,255,255,0.6)"
+                      value={identifier}
+                      onChangeText={setIdentifier}
+                      keyboardType="default"
+                      autoCapitalize="none"
+                      autoCorrect={false}
+                    />
+                    {!isLogin && usernameStatus && (
+                      <View style={styles.usernameStatusIcon}>
+                        {usernameStatus === 'checking' && (
+                          <Text style={styles.checkingIcon}>⏳</Text>
+                        )}
+                        {usernameStatus === 'available' && (
+                          <Text style={styles.availableIcon}>✓</Text>
+                        )}
+                        {usernameStatus === 'taken' && (
+                          <Text style={styles.takenIcon}>✗</Text>
+                        )}
+                      </View>
+                    )}
+                  </View>
+
+                  {/* Optional Email Field for Username Registration */}
+                  {!isLogin && (
+                    <View>
+                      {showOptionalEmail && (
+                        <TextInput
+                          style={[styles.cardModalInput, { textAlign: language === 'ar' ? 'right' : 'left' }]}
+                          placeholder="Email address (optional)"
+                          placeholderTextColor="rgba(255,255,255,0.6)"
+                          value={optionalEmail}
+                          onChangeText={setOptionalEmail}
+                          keyboardType="email-address"
+                          autoCapitalize="none"
+                          autoCorrect={false}
+                        />
+                      )}
+                      
+                      <TouchableOpacity
+                        style={styles.optionalEmailToggle}
+                        onPress={() => setShowOptionalEmail(!showOptionalEmail)}
+                      >
+                        <Text style={styles.optionalEmailToggleText}>
+                          {showOptionalEmail ? '−' : '+'} Add email for account recovery (optional)
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
+                  )}
 
                   <TextInput
                     style={[styles.cardModalInput, { textAlign: language === 'ar' ? 'right' : 'left' }]}
@@ -293,9 +455,17 @@ const AuthScreen = ({ navigation, isModal = false }) => {
                 <TouchableOpacity
                   style={styles.cardModalSkipButton}
                   onPress={() => {
-                    if (modalMode) {
-                      // In modal mode, go back to previous screen (settings modal)
-                      navigation.goBack();
+                    if (modalMode && onClose) {
+                      // In modal mode, close the modal
+                      onClose();
+                    } else if (modalMode) {
+                      // Fallback: go back to previous screen (settings modal) if possible
+                      if (navigation.canGoBack()) {
+                        navigation.goBack();
+                      } else {
+                        // If can't go back, navigate to home
+                        navigation.navigate('Home');
+                      }
                     } else {
                       // Not in modal mode, navigate to home
                       navigation.navigate('Home');
@@ -474,6 +644,49 @@ const styles = StyleSheet.create({
   },
   loader: {
     marginTop: 16,
+  },
+
+  // Authentication mode toggle styles (removed - username-only by default)
+
+  // Username input with status indicator
+  usernameInputContainer: {
+    position: 'relative',
+  },
+  usernameStatusIcon: {
+    position: 'absolute',
+    right: 12,
+    top: '50%',
+    transform: [{ translateY: -10 }],
+    width: 20,
+    height: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  checkingIcon: {
+    fontSize: 16,
+    color: '#FFA500',
+  },
+  availableIcon: {
+    fontSize: 16,
+    color: '#33694e', // Same green as register button
+    fontWeight: 'bold',
+  },
+  takenIcon: {
+    fontSize: 16,
+    color: '#FF6B6B',
+    fontWeight: 'bold',
+  },
+
+  // Optional email toggle styles
+  optionalEmailToggle: {
+    marginBottom: 8,
+    paddingVertical: 8,
+  },
+  optionalEmailToggleText: {
+    color: '#FFA500',
+    fontSize: 14,
+    fontFamily: 'Montserrat-Regular',
+    textAlign: 'center',
   },
 
 });

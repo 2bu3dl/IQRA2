@@ -167,17 +167,25 @@ const StreakAnimation = ({ visible, newStreak, onAnimationComplete, isModal = fa
             }
           ]}>
             <View style={styles.weeklyDotsContainer}>
-              {weekActivity.map((isActive, index) => (
-                <View key={index} style={styles.dayContainer}>
-                  <View style={[
-                    styles.dayCircle,
-                    isActive ? styles.dayCircleActive : styles.dayCircleInactive
-                  ]} />
-                  <Text style={styles.dayLabel}>
-                    {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][index]}
-                  </Text>
-                </View>
-              ))}
+              {weekActivity.map((isActive, index) => {
+                const currentDayIndex = new Date().getDay(); // 0 = Sunday, 1 = Monday, etc.
+                const isCurrentDay = index === currentDayIndex;
+                
+                return (
+                  <View key={index} style={styles.dayContainer}>
+                    <View style={[
+                      styles.dayCircle,
+                      isActive ? styles.dayCircleActive : styles.dayCircleInactive
+                    ]} />
+                    <Text style={[
+                      styles.dayLabel,
+                      isCurrentDay && styles.dayLabelCurrent
+                    ]}>
+                      {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][index]}
+                    </Text>
+                  </View>
+                );
+              })}
             </View>
             <Text style={styles.weeklyText}>
               {language === 'ar' ? 'هذا الأسبوع' : 'This Week'}
@@ -339,6 +347,10 @@ const styles = StyleSheet.create({
     marginTop: 6,
     textAlign: 'center',
     fontWeight: '500',
+  },
+  dayLabelCurrent: {
+    color: 'rgba(165,115,36,0.8)', // Match search box outline color
+    fontWeight: 'bold',
   },
 });
 

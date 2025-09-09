@@ -53,7 +53,7 @@ const ProfileDashboard = ({ navigation, onClose }) => {
           const { data: profile, error } = await supabase
             .from('user_profiles')
             .select('username, created_at')
-            .eq('user_id', user.id)
+            .eq('id', user.id)
             .single();
 
           if (profile) {
@@ -68,7 +68,7 @@ const ProfileDashboard = ({ navigation, onClose }) => {
               await supabase
                 .from('user_profiles')
                 .insert({
-                  user_id: user.id,
+                  id: user.id,
                   email: user.email,
                   username: emailPrefix,
                   created_at: new Date().toISOString()
@@ -182,9 +182,9 @@ const ProfileDashboard = ({ navigation, onClose }) => {
           // Check if username is already taken by another user
           const { data: existingUser, error: checkError } = await supabase
             .from('user_profiles')
-            .select('user_id')
+            .select('id')
             .eq('username', username.trim())
-            .neq('user_id', user.id)
+            .neq('id', user.id)
             .single();
 
           if (existingUser) {
@@ -195,7 +195,7 @@ const ProfileDashboard = ({ navigation, onClose }) => {
           const { error } = await supabase
             .from('user_profiles')
             .upsert({
-              user_id: user.id,
+              id: user.id,
               email: user.email,
               username: username.trim()
             });

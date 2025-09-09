@@ -119,6 +119,8 @@ const HomeScreen = ({ navigation, route }) => {
   });
   const [settingsVisible, setSettingsVisible] = useState(false);
   const [authVisible, setAuthVisible] = useState(false);
+  const [hasCheckedAuth, setHasCheckedAuth] = useState(false);
+  const [isFirstAppLaunch, setIsFirstAppLaunch] = useState(true);
   const [introVisible, setIntroVisible] = useState(false);
   const [infoVisible, setInfoVisible] = useState(false);
   const [infoActiveTab, setInfoActiveTab] = useState('numerals'); // 'numerals' or 'tajweed'
@@ -131,9 +133,11 @@ const HomeScreen = ({ navigation, route }) => {
   const [resetType, setResetType] = useState('all'); // 'all' or 'today'
   const [includeRecordings, setIncludeRecordings] = useState(false);
   
-  // Progress merge confirmation modal
+  // Anonymous progress merge state (kept for future use)
+  /*
   const [progressMergeVisible, setProgressMergeVisible] = useState(false);
   const [anonymousProgressData, setAnonymousProgressData] = useState(null);
+  */
   
   // Offline status and sync
   const [networkStatus, setNetworkStatus] = useState(true);
@@ -163,6 +167,36 @@ const HomeScreen = ({ navigation, route }) => {
   const [pressedSavedNotes, setPressedSavedNotes] = useState(false);
   const [pressedMemorizationLeaderboard, setPressedMemorizationLeaderboard] = useState(false);
   const [pressedStreakLeaderboard, setPressedStreakLeaderboard] = useState(false);
+
+  // Show auth modal only on first app launch if not authenticated
+  useEffect(() => {
+    const checkFirstLaunch = async () => {
+      try {
+        const hasLaunchedBefore = await AsyncStorage.getItem('app_has_launched');
+        
+        if (!hasLaunchedBefore) {
+          // First app launch
+          await AsyncStorage.setItem('app_has_launched', 'true');
+          if (!isAuthenticated) {
+            setAuthVisible(true);
+          }
+        }
+        // If not first launch, don't show auth screen even if not authenticated
+        // User can access auth through settings if needed
+        
+        setHasCheckedAuth(true);
+      } catch (error) {
+        console.error('Error checking first launch:', error);
+        setHasCheckedAuth(true);
+      }
+    };
+
+    if (!hasCheckedAuth) {
+      checkFirstLaunch();
+    } else if (isAuthenticated) {
+      setAuthVisible(false);
+    }
+  }, [isAuthenticated, hasCheckedAuth]);
   
   // Helper functions for notes
   const getSurahName = (surahNumber) => {
@@ -704,42 +738,7 @@ const HomeScreen = ({ navigation, route }) => {
     }
   };
 
-  // Check for anonymous progress when user logs in
-  const checkAnonymousProgress = async () => {
-    try {
-      // Check if we've already shown this dialog for this user
-      const userId = user?.id;
-      if (!userId) return false;
-      
-      const anonymousProgressShownKey = `anonymous_progress_shown_${userId}`;
-      const hasBeenShown = await AsyncStorage.getItem(anonymousProgressShownKey);
-      
-      if (hasBeenShown === 'true') {
-        console.log('[HomeScreen] Anonymous progress dialog already shown for user:', userId);
-        return false; // Already shown, don't show again
-      }
-      
-      // Load local data to check for anonymous progress
-      const localData = await loadData();
-      
-      // Check if there's meaningful progress to merge
-      const hasAnonymousProgress = localData.totalHasanat > 0 || 
-                                 localData.streak > 0 || 
-                                 Object.keys(localData.memorizedAyahs).some(surah => 
-                                   localData.memorizedAyahs[surah].memorized > 0
-                                 );
-      
-      if (hasAnonymousProgress) {
-        setAnonymousProgressData(localData);
-        setProgressMergeVisible(true);
-        return true; // Has anonymous progress
-      }
-      return false; // No anonymous progress
-    } catch (error) {
-      console.error('[HomeScreen] Error checking anonymous progress:', error);
-      return false;
-    }
-  };
+  // Removed: guest/anonymous progress merge flow
 
     const checkProgressSyncStatus = async () => {
     try {
@@ -840,28 +839,48 @@ const HomeScreen = ({ navigation, route }) => {
     console.log('[HomeScreen] Settings modal visibility changed to:', settingsVisible);
   }, [settingsVisible]);
 
-  // Auto-sync when user logs in/out
+  // Auto-sync when user logs in
   useEffect(() => {
-    if (isAuthenticated) {
-      // Immediately check network status when user logs in
-      checkOnlineStatus();
-      
-      checkAnonymousProgress().then(hasAnonymousProgress => {
-        if (!hasAnonymousProgress) {
-          // No anonymous progress, proceed with normal sync
-          syncProgressData().then(result => {
-            if (result.success) {
-              loadScreenData();
-              // Update progress sync status after successful sync
-              checkProgressSyncStatus();
-            }
-          }).catch(error => {
-            console.error('[HomeScreen] Auto-sync failed:', error);
-          });
-        }
-      });
-    }
+    if (!isAuthenticated) return;
+    // Immediately check network status when user logs in
+    checkOnlineStatus();
+    // Proceed with normal sync (no anonymous/guest merge)
+    syncProgressData().then(result => {
+      if (result.success) {
+        loadScreenData();
+        // Update progress sync status after successful sync
+        checkProgressSyncStatus();
+      }
+    }).catch(error => {
+      console.error('[HomeScreen] Auto-sync failed:', error);
+    });
   }, [isAuthenticated]);
+
+  // Check for anonymous progress when user logs in (kept for future use)
+  /*
+  const checkAnonymousProgress = async () => {
+    try {
+      const userId = user?.id;
+      if (!userId) return false;
+      const anonymousProgressShownKey = `anonymous_progress_shown_${userId}`;
+      const hasBeenShown = await AsyncStorage.getItem(anonymousProgressShownKey);
+      if (hasBeenShown === 'true') return false;
+      const localData = await loadData();
+      const hasAnonymousProgress = localData.totalHasanat > 0 ||
+        localData.streak > 0 ||
+        Object.keys(localData.memorizedAyahs).some(s => localData.memorizedAyahs[s].memorized > 0);
+      if (hasAnonymousProgress) {
+        setAnonymousProgressData(localData);
+        setProgressMergeVisible(true);
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('[HomeScreen] Error checking anonymous progress:', error);
+      return false;
+    }
+  };
+  */
 
   // Update goal progress when data changes
   useEffect(() => {
@@ -1063,11 +1082,11 @@ const HomeScreen = ({ navigation, route }) => {
             flexDirection: 'row',
             justifyContent: 'space-around',
             alignItems: 'center',
-            marginTop: Platform.OS === 'android' ? -40 : -20, // Moved up more for Android
-            marginBottom: 20,
+            marginTop: Platform.OS === 'android' ? -40 : (isSmallScreen ? -15 : -20), // Responsive margin for iOS
+            marginBottom: isSmallScreen ? 15 : 20,
             position: 'relative',
             zIndex: 1,
-            height: Platform.OS === 'android' ? 180 : 120 // Fixed height
+            height: Platform.OS === 'android' ? 180 : (isSmallScreen ? 100 : 120) // Responsive height for iOS
           }}>
             {(() => {
               const [pressed, setPressed] = useState(false);
@@ -1108,8 +1127,8 @@ const HomeScreen = ({ navigation, route }) => {
                 <Animated.View
                   style={{
                     flex: 1,
-                    marginHorizontal: SIZES.small,
-                    padding: Platform.OS === 'android' ? SIZES.extraLarge : SIZES.medium,
+                    marginHorizontal: isSmallScreen ? SIZES.extraSmall : SIZES.small,
+                    padding: Platform.OS === 'android' ? SIZES.extraLarge : (isSmallScreen ? SIZES.small : SIZES.medium),
                     alignItems: 'center',
                     justifyContent: 'center',
                     backgroundColor: 'transparent',
@@ -1133,10 +1152,10 @@ const HomeScreen = ({ navigation, route }) => {
                     flexDirection: 'column',
                     position: 'relative',
                     zIndex: 2,
-                    height: Platform.OS === 'android' ? 180 : 120
+                    height: Platform.OS === 'android' ? 180 : (isMediumScreen ? 110 : 120)
                   }}
                 >
-                  <TouchableOpacity
+                                                        <TouchableOpacity
                     style={{
                       flex: 1,
                       alignItems: 'center',
@@ -1146,7 +1165,7 @@ const HomeScreen = ({ navigation, route }) => {
                       flexDirection: 'column',
                       width: '100%',
                       height: '100%',
-                      marginTop: 20 // Added margin to bring button down
+                      marginTop: isMediumScreen ? 70 : 80 // Responsive margin to shift button down
                     }}
                   onPress={() => {
                     telemetryService.trackUserInteraction('button_click', { 
@@ -1178,7 +1197,7 @@ const HomeScreen = ({ navigation, route }) => {
                     shadowOpacity: memorizeButtonHeld ? GLOW_CONFIG.iconContainer.shadowOpacity[Platform.OS].pressed : GLOW_CONFIG.iconContainer.shadowOpacity[Platform.OS].normal,
                     elevation: memorizeButtonHeld ? GLOW_CONFIG.iconContainer.elevation[Platform.OS].pressed : GLOW_CONFIG.iconContainer.elevation[Platform.OS].normal,
                   }]}>
-                    <Image source={require('../assets/openQuran.png')} style={[styles.buttonIcon, { width: RESPONSIVE_ICON_SIZES.button, height: RESPONSIVE_ICON_SIZES.button }]} resizeMode="contain" />
+                    <Image source={require('../assets/openQuran.png')} style={[styles.buttonIcon, { width: isMediumScreen ? (RESPONSIVE_ICON_SIZES.button * 0.95) : RESPONSIVE_ICON_SIZES.button, height: isMediumScreen ? (RESPONSIVE_ICON_SIZES.button * 0.95) : RESPONSIVE_ICON_SIZES.button }]} resizeMode="contain" />
                   </View>
                   <View style={{ 
                     backgroundColor: 'rgba(0,0,0,0.8)', 
@@ -1193,7 +1212,7 @@ const HomeScreen = ({ navigation, route }) => {
                     shadowOpacity: pressed ? GLOW_CONFIG.textButton.shadowOpacity[Platform.OS].pressed : GLOW_CONFIG.textButton.shadowOpacity[Platform.OS].normal, 
                     shadowRadius: pressed ? GLOW_CONFIG.textButton.shadowRadius[Platform.OS].pressed : GLOW_CONFIG.textButton.shadowRadius[Platform.OS].normal, 
                     elevation: pressed ? GLOW_CONFIG.textButton.elevation[Platform.OS].pressed : GLOW_CONFIG.textButton.elevation[Platform.OS].normal,
-                    minHeight: language === 'ar' ? 100 : 80
+                    minHeight: language === 'ar' ? (isMediumScreen ? 90 : 100) : (isMediumScreen ? 70 : 80)
                   }}>
                     <Text style={[{
                       marginTop: language === 'ar' ? 4 : 0,
@@ -1201,11 +1220,11 @@ const HomeScreen = ({ navigation, route }) => {
                       color: '#fae29f', 
                       width: '100%', 
                       fontWeight: 'bold', 
-                      fontSize: memorizeButtonHeld ? getResponsiveFontSize(26) : getResponsiveFontSize(22), 
+                                              fontSize: memorizeButtonHeld ? getResponsiveFontSize(isMediumScreen ? 25 : 26) : getResponsiveFontSize(isMediumScreen ? 21 : 22), 
                       textShadowColor: '#fae29f', 
                       textShadowOffset: { width: 0, height: 0 }, 
                       textShadowRadius: GLOW_CONFIG.text.shadowRadius,
-                      lineHeight: memorizeButtonHeld ? (language === 'ar' ? 40 : 30) : (language === 'ar' ? 36 : 26),
+                                              lineHeight: memorizeButtonHeld ? (language === 'ar' ? (isMediumScreen ? 38 : 40) : (isMediumScreen ? 29 : 30)) : (language === 'ar' ? (isMediumScreen ? 35 : 36) : (isMediumScreen ? 25 : 26)),
                       fontFamily: 'Montserrat-Bold'
                     }]}>{memorizeButtonHeld ? t('b2ithnAllah') : t('quran_memorize')}</Text>
                   </View>
@@ -1217,6 +1236,7 @@ const HomeScreen = ({ navigation, route }) => {
 
 
 
+
           <FlatList
             ref={flatListRef}
             data={[
@@ -1224,7 +1244,7 @@ const HomeScreen = ({ navigation, route }) => {
                 id: 'saved_content',
                 content: (
                   <View style={{
-                    marginTop: getResponsiveSpacing(isSmallScreen ? 40 : (isMediumScreen ? 45 : 50)),
+                    marginTop: getResponsiveSpacing(isSmallScreen ? 25 : (isMediumScreen ? 45 : 50)),
                     marginBottom: RESPONSIVE_SPACING.md,
                     flex: 1,
                     alignItems: 'center',
@@ -1258,7 +1278,7 @@ const HomeScreen = ({ navigation, route }) => {
                       width: '90%',
                       alignSelf: 'center',
                     }}>
-                      {/* Saved Ayaat */}
+                                              {/* Saved Ayaat */}
                       <TouchableOpacity
                         style={{
                           flex: 0.48,
@@ -1274,7 +1294,7 @@ const HomeScreen = ({ navigation, route }) => {
                           elevation: 8,
                           alignItems: 'center',
                           justifyContent: 'center',
-                          minHeight: 120,
+                          minHeight: isSmallScreen ? 100 : 120,
                         }}
                         onPress={() => {
                           hapticSelection();
@@ -1330,7 +1350,7 @@ const HomeScreen = ({ navigation, route }) => {
                           elevation: 8,
                           alignItems: 'center',
                           justifyContent: 'center',
-                          minHeight: 120,
+                          minHeight: isSmallScreen ? 100 : 120,
                         }}
                         onPress={() => {
                           hapticSelection();
@@ -1392,7 +1412,7 @@ const HomeScreen = ({ navigation, route }) => {
                           elevation: 8,
                           alignItems: 'center',
                           justifyContent: 'center',
-                          minHeight: 120,
+                          minHeight: isSmallScreen ? 100 : 120,
                         }}
                         onPress={() => {
                           hapticSelection();
@@ -1439,8 +1459,8 @@ const HomeScreen = ({ navigation, route }) => {
                 id: 'stats',
                 content: (
                   <View style={{
-                    marginTop: isSmallScreen ? 85 : (isMediumScreen ? 90 : 95),
-                    marginBottom: 40,
+                    marginTop: isSmallScreen ? 60 : (isMediumScreen ? 90 : 95),
+                    marginBottom: isSmallScreen ? 30 : 40,
                     alignItems: 'center',
                     width: '100%',
                   }}>
@@ -1466,7 +1486,7 @@ const HomeScreen = ({ navigation, route }) => {
                         shadowOpacity: 0.6,
                         shadowRadius: 6,
                         elevation: 8,
-                        height: isSmallScreen ? 145 : 165,
+                        height: isSmallScreen ? 125 : 165,
                         alignSelf: 'center',
                         width: '80%'
                       }}>
@@ -1566,14 +1586,14 @@ const HomeScreen = ({ navigation, route }) => {
                       </Card>
                     </TouchableOpacity>
 
-                    {/* Stats Grid */}
+                                            {/* Stats Grid */}
                     <View style={{
                       flexDirection: 'row',
                       justifyContent: 'center',
                       alignItems: 'center',
                       position: 'relative',
                       zIndex: 1,
-                      width: '80%',
+                      width: isMediumScreen ? '79%' : '80%',
                       marginTop: Platform.OS === 'android' ? SIZES.extraSmall : 0
                     }}>
                       <Card style={{
@@ -1590,7 +1610,7 @@ const HomeScreen = ({ navigation, route }) => {
                         shadowOpacity: 0.6,
                         shadowRadius: 6,
                         elevation: 8,
-                        height: isSmallScreen ? 160 : 180,
+                        height: isMediumScreen ? 160 : 180,
                         marginHorizontal: 0
                       }}>
                         <TouchableOpacity
@@ -1650,7 +1670,7 @@ const HomeScreen = ({ navigation, route }) => {
                         shadowOpacity: 0.6,
                         shadowRadius: 6,
                         elevation: 8,
-                        height: isSmallScreen ? 160 : 180,
+                        height: isMediumScreen ? 160 : 180,
                         marginHorizontal: 0
                       }}>
                         <TouchableOpacity
@@ -1696,7 +1716,7 @@ const HomeScreen = ({ navigation, route }) => {
                 id: 'leaderboard',
                 content: (
                   <View style={{
-                    marginTop: getResponsiveSpacing(isSmallScreen ? 40 : (isMediumScreen ? 45 : 50)),
+                    marginTop: getResponsiveSpacing(isSmallScreen ? 25 : (isMediumScreen ? 45 : 50)),
                     marginBottom: RESPONSIVE_SPACING.md,
                     flex: 1,
                     alignItems: 'center',
@@ -1815,8 +1835,8 @@ const HomeScreen = ({ navigation, route }) => {
              flexDirection: 'row',
              justifyContent: 'center',
              alignItems: 'center',
-             marginTop: -8,
-             marginBottom: 10
+             marginTop: isSmallScreen ? -4 : -8,
+             marginBottom: isSmallScreen ? 8 : 10
              }}
              onTouchStart={handleDotsTouchStart}
              onLayout={(e) => {
@@ -1826,11 +1846,11 @@ const HomeScreen = ({ navigation, route }) => {
            >
              <TouchableOpacity
                style={{
-               width: 8,
-               height: 8,
-               borderRadius: 4,
+               width: isSmallScreen ? 6 : 8,
+               height: isSmallScreen ? 6 : 8,
+               borderRadius: isSmallScreen ? 3 : 4,
                backgroundColor: currentPage === 0 ? '#5b7f67' : 'rgba(165,115,36,0.8)',
-               marginHorizontal: 4
+               marginHorizontal: isSmallScreen ? 3 : 4
                }}
                onPress={() => {
                  setCurrentPage(0);
@@ -1845,11 +1865,11 @@ const HomeScreen = ({ navigation, route }) => {
              />
              <TouchableOpacity
                style={{
-               width: 8,
-               height: 8,
-               borderRadius: 4,
+               width: isSmallScreen ? 6 : 8,
+               height: isSmallScreen ? 6 : 8,
+               borderRadius: isSmallScreen ? 3 : 4,
                backgroundColor: currentPage === 1 ? '#5b7f67' : 'rgba(165,115,36,0.8)',
-               marginHorizontal: 4
+               marginHorizontal: isSmallScreen ? 3 : 4
                }}
                onPress={() => {
                  setCurrentPage(1);
@@ -1864,11 +1884,11 @@ const HomeScreen = ({ navigation, route }) => {
              />
              <TouchableOpacity
                style={{
-               width: 8,
-               height: 8,
-               borderRadius: 4,
+               width: isSmallScreen ? 6 : 8,
+               height: isSmallScreen ? 6 : 8,
+               borderRadius: isSmallScreen ? 3 : 4,
                backgroundColor: currentPage === 2 ? '#5b7f67' : 'rgba(165,115,36,0.8)',
-               marginHorizontal: 4
+               marginHorizontal: isSmallScreen ? 3 : 4
                }}
                onPress={() => {
                  setCurrentPage(2);
@@ -2699,6 +2719,8 @@ const HomeScreen = ({ navigation, route }) => {
                         hapticSelection();
                         const result = await logout();
                           if (result.success) {
+                          // Clear the first launch flag so login screen can show again
+                          await AsyncStorage.removeItem('app_has_launched');
                           Alert.alert(t('success'), t('logout') + ' ' + t('success').toLowerCase());
                         }
                       }}
@@ -2841,7 +2863,7 @@ const HomeScreen = ({ navigation, route }) => {
           </TouchableOpacity>
         </Modal>
 
-        {/* Progress Merge Confirmation Modal */}
+        {/* Anonymous progress merge modal (commented for future use)
         <Modal
           visible={progressMergeVisible}
           transparent
@@ -2869,7 +2891,6 @@ const HomeScreen = ({ navigation, route }) => {
                   </Text>
                 </View>
 
-                {/* Progress Summary */}
                 {anonymousProgressData && (
                   <View style={styles.progressSummary}>
                     <Text style={styles.progressSummaryTitle}>Your Anonymous Progress:</Text>
@@ -2881,33 +2902,23 @@ const HomeScreen = ({ navigation, route }) => {
                       <Text style={styles.progressSummaryLabel}>Current Streak:</Text>
                       <Text style={styles.progressSummaryValue}>{anonymousProgressData.streak} days</Text>
                     </View>
-                    <View style={styles.progressSummaryItem}>
-                      <Text style={styles.progressSummaryLabel}>Memorized Ayaat:</Text>
-                      <Text style={styles.progressSummaryValue}>{anonymousProgressData.memorizedAyaat}</Text>
-                    </View>
                   </View>
                 )}
 
-                {/* Action Buttons */}
                 <View style={styles.mergeActionButtons}>
                   <TouchableOpacity
                     style={styles.disregardButton}
                     onPress={async () => {
                       try {
-                        // Mark that anonymous progress dialog has been shown for this user
                         const userId = user?.id;
                         if (userId) {
                           const anonymousProgressShownKey = `anonymous_progress_shown_${userId}`;
                           await AsyncStorage.setItem(anonymousProgressShownKey, 'true');
                         }
-                        
-                        // Clear anonymous progress and keep account data
                         await resetProgress();
                         setProgressMergeVisible(false);
-                        Alert.alert('Success', 'Anonymous progress has been disregarded.');
                       } catch (error) {
                         console.error('[HomeScreen] Error disregarding progress:', error);
-                        Alert.alert('Error', 'Failed to disregard anonymous progress.');
                       }
                     }}
                   >
@@ -2918,29 +2929,17 @@ const HomeScreen = ({ navigation, route }) => {
                     style={styles.mergeButton}
                     onPress={async () => {
                       try {
-                        // Mark that anonymous progress dialog has been shown for this user
                         const userId = user?.id;
                         if (userId) {
                           const anonymousProgressShownKey = `anonymous_progress_shown_${userId}`;
                           await AsyncStorage.setItem(anonymousProgressShownKey, 'true');
                         }
-                        
                         setProgressMergeVisible(false);
-                        
-                        // Merge anonymous progress with account data
                         await syncProgressData();
-                        
-                        // Reload screen data
                         await loadScreenData();
-                        
-                        // Update progress sync status
                         await checkProgressSyncStatus();
-                        
-                        // Show success message
-                        Alert.alert('Success', 'Your anonymous progress has been merged with your account successfully.');
                       } catch (error) {
                         console.error('[HomeScreen] Error merging progress:', error);
-                        Alert.alert('Error', 'Failed to merge progress. Please try again.');
                       }
                     }}
                   >
@@ -2951,6 +2950,7 @@ const HomeScreen = ({ navigation, route }) => {
             </TouchableOpacity>
           </TouchableOpacity>
         </Modal>
+        */}
 
         {/* Reset Confirmation Modal */}
         <Modal

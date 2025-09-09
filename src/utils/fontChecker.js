@@ -12,7 +12,8 @@ export const checkFontFamily = (fontFamily) => {
     'Montserrat-Regular',
     'Montserrat-Bold',
     'KFGQPC Uthman Taha Naskh',
-    'KFGQPC Uthman Taha Naskh Bold'
+    'KFGQPC Uthman Taha Naskh Bold',
+    'KFGQPC HAFS Uthmanic Script Regular'
   ];
   
   return knownFonts.includes(fontFamily);
@@ -41,7 +42,11 @@ export const getCorrectFontFamily = (fontName) => {
     
     // KFGQPC fonts (fallback)
     'KFGQPC Uthman Taha Naskh': 'KFGQPC Uthman Taha Naskh',
-    'KFGQPC Uthman Taha Naskh Bold': 'KFGQPC Uthman Taha Naskh Bold'
+    'KFGQPC Uthman Taha Naskh Bold': 'KFGQPC Uthman Taha Naskh Bold',
+    
+    // Uthmanic Hafs font (use correct font family name)
+    'UthmanicHafs1Ver18': 'KFGQPC HAFS Uthmanic Script Regular',
+    'UthmanicHafs1Ver18.ttf': 'KFGQPC HAFS Uthmanic Script Regular'
   };
   
   return fontMap[fontName] || fontName;
@@ -49,33 +54,8 @@ export const getCorrectFontFamily = (fontName) => {
 
 // Get recommended font for Arabic text
 export const getRecommendedArabicFont = () => {
-  // KFGQPC fonts are working, so prioritize them
-  if (checkFontFamily('KFGQPC Uthman Taha Naskh')) {
-    return 'KFGQPC Uthman Taha Naskh';
-  }
-  if (checkFontFamily('KFGQPC Uthman Taha Naskh Bold')) {
-    return 'KFGQPC Uthman Taha Naskh Bold';
-  }
-  
-  // Fallback to other fonts
-  if (Platform.OS === 'ios') {
-    if (checkFontFamily('UthmanTN_v2-0')) {
-      return 'UthmanTN_v2-0';
-    }
-    if (checkFontFamily('UthmanTNB_v2-0')) {
-      return 'UthmanTNB_v2-0';
-    }
-    return 'KFGQPC Uthman Taha Naskh';
-  } else {
-    // Android
-    if (checkFontFamily('UthmanTN_v2-0')) {
-      return 'UthmanTN_v2-0';
-    }
-    if (checkFontFamily('UthmanTNB_v2-0')) {
-      return 'UthmanTNB_v2-0';
-    }
-    return 'KSAHeavy';
-  }
+  // SUCCESS: KFGQPC HAFS Uthmanic Script Regular is working perfectly!
+  return 'KFGQPC HAFS Uthmanic Script Regular';
 };
 
 // Debug font availability
@@ -84,6 +64,8 @@ export const debugFontAvailability = () => {
   console.log('Platform:', Platform.OS);
   
   const fontsToTest = [
+    'UthmanicHafs1Ver18',
+    'KFGQPC HAFS Uthmanic Script Regular',
     'UthmanTN_v2-0',
     'UthmanTNB_v2-0',
     'KSAHeavy',

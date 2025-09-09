@@ -1,6 +1,15 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import { Alert } from 'react-native';
-import { supabase, makeSupabaseRequest } from './supabase';
+import { 
+  supabase, 
+  makeSupabaseRequest, 
+  registerWithUsername, 
+  loginWithUsername, 
+  updateUsername, 
+  addRecoveryEmail, 
+  resetPasswordByUsername, 
+  checkUsernameAvailability 
+} from './supabase';
 import logger from './logger';
 
 export const AuthContext = createContext();
@@ -53,38 +62,8 @@ export const AuthProvider = ({ children }) => {
         logger.log('Auth', 'Login successful', { userId: data.user.id });
         return { success: true, user: data.user };
       } else {
-        // Login with username - we need to find the user by username first
-        logger.log('Auth', 'Attempting username login', { username: identifier });
-        
-        // Use makeSupabaseRequest instead of direct supabase client
-        const profileResult = await makeSupabaseRequest(`user_profiles?select=email,username&username=eq.${identifier}`);
-        
-        if (!profileResult.success) {
-          logger.error('Auth', 'Username lookup error', profileResult.error);
-          return { success: false, error: 'Error looking up username. Please try again.' };
-        }
-        
-        if (!profileResult.data || profileResult.data.length === 0) {
-          return { success: false, error: 'Username not found. Please check your username or try logging in with your email address.' };
-        }
-        
-        const profile = profileResult.data[0];
-
-        if (!profile || !profile.email) {
-          logger.error('Auth', 'Username found but no email', { profile });
-          return { success: false, error: 'Username found but no associated email. Please contact support.' };
-        }
-
-        // Login with the email associated with the username
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email: profile.email,
-          password
-        });
-
-        if (error) throw error;
-        
-        logger.log('Auth', 'Login successful with username', { userId: data.user.id });
-        return { success: true, user: data.user };
+        // Login with username using the new function
+        return await loginWithUsername(identifier, password);
       }
     } catch (error) {
       logger.error('Auth', 'Login error', error);
@@ -106,7 +85,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Register new user
+  // Register new user with email (legacy method)
   const register = async (email, password, username = '') => {
     try {
       setLoading(true);
@@ -150,6 +129,19 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Register new user with username (new method)
+  const registerWithUsernameOnly = async (username, password, email = null) => {
+    try {
+      setLoading(true);
+      return await registerWithUsername(username, password, email);
+    } catch (error) {
+      logger.error('Auth', 'Username registration error', error);
+      return { success: false, error: error.message };
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Logout
   const logout = async () => {
     try {
@@ -181,6 +173,19 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Reset password by username
+  const resetPasswordByUsernameOnly = async (username) => {
+    try {
+      setLoading(true);
+      return await resetPasswordByUsername(username);
+    } catch (error) {
+      logger.error('Auth', 'Username password reset error', error);
+      return { success: false, error: error.message };
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Check if username exists (for debugging and user guidance)
   const checkUsernameExists = async (username) => {
     try {
@@ -203,14 +208,55 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Check username availability
+  const checkUsernameAvailabilityWrapper = async (username) => {
+    try {
+      return await checkUsernameAvailability(username);
+    } catch (error) {
+      logger.error('Auth', 'Username availability check error', error);
+      return { success: false, error: error.message };
+    }
+  };
+
+  // Update username
+  const updateUserUsername = async (newUsername) => {
+    try {
+      setLoading(true);
+      return await updateUsername(newUsername);
+    } catch (error) {
+      logger.error('Auth', 'Username update error', error);
+      return { success: false, error: error.message };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Add recovery email
+  const addUserRecoveryEmail = async (email) => {
+    try {
+      setLoading(true);
+      return await addRecoveryEmail(email);
+    } catch (error) {
+      logger.error('Auth', 'Add recovery email error', error);
+      return { success: false, error: error.message };
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const value = {
     user,
     loading,
     login,
     register,
+    registerWithUsernameOnly,
     logout,
     resetPassword,
+    resetPasswordByUsernameOnly,
     checkUsernameExists,
+    checkUsernameAvailability: checkUsernameAvailabilityWrapper,
+    updateUserUsername,
+    addUserRecoveryEmail,
     isAuthenticated: !!user
   };
 

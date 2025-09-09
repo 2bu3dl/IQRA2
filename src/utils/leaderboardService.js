@@ -164,12 +164,12 @@ export const getLeaderboardData = async (type = LEADERBOARD_TYPES.MEMORIZATION, 
       console.log('[getLeaderboardData] Success:', result.data.length, 'records');
       
       // Get user profiles to add usernames and profile pictures
-      const userProfilesResult = await makeSupabaseRequest('user_profiles?select=user_id,username,display_name,profile_letter,letter_color,background_color');
+      const userProfilesResult = await makeSupabaseRequest('user_profiles?select=id,username,display_name,profile_letter,letter_color,background_color');
       let userProfiles = {};
       
       if (userProfilesResult.success && userProfilesResult.data) {
         userProfilesResult.data.forEach(profile => {
-          userProfiles[profile.user_id] = profile;
+          userProfiles[profile.id] = profile;
         });
       }
       

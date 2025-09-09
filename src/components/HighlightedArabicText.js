@@ -47,7 +47,7 @@ const HighlightedArabicText = ({
   const baseWordStyle = useMemo(() => {
     const style = {
       fontSize: fontSize, 
-      fontFamily: isBoldFont ? 'KFGQPC Uthman Taha Naskh Bold' : 'KFGQPC Uthman Taha Naskh',
+      fontFamily: 'KFGQPC HAFS Uthmanic Script Regular', // Use the working font for all Arabic text
       lineHeight: fontSize * 1.5,
       marginVertical: fontSize * 0.1,
       textAlign: 'center',

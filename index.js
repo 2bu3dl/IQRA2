@@ -2,7 +2,7 @@
  * @format
  */
 
-import { AppRegistry } from 'react-native';
+import { AppRegistry, Platform } from 'react-native';
 import App from './App';
 import { name as appName } from './app.json';
 
@@ -23,14 +23,16 @@ console.warn = (...args) => {
 
 AppRegistry.registerComponent(appName, () => App);
 
-// Initialize track player service after app registration
-import TrackPlayer from 'react-native-track-player';
-import { PlaybackService } from './src/services/PlaybackService';
-
-// Register the track player service with proper error handling
-try {
-  TrackPlayer.registerPlaybackService(() => PlaybackService);
-  console.log('[TrackPlayer] Service registered successfully');
-} catch (error) {
-  console.warn('[TrackPlayer] Failed to register service:', error);
+// Initialize track player service after app registration (iOS only)
+if (Platform.OS === 'ios') {
+  const TrackPlayer = require('react-native-track-player').default;
+  const { PlaybackService } = require('./src/services/PlaybackService');
+  
+  // Register the track player service with proper error handling
+  try {
+    TrackPlayer.registerPlaybackService(() => PlaybackService);
+    console.log('[TrackPlayer] Service registered successfully for iOS');
+  } catch (error) {
+    console.warn('[TrackPlayer] Failed to register service:', error);
+  }
 }

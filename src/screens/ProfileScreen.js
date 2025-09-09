@@ -127,7 +127,7 @@ const ProfileScreen = ({ navigation, route }) => {
 
         // Get user profile from user_profiles table
         try {
-          const result = await makeSupabaseRequest(`user_profiles?select=*&user_id=eq.${targetUserId}`);
+          const result = await makeSupabaseRequest(`user_profiles?select=*&id=eq.${targetUserId}`);
           
           if (result.success && result.data && result.data.length > 0) {
             const profile = result.data[0];
@@ -142,7 +142,7 @@ const ProfileScreen = ({ navigation, route }) => {
             const createResult = await makeSupabaseRequest('user_profiles', {
               method: 'POST',
               body: {
-                user_id: user.id,
+                id: user.id,
                 username: '',
                 display_name: '',
                 profile_letter: 'ء',
@@ -247,7 +247,7 @@ const ProfileScreen = ({ navigation, route }) => {
 
     try {
       setSaving(true);
-      const result = await makeSupabaseRequest(`user_profiles?user_id=eq.${user.id}`, {
+      const result = await makeSupabaseRequest(`user_profiles?id=eq.${user.id}`, {
         method: 'PATCH',
         body: { 
           display_name: displayNameValidation.value,
@@ -285,7 +285,7 @@ const ProfileScreen = ({ navigation, route }) => {
 
     try {
       setSaving(true);
-      const result = await makeSupabaseRequest(`user_profiles?user_id=eq.${user.id}`, {
+      const result = await makeSupabaseRequest(`user_profiles?id=eq.${user.id}`, {
         method: 'PATCH',
         body: { 
           profile_letter: letter,
@@ -314,7 +314,7 @@ const ProfileScreen = ({ navigation, route }) => {
 
     try {
       setSaving(true);
-      const result = await makeSupabaseRequest(`user_profiles?user_id=eq.${user.id}`, {
+      const result = await makeSupabaseRequest(`user_profiles?id=eq.${user.id}`, {
         method: 'PATCH',
         body: { 
           letter_color: newLetterColor,
@@ -357,7 +357,7 @@ const ProfileScreen = ({ navigation, route }) => {
       setSaving(true);
       
       // Check if username is already taken
-      const checkResult = await makeSupabaseRequest(`user_profiles?select=user_id&username=eq.${usernameValidation.value}&user_id=neq.${user.id}`);
+      const checkResult = await makeSupabaseRequest(`user_profiles?select=id&username=eq.${usernameValidation.value}&id=neq.${user.id}`);
       
       if (checkResult.success && checkResult.data && checkResult.data.length > 0) {
         Alert.alert(
@@ -367,7 +367,7 @@ const ProfileScreen = ({ navigation, route }) => {
         return;
       }
 
-      const result = await makeSupabaseRequest(`user_profiles?user_id=eq.${user.id}`, {
+      const result = await makeSupabaseRequest(`user_profiles?id=eq.${user.id}`, {
         method: 'PATCH',
         body: { 
           username: usernameValidation.value,

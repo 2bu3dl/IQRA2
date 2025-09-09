@@ -357,10 +357,7 @@ const LeaderboardScreen = ({ navigation }) => {
                 </TouchableOpacity>
               ))}
             </ScrollView>
-          )}
-
-          {/* Separator Bar */}
-          <View style={styles.separatorBar} />
+                      )}
 
           {/* User Rank Banner */}
           {renderUserRankBanner()}
@@ -760,13 +757,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(91, 127, 103, 0.6)',
     borderRadius: 16,
     zIndex: 10,
-  },
-  separatorBar: {
-    height: 8,
-    backgroundColor: 'rgba(91, 127, 103, 0.2)',
-    marginHorizontal: 20,
-    marginVertical: 15,
-    borderRadius: 20,
   },
 });
 

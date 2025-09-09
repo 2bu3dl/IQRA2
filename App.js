@@ -18,6 +18,34 @@ import ProfileScreen from './src/screens/ProfileScreen';
 import LeaderboardScreen from './src/screens/LeaderboardScreen';
 import RecordingsScreen from './src/screens/RecordingsScreen';
 import NotesBoardScreen from './src/screens/NotesBoardScreen';
+import Surah94TestComponent from './src/components/Surah94TestComponent';
+import SimpleWordTest from './src/components/SimpleWordTest';
+import FontDebugTest from './src/components/FontDebugTest';
+import LetterConnectionTest from './src/components/LetterConnectionTest';
+import WaslaConnectionTest from './src/components/WaslaConnectionTest';
+import WaslaFixTest from './src/components/WaslaFixTest';
+import WritingDirectionTest from './src/components/WritingDirectionTest';
+import ComprehensiveWaslaTest from './src/components/ComprehensiveWaslaTest';
+import OfficialFontTest from './src/components/OfficialFontTest';
+import CreativeSolutions from './src/components/CreativeSolutions';
+import AlternativeDataTest from './src/components/AlternativeDataTest';
+import FontPatchingTest from './src/components/FontPatchingTest';
+import FontFallbackSolutions from './src/components/FontFallbackSolutions';
+import FontAnalysisResults from './src/components/FontAnalysisResults';
+import MultiFontTest from './src/components/MultiFontTest';
+import HarfBuzzTest from './src/components/HarfBuzzSkiaRenderer';
+import SimpleSkiaTest from './src/components/SimpleSkiaTest';
+import FinalWaslaSolution from './src/components/FinalWaslaSolution';
+import FontCompareScreen from './src/components/FontCompareScreen';
+import QuranTextFallback from './src/components/QuranTextFallback';
+import RawFontTest from './src/components/RawFontTest';
+import FontPriorityTest from './src/components/FontPriorityTest';
+import FontLoadingDebug from './src/components/FontLoadingDebug';
+import WaslaSolutionTest from './src/components/WaslaSolutionTest';
+import UthmanicHafsTest from './src/components/UthmanicHafsTest';
+import FontRequireTest from './src/components/FontRequireTest';
+import WorkingFontTest from './src/components/WorkingFontTest';
+import SimpleFontTest from './src/components/SimpleFontTest';
 // Removed debug component imports
 
 const Stack = createNativeStackNavigator();
@@ -87,6 +115,33 @@ function App() {
             <Stack.Screen name="Leaderboard" component={LeaderboardScreen} />
             <Stack.Screen name="Recordings" component={RecordingsScreen} />
             <Stack.Screen name="NotesBoard" component={NotesBoardScreen} />
+            <Stack.Screen name="Surah94Test" component={Surah94TestComponent} />
+            <Stack.Screen name="SimpleWordTest" component={SimpleWordTest} />
+            <Stack.Screen name="FontDebugTest" component={FontDebugTest} />
+            <Stack.Screen name="LetterConnectionTest" component={LetterConnectionTest} />
+            <Stack.Screen name="WaslaConnectionTest" component={WaslaConnectionTest} />
+            <Stack.Screen name="WaslaFixTest" component={WaslaFixTest} />
+            <Stack.Screen name="WritingDirectionTest" component={WritingDirectionTest} />
+            <Stack.Screen name="ComprehensiveWaslaTest" component={ComprehensiveWaslaTest} />
+            <Stack.Screen name="OfficialFontTest" component={OfficialFontTest} />
+            <Stack.Screen name="CreativeSolutions" component={CreativeSolutions} />
+            <Stack.Screen name="AlternativeDataTest" component={AlternativeDataTest} />
+            <Stack.Screen name="FontPatchingTest" component={FontPatchingTest} />
+            <Stack.Screen name="FontFallbackSolutions" component={FontFallbackSolutions} />
+            <Stack.Screen name="FontAnalysisResults" component={FontAnalysisResults} />
+            <Stack.Screen name="MultiFontTest" component={MultiFontTest} />
+            <Stack.Screen name="HarfBuzzTest" component={HarfBuzzTest} />
+            <Stack.Screen name="SimpleSkiaTest" component={SimpleSkiaTest} />
+            <Stack.Screen name="FinalWaslaSolution" component={FinalWaslaSolution} />
+            <Stack.Screen name="FontCompareScreen" component={FontCompareScreen} />
+            <Stack.Screen name="RawFontTest" component={RawFontTest} />
+            <Stack.Screen name="FontPriorityTest" component={FontPriorityTest} />
+            <Stack.Screen name="FontLoadingDebug" component={FontLoadingDebug} />
+            <Stack.Screen name="WaslaSolutionTest" component={WaslaSolutionTest} />
+            <Stack.Screen name="UthmanicHafsTest" component={UthmanicHafsTest} />
+            <Stack.Screen name="FontRequireTest" component={FontRequireTest} />
+            <Stack.Screen name="WorkingFontTest" component={WorkingFontTest} />
+            <Stack.Screen name="SimpleFontTest" component={SimpleFontTest} />
             {/* Removed debug screens */}
           </Stack.Navigator>
         </NavigationContainer>

@@ -55,11 +55,8 @@ const KSA_FONT_CANDIDATES = [
 
 const getFontFamily = (language, weight = 'regular') => {
   if (language === 'ar') {
-    // Use KFGQPC fonts for Arabic text (these are working)
-    if (weight === 'bold') {
-      return 'KFGQPC Uthman Taha Naskh Bold';
-    }
-    return 'KFGQPC Uthman Taha Naskh';
+    // Use the working UthmanicHafs1Ver18 font for all Arabic text
+    return 'KFGQPC HAFS Uthmanic Script Regular';
   }
   if (weight === 'bold') {
     return 'Montserrat-Bold';
@@ -84,7 +81,7 @@ export const FONTS = {
     includeFontPadding: false
   },
   arabicBold: { 
-    fontFamily: 'UthmanTNB_v2-0', 
+    fontFamily: 'KFGQPC HAFS Uthmanic Script Regular', 
     fontSize: getResponsiveFontSize(28), 
     lineHeight: getResponsiveFontSize(40),
     writingDirection: 'rtl',

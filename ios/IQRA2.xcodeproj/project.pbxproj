@@ -14,6 +14,7 @@
 		761780ED2CA45674006654EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761780EC2CA45674006654EE /* AppDelegate.swift */; };
 		78FF702459244C3D998A120C /* UthmanTN_v2-0.ttf in Resources */ = {isa = PBXBuildFile; fileRef = E36218C1AA38425399953908 /* UthmanTN_v2-0.ttf */; };
 		796D9C8EB21E4BF7A76348E4 /* KSAHeavy.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 52C00D17AFA24336AA59F63A /* KSAHeavy.ttf */; };
+                4D295F6FF2844572A81971B99A48165E /* UthmanicHafs1Ver18.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 4BD637D96489409C8BEC29C3E9AFF54B /* UthmanicHafs1Ver18.ttf */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
 		CE5CC92097EE4694873E4173 /* Montserrat-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 2F04E8AC4AD243DA8DBD43E4 /* Montserrat-Regular.ttf */; };
 		D040CBC6B347D9F9B9CEAE2D /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */; };
@@ -85,6 +86,7 @@
 		2F04E8AC4AD243DA8DBD43E4 /* Montserrat-Regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Montserrat-Regular.ttf"; path = "../src/assets/fonts/Montserrat-Regular.ttf"; sourceTree = "<group>"; };
 		497E90635E1D4D63B9C1FBF7 /* Montserrat-Bold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Montserrat-Bold.ttf"; path = "../src/assets/fonts/Montserrat-Bold.ttf"; sourceTree = "<group>"; };
 		52C00D17AFA24336AA59F63A /* KSAHeavy.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = KSAHeavy.ttf; path = ../src/assets/fonts/KSAHeavy.ttf; sourceTree = "<group>"; };
+                4BD637D96489409C8BEC29C3E9AFF54B /* UthmanicHafs1Ver18.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "UthmanicHafs1Ver18.ttf"; path = "../src/assets/fonts/UthmanicHafs1Ver18.ttf"; sourceTree = "<group>"; };
 		5DCACB8F33CDC322A6C60F78 /* libPods-IQRA2.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-IQRA2.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		761780EC2CA45674006654EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = IQRA2/AppDelegate.swift; sourceTree = "<group>"; };
 		78C94F5480BF404C80F4F382 /* UthmanTNB_v2-0.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "UthmanTNB_v2-0.ttf"; path = "../src/assets/fonts/UthmanTNB_v2-0.ttf"; sourceTree = "<group>"; };
@@ -315,6 +317,7 @@
 				FE9B984B2E24C68600CE6688 /* 067029.mp3 */,
 				FE9B98512E24C68700CE6688 /* 067030.mp3 */,
 				52C00D17AFA24336AA59F63A /* KSAHeavy.ttf */,
+                                4BD637D96489409C8BEC29C3E9AFF54B /* UthmanicHafs1Ver18.ttf */,
 				78C94F5480BF404C80F4F382 /* UthmanTNB_v2-0.ttf */,
 			);
 			name = Resources;
@@ -510,6 +513,7 @@
 				23AD0F3B98084826AD3818C9 /* Montserrat-Bold.ttf in Resources */,
 				CE5CC92097EE4694873E4173 /* Montserrat-Regular.ttf in Resources */,
 				796D9C8EB21E4BF7A76348E4 /* KSAHeavy.ttf in Resources */,
+                                4D295F6FF2844572A81971B99A48165E /* UthmanicHafs1Ver18.ttf in Resources */,
 				FD63C71DC90A4122A602EDE4 /* UthmanTNB_v2-0.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -666,7 +670,7 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "org.reactjs.native.example.$(PRODUCT_NAME:rfc1034identifier)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.freajahproductions.iqra2;
 				PRODUCT_NAME = IQRA2;
 				SWIFT_OBJC_BRIDGING_HEADER = "IQRA2-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -682,7 +686,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = IQRA2/IQRA2.entitlements;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = UYJ823H5DD;
 				INFOPLIST_FILE = IQRA2/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
@@ -696,7 +700,7 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "org.reactjs.native.example.$(PRODUCT_NAME:rfc1034identifier)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.freajahproductions.iqra2;
 				PRODUCT_NAME = IQRA2;
 				SWIFT_OBJC_BRIDGING_HEADER = "IQRA2-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
@@ -888,7 +892,7 @@
 				MARKETING_VERSION = 1.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = org.reactjs.native.example.IQRA2.watchkitapp;
+				PRODUCT_BUNDLE_IDENTIFIER = com.freajahproductions.iqra2;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
 				SKIP_INSTALL = YES;
@@ -933,7 +937,7 @@
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MARKETING_VERSION = 1.0;
 				MTL_FAST_MATH = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = org.reactjs.native.example.IQRA2.watchkitapp;
+				PRODUCT_BUNDLE_IDENTIFIER = com.freajahproductions.iqra2;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
 				SKIP_INSTALL = YES;

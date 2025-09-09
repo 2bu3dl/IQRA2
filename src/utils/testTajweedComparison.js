@@ -5,7 +5,7 @@ import { createTajweedBasedTiming } from './tajweedBasedTiming';
 // Al-Fatihah ayah 1 pattern for comparison
 const alFatihahPattern = {
   "بِسْمِ": { letters: 4, duration: 1.2 },
-  "اللّٰهِ": { letters: 5, duration: 1.2 },
+  "ٱللَّهِ": { letters: 5, duration: 1.2 },
   "الرَّحْمٰنِ": { letters: 8, duration: 1.6 },
   "الرَّحِیْمِ": { letters: 8, duration: 1.6 }
 };

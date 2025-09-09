@@ -216,6 +216,8 @@ const StreakBrokenAnimation = ({ visible, previousStreak, missedDays = [], onAni
             <View style={styles.weeklyDotsContainer}>
               {weekActivity.map((isActive, index) => {
                 const isMissed = missedDays.includes(index);
+                const currentDayIndex = new Date().getDay(); // 0 = Sunday, 1 = Monday, etc.
+                const isCurrentDay = index === currentDayIndex;
                 const dayState = isMissed ? 'missed' : (isActive ? 'active' : 'inactive');
                 
                 return (
@@ -226,7 +228,10 @@ const StreakBrokenAnimation = ({ visible, previousStreak, missedDays = [], onAni
                       dayState === 'active' && styles.dayCircleActive,
                       dayState === 'inactive' && styles.dayCircleInactive
                     ]} />
-                    <Text style={styles.dayLabel}>
+                    <Text style={[
+                      styles.dayLabel,
+                      isCurrentDay && styles.dayLabelCurrent
+                    ]}>
                       {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][index]}
                     </Text>
                   </View>
@@ -376,6 +381,11 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontWeight: '500',
     opacity: 0.9,
+  },
+  dayLabelCurrent: {
+    color: 'rgba(165,115,36,0.8)', // Match search box outline color
+    fontWeight: 'bold',
+    opacity: 1,
   },
 });
 

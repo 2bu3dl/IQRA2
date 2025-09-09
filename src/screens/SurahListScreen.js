@@ -258,13 +258,15 @@ const JUZ_SURAH_MAPPING = {
 
 const SurahListScreen = ({ navigation, route }) => {
   const { language, t } = useLanguage();
+  const [activeTab, setActiveTab] = useState(0);
   const [searchText, setSearchText] = useState('');
   const [isSearchFocused, setIsSearchFocused] = useState(false);
-  const [activeTab, setActiveTab] = useState(0);
-  const lastTabSwitchTime = useRef(0);
-  const [juzFilter, setJuzFilter] = useState({ isActive: false });
-  const [previousJuzFilter, setPreviousJuzFilter] = useState({ isActive: false }); // Store previous Juz state
   const [isSearchBarHidden, setIsSearchBarHidden] = useState(false);
+  const [isSearchBarVisible, setIsSearchBarVisible] = useState(false); // New state to track if search bar should stay visible
+  const searchInputRef = useRef(null); // Add ref for search input
+  const [juzFilter, setJuzFilter] = useState({ isActive: false });
+  const [previousJuzFilter, setPreviousJuzFilter] = useState({ isActive: false });
+  const lastTabSwitchTime = useRef(0);
 
   // Animation values for home and continue buttons
   const homeButtonScale = useRef(new Animated.Value(1)).current;
@@ -510,6 +512,10 @@ const SurahListScreen = ({ navigation, route }) => {
           juzData={juzData}
           isSearchBarHidden={isSearchBarHidden}
           setIsSearchBarHidden={setIsSearchBarHidden}
+          isSearchBarVisible={isSearchBarVisible}
+          setIsSearchBarVisible={setIsSearchBarVisible}
+          isSearchFocused={isSearchFocused}
+          setIsSearchFocused={setIsSearchFocused}
         />;
       case 1:
         return <JuzWheelTab navigation={navigation} setJuzFilter={setJuzFilter} setPreviousJuzFilter={setPreviousJuzFilter} setActiveTab={setActiveTab} setSearchText={setSearchText} language={language} />;
@@ -544,17 +550,17 @@ const SurahListScreen = ({ navigation, route }) => {
                   // Juz mode header
                   <>
                     <RNText variant="h1" style={[
-                      { fontFamily: 'KFGQPC Uthman Taha Naskh', fontSize: getResponsiveFontSize(40), fontWeight: 'bold', color: '#F5E6C8', marginTop: getResponsiveSpacing(50), marginBottom: getResponsiveSpacing(8), textShadowColor: '#000', textShadowOffset: { width: 1, height: 1 }, textShadowRadius: 3 }
+                      { fontFamily: 'KFGQPC HAFS Uthmanic Script Regular', fontSize: getResponsiveFontSize(40), fontWeight: 'bold', color: '#F5E6C8', marginTop: getResponsiveSpacing(50), marginBottom: getResponsiveSpacing(8), textShadowColor: '#000', textShadowOffset: { width: 1, height: 1 }, textShadowRadius: 3 }
                     ]}>{juzTitle}</RNText>
                     <RNText variant="body1" style={[
-                      { fontFamily: language === 'ar' ? 'KFGQPC Uthman Taha Naskh' : 'Montserrat-Regular', fontSize: getResponsiveFontSize(16), color: '#CCCCCC', textAlign: 'center', marginBottom: getResponsiveSpacing(16) }
+                      { fontFamily: language === 'ar' ? 'KFGQPC HAFS Uthmanic Script Regular' : 'Montserrat-Regular', fontSize: getResponsiveFontSize(16), color: '#CCCCCC', textAlign: 'center', marginBottom: getResponsiveSpacing(16) }
                     ]}>{juzSubtitle}</RNText>
 
                   </>
                 ) : language === 'ar' ? (
                   <RNText variant="h1" style={[
                     { 
-                      fontFamily: 'KFGQPC Uthman Taha Naskh', 
+                      fontFamily: 'KFGQPC HAFS Uthmanic Script Regular', 
                       fontSize: 40, // Make all titles consistently larger
                       fontWeight: 'bold', 
                       color: '#F5E6C8', 
@@ -596,7 +602,16 @@ const SurahListScreen = ({ navigation, route }) => {
                     right: language === 'ar' ? 20 : 20,
                     zIndex: 1000
                   }}
-                  onPress={() => setIsSearchBarHidden(false)}
+                  onPress={() => {
+                    setIsSearchBarHidden(false);
+                    setIsSearchBarVisible(true);
+                    // Focus the search input after a short delay to ensure it's rendered
+                    setTimeout(() => {
+                      if (searchInputRef.current) {
+                        searchInputRef.current.focus();
+                      }
+                    }, 100);
+                  }}
                 >
                   <Image 
                     source={require('../assets/app_icons/search.png')} 
@@ -628,7 +643,7 @@ const SurahListScreen = ({ navigation, route }) => {
           </View>
 
           {/* Search bar - only show for All Surahs tab */}
-          {activeTab === 0 && !isSearchBarHidden && (
+          {activeTab === 0 && (!isSearchBarHidden || isSearchBarVisible) && (
             <View style={[styles.searchContainer, { 
               position: 'absolute',
               top: isJuzMode ? (language === 'ar' ? 180 : 160) : (language === 'ar' ? 157 : 137), // Brought down search box in Surah tab
@@ -645,8 +660,9 @@ const SurahListScreen = ({ navigation, route }) => {
                 ...(Platform.OS === 'android' && { paddingVertical: SIZES.small / 4 })
               }]}>
                 <TextInput
+                  ref={searchInputRef}
                   style={[styles.searchInput, { 
-                    fontFamily: 'KFGQPC Uthman Taha Naskh', 
+                    fontFamily: 'KFGQPC HAFS Uthmanic Script Regular', 
                     fontWeight: isSearchFocused ? 'bold' : 'normal', 
                     textAlign: language === 'ar' ? 'right' : 'left', 
                     writingDirection: language === 'ar' ? 'rtl' : 'ltr',
@@ -662,8 +678,19 @@ const SurahListScreen = ({ navigation, route }) => {
                   autoCapitalize="none"
                   autoCorrect={false}
                   allowFontScaling={false}
-                  onFocus={() => setIsSearchFocused(true)}
-                  onBlur={() => setIsSearchFocused(false)}
+                  onFocus={() => {
+                    setIsSearchFocused(true);
+                    setIsSearchBarVisible(true);
+                  }}
+                  onBlur={() => {
+                    setIsSearchFocused(false);
+                    // Keep search bar visible for a moment after blur to allow for typing
+                    setTimeout(() => {
+                      if (!isSearchFocused) {
+                        setIsSearchBarVisible(false);
+                      }
+                    }, 2000);
+                  }}
                 />
                 
                 {/* Search icon on the right side */}
@@ -675,10 +702,35 @@ const SurahListScreen = ({ navigation, route }) => {
                     tintColor: 'rgba(165,115,36,0.8)', 
                     marginLeft: SIZES.small,
                     position: 'absolute',
-                    right: 12
+                    right: searchText ? 40 : 12
                   }}
                   resizeMode="contain"
                 />
+                
+                {/* Clear button when there's text */}
+                {searchText && (
+                  <TouchableOpacity
+                    style={{
+                      position: 'absolute',
+                      right: 12,
+                      padding: 4
+                    }}
+                    onPress={() => {
+                      setSearchText('');
+                      searchInputRef.current?.focus();
+                    }}
+                  >
+                    <Text style={{
+                      fontSize: 16,
+                      color: 'rgba(165,115,36,0.8)',
+                      fontWeight: 'bold',
+                      textAlign: 'center',
+                      lineHeight: 16
+                    }}>
+                      ×
+                    </Text>
+                  </TouchableOpacity>
+                )}
                 
                 {/* Clear button removed as requested */}
                 </View>
@@ -692,7 +744,7 @@ const SurahListScreen = ({ navigation, route }) => {
                   onPress={clearJuzFilter}
                 >
                   <RNText style={[styles.allSurahsButtonText, {
-                    fontFamily: language === 'ar' ? 'KFGQPC Uthman Taha Naskh' : 'Montserrat-Bold'
+                    fontFamily: language === 'ar' ? 'KFGQPC HAFS Uthmanic Script Regular' : 'Montserrat-Bold'
                   }]}>
                     {language === 'ar' ? 'جميع السور' : 'All Surahs'}
                   </RNText>
@@ -808,7 +860,7 @@ const SurahListScreen = ({ navigation, route }) => {
 };
 
 // Phase 1: All Surahs Tab Component
-const AllSurahsTab = ({ navigation, route, searchText, isJuzMode, juzData, isSearchBarHidden, setIsSearchBarHidden }) => {
+const AllSurahsTab = ({ navigation, route, searchText, isJuzMode, juzData, isSearchBarHidden, setIsSearchBarHidden, isSearchBarVisible, setIsSearchBarVisible, isSearchFocused, setIsSearchFocused }) => {
   const { language, t } = useLanguage();
   
   // Helper to convert numbers to Arabic-Indic if needed
@@ -1352,7 +1404,7 @@ const AllSurahsTab = ({ navigation, route, searchText, isJuzMode, juzData, isSea
               <RNText variant="h3" style={[
   language === 'ar'
                   ? { 
-                      fontFamily: 'KFGQPC Uthman Taha Naskh', 
+                      fontFamily: 'KFGQPC HAFS Uthmanic Script Regular', 
                       fontSize: 24, // Increased from 20 to make surah names larger
                       lineHeight: 28, // Adjusted line height accordingly
                       color: (isSelected || isPressed) ? COLORS.primary : '#F5E6C8', 
@@ -1477,7 +1529,10 @@ const AllSurahsTab = ({ navigation, route, searchText, isJuzMode, juzData, isSea
                 scrollY.setValue(event.nativeEvent.contentOffset.y);
                 // Real-time search bar hide/show based on scroll position
                 const currentScrollY = event.nativeEvent.contentOffset.y;
-                setIsSearchBarHidden(currentScrollY > 50);
+                // Only hide search bar if it's not currently visible and focused
+                if (!isSearchBarVisible && !isSearchFocused) {
+                  setIsSearchBarHidden(currentScrollY > 50);
+                }
               }}
               scrollEventThrottle={8}
               onContentSizeChange={(w, h) => setContentHeight(h)}
@@ -1646,7 +1701,7 @@ const JuzWheelTab = ({ navigation, setJuzFilter, setPreviousJuzFilter, setActive
 
   return (
     <View style={styles.juzContainer}>
-      <RNText variant="h2" style={[styles.juzTitle, { fontFamily: language === 'ar' ? 'KFGQPC Uthman Taha Naskh' : 'Montserrat-Bold' }]}>
+      <RNText variant="h2" style={[styles.juzTitle, { fontFamily: language === 'ar' ? 'KFGQPC HAFS Uthmanic Script Regular' : 'Montserrat-Bold' }]}>
         {language === 'ar' ? 'اختر' : 'Select'}
       </RNText>
 
@@ -1753,16 +1808,16 @@ const JuzWheelTab = ({ navigation, setJuzFilter, setPreviousJuzFilter, setActive
           style={styles.centralJuzButton}
           onPress={handleJuzPress}
         >
-          <RNText style={[styles.juzNumber, { fontFamily: language === 'ar' ? 'KFGQPC Uthman Taha Naskh Bold' : 'Montserrat-Bold' }]}>
+          <RNText style={[styles.juzNumber, { fontFamily: language === 'ar' ? 'KFGQPC HAFS Uthmanic Script Regular' : 'Montserrat-Bold' }]}>
             {language === 'ar' ? toArabicNumber(selectedJuz) : selectedJuz}
           </RNText>
-          <RNText style={[styles.juzLabel, { fontFamily: language === 'ar' ? 'KFGQPC Uthman Taha Naskh' : 'Montserrat-Regular' }]}>
+          <RNText style={[styles.juzLabel, { fontFamily: language === 'ar' ? 'KFGQPC HAFS Uthmanic Script Regular' : 'Montserrat-Regular' }]}>
             {language === 'ar' ? 'اضغط للدخول' : 'Tap to Enter'}
           </RNText>
         </TouchableOpacity>
       </View>
 
-      <RNText variant="body1" style={[styles.juzInfo, { fontFamily: language === 'ar' ? 'KFGQPC Uthman Taha Naskh' : 'Montserrat-Regular' }]}>
+      <RNText variant="body1" style={[styles.juzInfo, { fontFamily: language === 'ar' ? 'KFGQPC HAFS Uthmanic Script Regular' : 'Montserrat-Regular' }]}>
         {language === 'ar' 
           ? <>
               <RNText>الجزء </RNText>
@@ -1835,13 +1890,13 @@ const ThemesTab = ({ navigation, isSearchBarHidden, setIsSearchBarHidden }) => {
       <View style={styles.categoryHeader}>
         <View style={[styles.categoryTextContainer, { alignItems: 'center', textAlign: 'center' }]}>
           <RNText style={[styles.categoryTitle, { 
-            fontFamily: language === 'ar' ? 'KFGQPC Uthman Taha Naskh Bold' : 'Montserrat-Bold',
+            fontFamily: language === 'ar' ? 'KFGQPC HAFS Uthmanic Script Regular' : 'Montserrat-Bold',
             textAlign: 'center'
           }]}>
             {language === 'ar' ? category.titleAr : category.titleEn}
           </RNText>
           <RNText style={[styles.categoryDesc, {
-            fontFamily: language === 'ar' ? 'KFGQPC Uthman Taha Naskh' : 'Montserrat-Regular',
+            fontFamily: language === 'ar' ? 'KFGQPC HAFS Uthmanic Script Regular' : 'Montserrat-Regular',
             textAlign: 'center'
           }]}>
             {language === 'ar' ? category.descAr : category.descEn}
@@ -1868,12 +1923,12 @@ const ThemesTab = ({ navigation, isSearchBarHidden, setIsSearchBarHidden }) => {
             >
               <View style={styles.subcategoryHeader}>
                 <RNText style={[styles.subcategoryTitle, {
-                  fontFamily: language === 'ar' ? 'KFGQPC Uthman Taha Naskh Bold' : 'Montserrat-Bold'
+                  fontFamily: language === 'ar' ? 'KFGQPC HAFS Uthmanic Script Regular' : 'Montserrat-Bold'
                 }]}>
                   {language === 'ar' ? sub.titleAr : sub.titleEn}
                 </RNText>
                 <RNText style={[styles.subcategorySurahs, {
-                  fontFamily: language === 'ar' ? 'KFGQPC Uthman Taha Naskh' : 'Montserrat-Regular'
+                  fontFamily: language === 'ar' ? 'KFGQPC HAFS Uthmanic Script Regular' : 'Montserrat-Regular'
                 }]}>
                   {language === 'ar' ? 'السور: ' : 'Surahs: '}
                   {sub.surahs.map(s => toArabicNumber(s)).join(', ')}
@@ -1893,7 +1948,7 @@ const ThemesTab = ({ navigation, isSearchBarHidden, setIsSearchBarHidden }) => {
                   activeOpacity={0.8}
                 >
                   <RNText style={[styles.exploreSubcategoryButtonText, {
-                    fontFamily: language === 'ar' ? 'KFGQPC Uthman Taha Naskh Bold' : 'Montserrat-Bold',
+                    fontFamily: language === 'ar' ? 'KFGQPC HAFS Uthmanic Script Regular' : 'Montserrat-Bold',
                     textAlign: 'center' // Center the text
                   }]}>
                     {language === 'ar' ? 'استكشف هذا الموضوع' : 'Explore this Theme'}
@@ -1961,7 +2016,7 @@ const ThemesTab = ({ navigation, isSearchBarHidden, setIsSearchBarHidden }) => {
           />
                     <TextInput
             style={[styles.themeSearchInput, {
-              fontFamily: language === 'ar' ? 'KFGQPC Uthman Taha Naskh' : 'Montserrat-Regular',
+              fontFamily: language === 'ar' ? 'KFGQPC HAFS Uthmanic Script Regular' : 'Montserrat-Regular',
               textAlign: language === 'ar' ? 'right' : 'left',
               writingDirection: language === 'ar' ? 'rtl' : 'ltr',
               ...(Platform.OS === 'android' && { fontSize: 12 })
@@ -2106,12 +2161,12 @@ const ListsTab = ({ navigation, route, searchText }) => {
           language === 'ar' && { flexDirection: 'row-reverse' }
         ]}>
           <RNText style={[styles.surahNumber, {
-            fontFamily: language === 'ar' ? 'KFGQPC Uthman Taha Naskh Bold' : 'Montserrat-Bold'
+            fontFamily: language === 'ar' ? 'KFGQPC HAFS Uthmanic Script Regular' : 'Montserrat-Bold'
           }]}>
             {toArabicNumber(item.surahNumber)}
           </RNText>
           <RNText style={[styles.surahName, {
-            fontFamily: language === 'ar' ? 'KFGQPC Uthman Taha Naskh Bold' : 'Montserrat-Bold'
+            fontFamily: language === 'ar' ? 'KFGQPC HAFS Uthmanic Script Regular' : 'Montserrat-Bold'
           }]}>
             {language === 'ar' ? t(`surah_${item.surahNumber}`) : item.surahName}
           </RNText>
@@ -2119,7 +2174,7 @@ const ListsTab = ({ navigation, route, searchText }) => {
         
         <View style={styles.ayahDetails}>
           <RNText style={[styles.ayahNumber, {
-            fontFamily: language === 'ar' ? 'KFGQPC Uthman Taha Naskh' : 'Montserrat-Regular'
+            fontFamily: language === 'ar' ? 'KFGQPC HAFS Uthmanic Script Regular' : 'Montserrat-Regular'
           }]}>
             {language === 'ar' ? 
               `الآية ${toArabicNumber(item.ayahNumber)}` : 
@@ -2557,7 +2612,7 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   juzNumber: {
-    fontFamily: 'KFGQPC Uthman Taha Naskh',
+    fontFamily: 'KFGQPC HAFS Uthmanic Script Regular',
     fontSize: 32, // Much larger since it's just the number now
     fontWeight: 'bold',
     color: COLORS.white,
@@ -2583,7 +2638,7 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   wheelCenterText: {
-    fontFamily: 'KFGQPC Uthman Taha Naskh',
+    fontFamily: 'KFGQPC HAFS Uthmanic Script Regular',
     fontSize: 20,
     fontWeight: 'bold',
     color: COLORS.white,
@@ -2591,7 +2646,7 @@ const styles = StyleSheet.create({
     marginBottom: SIZES.extraSmall,
   },
   wheelCenterSubtext: {
-    fontFamily: 'KFGQPC Uthman Taha Naskh',
+    fontFamily: 'KFGQPC HAFS Uthmanic Script Regular',
     fontSize: 14,
     color: '#CCCCCC',
     textAlign: 'center',
@@ -2612,7 +2667,7 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   juzDetailsTitle: {
-    fontFamily: 'KFGQPC Uthman Taha Naskh',
+    fontFamily: 'KFGQPC HAFS Uthmanic Script Regular',
     fontSize: 24,
     fontWeight: 'bold',
     color: COLORS.white,
@@ -2620,14 +2675,14 @@ const styles = StyleSheet.create({
     marginBottom: SIZES.small,
   },
   juzDetailsRange: {
-    fontFamily: 'KFGQPC Uthman Taha Naskh',
+    fontFamily: 'KFGQPC HAFS Uthmanic Script Regular',
     fontSize: 16,
     color: '#CCCCCC',
     textAlign: 'center',
     marginBottom: SIZES.small,
   },
   juzDetailsSurahs: {
-    fontFamily: 'KFGQPC Uthman Taha Naskh',
+    fontFamily: 'KFGQPC HAFS Uthmanic Script Regular',
     fontSize: 16,
     color: '#CCCCCC',
     textAlign: 'center',
@@ -2643,14 +2698,14 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255, 255, 255, 0.2)',
   },
   exploreJuzButtonText: {
-    fontFamily: 'KFGQPC Uthman Taha Naskh',
+    fontFamily: 'KFGQPC HAFS Uthmanic Script Regular',
     fontSize: 18,
     fontWeight: 'bold',
     color: COLORS.white,
     textAlign: 'center',
   },
   juzWheelTitle: {
-    fontFamily: 'KFGQPC Uthman Taha Naskh',
+    fontFamily: 'KFGQPC HAFS Uthmanic Script Regular',
     fontSize: 28,
     fontWeight: 'bold',
     color: COLORS.white,
@@ -2658,7 +2713,7 @@ const styles = StyleSheet.create({
     marginBottom: SIZES.large,
   },
   juzWheelInstructions: {
-    fontFamily: 'KFGQPC Uthman Taha Naskh',
+    fontFamily: 'KFGQPC HAFS Uthmanic Script Regular',
     fontSize: 18,
     color: '#CCCCCC',
     textAlign: 'center',
@@ -2676,7 +2731,7 @@ const styles = StyleSheet.create({
     marginBottom: SIZES.medium,
   },
   themesTitle: {
-    fontFamily: 'KFGQPC Uthman Taha Naskh',
+    fontFamily: 'KFGQPC HAFS Uthmanic Script Regular',
     fontSize: 28,
     fontWeight: 'bold',
     color: COLORS.white,
@@ -2684,7 +2739,7 @@ const styles = StyleSheet.create({
     marginBottom: SIZES.small,
   },
   themesSubtitle: {
-    fontFamily: 'KFGQPC Uthman Taha Naskh',
+    fontFamily: 'KFGQPC HAFS Uthmanic Script Regular',
     fontSize: 18,
     color: '#CCCCCC',
     textAlign: 'center',
@@ -2757,7 +2812,7 @@ const styles = StyleSheet.create({
     marginRight: SIZES.small,
   },
   categoryIcon: {
-    fontFamily: 'KFGQPC Uthman Taha Naskh',
+    fontFamily: 'KFGQPC HAFS Uthmanic Script Regular',
     fontSize: 20,
     fontWeight: 'bold',
     color: 'rgba(165,115,36,0.8)',
@@ -2766,14 +2821,14 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   categoryTitle: {
-    fontFamily: 'KFGQPC Uthman Taha Naskh',
+    fontFamily: 'KFGQPC HAFS Uthmanic Script Regular',
     fontSize: 20,
     fontWeight: 'bold',
     color: '#F5E6C8', // Match title color
     marginBottom: SIZES.extraSmall,
   },
   categoryDesc: {
-    fontFamily: 'KFGQPC Uthman Taha Naskh',
+    fontFamily: 'KFGQPC HAFS Uthmanic Script Regular',
     fontSize: 14,
     color: '#CCCCCC',
     textAlign: 'center',
@@ -2813,14 +2868,14 @@ const styles = StyleSheet.create({
     marginBottom: SIZES.extraSmall,
   },
   subcategoryTitle: {
-    fontFamily: 'KFGQPC Uthman Taha Naskh',
+    fontFamily: 'KFGQPC HAFS Uthmanic Script Regular',
     fontSize: 18,
     fontWeight: 'bold',
     color: '#F5E6C8', // Match title color
     marginBottom: SIZES.extraSmall,
   },
   subcategorySurahs: {
-    fontFamily: 'KFGQPC Uthman Taha Naskh',
+    fontFamily: 'KFGQPC HAFS Uthmanic Script Regular',
     fontSize: 14,
     color: '#CCCCCC',
     textAlign: 'center',
@@ -2838,7 +2893,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   exploreSubcategoryButtonText: {
-    fontFamily: 'KFGQPC Uthman Taha Naskh',
+    fontFamily: 'KFGQPC HAFS Uthmanic Script Regular',
     fontSize: 16,
     fontWeight: 'bold',
     color: COLORS.white,
@@ -2865,7 +2920,7 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   juzProgressNumber: {
-    fontFamily: 'KFGQPC Uthman Taha Naskh',
+    fontFamily: 'KFGQPC HAFS Uthmanic Script Regular',
     fontSize: 14,
     fontWeight: 'bold',
     color: COLORS.white,
@@ -2934,7 +2989,7 @@ const styles = StyleSheet.create({
     padding: SIZES.large,
   },
   emptyThemesText: {
-    fontFamily: 'KFGQPC Uthman Taha Naskh',
+    fontFamily: 'KFGQPC HAFS Uthmanic Script Regular',
     fontSize: 20,
     color: '#CCCCCC',
     textAlign: 'center',
@@ -2970,14 +3025,14 @@ const styles = StyleSheet.create({
     padding: SIZES.large,
   },
   emptyBookmarksText: {
-    fontFamily: 'KFGQPC Uthman Taha Naskh',
+    fontFamily: 'KFGQPC HAFS Uthmanic Script Regular',
     fontSize: 20,
     color: '#CCCCCC',
     textAlign: 'center',
     marginTop: SIZES.medium,
   },
   emptyBookmarksSubtext: {
-    fontFamily: 'KFGQPC Uthman Taha Naskh',
+    fontFamily: 'KFGQPC HAFS Uthmanic Script Regular',
     fontSize: 14,
     color: '#999999',
     textAlign: 'center',
@@ -2990,7 +3045,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
                   loadingText: {
-                  fontFamily: 'KFGQPC Uthman Taha Naskh',
+                  fontFamily: 'KFGQPC HAFS Uthmanic Script Regular',
                   fontSize: 18,
                   color: '#CCCCCC',
                   textAlign: 'center',
@@ -3001,7 +3056,7 @@ const styles = StyleSheet.create({
                   paddingBottom: SIZES.medium,
                 },
                 bookmarksTitle: {
-                  fontFamily: 'KFGQPC Uthman Taha Naskh Bold',
+                  fontFamily: 'KFGQPC HAFS Uthmanic Script Regular',
                   fontSize: 24,
                   color: '#F5E6C8',
                   textAlign: 'center',
@@ -3012,7 +3067,7 @@ const styles = StyleSheet.create({
                   paddingBottom: SIZES.medium,
                 },
                 themesTitle: {
-                  fontFamily: 'KFGQPC Uthman Taha Naskh Bold',
+                  fontFamily: 'KFGQPC HAFS Uthmanic Script Regular',
                   fontSize: 24,
                   color: '#F5E6C8',
                   textAlign: 'center',
@@ -3035,7 +3090,7 @@ const styles = StyleSheet.create({
                   borderColor: 'rgba(245, 230, 200, 0.3)',
                 },
                 dropdownButtonText: {
-                  fontFamily: 'KFGQPC Uthman Taha Naskh',
+                  fontFamily: 'KFGQPC HAFS Uthmanic Script Regular',
                   fontSize: 16,
                   color: '#F5E6C8',
                   fontWeight: 'bold',
@@ -3063,7 +3118,7 @@ const styles = StyleSheet.create({
                   backgroundColor: 'rgba(91, 127, 103, 0.3)',
                 },
                 dropdownItemText: {
-                  fontFamily: 'KFGQPC Uthman Taha Naskh',
+                  fontFamily: 'KFGQPC HAFS Uthmanic Script Regular',
                   fontSize: 16,
                   color: '#F5E6C8',
                 },
@@ -3072,7 +3127,7 @@ const styles = StyleSheet.create({
                   fontWeight: 'bold',
                 },
                 selectListLabel: {
-                  fontFamily: 'KFGQPC Uthman Taha Naskh',
+                  fontFamily: 'KFGQPC HAFS Uthmanic Script Regular',
                   fontSize: 16,
                   color: '#C0C0C0',
                   marginBottom: SIZES.small,
@@ -3082,7 +3137,7 @@ const styles = StyleSheet.create({
                   textShadowRadius: 2,
                 },
                 checkmark: {
-                  fontFamily: 'KFGQPC Uthman Taha Naskh',
+                  fontFamily: 'KFGQPC HAFS Uthmanic Script Regular',
                   fontSize: 16,
                   color: '#5b7f67',
                   marginLeft: SIZES.small,
@@ -3107,12 +3162,12 @@ const styles = StyleSheet.create({
     marginBottom: SIZES.small,
   },
   surahNumber: {
-    fontFamily: 'KFGQPC Uthman Taha Naskh',
+    fontFamily: 'KFGQPC HAFS Uthmanic Script Regular',
     fontSize: 18,
     color: '#CCCCCC',
   },
   surahName: {
-    fontFamily: 'KFGQPC Uthman Taha Naskh',
+    fontFamily: 'KFGQPC HAFS Uthmanic Script Regular',
     fontSize: 16,
     color: '#F5E6C8',
   },
@@ -3122,7 +3177,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   ayahNumber: {
-    fontFamily: 'KFGQPC Uthman Taha Naskh',
+    fontFamily: 'KFGQPC HAFS Uthmanic Script Regular',
     fontSize: 14,
     color: '#CCCCCC',
   },

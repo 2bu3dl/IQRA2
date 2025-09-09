@@ -6,9 +6,9 @@
 
 // App Configuration (define first since it's used by other configs)
 export const APP_CONFIG = {
-  environment: 'development',
-  debugMode: true,
-  enableLogging: true, // Will be false in production
+  environment: 'production',
+  debugMode: false,
+  enableLogging: false, // Will be false in production
 };
 
 // Supabase Configuration

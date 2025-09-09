@@ -3,17 +3,28 @@ import { Platform } from 'react-native';
 // Platform-specific imports
 let TrackPlayer, Event, State;
 
-if (Platform.OS === 'ios' || Platform.OS === 'android') {
-  // Both platforms: Use react-native-track-player (if available)
+// Import track-player for iOS
+if (Platform.OS === 'ios') {
   try {
     const trackPlayerModule = require('react-native-track-player');
     TrackPlayer = trackPlayerModule.default;
     Event = trackPlayerModule.Event;
     State = trackPlayerModule.State;
   } catch (error) {
-    console.warn('[AudioPlayer] react-native-track-player not available, using built-in audio simulation');
+    console.warn('[AudioPlayer] react-native-track-player not available on iOS, using built-in audio simulation');
   }
 }
+
+// Commented out for future Android implementation
+// let Sound;
+// if (Platform.OS === 'android') {
+//   try {
+//     Sound = require('react-native-sound').default;
+//     Sound.setCategory('Playback');
+//   } catch (error) {
+//     console.warn('[AudioPlayer] react-native-sound not available on Android, using built-in audio simulation');
+//   }
+// }
 
 class AudioPlayer {
   constructor() {
@@ -25,14 +36,20 @@ class AudioPlayer {
     this.playbackStartTime = null;
     this.currentMetadata = null;
     this.highlightingCallbacks = [];
+    this.audioElement = null;
   }
 
   async initialize() {
     if (this.isInitialized) return;
     
     try {
-      if (TrackPlayer) {
-        // Both platforms: Initialize TrackPlayer with proper error handling
+      if (Platform.OS === 'web') {
+        // Web: Use HTML5 Audio
+        this.audioElement = new Audio();
+        this.audioElement.preload = 'auto';
+        console.log('[AudioPlayer] HTML5 Audio initialized for web');
+      } else if (Platform.OS === 'ios' && TrackPlayer) {
+        // iOS: Initialize TrackPlayer
         try {
           await TrackPlayer.setupPlayer();
           await TrackPlayer.updateOptions({
@@ -47,20 +64,19 @@ class AudioPlayer {
               'stop',
             ],
           });
-          console.log('[AudioPlayer] TrackPlayer initialized successfully');
+          console.log('[AudioPlayer] TrackPlayer initialized successfully on iOS');
         } catch (trackPlayerError) {
-          console.warn('[AudioPlayer] TrackPlayer initialization failed, falling back to basic audio simulation:', trackPlayerError);
-          // Mark as initialized to prevent retry attempts
-          this.isInitialized = true;
-          return;
+          console.warn('[AudioPlayer] TrackPlayer initialization failed on iOS, falling back to simulation:', trackPlayerError);
         }
+      } else {
+        // Android: Use simulation (react-native-sound commented out for now)
+        console.log('[AudioPlayer] Using audio simulation for Android');
       }
       
       this.isInitialized = true;
       console.log('[AudioPlayer] Audio player initialized successfully');
     } catch (error) {
       console.error('[AudioPlayer] Error initializing audio player:', error);
-      // Mark as initialized to prevent retry attempts
       this.isInitialized = true;
     }
   }
@@ -87,8 +103,39 @@ class AudioPlayer {
       this.currentMetadata = metadata;
       this.playbackStartTime = Date.now();
       
-      if (TrackPlayer && this.isInitialized) {
-        // Both platforms: Use TrackPlayer
+      if (Platform.OS === 'web' && this.audioElement) {
+        // Web: Use HTML5 Audio
+        try {
+          this.audioElement.src = audioSource;
+          this.audioElement.load();
+          
+          // Add event listeners
+          this.audioElement.oncanplay = () => {
+            console.log('[AudioPlayer] Audio can play, starting playback');
+            this.audioElement.play().catch(error => {
+              console.error('[AudioPlayer] Error playing audio:', error);
+              this.fallbackToSimulation();
+            });
+          };
+          
+          this.audioElement.onerror = (error) => {
+            console.error('[AudioPlayer] Audio error:', error);
+            this.fallbackToSimulation();
+          };
+          
+          this.audioElement.onended = () => {
+            console.log('[AudioPlayer] Audio playback ended');
+            this.isPlaying = false;
+            this.currentAyah = null;
+            this.stopHighlightingTimer();
+          };
+          
+        } catch (error) {
+          console.error('[AudioPlayer] Error with HTML5 Audio:', error);
+          this.fallbackToSimulation();
+        }
+      } else if (Platform.OS === 'ios' && TrackPlayer && this.isInitialized) {
+        // iOS: Use TrackPlayer
         try {
           // Clear any existing tracks
           await TrackPlayer.reset();
@@ -104,25 +151,24 @@ class AudioPlayer {
           
           // Start playing
           await TrackPlayer.play();
-          console.log('[AudioPlayer] Started playing with TrackPlayer');
+          console.log('[AudioPlayer] Started playing with TrackPlayer on iOS');
         } catch (error) {
-          console.error('[AudioPlayer] Error with TrackPlayer:', error);
+          console.error('[AudioPlayer] Error with TrackPlayer on iOS:', error);
           // Fallback to simulation if TrackPlayer fails
           this.fallbackToSimulation();
         }
       } else {
-        // Fallback: Just simulate audio for now
-        console.warn('[AudioPlayer] No audio library available, simulating playback');
+        // Android: Use simulation (react-native-sound commented out for now)
+        console.log('[AudioPlayer] Using audio simulation for Android');
         this.fallbackToSimulation();
       }
-      
-      console.log('[AudioPlayer] Audio playback started');
       
       // Start highlighting timer if metadata is provided
       if (metadata && metadata.words) {
         this.startHighlightingTimer();
       }
       
+      console.log('[AudioPlayer] Audio playback started');
       return true;
     } catch (error) {
       console.error('[AudioPlayer] Error playing audio:', error.message || error);
@@ -134,7 +180,8 @@ class AudioPlayer {
   }
 
   fallbackToSimulation() {
-    // Simulate audio playback for both platforms when TrackPlayer is not available
+    // Simulate audio playback for fallback cases
+    console.log('[AudioPlayer] Starting simulated audio playback');
     setTimeout(() => {
       console.log('[AudioPlayer] Simulated audio playback completed');
       this.isPlaying = false;
@@ -146,13 +193,20 @@ class AudioPlayer {
   async stopAudio() {
     try {
       if (this.isPlaying) {
-        if (TrackPlayer && this.isInitialized) {
+        if (Platform.OS === 'web' && this.audioElement) {
+          this.audioElement.pause();
+          this.audioElement.currentTime = 0;
+        } else if (Platform.OS === 'ios' && TrackPlayer && this.isInitialized) {
           try {
             await TrackPlayer.stop();
             await TrackPlayer.reset();
           } catch (trackPlayerError) {
             console.warn('[AudioPlayer] TrackPlayer not ready, using fallback stop');
           }
+        } else if (this.currentSound) {
+          this.currentSound.stop();
+          this.currentSound.release();
+          this.currentSound = null;
         }
         
         this.isPlaying = false;
@@ -165,9 +219,15 @@ class AudioPlayer {
     }
   }
 
-  async getStatus() {
+  async getPlaybackStatus() {
     try {
-      if (TrackPlayer && this.isInitialized) {
+      if (Platform.OS === 'web' && this.audioElement) {
+        return {
+          isPlaying: !this.audioElement.paused && !this.audioElement.ended,
+          isPaused: this.audioElement.paused,
+          isStopped: this.audioElement.ended,
+        };
+      } else if (Platform.OS === 'ios' && TrackPlayer && this.isInitialized) {
         try {
           const state = await TrackPlayer.getState();
           return {
@@ -183,10 +243,16 @@ class AudioPlayer {
             isStopped: !this.isPlaying,
           };
         }
+      } else if (this.currentSound) {
+        return {
+          isPlaying: this.isPlaying,
+          isPaused: false,
+          isStopped: !this.isPlaying,
+        };
       } else {
         return {
           isPlaying: this.isPlaying,
-          isPaused: false, // react-native-sound doesn't have pause state
+          isPaused: false,
           isStopped: !this.isPlaying,
         };
       }
@@ -198,12 +264,16 @@ class AudioPlayer {
 
   async pauseAudio() {
     try {
-      if (TrackPlayer && this.isInitialized) {
+      if (Platform.OS === 'web' && this.audioElement) {
+        this.audioElement.pause();
+      } else if (Platform.OS === 'ios' && TrackPlayer && this.isInitialized) {
         try {
           await TrackPlayer.pause();
         } catch (trackPlayerError) {
           console.warn('[AudioPlayer] TrackPlayer not ready, using fallback pause');
         }
+      } else if (this.currentSound) {
+        this.currentSound.pause();
       }
       console.log('[AudioPlayer] Audio paused');
     } catch (error) {
@@ -213,12 +283,16 @@ class AudioPlayer {
 
   async seekToStart() {
     try {
-      if (TrackPlayer && this.isInitialized) {
+      if (Platform.OS === 'web' && this.audioElement) {
+        this.audioElement.currentTime = 0;
+      } else if (Platform.OS === 'ios' && TrackPlayer && this.isInitialized) {
         try {
           await TrackPlayer.seekTo(0);
         } catch (trackPlayerError) {
           console.warn('[AudioPlayer] TrackPlayer not ready, using fallback seek');
         }
+      } else if (this.currentSound) {
+        this.currentSound.setCurrentTime(0);
       }
       console.log('[AudioPlayer] Audio seeked to start');
     } catch (error) {
@@ -264,6 +338,12 @@ class AudioPlayer {
   }
 
   getCurrentTime() {
+    if (Platform.OS === 'web' && this.audioElement) {
+      return this.audioElement.currentTime;
+    }
+    if (this.currentSound) {
+      return this.currentSound.getCurrentTime();
+    }
     if (!this.playbackStartTime) return 0;
     return (Date.now() - this.playbackStartTime) / 1000;
   }

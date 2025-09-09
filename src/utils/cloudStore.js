@@ -175,7 +175,7 @@ export const isOnline = async () => {
     // Try to make a simple request to check connectivity
     const response = await fetch('https://www.google.com', { 
       method: 'HEAD',
-      signal: AbortSignal.timeout(5000) // 5 second timeout for better reliability
+      signal: AbortSignal.timeout(3000) // Reduced timeout for faster response
     });
     
     if (response.ok) {
@@ -192,7 +192,7 @@ export const isOnline = async () => {
     try {
       const altResponse = await fetch('https://httpbin.org/status/200', {
         method: 'HEAD',
-        signal: AbortSignal.timeout(3000)
+        signal: AbortSignal.timeout(2000)
       });
       
       if (altResponse.ok) {
@@ -201,6 +201,33 @@ export const isOnline = async () => {
       }
     } catch (altError) {
       console.log('[CloudStore] Alternative network check also failed:', altError.message);
+    }
+    
+    // Try a third check with a more reliable endpoint
+    try {
+      const thirdResponse = await fetch('https://api.github.com', {
+        method: 'HEAD',
+        signal: AbortSignal.timeout(2000)
+      });
+      
+      if (thirdResponse.ok) {
+        console.log('[CloudStore] Third network check: Online');
+        return true;
+      }
+    } catch (thirdError) {
+      console.log('[CloudStore] Third network check also failed:', thirdError.message);
+    }
+    
+    // If all network checks fail, but user is logged in, assume they're online
+    // (since they needed internet to log in)
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        console.log('[CloudStore] Network checks failed but user is logged in, assuming online');
+        return true;
+      }
+    } catch (authError) {
+      console.log('[CloudStore] Auth check failed:', authError.message);
     }
     
     return false; // Assume offline if all checks fail

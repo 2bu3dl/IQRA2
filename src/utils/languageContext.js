@@ -122,7 +122,7 @@ export const LanguageProvider = ({ children }) => {
       'insha2allah': 'insha2Allah',
       
       // Authentication
-      'welcome_back': 'Welcome Back',
+      'welcome_back': 'Welcome',
       'create_account': 'Create Account',
       'login_subtitle': 'Sign in to sync your progress across devices',
       'register_subtitle': 'Create an account to backup your progress',
@@ -387,7 +387,7 @@ export const LanguageProvider = ({ children }) => {
       'insha2allah': 'إن شاء الله',
       
       // Authentication
-      'welcome_back': 'مرحباً بعودتك',
+      'welcome_back': 'مرحباً',
       'create_account': 'إنشاء حساب',
       'login_subtitle': 'سجل دخولك لمزامنة تقدمك عبر الأجهزة',
       'register_subtitle': 'أنشئ حساباً لحفظ تقدمك احتياطياً',
@@ -440,7 +440,7 @@ export const LanguageProvider = ({ children }) => {
       'intro_description': 'ٱقۡرَأۡ هو رفيقك الشخصي لحفظ القرآن. تتبع تقدمك، اكسب الحسنات، وحافظ على تتابعك اليومي أثناء رحلتك في القرآن الكريم.',
       'welcome_to_iqra2': 'مرحباً بك في ٱقۡرَأۡ',
       'app_name': 'ٱقۡرَأۡ',
-      'bismillah': 'بسم الله',
+      'bismillah': 'بِسْمِ ٱللَّهِ',
       'start': 'ابدأ',
       'finish': 'إنهاء',
       'next_surah': 'السورة التالية',

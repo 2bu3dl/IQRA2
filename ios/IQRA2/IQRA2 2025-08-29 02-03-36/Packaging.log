@@ -1,0 +1,1741 @@
+2025-08-29 04:59:19 +0000  Initial pipeline context: <IDEDistributionProcessingPipelineContext: 0x7f7c95b29580; archive(resolved)="<IDEArchive: 0x60000b753100>", distributionTask(resolved)="2", distributionDestination(resolved)="2", distributionMethod(resolved)="<IDEDistributionMethodiOSAppStoreDistribution: 0x600001ce0a90>", team(resolved)="<IDEProvisioningDisambiguatableBasicTeam: 0x600003d98f40; teamID='UYJ823H5DD', teamName='Nadeem Freajah', teamType='Individual', username='nfreajah@gmail.com', isFreeProvisioningTeam='0'>">
+	Chain (17, self inclusive):
+	<IDEDistributionProcessingPipelineContext: 0x7f7c95b29580; archive = "<IDEArchive: 0x60000b753100>", distributionMethod="<IDEDistributionMethodiOSAppStoreDistribution: 0x600001ce0a90>", team="<IDEProvisioningDisambiguatableBasicTeam: 0x600003d98f40; teamID='UYJ823H5DD', teamName='Nadeem Freajah', teamType='Individual', username='nfreajah@gmail.com', isFreeProvisioningTeam='0'>">
+	<IDEDistributionProcessingPipelineContext: 0x7f7c95b8ec80; archive = "<IDEArchive: 0x60000b753100>", distributionMethod="<IDEDistributionMethodiOSAppStoreDistribution: 0x600001ce0a90>", team="<IDEProvisioningDisambiguatableBasicTeam: 0x600003d98f40; teamID='UYJ823H5DD', teamName='Nadeem Freajah', teamType='Individual', username='nfreajah@gmail.com', isFreeProvisioningTeam='0'>">
+	<IDEDistributionContext: 0x7f7c95c260f0; archive = "<IDEArchive: 0x60000b753100>", distributionMethod="<IDEDistributionMethodiOSAppStoreDistribution: 0x600001ce0a90>", team="<IDEProvisioningDisambiguatableBasicTeam: 0x600003d98f40; teamID='UYJ823H5DD', teamName='Nadeem Freajah', teamType='Individual', username='nfreajah@gmail.com', isFreeProvisioningTeam='0'>">
+	<IDEDistributionContext: 0x7f7c462149a0; archive = "<IDEArchive: 0x60000b753100>", distributionMethod="<IDEDistributionMethodiOSAppStoreDistribution: 0x600001ce0a90>", team="<IDEProvisioningDisambiguatableBasicTeam: 0x600003d98f40; teamID='UYJ823H5DD', teamName='Nadeem Freajah', teamType='Individual', username='nfreajah@gmail.com', isFreeProvisioningTeam='0'>">
+	<IDEDistributionContext: 0x7f7c46214790; archive = "<IDEArchive: 0x60000b753100>", distributionMethod="<IDEDistributionMethodiOSAppStoreDistribution: 0x600001ce0a90>", team="<IDEProvisioningDisambiguatableBasicTeam: 0x600003d98f40; teamID='UYJ823H5DD', teamName='Nadeem Freajah', teamType='Individual', username='nfreajah@gmail.com', isFreeProvisioningTeam='0'>">
+	<IDEDistributionContext: 0x7f7c95b29370; archive = "<IDEArchive: 0x60000b753100>", distributionMethod="<IDEDistributionMethodiOSAppStoreDistribution: 0x600001ce0a90>", team="<IDEProvisioningDisambiguatableBasicTeam: 0x600003d98f40; teamID='UYJ823H5DD', teamName='Nadeem Freajah', teamType='Individual', username='nfreajah@gmail.com', isFreeProvisioningTeam='0'>">
+	<IDEDistributionContext: 0x7f7c46214580; archive = "<IDEArchive: 0x60000b753100>", distributionMethod="<IDEDistributionMethodiOSAppStoreDistribution: 0x600001ce0a90>", team="<IDEProvisioningDisambiguatableBasicTeam: 0x600003d98f40; teamID='UYJ823H5DD', teamName='Nadeem Freajah', teamType='Individual', username='nfreajah@gmail.com', isFreeProvisioningTeam='0'>">
+	<IDEDistributionContext: 0x7f7c95c9e310; archive = "<IDEArchive: 0x60000b753100>", distributionMethod="<IDEDistributionMethodiOSAppStoreDistribution: 0x600001ce0a90>", team="<IDEProvisioningDisambiguatableBasicTeam: 0x600003d98f40; teamID='UYJ823H5DD', teamName='Nadeem Freajah', teamType='Individual', username='nfreajah@gmail.com', isFreeProvisioningTeam='0'>">
+	<IDEDistributionContext: 0x7f7c46215fc0; archive = "<IDEArchive: 0x60000b753100>", distributionMethod="<IDEDistributionMethodiOSAppStoreDistribution: 0x600001ce0a90>", team="<IDEProvisioningDisambiguatableBasicTeam: 0x600003d98f40; teamID='UYJ823H5DD', teamName='Nadeem Freajah', teamType='Individual', username='nfreajah@gmail.com', isFreeProvisioningTeam='0'>">
+	<IDEDistributionContext: 0x7f7c46212aa0; archive = "<IDEArchive: 0x60000b753100>", distributionMethod="<IDEDistributionMethodiOSAppStoreDistribution: 0x600001ce0a90>", team="<IDEProvisioningDisambiguatableBasicTeam: 0x600003d98f40; teamID='UYJ823H5DD', teamName='Nadeem Freajah', teamType='Individual', username='nfreajah@gmail.com', isFreeProvisioningTeam='0'>">
+	<IDEDistributionContext: 0x7f7c95e6dc50; archive = "<IDEArchive: 0x60000b753100>", distributionMethod="<IDEDistributionMethodiOSAppStoreDistribution: 0x600001ce0a90>", team="<IDEProvisioningDisambiguatableBasicTeam: 0x600003d98f40; teamID='UYJ823H5DD', teamName='Nadeem Freajah', teamType='Individual', username='nfreajah@gmail.com', isFreeProvisioningTeam='0'>">
+	<IDEDistributionContext: 0x7f7c95e6da40; archive = "<IDEArchive: 0x60000b753100>", distributionMethod="<IDEDistributionMethodiOSAppStoreDistribution: 0x600001ce0a90>", team="<IDEProvisioningDisambiguatableBasicTeam: 0x600003d98f40; teamID='UYJ823H5DD', teamName='Nadeem Freajah', teamType='Individual', username='nfreajah@gmail.com', isFreeProvisioningTeam='0'>">
+	<IDEDistributionContext: 0x7f7c95e6d150; archive = "<IDEArchive: 0x60000b753100>", distributionMethod="<IDEDistributionMethodiOSAppStoreDistribution: 0x600001ce0a90>", team="(null)">
+	<IDEDistributionContext: 0x7f7d160e9470; archive = "<IDEArchive: 0x60000b753100>", distributionMethod="<IDEDistributionMethodiOSAppStoreDistribution: 0x600001ce0a90>", team="(null)">
+	<IDEDistributionContext: 0x7f7c95f478a0; archive = "<IDEArchive: 0x60000b753100>", distributionMethod="(null)", team="(null)">
+	<IDEDistributionContext: 0x7f7c95cecf10; archive = "<IDEArchive: 0x60000b753100>", distributionMethod="(null)", team="(null)">
+	<IDEDistributionContext: 0x7f7c95cecb00; archive = "<IDEArchive: 0x60000b753100>", distributionMethod="(null)", team="(null)">
+</IDEDistributionProcessingPipelineContext: 0x7f7c95b29580>
+2025-08-29 04:59:19 +0000  Processing step: IDEDistributionCreateDestRootStep
+2025-08-29 04:59:19 +0000  Processing step: IDEDistributionCopyItemStep
+2025-08-29 04:59:19 +0000  Running /usr/bin/ditto '-V' '/Users/nadoom/Library/Developer/Xcode/Archives/2025-08-28/IQRA2 8-28-25, 11.36 AM.xcarchive/Products/Applications/IQRA2.app' '/var/folders/ky/pw2jtzns4hzdjpzsnr54t4zc0000gn/T/XcodeDistPipeline.~~~3q5jLj/Root/Payload/IQRA2.app'
+2025-08-29 04:59:19 +0000  >>> Copying /Users/nadoom/Library/Developer/Xcode/Archives/2025-08-28/IQRA2 8-28-25, 11.36 AM.xcarchive/Products/Applications/IQRA2.app 
+2025-08-29 04:59:19 +0000  copying file ./_CodeSignature/CodeResources ... 
+2025-08-29 04:59:19 +0000  45931 bytes for ./_CodeSignature/CodeResources
+2025-08-29 04:59:19 +0000  copying file ./Fontisto.ttf ... 
+2025-08-29 04:59:19 +0000  313528 bytes for ./Fontisto.ttf
+copying file ./Octicons.ttf ... 
+2025-08-29 04:59:19 +0000  49404 bytes for ./Octicons.ttf
+copying file ./Feather.ttf ... 
+2025-08-29 04:59:19 +0000  56228 bytes for ./Feather.ttf
+2025-08-29 04:59:19 +0000  copying file ./IQRA2 ... 
+2025-08-29 04:59:19 +0000  5907920 bytes for ./IQRA2
+copying file ./FontAwesome6_Regular.ttf ... 
+2025-08-29 04:59:19 +0000  67976 bytes for ./FontAwesome6_Regular.ttf
+copying file ./Entypo.ttf ... 
+2025-08-29 04:59:19 +0000  66200 bytes for ./Entypo.ttf
+copying file ./KSAHeavy.ttf ... 
+2025-08-29 04:59:19 +0000  49556 bytes for ./KSAHeavy.ttf
+2025-08-29 04:59:19 +0000  copying file ./FontAwesome5_Brands.ttf ... 
+2025-08-29 04:59:19 +0000  134040 bytes for ./FontAwesome5_Brands.ttf
+copying file ./MaterialCommunityIcons.ttf ... 
+2025-08-29 04:59:19 +0000  1147844 bytes for ./MaterialCommunityIcons.ttf
+2025-08-29 04:59:19 +0000  copying file ./glog_privacy.bundle/Info.plist ... 
+2025-08-29 04:59:19 +0000  766 bytes for ./glog_privacy.bundle/Info.plist
+2025-08-29 04:59:19 +0000  copying file ./067003.mp3 ... 
+2025-08-29 04:59:19 +0000  82414 bytes for ./067003.mp3
+2025-08-29 04:59:19 +0000  copying file ./067017.mp3 ... 
+2025-08-29 04:59:19 +0000  72096 bytes for ./067017.mp3
+2025-08-29 04:59:19 +0000  copying file ./AppIcon60x60@2x.png ... 
+2025-08-29 04:59:19 +0000  15109 bytes for ./AppIcon60x60@2x.png
+2025-08-29 04:59:19 +0000  copying file ./067016.mp3 ... 
+2025-08-29 04:59:19 +0000  61124 bytes for ./067016.mp3
+2025-08-29 04:59:19 +0000  copying file ./067002.mp3 ... 
+2025-08-29 04:59:19 +0000  60340 bytes for ./067002.mp3
+2025-08-29 04:59:19 +0000  copying file ./067028.mp3 ... 
+2025-08-29 04:59:19 +0000  66609 bytes for ./067028.mp3
+2025-08-29 04:59:19 +0000  copying file ./067014.mp3 ... 
+2025-08-29 04:59:19 +0000  28602 bytes for ./067014.mp3
+2025-08-29 04:59:19 +0000  copying file ./AntDesign.ttf ... 
+2025-08-29 04:59:19 +0000  70344 bytes for ./AntDesign.ttf
+2025-08-29 04:59:19 +0000  copying file ./067001.mp3 ... 
+2025-08-29 04:59:19 +0000  44797 bytes for ./067001.mp3
+2025-08-29 04:59:19 +0000  copying file ./067015.mp3 ... 
+2025-08-29 04:59:19 +0000  58511 bytes for ./067015.mp3
+2025-08-29 04:59:19 +0000  copying file ./067029.mp3 ... 
+2025-08-29 04:59:19 +0000  64781 bytes for ./067029.mp3
+2025-08-29 04:59:19 +0000  copying file ./067011.mp3 ... 
+2025-08-29 04:59:19 +0000  36569 bytes for ./067011.mp3
+2025-08-29 04:59:19 +0000  copying file ./067005.mp3 ... 
+2025-08-29 04:59:19 +0000  79670 bytes for ./067005.mp3
+2025-08-29 04:59:19 +0000  copying file ./Foundation.ttf ... 
+2025-08-29 04:59:19 +0000  56976 bytes for ./Foundation.ttf
+2025-08-29 04:59:19 +0000  copying file ./Montserrat-Bold.ttf ... 
+2025-08-29 04:59:19 +0000  29560 bytes for ./Montserrat-Bold.ttf
+2025-08-29 04:59:19 +0000  copying file ./Ionicons.ttf ... 
+2025-08-29 04:59:19 +0000  442604 bytes for ./Ionicons.ttf
+2025-08-29 04:59:19 +0000  copying file ./FontAwesome5_Solid.ttf ... 
+2025-08-29 04:59:19 +0000  202744 bytes for ./FontAwesome5_Solid.ttf
+2025-08-29 04:59:19 +0000  copying file ./FontAwesome5_Regular.ttf ... 
+2025-08-29 04:59:19 +0000  33736 bytes for ./FontAwesome5_Regular.ttf
+2025-08-29 04:59:19 +0000  copying file ./RNDeviceInfoPrivacyInfo.bundle/PrivacyInfo.xcprivacy ... 
+2025-08-29 04:59:19 +0000  1159 bytes for ./RNDeviceInfoPrivacyInfo.bundle/PrivacyInfo.xcprivacy
+2025-08-29 04:59:19 +0000  copying file ./RNDeviceInfoPrivacyInfo.bundle/Info.plist ... 
+2025-08-29 04:59:19 +0000  790 bytes for ./RNDeviceInfoPrivacyInfo.bundle/Info.plist
+2025-08-29 04:59:19 +0000  copying file ./React-cxxreact_privacy.bundle/PrivacyInfo.xcprivacy ... 
+2025-08-29 04:59:19 +0000  552 bytes for ./React-cxxreact_privacy.bundle/PrivacyInfo.xcprivacy
+2025-08-29 04:59:19 +0000  copying file ./React-cxxreact_privacy.bundle/Info.plist ... 
+2025-08-29 04:59:19 +0000  789 bytes for ./React-cxxreact_privacy.bundle/Info.plist
+2025-08-29 04:59:19 +0000  copying file ./067004.mp3 ... 
+2025-08-29 04:59:19 +0000  51459 bytes for ./067004.mp3
+2025-08-29 04:59:19 +0000  copying file ./067010.mp3 ... 
+2025-08-29 04:59:19 +0000  53157 bytes for ./067010.mp3
+2025-08-29 04:59:19 +0000  copying file ./067006.mp3 ... 
+2025-08-29 04:59:19 +0000  43230 bytes for ./067006.mp3
+2025-08-29 04:59:19 +0000  copying file ./067012.mp3 ... 
+2025-08-29 04:59:19 +0000  57858 bytes for ./067012.mp3
+2025-08-29 04:59:19 +0000  copying file ./UthmanTNB_v2-0.ttf ... 
+2025-08-29 04:59:19 +0000  132048 bytes for ./UthmanTNB_v2-0.ttf
+2025-08-29 04:59:19 +0000  copying file ./FontAwesome.ttf ... 
+2025-08-29 04:59:19 +0000  165548 bytes for ./FontAwesome.ttf
+2025-08-29 04:59:19 +0000  copying file ./067013.mp3 ... 
+2025-08-29 04:59:19 +0000  53287 bytes for ./067013.mp3
+2025-08-29 04:59:19 +0000  copying file ./067007.mp3 ... 
+2025-08-29 04:59:19 +0000  48455 bytes for ./067007.mp3
+2025-08-29 04:59:19 +0000  copying file ./067022.mp3 ... 
+2025-08-29 04:59:19 +0000  102659 bytes for ./067022.mp3
+2025-08-29 04:59:19 +0000  copying file ./Zocial.ttf ... 
+2025-08-29 04:59:19 +0000  25788 bytes for ./Zocial.ttf
+2025-08-29 04:59:19 +0000  copying file ./001006.mp3 ... 
+2025-08-29 04:59:19 +0000  89988 bytes for ./001006.mp3
+2025-08-29 04:59:19 +0000  copying file ./001007.mp3 ... 
+2025-08-29 04:59:19 +0000  212450 bytes for ./001007.mp3
+2025-08-29 04:59:19 +0000  copying file ./067023.mp3 ... 
+2025-08-29 04:59:19 +0000  65434 bytes for ./067023.mp3
+copying file ./067009.mp3 ... 
+2025-08-29 04:59:19 +0000  116634 bytes for ./067009.mp3
+2025-08-29 04:59:19 +0000  copying file ./RCT-Folly_privacy.bundle/Info.plist ... 
+2025-08-29 04:59:19 +0000  783 bytes for ./RCT-Folly_privacy.bundle/Info.plist
+2025-08-29 04:59:19 +0000  copying file ./067021.mp3 ... 
+2025-08-29 04:59:19 +0000  54985 bytes for ./067021.mp3
+2025-08-29 04:59:19 +0000  copying file ./001005.mp3 ... 
+2025-08-29 04:59:19 +0000  107960 bytes for ./001005.mp3
+2025-08-29 04:59:19 +0000  copying file ./Assets.car ... 
+2025-08-29 04:59:19 +0000  934127 bytes for ./Assets.car
+2025-08-29 04:59:19 +0000  copying file ./001004.mp3 ... 
+2025-08-29 04:59:19 +0000  74941 bytes for ./001004.mp3
+2025-08-29 04:59:19 +0000  copying file ./EvilIcons.ttf ... 
+2025-08-29 04:59:19 +0000  13456 bytes for ./EvilIcons.ttf
+2025-08-29 04:59:19 +0000  copying file ./067020.mp3 ... 
+2025-08-29 04:59:19 +0000  69613 bytes for ./067020.mp3
+2025-08-29 04:59:19 +0000  copying file ./067008.mp3 ... 
+2025-08-29 04:59:19 +0000  96128 bytes for ./067008.mp3
+2025-08-29 04:59:19 +0000  copying file ./067030.mp3 ... 
+2025-08-29 04:59:19 +0000  73794 bytes for ./067030.mp3
+2025-08-29 04:59:19 +0000  copying file ./067024.mp3 ... 
+2025-08-29 04:59:19 +0000  34218 bytes for ./067024.mp3
+2025-08-29 04:59:19 +0000  copying file ./067018.mp3 ... 
+2025-08-29 04:59:19 +0000  37483 bytes for ./067018.mp3
+2025-08-29 04:59:19 +0000  copying file ./main.jsbundle ... 
+2025-08-29 04:59:19 +0000  11662189 bytes for ./main.jsbundle
+copying file ./001001.mp3 ... 
+2025-08-29 04:59:19 +0000  146830 bytes for ./001001.mp3
+2025-08-29 04:59:19 +0000  copying file ./FontAwesome6_Solid.ttf ... 
+2025-08-29 04:59:19 +0000  423676 bytes for ./FontAwesome6_Solid.ttf
+2025-08-29 04:59:19 +0000  copying file ./067019.mp3 ... 
+2025-08-29 04:59:19 +0000  103965 bytes for ./067019.mp3
+2025-08-29 04:59:19 +0000  copying file ./PrivacyInfo.xcprivacy ... 
+2025-08-29 04:59:19 +0000  491 bytes for ./PrivacyInfo.xcprivacy
+2025-08-29 04:59:19 +0000  copying file ./067025.mp3 ... 
+2025-08-29 04:59:19 +0000  40748 bytes for ./067025.mp3
+2025-08-29 04:59:19 +0000  copying file ./067027.mp3 ... 
+2025-08-29 04:59:19 +0000  71704 bytes for ./067027.mp3
+2025-08-29 04:59:19 +0000  copying file ./001003.mp3 ... 
+2025-08-29 04:59:19 +0000  74523 bytes for ./001003.mp3
+2025-08-29 04:59:19 +0000  copying file ./LaunchScreen.storyboardc/01J-lp-oVM-view-Ze5-6b-2t3.nib ... 
+2025-08-29 04:59:19 +0000  3934 bytes for ./LaunchScreen.storyboardc/01J-lp-oVM-view-Ze5-6b-2t3.nib
+2025-08-29 04:59:19 +0000  copying file ./LaunchScreen.storyboardc/UIViewController-01J-lp-oVM.nib ... 
+2025-08-29 04:59:19 +0000  924 bytes for ./LaunchScreen.storyboardc/UIViewController-01J-lp-oVM.nib
+2025-08-29 04:59:19 +0000  copying file ./LaunchScreen.storyboardc/Info.plist ... 
+2025-08-29 04:59:19 +0000  258 bytes for ./LaunchScreen.storyboardc/Info.plist
+2025-08-29 04:59:19 +0000  copying file ./001002.mp3 ... 
+2025-08-29 04:59:19 +0000  89988 bytes for ./001002.mp3
+2025-08-29 04:59:19 +0000  copying file ./RNSVGFilters.bundle/RNSVGArithmeticFilter.iphoneos.metallib ... 
+2025-08-29 04:59:19 +0000  3993 bytes for ./RNSVGFilters.bundle/RNSVGArithmeticFilter.iphoneos.metallib
+2025-08-29 04:59:19 +0000  copying file ./RNSVGFilters.bundle/RNSVGCompositeXor.iphoneos.metallib ... 
+2025-08-29 04:59:19 +0000  3509 bytes for ./RNSVGFilters.bundle/RNSVGCompositeXor.iphoneos.metallib
+2025-08-29 04:59:19 +0000  copying file ./RNSVGFilters.bundle/Info.plist ... 
+2025-08-29 04:59:19 +0000  768 bytes for ./RNSVGFilters.bundle/Info.plist
+2025-08-29 04:59:19 +0000  copying file ./067026.mp3 ... 
+2025-08-29 04:59:19 +0000  63475 bytes for ./067026.mp3
+2025-08-29 04:59:19 +0000  copying file ./boost_privacy.bundle/Info.plist ... 
+2025-08-29 04:59:19 +0000  769 bytes for ./boost_privacy.bundle/Info.plist
+2025-08-29 04:59:19 +0000  copying file ./Montserrat-Regular.ttf ... 
+2025-08-29 04:59:19 +0000  29016 bytes for ./Montserrat-Regular.ttf
+2025-08-29 04:59:19 +0000  copying file ./UthmanTN_v2-0.ttf ... 
+2025-08-29 04:59:19 +0000  139336 bytes for ./UthmanTN_v2-0.ttf
+2025-08-29 04:59:19 +0000  copying file ./SimpleLineIcons.ttf ... 
+2025-08-29 04:59:19 +0000  54056 bytes for ./SimpleLineIcons.ttf
+2025-08-29 04:59:19 +0000  copying file ./FontAwesome6_Brands.ttf ... 
+2025-08-29 04:59:19 +0000  209376 bytes for ./FontAwesome6_Brands.ttf
+2025-08-29 04:59:19 +0000  copying file ./embedded.mobileprovision ... 
+2025-08-29 04:59:19 +0000  12539 bytes for ./embedded.mobileprovision
+2025-08-29 04:59:19 +0000  copying file ./assets/node_modules/@react-navigation/elements/lib/module/assets/back-icon@3x.png ... 
+2025-08-29 04:59:19 +0000  761 bytes for ./assets/node_modules/@react-navigation/elements/lib/module/assets/back-icon@3x.png
+2025-08-29 04:59:19 +0000  copying file ./assets/node_modules/@react-navigation/elements/lib/module/assets/back-icon@2x.png ... 
+2025-08-29 04:59:19 +0000  405 bytes for ./assets/node_modules/@react-navigation/elements/lib/module/assets/back-icon@2x.png
+2025-08-29 04:59:19 +0000  copying file ./assets/node_modules/@react-navigation/elements/lib/module/assets/search-icon@2x.png ... 
+2025-08-29 04:59:19 +0000  589 bytes for ./assets/node_modules/@react-navigation/elements/lib/module/assets/search-icon@2x.png
+2025-08-29 04:59:19 +0000  copying file ./assets/node_modules/@react-navigation/elements/lib/module/assets/clear-icon@3x.png ... 
+2025-08-29 04:59:19 +0000  502 bytes for ./assets/node_modules/@react-navigation/elements/lib/module/assets/clear-icon@3x.png
+2025-08-29 04:59:19 +0000  copying file ./assets/node_modules/@react-navigation/elements/lib/module/assets/back-icon.png ... 
+2025-08-29 04:59:19 +0000  290 bytes for ./assets/node_modules/@react-navigation/elements/lib/module/assets/back-icon.png
+2025-08-29 04:59:19 +0000  copying file ./assets/node_modules/@react-navigation/elements/lib/module/assets/clear-icon@2x.png ... 
+2025-08-29 04:59:19 +0000  334 bytes for ./assets/node_modules/@react-navigation/elements/lib/module/assets/clear-icon@2x.png
+2025-08-29 04:59:19 +0000  copying file ./assets/node_modules/@react-navigation/elements/lib/module/assets/search-icon@3x.png ... 
+2025-08-29 04:59:19 +0000  839 bytes for ./assets/node_modules/@react-navigation/elements/lib/module/assets/search-icon@3x.png
+2025-08-29 04:59:19 +0000  copying file ./assets/node_modules/@react-navigation/elements/lib/module/assets/close-icon.png ... 
+2025-08-29 04:59:19 +0000  141 bytes for ./assets/node_modules/@react-navigation/elements/lib/module/assets/close-icon.png
+2025-08-29 04:59:19 +0000  copying file ./assets/node_modules/@react-navigation/elements/lib/module/assets/back-icon-mask.png ... 
+2025-08-29 04:59:19 +0000  653 bytes for ./assets/node_modules/@react-navigation/elements/lib/module/assets/back-icon-mask.png
+2025-08-29 04:59:19 +0000  copying file ./assets/node_modules/@react-navigation/elements/lib/module/assets/close-icon@2x.png ... 
+2025-08-29 04:59:19 +0000  201 bytes for ./assets/node_modules/@react-navigation/elements/lib/module/assets/close-icon@2x.png
+2025-08-29 04:59:19 +0000  copying file ./assets/node_modules/@react-navigation/elements/lib/module/assets/close-icon@3x.png ... 
+2025-08-29 04:59:19 +0000  266 bytes for ./assets/node_modules/@react-navigation/elements/lib/module/assets/close-icon@3x.png
+2025-08-29 04:59:19 +0000  copying file ./assets/node_modules/@react-navigation/elements/lib/module/assets/clear-icon.png ... 
+2025-08-29 04:59:19 +0000  220 bytes for ./assets/node_modules/@react-navigation/elements/lib/module/assets/clear-icon.png
+2025-08-29 04:59:19 +0000  copying file ./assets/node_modules/@react-navigation/elements/lib/module/assets/search-icon.png ... 
+2025-08-29 04:59:19 +0000  317 bytes for ./assets/node_modules/@react-navigation/elements/lib/module/assets/search-icon.png
+2025-08-29 04:59:19 +0000  copying file ./assets/src/assets/IQRA2background.png ... 
+2025-08-29 04:59:19 +0000  700372 bytes for ./assets/src/assets/IQRA2background.png
+2025-08-29 04:59:19 +0000  copying file ./assets/src/assets/AlMulk_AlGhamdi/067003.mp3 ... 
+2025-08-29 04:59:19 +0000  82414 bytes for ./assets/src/assets/AlMulk_AlGhamdi/067003.mp3
+2025-08-29 04:59:19 +0000  copying file ./assets/src/assets/AlMulk_AlGhamdi/067017.mp3 ... 
+2025-08-29 04:59:19 +0000  72096 bytes for ./assets/src/assets/AlMulk_AlGhamdi/067017.mp3
+2025-08-29 04:59:19 +0000  copying file ./assets/src/assets/AlMulk_AlGhamdi/067016.mp3 ... 
+2025-08-29 04:59:19 +0000  61124 bytes for ./assets/src/assets/AlMulk_AlGhamdi/067016.mp3
+2025-08-29 04:59:19 +0000  copying file ./assets/src/assets/AlMulk_AlGhamdi/067002.mp3 ... 
+2025-08-29 04:59:19 +0000  60340 bytes for ./assets/src/assets/AlMulk_AlGhamdi/067002.mp3
+2025-08-29 04:59:19 +0000  copying file ./assets/src/assets/AlMulk_AlGhamdi/067028.mp3 ... 
+2025-08-29 04:59:19 +0000  66609 bytes for ./assets/src/assets/AlMulk_AlGhamdi/067028.mp3
+2025-08-29 04:59:19 +0000  copying file ./assets/src/assets/AlMulk_AlGhamdi/067014.mp3 ... 
+2025-08-29 04:59:19 +0000  28602 bytes for ./assets/src/assets/AlMulk_AlGhamdi/067014.mp3
+2025-08-29 04:59:19 +0000  copying file ./assets/src/assets/AlMulk_AlGhamdi/067001.mp3 ... 
+2025-08-29 04:59:19 +0000  44797 bytes for ./assets/src/assets/AlMulk_AlGhamdi/067001.mp3
+2025-08-29 04:59:19 +0000  copying file ./assets/src/assets/AlMulk_AlGhamdi/067015.mp3 ... 
+2025-08-29 04:59:19 +0000  58511 bytes for ./assets/src/assets/AlMulk_AlGhamdi/067015.mp3
+2025-08-29 04:59:19 +0000  copying file ./assets/src/assets/AlMulk_AlGhamdi/067029.mp3 ... 
+2025-08-29 04:59:19 +0000  64781 bytes for ./assets/src/assets/AlMulk_AlGhamdi/067029.mp3
+2025-08-29 04:59:19 +0000  copying file ./assets/src/assets/AlMulk_AlGhamdi/067011.mp3 ... 
+2025-08-29 04:59:19 +0000  36569 bytes for ./assets/src/assets/AlMulk_AlGhamdi/067011.mp3
+2025-08-29 04:59:19 +0000  copying file ./assets/src/assets/AlMulk_AlGhamdi/067005.mp3 ... 
+2025-08-29 04:59:19 +0000  79670 bytes for ./assets/src/assets/AlMulk_AlGhamdi/067005.mp3
+2025-08-29 04:59:19 +0000  copying file ./assets/src/assets/AlMulk_AlGhamdi/067004.mp3 ... 
+2025-08-29 04:59:19 +0000  51459 bytes for ./assets/src/assets/AlMulk_AlGhamdi/067004.mp3
+2025-08-29 04:59:19 +0000  copying file ./assets/src/assets/AlMulk_AlGhamdi/067010.mp3 ... 
+2025-08-29 04:59:19 +0000  53157 bytes for ./assets/src/assets/AlMulk_AlGhamdi/067010.mp3
+2025-08-29 04:59:19 +0000  copying file ./assets/src/assets/AlMulk_AlGhamdi/067006.mp3 ... 
+2025-08-29 04:59:19 +0000  43230 bytes for ./assets/src/assets/AlMulk_AlGhamdi/067006.mp3
+copying file ./assets/src/assets/AlMulk_AlGhamdi/067012.mp3 ... 
+2025-08-29 04:59:19 +0000  57858 bytes for ./assets/src/assets/AlMulk_AlGhamdi/067012.mp3
+2025-08-29 04:59:19 +0000  copying file ./assets/src/assets/AlMulk_AlGhamdi/067013.mp3 ... 
+2025-08-29 04:59:19 +0000  53287 bytes for ./assets/src/assets/AlMulk_AlGhamdi/067013.mp3
+copying file ./assets/src/assets/AlMulk_AlGhamdi/067007.mp3 ... 
+2025-08-29 04:59:19 +0000  48455 bytes for ./assets/src/assets/AlMulk_AlGhamdi/067007.mp3
+2025-08-29 04:59:19 +0000  copying file ./assets/src/assets/AlMulk_AlGhamdi/067022.mp3 ... 
+2025-08-29 04:59:19 +0000  102659 bytes for ./assets/src/assets/AlMulk_AlGhamdi/067022.mp3
+2025-08-29 04:59:19 +0000  copying file ./assets/src/assets/AlMulk_AlGhamdi/067023.mp3 ... 
+2025-08-29 04:59:19 +0000  65434 bytes for ./assets/src/assets/AlMulk_AlGhamdi/067023.mp3
+copying file ./assets/src/assets/AlMulk_AlGhamdi/067009.mp3 ... 
+2025-08-29 04:59:19 +0000  116634 bytes for ./assets/src/assets/AlMulk_AlGhamdi/067009.mp3
+2025-08-29 04:59:19 +0000  copying file ./assets/src/assets/AlMulk_AlGhamdi/067021.mp3 ... 
+2025-08-29 04:59:19 +0000  54985 bytes for ./assets/src/assets/AlMulk_AlGhamdi/067021.mp3
+2025-08-29 04:59:19 +0000  copying file ./assets/src/assets/AlMulk_AlGhamdi/067020.mp3 ... 
+2025-08-29 04:59:19 +0000  69613 bytes for ./assets/src/assets/AlMulk_AlGhamdi/067020.mp3
+2025-08-29 04:59:19 +0000  copying file ./assets/src/assets/AlMulk_AlGhamdi/067008.mp3 ... 
+2025-08-29 04:59:19 +0000  96128 bytes for ./assets/src/assets/AlMulk_AlGhamdi/067008.mp3
+2025-08-29 04:59:19 +0000  copying file ./assets/src/assets/AlMulk_AlGhamdi/067030.mp3 ... 
+2025-08-29 04:59:19 +0000  73794 bytes for ./assets/src/assets/AlMulk_AlGhamdi/067030.mp3
+2025-08-29 04:59:19 +0000  copying file ./assets/src/assets/AlMulk_AlGhamdi/067024.mp3 ... 
+2025-08-29 04:59:19 +0000  34218 bytes for ./assets/src/assets/AlMulk_AlGhamdi/067024.mp3
+2025-08-29 04:59:19 +0000  copying file ./assets/src/assets/AlMulk_AlGhamdi/067018.mp3 ... 
+2025-08-29 04:59:19 +0000  37483 bytes for ./assets/src/assets/AlMulk_AlGhamdi/067018.mp3
+2025-08-29 04:59:19 +0000  copying file ./assets/src/assets/AlMulk_AlGhamdi/067019.mp3 ... 
+2025-08-29 04:59:19 +0000  103965 bytes for ./assets/src/assets/AlMulk_AlGhamdi/067019.mp3
+2025-08-29 04:59:19 +0000  copying file ./assets/src/assets/AlMulk_AlGhamdi/067025.mp3 ... 
+2025-08-29 04:59:19 +0000  40748 bytes for ./assets/src/assets/AlMulk_AlGhamdi/067025.mp3
+2025-08-29 04:59:19 +0000  copying file ./assets/src/assets/AlMulk_AlGhamdi/067027.mp3 ... 
+2025-08-29 04:59:19 +0000  71704 bytes for ./assets/src/assets/AlMulk_AlGhamdi/067027.mp3
+2025-08-29 04:59:19 +0000  copying file ./assets/src/assets/AlMulk_AlGhamdi/067026.mp3 ... 
+2025-08-29 04:59:19 +0000  63475 bytes for ./assets/src/assets/AlMulk_AlGhamdi/067026.mp3
+2025-08-29 04:59:19 +0000  copying file ./assets/src/assets/IQRA2iconoctagon.png ... 
+2025-08-29 04:59:19 +0000  1075234 bytes for ./assets/src/assets/IQRA2iconoctagon.png
+2025-08-29 04:59:19 +0000  copying file ./assets/src/assets/IQRA2iconArabicoctagon.png ... 
+2025-08-29 04:59:19 +0000  919402 bytes for ./assets/src/assets/IQRA2iconArabicoctagon.png
+2025-08-29 04:59:19 +0000  copying file ./assets/src/assets/AlAlaq_MostafaIsmaeel/096005.mp3 ... 
+2025-08-29 04:59:19 +0000  48602 bytes for ./assets/src/assets/AlAlaq_MostafaIsmaeel/096005.mp3
+2025-08-29 04:59:19 +0000  copying file ./assets/src/assets/AlAlaq_MostafaIsmaeel/096011.mp3 ... 
+2025-08-29 04:59:19 +0000  44683 bytes for ./assets/src/assets/AlAlaq_MostafaIsmaeel/096011.mp3
+2025-08-29 04:59:19 +0000  copying file ./assets/src/assets/AlAlaq_MostafaIsmaeel/096010.mp3 ... 
+2025-08-29 04:59:19 +0000  38101 bytes for ./assets/src/assets/AlAlaq_MostafaIsmaeel/096010.mp3
+2025-08-29 04:59:19 +0000  copying file ./assets/src/assets/AlAlaq_MostafaIsmaeel/096004.mp3 ... 
+2025-08-29 04:59:19 +0000  41235 bytes for ./assets/src/assets/AlAlaq_MostafaIsmaeel/096004.mp3
+2025-08-29 04:59:19 +0000  copying file ./assets/src/assets/AlAlaq_MostafaIsmaeel/096012.mp3 ... 
+2025-08-29 04:59:19 +0000  31675 bytes for ./assets/src/assets/AlAlaq_MostafaIsmaeel/096012.mp3
+2025-08-29 04:59:19 +0000  copying file ./assets/src/assets/AlAlaq_MostafaIsmaeel/096006.mp3 ... 
+2025-08-29 04:59:19 +0000  53774 bytes for ./assets/src/assets/AlAlaq_MostafaIsmaeel/096006.mp3
+2025-08-29 04:59:19 +0000  copying file ./assets/src/assets/AlAlaq_MostafaIsmaeel/096007.mp3 ... 
+2025-08-29 04:59:19 +0000  34339 bytes for ./assets/src/assets/AlAlaq_MostafaIsmaeel/096007.mp3
+2025-08-29 04:59:19 +0000  copying file ./assets/src/assets/AlAlaq_MostafaIsmaeel/096013.mp3 ... 
+2025-08-29 04:59:19 +0000  47034 bytes for ./assets/src/assets/AlAlaq_MostafaIsmaeel/096013.mp3
+2025-08-29 04:59:19 +0000  copying file ./assets/src/assets/AlAlaq_MostafaIsmaeel/096017.mp3 ... 
+2025-08-29 04:59:19 +0000  24465 bytes for ./assets/src/assets/AlAlaq_MostafaIsmaeel/096017.mp3
+2025-08-29 04:59:19 +0000  copying file ./assets/src/assets/AlAlaq_MostafaIsmaeel/096003.mp3 ... 
+2025-08-29 04:59:19 +0000  35123 bytes for ./assets/src/assets/AlAlaq_MostafaIsmaeel/096003.mp3
+2025-08-29 04:59:19 +0000  copying file ./assets/src/assets/AlAlaq_MostafaIsmaeel/096002.mp3 ... 
+2025-08-29 04:59:19 +0000  39825 bytes for ./assets/src/assets/AlAlaq_MostafaIsmaeel/096002.mp3
+2025-08-29 04:59:19 +0000  copying file ./assets/src/assets/AlAlaq_MostafaIsmaeel/096016.mp3 ... 
+2025-08-29 04:59:19 +0000  42176 bytes for ./assets/src/assets/AlAlaq_MostafaIsmaeel/096016.mp3
+2025-08-29 04:59:19 +0000  copying file ./assets/src/assets/AlAlaq_MostafaIsmaeel/096014.mp3 ... 
+2025-08-29 04:59:19 +0000  46251 bytes for ./assets/src/assets/AlAlaq_MostafaIsmaeel/096014.mp3
+2025-08-29 04:59:19 +0000  copying file ./assets/src/assets/AlAlaq_MostafaIsmaeel/096015.mp3 ... 
+2025-08-29 04:59:19 +0000  72582 bytes for ./assets/src/assets/AlAlaq_MostafaIsmaeel/096015.mp3
+2025-08-29 04:59:19 +0000  copying file ./assets/src/assets/AlAlaq_MostafaIsmaeel/096001.mp3 ... 
+2025-08-29 04:59:19 +0000  90293 bytes for ./assets/src/assets/AlAlaq_MostafaIsmaeel/096001.mp3
+2025-08-29 04:59:19 +0000  copying file ./assets/src/assets/AlAlaq_MostafaIsmaeel/096018.mp3 ... 
+2025-08-29 04:59:19 +0000  26032 bytes for ./assets/src/assets/AlAlaq_MostafaIsmaeel/096018.mp3
+2025-08-29 04:59:19 +0000  copying file ./assets/src/assets/AlAlaq_MostafaIsmaeel/096019.mp3 ... 
+2025-08-29 04:59:19 +0000  56439 bytes for ./assets/src/assets/AlAlaq_MostafaIsmaeel/096019.mp3
+2025-08-29 04:59:19 +0000  copying file ./assets/src/assets/AlAlaq_MostafaIsmaeel/096009.mp3 ... 
+2025-08-29 04:59:19 +0000  37944 bytes for ./assets/src/assets/AlAlaq_MostafaIsmaeel/096009.mp3
+2025-08-29 04:59:19 +0000  copying file ./assets/src/assets/AlAlaq_MostafaIsmaeel/096008.mp3 ... 
+2025-08-29 04:59:19 +0000  44370 bytes for ./assets/src/assets/AlAlaq_MostafaIsmaeel/096008.mp3
+2025-08-29 04:59:19 +0000  copying file ./assets/src/assets/app_icons/slider.png ... 
+2025-08-29 04:59:19 +0000  5699 bytes for ./assets/src/assets/app_icons/slider.png
+2025-08-29 04:59:19 +0000  copying file ./assets/src/assets/app_icons/translation.png ... 
+2025-08-29 04:59:19 +0000  10465 bytes for ./assets/src/assets/app_icons/translation.png
+2025-08-29 04:59:19 +0000  copying file ./assets/src/assets/app_icons/continue.png ... 
+2025-08-29 04:59:19 +0000  3945 bytes for ./assets/src/assets/app_icons/continue.png
+2025-08-29 04:59:19 +0000  copying file ./assets/src/assets/app_icons/note.png ... 
+2025-08-29 04:59:19 +0000  8017 bytes for ./assets/src/assets/app_icons/note.png
+2025-08-29 04:59:19 +0000  copying file ./assets/src/assets/app_icons/settings.png ... 
+2025-08-29 04:59:19 +0000  11185 bytes for ./assets/src/assets/app_icons/settings.png
+2025-08-29 04:59:19 +0000  copying file ./assets/src/assets/app_icons/rename.png ... 
+2025-08-29 04:59:19 +0000  4763 bytes for ./assets/src/assets/app_icons/rename.png
+2025-08-29 04:59:19 +0000  copying file ./assets/src/assets/app_icons/information.png ... 
+2025-08-29 04:59:19 +0000  5257 bytes for ./assets/src/assets/app_icons/information.png
+2025-08-29 04:59:19 +0000  copying file ./assets/src/assets/app_icons/search.png ... 
+2025-08-29 04:59:19 +0000  5799 bytes for ./assets/src/assets/app_icons/search.png
+2025-08-29 04:59:19 +0000  copying file ./assets/src/assets/app_icons/mic-on.png ... 
+2025-08-29 04:59:19 +0000  13478 bytes for ./assets/src/assets/app_icons/mic-on.png
+2025-08-29 04:59:19 +0000  copying file ./assets/src/assets/app_icons/remove.png ... 
+2025-08-29 04:59:19 +0000  16895 bytes for ./assets/src/assets/app_icons/remove.png
+2025-08-29 04:59:19 +0000  copying file ./assets/src/assets/app_icons/share.png ... 
+2025-08-29 04:59:19 +0000  10151 bytes for ./assets/src/assets/app_icons/share.png
+2025-08-29 04:59:19 +0000  copying file ./assets/src/assets/app_icons/mic-off.png ... 
+2025-08-29 04:59:19 +0000  13388 bytes for ./assets/src/assets/app_icons/mic-off.png
+copying file ./assets/src/assets/app_icons/audio.png ... 
+2025-08-29 04:59:19 +0000  8163 bytes for ./assets/src/assets/app_icons/audio.png
+2025-08-29 04:59:19 +0000  copying file ./assets/src/assets/app_icons/down-up.png ... 
+2025-08-29 04:59:19 +0000  3016 bytes for ./assets/src/assets/app_icons/down-up.png
+2025-08-29 04:59:19 +0000  copying file ./assets/src/assets/app_icons/select.png ... 
+2025-08-29 04:59:19 +0000  12388 bytes for ./assets/src/assets/app_icons/select.png
+2025-08-29 04:59:19 +0000  copying file ./assets/src/assets/app_icons/navigation.png ... 
+2025-08-29 04:59:19 +0000  7017 bytes for ./assets/src/assets/app_icons/navigation.png
+2025-08-29 04:59:19 +0000  copying file ./assets/src/assets/AlFatiha_Mishary/001006.mp3 ... 
+2025-08-29 04:59:19 +0000  89988 bytes for ./assets/src/assets/AlFatiha_Mishary/001006.mp3
+2025-08-29 04:59:19 +0000  copying file ./assets/src/assets/AlFatiha_Mishary/001007.mp3 ... 
+2025-08-29 04:59:19 +0000  212450 bytes for ./assets/src/assets/AlFatiha_Mishary/001007.mp3
+2025-08-29 04:59:19 +0000  copying file ./assets/src/assets/AlFatiha_Mishary/001005.mp3 ... 
+2025-08-29 04:59:19 +0000  107960 bytes for ./assets/src/assets/AlFatiha_Mishary/001005.mp3
+2025-08-29 04:59:19 +0000  copying file ./assets/src/assets/AlFatiha_Mishary/001004.mp3 ... 
+2025-08-29 04:59:19 +0000  74941 bytes for ./assets/src/assets/AlFatiha_Mishary/001004.mp3
+2025-08-29 04:59:19 +0000  copying file ./assets/src/assets/AlFatiha_Mishary/001001.mp3 ... 
+2025-08-29 04:59:19 +0000  146830 bytes for ./assets/src/assets/AlFatiha_Mishary/001001.mp3
+2025-08-29 04:59:19 +0000  copying file ./assets/src/assets/AlFatiha_Mishary/001003.mp3 ... 
+2025-08-29 04:59:19 +0000  74523 bytes for ./assets/src/assets/AlFatiha_Mishary/001003.mp3
+2025-08-29 04:59:19 +0000  copying file ./assets/src/assets/AlFatiha_Mishary/001002.mp3 ... 
+2025-08-29 04:59:19 +0000  89988 bytes for ./assets/src/assets/AlFatiha_Mishary/001002.mp3
+2025-08-29 04:59:19 +0000  copying file ./assets/src/assets/openQuran.png ... 
+2025-08-29 04:59:19 +0000  2061267 bytes for ./assets/src/assets/openQuran.png
+2025-08-29 04:59:19 +0000  copying file ./Info.plist ... 
+2025-08-29 04:59:19 +0000  1913 bytes for ./Info.plist
+2025-08-29 04:59:19 +0000  copying file ./RNCAsyncStorage_resources.bundle/PrivacyInfo.xcprivacy ... 
+2025-08-29 04:59:19 +0000  512 bytes for ./RNCAsyncStorage_resources.bundle/PrivacyInfo.xcprivacy
+2025-08-29 04:59:19 +0000  copying file ./RNCAsyncStorage_resources.bundle/Info.plist ... 
+2025-08-29 04:59:19 +0000  793 bytes for ./RNCAsyncStorage_resources.bundle/Info.plist
+2025-08-29 04:59:19 +0000  copying file ./PkgInfo ... 
+2025-08-29 04:59:19 +0000  8 bytes for ./PkgInfo
+2025-08-29 04:59:19 +0000  copying file ./MaterialIcons.ttf ... 
+2025-08-29 04:59:19 +0000  356840 bytes for ./MaterialIcons.ttf
+2025-08-29 04:59:19 +0000  copying file ./React-Core_privacy.bundle/PrivacyInfo.xcprivacy ... 
+2025-08-29 04:59:19 +0000  768 bytes for ./React-Core_privacy.bundle/PrivacyInfo.xcprivacy
+2025-08-29 04:59:19 +0000  copying file ./React-Core_privacy.bundle/Info.plist ... 
+2025-08-29 04:59:19 +0000  781 bytes for ./React-Core_privacy.bundle/Info.plist
+2025-08-29 04:59:19 +0000  /usr/bin/ditto exited with 0
+2025-08-29 04:59:19 +0000  Processing step: IDEDistributionEmbedProfileStep
+2025-08-29 04:59:19 +0000  Processing step: IDEDistributionInfoPlistStep
+2025-08-29 04:59:19 +0000  Skipping setting DTXcodeBuildDistribution because toolsBuildVersionName was nil.
+2025-08-29 04:59:19 +0000  Processing step: IDEDistributionItemRemovalStep
+2025-08-29 04:59:19 +0000  Processing step: IDEDistributionAppThinningPlistStep
+2025-08-29 04:59:19 +0000  Skipping step: IDEDistributionAppThinningPlistStep because it said so
+2025-08-29 04:59:19 +0000  Processing step: IDEDistributionSymbolsStep
+2025-08-29 04:59:20 +0000  Writing /var/folders/ky/pw2jtzns4hzdjpzsnr54t4zc0000gn/T/XcodeDistPipeline.~~~3q5jLj/Symbols/E76678C0-51E6-337C-A57A-129BBBD23DB0.symbols
+2025-08-29 04:59:20 +0000  Processing step: IDEDistributionCopyAppleProvidedContentStep
+2025-08-29 04:59:20 +0000  Processing step: IDEDistributionAppThinningStep
+2025-08-29 04:59:20 +0000  Skipping step: IDEDistributionAppThinningStep because it said so
+2025-08-29 04:59:20 +0000  Processing step: IDEDistributionArchThinningStep
+2025-08-29 04:59:20 +0000  Item /Users/nadoom/Library/Developer/Xcode/Archives/2025-08-28/IQRA2 8-28-25, 11.36 AM.xcarchive/Products/Applications/IQRA2.app doesn't have the entitlement com.apple.developer.web-browser-engine.host enabled, returning ["arm64e"]
+2025-08-29 04:59:20 +0000  Archs to thin for item /Users/nadoom/Library/Developer/Xcode/Archives/2025-08-28/IQRA2 8-28-25, 11.36 AM.xcarchive/Products/Applications/IQRA2.app are ["arm64e"]
+2025-08-29 04:59:20 +0000  Running /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/lipo '/var/folders/ky/pw2jtzns4hzdjpzsnr54t4zc0000gn/T/XcodeDistPipeline.~~~3q5jLj/Root/Payload/IQRA2.app/IQRA2' '-verify_arch' 'arm64e'
+2025-08-29 04:59:20 +0000  /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/lipo exited with 1
+2025-08-29 04:59:20 +0000  Skipping architecture thinning for item "IQRA2" because arch "arm64e" wasn't found
+2025-08-29 04:59:20 +0000  Processing step: IDEDistributionODRStep
+2025-08-29 04:59:20 +0000  Processing step: IDEDistributionStripXattrsStep
+2025-08-29 04:59:20 +0000  Skipping stripping extended attributes because the codesign step will strip them.
+2025-08-29 04:59:20 +0000  Processing step: IDEDistributionCodesignStep
+2025-08-29 04:59:20 +0000  Entitlements for <IDEDistributionItem: 0x600013b75260; bundleID='com.freajahproductions.iqra2', path='<DVTFilePath:0x60000bab4900:'/Users/nadoom/Library/Developer/Xcode/Archives/2025-08-28/IQRA2 8-28-25, 11.36 AM.xcarchive/Products/Applications/IQRA2.app'>', codeSigningInfo='<_DVTCodeSigningInformation_Path: 0x600013b68e40; isSigned='1', isAdHocSigned='0', signingCertificate='<DVTSigningCertificate: 0x600006a8c780; name='Apple Development: nfreajah@gmail.com (Z4CM5SZ9MW)', hash='D0450A8D08EFA808F27FE1255FD04C6521F6BC20', serialNumber='554DBCD8A9550732FBF6DC55987FD04D', certificateKinds='(
+    "1.2.840.113635.100.6.1.12",
+    "1.2.840.113635.100.6.1.2"
+), issueDate='2024-12-31 21:50:30 +0000''>', entitlements='{
+    "application-identifier" = "UYJ823H5DD.com.freajahproductions.iqra2";
+    "com.apple.developer.team-identifier" = UYJ823H5DD;
+    "com.apple.security.application-groups" =     (
+        "group.com.iqra2.app"
+    );
+    "get-task-allow" = 1;
+}', teamID='UYJ823H5DD', identifier='com.freajahproductions.iqra2', executablePath='<DVTFilePath:0x60000fbe3600:'/Users/nadoom/Library/Developer/Xcode/Archives/2025-08-28/IQRA2 8-28-25, 11.36 AM.xcarchive/Products/Applications/IQRA2.app/IQRA2'>', hardenedRuntime='0'>'>: {
+    "application-identifier" = "UYJ823H5DD.com.freajahproductions.iqra2";
+    "beta-reports-active" = 1;
+    "com.apple.developer.team-identifier" = UYJ823H5DD;
+    "com.apple.security.application-groups" =     (
+        "group.com.iqra2.app"
+    );
+    "get-task-allow" = 0;
+}
+2025-08-29 04:59:20 +0000  Associated App Clip Identifiers Filter: Skipping because "com.apple.developer.associated-appclip-app-identifiers" is not present
+2025-08-29 04:59:20 +0000  Entitlements for <IDEDistributionItem: 0x600013b75260; bundleID='com.freajahproductions.iqra2', path='<DVTFilePath:0x60000bab4900:'/Users/nadoom/Library/Developer/Xcode/Archives/2025-08-28/IQRA2 8-28-25, 11.36 AM.xcarchive/Products/Applications/IQRA2.app'>', codeSigningInfo='<_DVTCodeSigningInformation_Path: 0x600013b68e40; isSigned='1', isAdHocSigned='0', signingCertificate='<DVTSigningCertificate: 0x600006a94000; name='Apple Development: nfreajah@gmail.com (Z4CM5SZ9MW)', hash='D0450A8D08EFA808F27FE1255FD04C6521F6BC20', serialNumber='554DBCD8A9550732FBF6DC55987FD04D', certificateKinds='(
+    "1.2.840.113635.100.6.1.12",
+    "1.2.840.113635.100.6.1.2"
+), issueDate='2024-12-31 21:50:30 +0000''>', entitlements='{
+    "application-identifier" = "UYJ823H5DD.com.freajahproductions.iqra2";
+    "com.apple.developer.team-identifier" = UYJ823H5DD;
+    "com.apple.security.application-groups" =     (
+        "group.com.iqra2.app"
+    );
+    "get-task-allow" = 1;
+}', teamID='UYJ823H5DD', identifier='com.freajahproductions.iqra2', executablePath='<DVTFilePath:0x60000fbe3600:'/Users/nadoom/Library/Developer/Xcode/Archives/2025-08-28/IQRA2 8-28-25, 11.36 AM.xcarchive/Products/Applications/IQRA2.app/IQRA2'>', hardenedRuntime='0'>'> are: {
+    "application-identifier" = "UYJ823H5DD.com.freajahproductions.iqra2";
+    "beta-reports-active" = 1;
+    "com.apple.developer.team-identifier" = UYJ823H5DD;
+    "com.apple.security.application-groups" =     (
+        "group.com.iqra2.app"
+    );
+    "get-task-allow" = 0;
+}
+2025-08-29 04:59:20 +0000  Writing entitlements for <IDEDistributionItem: 0x600013b75260; bundleID='com.freajahproductions.iqra2', path='<DVTFilePath:0x60000bab4900:'/Users/nadoom/Library/Developer/Xcode/Archives/2025-08-28/IQRA2 8-28-25, 11.36 AM.xcarchive/Products/Applications/IQRA2.app'>', codeSigningInfo='<_DVTCodeSigningInformation_Path: 0x600013b68e40; isSigned='1', isAdHocSigned='0', signingCertificate='<DVTSigningCertificate: 0x600006a5d380; name='Apple Development: nfreajah@gmail.com (Z4CM5SZ9MW)', hash='D0450A8D08EFA808F27FE1255FD04C6521F6BC20', serialNumber='554DBCD8A9550732FBF6DC55987FD04D', certificateKinds='(
+    "1.2.840.113635.100.6.1.12",
+    "1.2.840.113635.100.6.1.2"
+), issueDate='2024-12-31 21:50:30 +0000''>', entitlements='{
+    "application-identifier" = "UYJ823H5DD.com.freajahproductions.iqra2";
+    "com.apple.developer.team-identifier" = UYJ823H5DD;
+    "com.apple.security.application-groups" =     (
+        "group.com.iqra2.app"
+    );
+    "get-task-allow" = 1;
+}', teamID='UYJ823H5DD', identifier='com.freajahproductions.iqra2', executablePath='<DVTFilePath:0x60000fbe3600:'/Users/nadoom/Library/Developer/Xcode/Archives/2025-08-28/IQRA2 8-28-25, 11.36 AM.xcarchive/Products/Applications/IQRA2.app/IQRA2'>', hardenedRuntime='0'>'> to: /var/folders/ky/pw2jtzns4hzdjpzsnr54t4zc0000gn/T/XcodeDistPipeline.~~~3q5jLj/entitlements~~~JJ8YAw
+2025-08-29 04:59:20 +0000  invoking codesign: <NSConcreteTask: 0x6000139e90e0; launchPath='/usr/bin/codesign', arguments='(
+    "-f",
+    "-s",
+    "-",
+    "--signature-size",
+    16000,
+    "--entitlements",
+    "/var/folders/ky/pw2jtzns4hzdjpzsnr54t4zc0000gn/T/XcodeDistPipeline.~~~3q5jLj/entitlements~~~JJ8YAw",
+    "--requirements",
+    "=designated => anchor apple generic and identifier \"com.freajahproductions.iqra2\" and certificate leaf[subject.CN] = \"Apple Distribution: Nadeem Freajah (UYJ823H5DD)\" and certificate 1[field.1.2.840.113635.100.6.2.1] /* exists */",
+    "--preserve-metadata=identifier,flags,runtime",
+    "--omit-adhoc-flag",
+    "--team-identifier",
+    UYJ823H5DD,
+    "--generate-entitlement-der",
+    "--strip-disallowed-xattrs",
+    "-vvv",
+    "/var/folders/ky/pw2jtzns4hzdjpzsnr54t4zc0000gn/T/XcodeDistPipeline.~~~3q5jLj/Root/Payload/IQRA2.app"
+)'>
+2025-08-29 04:59:20 +0000  codesign output: /var/folders/ky/pw2jtzns4hzdjpzsnr54t4zc0000gn/T/XcodeDistPipeline.~~~3q5jLj/Root/Payload/IQRA2.app: replacing existing signature
+/var/folders/ky/pw2jtzns4hzdjpzsnr54t4zc0000gn/T/XcodeDistPipeline.~~~3q5jLj/Root/Payload/IQRA2.app: signed app bundle with Mach-O thin (arm64) [com.freajahproductions.iqra2]
+2025-08-29 04:59:20 +0000  Remote code signing '/var/folders/ky/pw2jtzns4hzdjpzsnr54t4zc0000gn/T/XcodeDistPipeline.~~~3q5jLj/Root/Payload/IQRA2.app' with signature slices '[<DVTCodeSignatureSlice: 0x60000cc60000; architecture='arm64', cmsDigest='<DVTCodeSignatureHash: 0x600005a14040; digestAlgorithmDescription='sha256', cdHashHexEncoded='5a34756c1e0269bd2e2daafde48f7d20ebaa9761c8f7a3a4034fbccee32f4229'>', codeSignatureHashes='{(
+    <DVTCodeSignatureHash: 0x600005a14080; digestAlgorithmDescription='sha256', cdHashHexEncoded='5a34756c1e0269bd2e2daafde48f7d20ebaa9761c8f7a3a4034fbccee32f4229'>
+)}', cmsHexEncoded=''>]' and configuration 'RemoteSigningToolConfiguration(path: <DVTFilePath:0x600013bafba0:'/var/folders/ky/pw2jtzns4hzdjpzsnr54t4zc0000gn/T/XcodeDistPipeline.~~~3q5jLj/Root/Payload/IQRA2.app'>, signingCertificate: <DVTSigningCertificate: 0x600006aa27c0; name='Apple Distribution: Nadeem Freajah (UYJ823H5DD)', hash='0CE25B5DB49EC796DC573E634C66E53C26CEADF8', serialNumber='15291FF821CE9D4DD665712842DF2D33', certificateKinds='(
+    "1.2.840.113635.100.6.1.7",
+    "1.2.840.113635.100.6.1.4"
+), issueDate='2025-08-29 04:49:18 +0000''>, session: <DVTServicesAccountBasedSession: 0x600013af1260; account='<DVTAppleIDBasedDeveloperAccount: 0x6000006e9d00; username='nfreajah@gmail.com'>'>, team: <DVTPortalTeam: 0x6000100a9500; name='Nadeem Freajah', teamID='UYJ823H5DD', type='Individual', memberships='(
+    "<DVTPortalMembership: 0x60000d005b30; programs='{(\n    <DVTPortalProgram: 0x600007c9c960; <DVTPortalProgram: 0x600007c9c960; identifier='Xcode.Portal.Program.iOS'>>\n)}'>",
+    "<DVTPortalMembership: 0x60000d004d50; programs='{(\n    <DVTPortalProgram: 0x600007c9cb90; <DVTPortalProgram: 0x600007c9cb90; identifier='Xcode.Portal.Program.Mac'>>\n)}'>"
+)'>, codeResourcesDictionary: [AnyHashable("files2"): {
+    "001001.mp3" =     {
+        hash2 = {length = 32, bytes = 0x8808f3fc 313d9df8 7b6090ee 9efc8c11 ... 621c5ee9 a93d7280 };
+    };
+    "001002.mp3" =     {
+        hash2 = {length = 32, bytes = 0x7056ff0c 287ee428 272e12d1 6fb8f10b ... a8283967 50906b6b };
+    };
+    "001003.mp3" =     {
+        hash2 = {length = 32, bytes = 0x3bd5bb13 dcdf6ab1 78b6c6cb 2810ad2a ... ca78021f 56c93abd };
+    };
+    "001004.mp3" =     {
+        hash2 = {length = 32, bytes = 0xdca0c098 44dd0e9e bf558b25 a24352ae ... 380e962b 2bac201a };
+    };
+    "001005.mp3" =     {
+        hash2 = {length = 32, bytes = 0x7828eb8f 7400b041 81d2c088 85b9409d ... 153692f2 5bb252fd };
+    };
+    "001006.mp3" =     {
+        hash2 = {length = 32, bytes = 0x44afd93f a73f7fe3 63c75146 a9b28c59 ... 1d823ed5 1c5b6327 };
+    };
+    "001007.mp3" =     {
+        hash2 = {length = 32, bytes = 0x6165fc69 54e63686 f556a804 9c0d5231 ... 3e6d5f71 91b1320e };
+    };
+    "067001.mp3" =     {
+        hash2 = {length = 32, bytes = 0x56d848ec 30cddf65 1f14a653 a0117270 ... 072ec995 7f83ce8a };
+    };
+    "067002.mp3" =     {
+        hash2 = {length = 32, bytes = 0x42e9df66 682cbbab f979a858 23873cad ... 40cb61c8 26c9a0e6 };
+    };
+    "067003.mp3" =     {
+        hash2 = {length = 32, bytes = 0x372d96fb 8fb661d8 addf382a b49979f8 ... 198c9873 b82d2898 };
+    };
+    "067004.mp3" =     {
+        hash2 = {length = 32, bytes = 0xdf52b02e 772e7102 a5f5d164 883829d2 ... 358501df 527b3eee };
+    };
+    "067005.mp3" =     {
+        hash2 = {length = 32, bytes = 0x7e51182a 59cd8356 52e8bf36 2b63ff34 ... 87783595 e0fdc797 };
+    };
+    "067006.mp3" =     {
+        hash2 = {length = 32, bytes = 0x8270148e 4895dc7b 0c18ac62 8efda19e ... 94f78413 b0bd0db4 };
+    };
+    "067007.mp3" =     {
+        hash2 = {length = 32, bytes = 0xfd2e4e6c e3d4e708 1af56662 c5d29f49 ... abc5dc7e bcbdf7d2 };
+    };
+    "067008.mp3" =     {
+        hash2 = {length = 32, bytes = 0x48f1426c a41b144f 6a1c662a 1529148a ... d3ea2221 b1a3915d };
+    };
+    "067009.mp3" =     {
+        hash2 = {length = 32, bytes = 0x51e0e6a5 b3d18770 e1f49a3a 78bc6d7a ... efa357b2 400c8dbc };
+    };
+    "067010.mp3" =     {
+        hash2 = {length = 32, bytes = 0xd315cce0 47fa6878 d15ec24a 6cd77fb3 ... 652de1d1 f9c0d202 };
+    };
+    "067011.mp3" =     {
+        hash2 = {length = 32, bytes = 0x8793996c 2affffd6 95f0f3e1 4000732b ... 3305269b 31b8952e };
+    };
+    "067012.mp3" =     {
+        hash2 = {length = 32, bytes = 0xac3a3ba7 4bdbbce4 cd93587b 25283e3a ... 3dfbe503 fd2f1c4e };
+    };
+    "067013.mp3" =     {
+        hash2 = {length = 32, bytes = 0x9701f88d 5a6b04ad 36c100d1 112923bf ... cf596b17 1ec5d4e6 };
+    };
+    "067014.mp3" =     {
+        hash2 = {length = 32, bytes = 0xffada66c db80641e 5c812df4 9ff22461 ... c67702d3 785954bb };
+    };
+    "067015.mp3" =     {
+        hash2 = {length = 32, bytes = 0x0db9eb19 d49d1c78 5e304abe 4e9c89bb ... 4d686829 a1e5f914 };
+    };
+    "067016.mp3" =     {
+        hash2 = {length = 32, bytes = 0xfa42272f e71baa21 6dc4de01 58f2d57f ... 3559c1cf a5ca00ff };
+    };
+    "067017.mp3" =     {
+        hash2 = {length = 32, bytes = 0xb9b16662 2febe012 86f2167d 089fd60c ... 91f9d585 afe4e291 };
+    };
+    "067018.mp3" =     {
+        hash2 = {length = 32, bytes = 0xf78774c1 35f15a35 462f1163 8ee3500a ... 31e23fd9 d400a315 };
+    };
+    "067019.mp3" =     {
+        hash2 = {length = 32, bytes = 0xa82d174d 2d2bd8a5 de07d021 b340bb31 ... 16c4f457 2c216451 };
+    };
+    "067020.mp3" =     {
+        hash2 = {length = 32, bytes = 0xd57bfcbf cc1446bb 2fa4c4b2 af2c1d6a ... d9b1a635 cbdf557c };
+    };
+    "067021.mp3" =     {
+        hash2 = {length = 32, bytes = 0xf86205dc 5cd37995 bf20a690 9646e3f1 ... 33ef119b b8ea89c2 };
+    };
+    "067022.mp3" =     {
+        hash2 = {length = 32, bytes = 0x0824aff8 8a9e2081 d47f4b5b 179fc188 ... 9d9e599b 4953cab0 };
+    };
+    "067023.mp3" =     {
+        hash2 = {length = 32, bytes = 0x9c9c3547 a40311d9 1a958de8 50a21b33 ... 82557eb0 309b6210 };
+    };
+    "067024.mp3" =     {
+        hash2 = {length = 32, bytes = 0xacdee373 8a64edd6 9ea49652 0ae7cb3a ... f54c66ed 83200ec2 };
+    };
+    "067025.mp3" =     {
+        hash2 = {length = 32, bytes = 0x78712784 d07e2484 9cf65e64 f9897c48 ... 1ea1c874 61d973b0 };
+    };
+    "067026.mp3" =     {
+        hash2 = {length = 32, bytes = 0x52b15b09 7711ebad 2f43a406 d83b5dda ... 6044824a a3c5dd41 };
+    };
+    "067027.mp3" =     {
+        hash2 = {length = 32, bytes = 0x86c6381c f37a3435 54c326ef ec48606a ... c5afa757 7f93fdb5 };
+    };
+    "067028.mp3" =     {
+        hash2 = {length = 32, bytes = 0x947ec9ba dc193dc3 a9e262c6 87db4739 ... 12fe87c1 651cd301 };
+    };
+    "067029.mp3" =     {
+        hash2 = {length = 32, bytes = 0xacc65a70 d13fdf88 75c94977 241c433e ... f2545518 2ce0370c };
+    };
+    "067030.mp3" =     {
+        hash2 = {length = 32, bytes = 0xeceba818 36ea9a3d 50921d9b e335385b ... dc4e3fc9 ae627b33 };
+    };
+    "AntDesign.ttf" =     {
+        hash2 = {length = 32, bytes = 0x7955ca14 127b3041 2c114eb1 3cfd702b ... 695d73ca a824cde1 };
+    };
+    "AppIcon60x60@2x.png" =     {
+        hash2 = {length = 32, bytes = 0x4ca82f66 a1abce01 9252c4f7 e8aaa6c3 ... ad1d1c41 c7b83aed };
+    };
+    "Assets.car" =     {
+        hash2 = {length = 32, bytes = 0x73d119f3 dd2b153c 38330c63 5266dc67 ... 8d77839e 8cbfd378 };
+    };
+    "Entypo.ttf" =     {
+        hash2 = {length = 32, bytes = 0x16f92298 587bab2b 469bc13c 0dfc6d5d ... 3ad16bc0 23bf717d };
+    };
+    "EvilIcons.ttf" =     {
+        hash2 = {length = 32, bytes = 0xa5caeb4d 395c5e32 f1d5a30a cb382aeb ... 9907f221 5e4e3e26 };
+    };
+    "Feather.ttf" =     {
+        hash2 = {length = 32, bytes = 0x57599360 fc9b80bc e473b364 f7f255b5 ... 18cb0e0f 838462b4 };
+    };
+    "FontAwesome.ttf" =     {
+        hash2 = {length = 32, bytes = 0xaa58f33f 239a0fb0 2f5c7a6c 45c043d7 ... 94ecd6d4 edc0d6a8 };
+    };
+    "FontAwesome5_Brands.ttf" =     {
+        hash2 = {length = 32, bytes = 0x06f4d009 23ea2469 7df5df0b 92984175 ... 531bb401 e393ec42 };
+    };
+    "FontAwesome5_Regular.ttf" =     {
+        hash2 = {length = 32, bytes = 0xc651b8a6 7d319320 6f622c3c 3b0fbca4 ... 52c1e2a2 e84c9b31 };
+    };
+    "FontAwesome5_Solid.ttf" =     {
+        hash2 = {length = 32, bytes = 0x3d06af1f 31cd83ac e7a265a0 14b8fb5d ... 5555190e 627e03c2 };
+    };
+    "FontAwesome6_Brands.ttf" =     {
+        hash2 = {length = 32, bytes = 0xbc844b5b 02d3f3ad abb514de 4e0c0208 ... 6287fa44 6acee859 };
+    };
+    "FontAwesome6_Regular.ttf" =     {
+        hash2 = {length = 32, bytes = 0x64f9fb62 3681f112 261e9a2f 97826782 ... 57d1e4db 95ba6cfd };
+    };
+    "FontAwesome6_Solid.ttf" =     {
+        hash2 = {length = 32, bytes = 0x31f099c1 3f6e4ba0 5f1b471b f170cb54 ... 2de3ca5c f29e6a1a };
+    };
+    "Fontisto.ttf" =     {
+        hash2 = {length = 32, bytes = 0x94dab9f1 d5b13ea0 769d124a 2da0d024 ... c0446a77 158100c0 };
+    };
+    "Foundation.ttf" =     {
+        hash2 = {length = 32, bytes = 0x7e1dd03d d4ce90b6 58052554 cd7459df ... a4c6d56a 5f8933e6 };
+    };
+    "Ionicons.ttf" =     {
+        hash2 = {length = 32, bytes = 0x9c7fb907 1a6c2858 2c6b8446 8cbff2c7 ... 48a15993 8d22916b };
+    };
+    "KSAHeavy.ttf" =     {
+        hash2 = {length = 32, bytes = 0x62d92823 38c5e908 b0def3a5 8c1d0c24 ... 6a4548db 364bff55 };
+    };
+    "LaunchScreen.storyboardc/01J-lp-oVM-view-Ze5-6b-2t3.nib" =     {
+        hash2 = {length = 32, bytes = 0xd4a28ed8 a37377f6 b792bd59 e6127476 ... 3eddede7 aab75ec7 };
+    };
+    "LaunchScreen.storyboardc/Info.plist" =     {
+        hash2 = {length = 32, bytes = 0x1f255d5c c53b531e 3f29a940 6a8df49a ... bd8374f7 07f7d5c8 };
+    };
+    "LaunchScreen.storyboardc/UIViewController-01J-lp-oVM.nib" =     {
+        hash2 = {length = 32, bytes = 0x54f3637f 671feba5 f19e82ec 4f4a7fb4 ... 89aa571f c8f053e2 };
+    };
+    "MaterialCommunityIcons.ttf" =     {
+        hash2 = {length = 32, bytes = 0x9e94d4db e2e87ea4 95f0d42d 879146bc ... 154a15ee fa37ef59 };
+    };
+    "MaterialIcons.ttf" =     {
+        hash2 = {length = 32, bytes = 0xef149f08 bdd2ff09 a4e2c857 3476b7b0 ... e59899e7 175bedda };
+    };
+    "Montserrat-Bold.ttf" =     {
+        hash2 = {length = 32, bytes = 0x9cb7dc18 ee6175ab 86bea008 eb7aff19 ... e2e86409 0206c20a };
+    };
+    "Montserrat-Regular.ttf" =     {
+        hash2 = {length = 32, bytes = 0x32f9bdc7 3ecf308a 19c0e918 b407e12d ... c2ddcb74 f457839a };
+    };
+    "Octicons.ttf" =     {
+        hash2 = {length = 32, bytes = 0x16db3480 53ea1125 99e2a635 6f6c1fa0 ... fadffcda 90e2227c };
+    };
+    "PrivacyInfo.xcprivacy" =     {
+        hash2 = {length = 32, bytes = 0xa94dc3e8 a3cb0acd daeb1ec8 949309c1 ... 28d27a77 2aadbbbd };
+    };
+    "RCT-Folly_privacy.bundle/Info.plist" =     {
+        hash2 = {length = 32, bytes = 0x9cfc74ba 2935193c d7c07632 af3ddf83 ... 95d6e833 73577efd };
+    };
+    "RNCAsyncStorage_resources.bundle/Info.plist" =     {
+        hash2 = {length = 32, bytes = 0x5a3bf822 16b9f2fc 3111d8d9 dc68248e ... ef38f932 20377c15 };
+    };
+    "RNCAsyncStorage_resources.bundle/PrivacyInfo.xcprivacy" =     {
+        hash2 = {length = 32, bytes = 0x0b1287d0 e686cf86 7d38d97c ca5dc694 ... dd4bd2fd 5458a2f0 };
+    };
+    "RNDeviceInfoPrivacyInfo.bundle/Info.plist" =     {
+        hash2 = {length = 32, bytes = 0x1193bf89 98edf845 3eee091b e8aa1431 ... 960708c3 d60033b5 };
+    };
+    "RNDeviceInfoPrivacyInfo.bundle/PrivacyInfo.xcprivacy" =     {
+        hash2 = {length = 32, bytes = 0xe187baee 4c16cad9 6a7bf3c4 de201928 ... 3a052058 01f769e6 };
+    };
+    "RNSVGFilters.bundle/Info.plist" =     {
+        hash2 = {length = 32, bytes = 0xdc87e67e cf8d2cc6 28befd1b a3960a66 ... b5197584 92f9bb2c };
+    };
+    "RNSVGFilters.bundle/RNSVGArithmeticFilter.iphoneos.metallib" =     {
+        hash2 = {length = 32, bytes = 0x691465fd f22be294 2a906482 998440cb ... 8add3395 c0b40ed9 };
+    };
+    "RNSVGFilters.bundle/RNSVGCompositeXor.iphoneos.metallib" =     {
+        hash2 = {length = 32, bytes = 0x2237a864 d7884ec5 daa98429 3d775be6 ... cb97b957 9953fff2 };
+    };
+    "React-Core_privacy.bundle/Info.plist" =     {
+        hash2 = {length = 32, bytes = 0xbbbd49cd 6f2735af 6205c0f0 66370958 ... c179ad98 c08de9ef };
+    };
+    "React-Core_privacy.bundle/PrivacyInfo.xcprivacy" =     {
+        hash2 = {length = 32, bytes = 0x7c08969e 459621a6 ecec043c cdb90126 ... 17c623da e2e11627 };
+    };
+    "React-cxxreact_privacy.bundle/Info.plist" =     {
+        hash2 = {length = 32, bytes = 0x63bd9304 3cf48fd5 d4042df7 b7bb76cd ... 7c8d86b6 e3d24ad1 };
+    };
+    "React-cxxreact_privacy.bundle/PrivacyInfo.xcprivacy" =     {
+        hash2 = {length = 32, bytes = 0x0587d155 c56a6f4f 0647ebc6 b6a0bd02 ... a9786b79 a96ad335 };
+    };
+    "SimpleLineIcons.ttf" =     {
+        hash2 = {length = 32, bytes = 0x3f501ddb 05c70829 bbb51cfe 9ca9fff5 ... 3ccf25df 767f0870 };
+    };
+    "UthmanTNB_v2-0.ttf" =     {
+        hash2 = {length = 32, bytes = 0xc881678c 4f9628e2 0ee74116 52fb8c0d ... fdd07633 12a5ee38 };
+    };
+    "UthmanTN_v2-0.ttf" =     {
+        hash2 = {length = 32, bytes = 0xf4a2b776 261e3900 89ee1080 29d9a5f1 ... af2c5e08 17c361ba };
+    };
+    "Zocial.ttf" =     {
+        hash2 = {length = 32, bytes = 0xdd8ee403 bbcbf5e5 8b77dca4 ac03ebaf ... 9ca49043 5a86fa48 };
+    };
+    "assets/node_modules/@react-navigation/elements/lib/module/assets/back-icon-mask.png" =     {
+        hash2 = {length = 32, bytes = 0x9adb8c5e fca932e2 b732b293 da813bd2 ... e2517fec 0f0b6a76 };
+    };
+    "assets/node_modules/@react-navigation/elements/lib/module/assets/back-icon.png" =     {
+        hash2 = {length = 32, bytes = 0x2cdfeb8e 5ccde797 6f7012fb 8cce73af ... 09fed114 871c6cd8 };
+    };
+    "assets/node_modules/@react-navigation/elements/lib/module/assets/back-icon@2x.png" =     {
+        hash2 = {length = 32, bytes = 0x2b7443a9 a58e92ca 11a575bd c1159861 ... 0d602606 b302cd98 };
+    };
+    "assets/node_modules/@react-navigation/elements/lib/module/assets/back-icon@3x.png" =     {
+        hash2 = {length = 32, bytes = 0x3ddd0773 ed27e23d 25789f30 1731b3ac ... 1b838f89 c6d27225 };
+    };
+    "assets/node_modules/@react-navigation/elements/lib/module/assets/clear-icon.png" =     {
+        hash2 = {length = 32, bytes = 0xd03a5cd7 a66ef10c 5147916f 9d5878b2 ... 1cd9967e faa55afd };
+    };
+    "assets/node_modules/@react-navigation/elements/lib/module/assets/clear-icon@2x.png" =     {
+        hash2 = {length = 32, bytes = 0xab5613d2 ce70fa67 c5926e83 13536649 ... 6c5fe3ce c452e31a };
+    };
+    "assets/node_modules/@react-navigation/elements/lib/module/assets/clear-icon@3x.png" =     {
+        hash2 = {length = 32, bytes = 0xc4e54e6a 0a7de636 aa153378 fbc62ea4 ... 0df7b18f fd733f67 };
+    };
+    "assets/node_modules/@react-navigation/elements/lib/module/assets/close-icon.png" =     {
+        hash2 = {length = 32, bytes = 0xb1bc1810 ca23e2c3 8cd76971 c43591d7 ... 2b057571 96ddb528 };
+    };
+    "assets/node_modules/@react-navigation/elements/lib/module/assets/close-icon@2x.png" =     {
+        hash2 = {length = 32, bytes = 0xcbdf9213 e55f65c4 8d076acd 8423b7c9 ... 95a38c4c d8a86461 };
+    };
+    "assets/node_modules/@react-navigation/elements/lib/module/assets/close-icon@3x.png" =     {
+        hash2 = {length = 32, bytes = 0xd05c9d30 d79f45a7 8e5585a2 e7ec67c6 ... 5059e8c8 7b33ce76 };
+    };
+    "assets/node_modules/@react-navigation/elements/lib/module/assets/search-icon.png" =     {
+        hash2 = {length = 32, bytes = 0xdc56b976 bd45638e 1125f668 9743525e ... 51994833 685a831f };
+    };
+    "assets/node_modules/@react-navigation/elements/lib/module/assets/search-icon@2x.png" =     {
+        hash2 = {length = 32, bytes = 0xef13fc0d fc52ec23 817585fd 7e109fbd ... 71ac9b0e da12cc2c };
+    };
+    "assets/node_modules/@react-navigation/elements/lib/module/assets/search-icon@3x.png" =     {
+        hash2 = {length = 32, bytes = 0xb434a7cf 18c2d4ce 747c7094 2ea2fee2 ... 372f810b b9261ea5 };
+    };
+    "assets/src/assets/AlAlaq_MostafaIsmaeel/096001.mp3" =     {
+        hash2 = {length = 32, bytes = 0xc6b2bca7 bb5ce623 5bf10ab1 14b2a75e ... 49ad01c3 1b7c6b12 };
+    };
+    "assets/src/assets/AlAlaq_MostafaIsmaeel/096002.mp3" =     {
+        hash2 = {length = 32, bytes = 0x7e13491b 9c88bde9 4564eb77 3123de9d ... c5eae132 b1080937 };
+    };
+    "assets/src/assets/AlAlaq_MostafaIsmaeel/096003.mp3" =     {
+        hash2 = {length = 32, bytes = 0x87428292 68dff98b a8229c1c 2a2ea21a ... bffc09d7 d91c2071 };
+    };
+    "assets/src/assets/AlAlaq_MostafaIsmaeel/096004.mp3" =     {
+        hash2 = {length = 32, bytes = 0x474e1910 762b19da 3582ad76 64d641cf ... 81d0e7c3 47474bd5 };
+    };
+    "assets/src/assets/AlAlaq_MostafaIsmaeel/096005.mp3" =     {
+        hash2 = {length = 32, bytes = 0x1c83f37b 0986faaa 8f6b7679 88bf9694 ... 6b35667f 42a118c9 };
+    };
+    "assets/src/assets/AlAlaq_MostafaIsmaeel/096006.mp3" =     {
+        hash2 = {length = 32, bytes = 0x1a13c213 7fced8c1 bb4e5c40 e6e9a281 ... 60ee672e 3509ffe6 };
+    };
+    "assets/src/assets/AlAlaq_MostafaIsmaeel/096007.mp3" =     {
+        hash2 = {length = 32, bytes = 0x3710df95 22044599 3377de0a ec7050fd ... bc9e709f d36ecc28 };
+    };
+    "assets/src/assets/AlAlaq_MostafaIsmaeel/096008.mp3" =     {
+        hash2 = {length = 32, bytes = 0xbca63a86 8fa63098 d89e8fc8 caf73ddb ... 6d427208 c414ad0b };
+    };
+    "assets/src/assets/AlAlaq_MostafaIsmaeel/096009.mp3" =     {
+        hash2 = {length = 32, bytes = 0x54825749 880456e6 baaa36a6 879f1a6f ... 068ecffa a0367d63 };
+    };
+    "assets/src/assets/AlAlaq_MostafaIsmaeel/096010.mp3" =     {
+        hash2 = {length = 32, bytes = 0xebb21217 1b59093b 3b0a6d09 d05f7c85 ... 16ed6b37 8e0368c7 };
+    };
+    "assets/src/assets/AlAlaq_MostafaIsmaeel/096011.mp3" =     {
+        hash2 = {length = 32, bytes = 0x355df2b6 e19fbdd5 fe9434f3 b0dd15bb ... 354f1f53 de884444 };
+    };
+    "assets/src/assets/AlAlaq_MostafaIsmaeel/096012.mp3" =     {
+        hash2 = {length = 32, bytes = 0xe35d28f6 067566da 0ac1f5c9 0164863d ... cfb722b3 82a318d2 };
+    };
+    "assets/src/assets/AlAlaq_MostafaIsmaeel/096013.mp3" =     {
+        hash2 = {length = 32, bytes = 0xac40c55c 21c08823 55a8f779 6b066670 ... 015495fe 8262a2a3 };
+    };
+    "assets/src/assets/AlAlaq_MostafaIsmaeel/096014.mp3" =     {
+        hash2 = {length = 32, bytes = 0xd7d54f2b 66e1a755 0f4f76f4 362c56f6 ... 2ed11f19 c6b5f068 };
+    };
+    "assets/src/assets/AlAlaq_MostafaIsmaeel/096015.mp3" =     {
+        hash2 = {length = 32, bytes = 0x52083067 1cca4db8 0852c41c adc8154b ... 5fcf3451 20c08b9a };
+    };
+    "assets/src/assets/AlAlaq_MostafaIsmaeel/096016.mp3" =     {
+        hash2 = {length = 32, bytes = 0xe9e7207c fc702c21 6d33b5fa c37855c5 ... 0afd39b6 b3aaea65 };
+    };
+    "assets/src/assets/AlAlaq_MostafaIsmaeel/096017.mp3" =     {
+        hash2 = {length = 32, bytes = 0xc4f88471 6790c851 f76715df 35f4e7a7 ... de2125c4 a0cb0a21 };
+    };
+    "assets/src/assets/AlAlaq_MostafaIsmaeel/096018.mp3" =     {
+        hash2 = {length = 32, bytes = 0xf3a10631 08e7efe1 d4c7c06e 07cfaf21 ... cd4e6f4f bc8c14ca };
+    };
+    "assets/src/assets/AlAlaq_MostafaIsmaeel/096019.mp3" =     {
+        hash2 = {length = 32, bytes = 0x296fe061 f2e15b5d f3f9a347 b406a49e ... 0de8a8b4 2f2e724c };
+    };
+    "assets/src/assets/AlFatiha_Mishary/001001.mp3" =     {
+        hash2 = {length = 32, bytes = 0x8808f3fc 313d9df8 7b6090ee 9efc8c11 ... 621c5ee9 a93d7280 };
+    };
+    "assets/src/assets/AlFatiha_Mishary/001002.mp3" =     {
+        hash2 = {length = 32, bytes = 0x7056ff0c 287ee428 272e12d1 6fb8f10b ... a8283967 50906b6b };
+    };
+    "assets/src/assets/AlFatiha_Mishary/001003.mp3" =     {
+        hash2 = {length = 32, bytes = 0x3bd5bb13 dcdf6ab1 78b6c6cb 2810ad2a ... ca78021f 56c93abd };
+    };
+    "assets/src/assets/AlFatiha_Mishary/001004.mp3" =     {
+        hash2 = {length = 32, bytes = 0xdca0c098 44dd0e9e bf558b25 a24352ae ... 380e962b 2bac201a };
+    };
+    "assets/src/assets/AlFatiha_Mishary/001005.mp3" =     {
+        hash2 = {length = 32, bytes = 0x7828eb8f 7400b041 81d2c088 85b9409d ... 153692f2 5bb252fd };
+    };
+    "assets/src/assets/AlFatiha_Mishary/001006.mp3" =     {
+        hash2 = {length = 32, bytes = 0x44afd93f a73f7fe3 63c75146 a9b28c59 ... 1d823ed5 1c5b6327 };
+    };
+    "assets/src/assets/AlFatiha_Mishary/001007.mp3" =     {
+        hash2 = {length = 32, bytes = 0x6165fc69 54e63686 f556a804 9c0d5231 ... 3e6d5f71 91b1320e };
+    };
+    "assets/src/assets/AlMulk_AlGhamdi/067001.mp3" =     {
+        hash2 = {length = 32, bytes = 0x56d848ec 30cddf65 1f14a653 a0117270 ... 072ec995 7f83ce8a };
+    };
+    "assets/src/assets/AlMulk_AlGhamdi/067002.mp3" =     {
+        hash2 = {length = 32, bytes = 0x42e9df66 682cbbab f979a858 23873cad ... 40cb61c8 26c9a0e6 };
+    };
+    "assets/src/assets/AlMulk_AlGhamdi/067003.mp3" =     {
+        hash2 = {length = 32, bytes = 0x372d96fb 8fb661d8 addf382a b49979f8 ... 198c9873 b82d2898 };
+    };
+    "assets/src/assets/AlMulk_AlGhamdi/067004.mp3" =     {
+        hash2 = {length = 32, bytes = 0xdf52b02e 772e7102 a5f5d164 883829d2 ... 358501df 527b3eee };
+    };
+    "assets/src/assets/AlMulk_AlGhamdi/067005.mp3" =     {
+        hash2 = {length = 32, bytes = 0x7e51182a 59cd8356 52e8bf36 2b63ff34 ... 87783595 e0fdc797 };
+    };
+    "assets/src/assets/AlMulk_AlGhamdi/067006.mp3" =     {
+        hash2 = {length = 32, bytes = 0x8270148e 4895dc7b 0c18ac62 8efda19e ... 94f78413 b0bd0db4 };
+    };
+    "assets/src/assets/AlMulk_AlGhamdi/067007.mp3" =     {
+        hash2 = {length = 32, bytes = 0xfd2e4e6c e3d4e708 1af56662 c5d29f49 ... abc5dc7e bcbdf7d2 };
+    };
+    "assets/src/assets/AlMulk_AlGhamdi/067008.mp3" =     {
+        hash2 = {length = 32, bytes = 0x48f1426c a41b144f 6a1c662a 1529148a ... d3ea2221 b1a3915d };
+    };
+    "assets/src/assets/AlMulk_AlGhamdi/067009.mp3" =     {
+        hash2 = {length = 32, bytes = 0x51e0e6a5 b3d18770 e1f49a3a 78bc6d7a ... efa357b2 400c8dbc };
+    };
+    "assets/src/assets/AlMulk_AlGhamdi/067010.mp3" =     {
+        hash2 = {length = 32, bytes = 0xd315cce0 47fa6878 d15ec24a 6cd77fb3 ... 652de1d1 f9c0d202 };
+    };
+    "assets/src/assets/AlMulk_AlGhamdi/067011.mp3" =     {
+        hash2 = {length = 32, bytes = 0x8793996c 2affffd6 95f0f3e1 4000732b ... 3305269b 31b8952e };
+    };
+    "assets/src/assets/AlMulk_AlGhamdi/067012.mp3" =     {
+        hash2 = {length = 32, bytes = 0xac3a3ba7 4bdbbce4 cd93587b 25283e3a ... 3dfbe503 fd2f1c4e };
+    };
+    "assets/src/assets/AlMulk_AlGhamdi/067013.mp3" =     {
+        hash2 = {length = 32, bytes = 0x9701f88d 5a6b04ad 36c100d1 112923bf ... cf596b17 1ec5d4e6 };
+    };
+    "assets/src/assets/AlMulk_AlGhamdi/067014.mp3" =     {
+        hash2 = {length = 32, bytes = 0xffada66c db80641e 5c812df4 9ff22461 ... c67702d3 785954bb };
+    };
+    "assets/src/assets/AlMulk_AlGhamdi/067015.mp3" =     {
+        hash2 = {length = 32, bytes = 0x0db9eb19 d49d1c78 5e304abe 4e9c89bb ... 4d686829 a1e5f914 };
+    };
+    "assets/src/assets/AlMulk_AlGhamdi/067016.mp3" =     {
+        hash2 = {length = 32, bytes = 0xfa42272f e71baa21 6dc4de01 58f2d57f ... 3559c1cf a5ca00ff };
+    };
+    "assets/src/assets/AlMulk_AlGhamdi/067017.mp3" =     {
+        hash2 = {length = 32, bytes = 0xb9b16662 2febe012 86f2167d 089fd60c ... 91f9d585 afe4e291 };
+    };
+    "assets/src/assets/AlMulk_AlGhamdi/067018.mp3" =     {
+        hash2 = {length = 32, bytes = 0xf78774c1 35f15a35 462f1163 8ee3500a ... 31e23fd9 d400a315 };
+    };
+    "assets/src/assets/AlMulk_AlGhamdi/067019.mp3" =     {
+        hash2 = {length = 32, bytes = 0xa82d174d 2d2bd8a5 de07d021 b340bb31 ... 16c4f457 2c216451 };
+    };
+    "assets/src/assets/AlMulk_AlGhamdi/067020.mp3" =     {
+        hash2 = {length = 32, bytes = 0xd57bfcbf cc1446bb 2fa4c4b2 af2c1d6a ... d9b1a635 cbdf557c };
+    };
+    "assets/src/assets/AlMulk_AlGhamdi/067021.mp3" =     {
+        hash2 = {length = 32, bytes = 0xf86205dc 5cd37995 bf20a690 9646e3f1 ... 33ef119b b8ea89c2 };
+    };
+    "assets/src/assets/AlMulk_AlGhamdi/067022.mp3" =     {
+        hash2 = {length = 32, bytes = 0x0824aff8 8a9e2081 d47f4b5b 179fc188 ... 9d9e599b 4953cab0 };
+    };
+    "assets/src/assets/AlMulk_AlGhamdi/067023.mp3" =     {
+        hash2 = {length = 32, bytes = 0x9c9c3547 a40311d9 1a958de8 50a21b33 ... 82557eb0 309b6210 };
+    };
+    "assets/src/assets/AlMulk_AlGhamdi/067024.mp3" =     {
+        hash2 = {length = 32, bytes = 0xacdee373 8a64edd6 9ea49652 0ae7cb3a ... f54c66ed 83200ec2 };
+    };
+    "assets/src/assets/AlMulk_AlGhamdi/067025.mp3" =     {
+        hash2 = {length = 32, bytes = 0x78712784 d07e2484 9cf65e64 f9897c48 ... 1ea1c874 61d973b0 };
+    };
+    "assets/src/assets/AlMulk_AlGhamdi/067026.mp3" =     {
+        hash2 = {length = 32, bytes = 0x52b15b09 7711ebad 2f43a406 d83b5dda ... 6044824a a3c5dd41 };
+    };
+    "assets/src/assets/AlMulk_AlGhamdi/067027.mp3" =     {
+        hash2 = {length = 32, bytes = 0x86c6381c f37a3435 54c326ef ec48606a ... c5afa757 7f93fdb5 };
+    };
+    "assets/src/assets/AlMulk_AlGhamdi/067028.mp3" =     {
+        hash2 = {length = 32, bytes = 0x947ec9ba dc193dc3 a9e262c6 87db4739 ... 12fe87c1 651cd301 };
+    };
+    "assets/src/assets/AlMulk_AlGhamdi/067029.mp3" =     {
+        hash2 = {length = 32, bytes = 0xacc65a70 d13fdf88 75c94977 241c433e ... f2545518 2ce0370c };
+    };
+    "assets/src/assets/AlMulk_AlGhamdi/067030.mp3" =     {
+        hash2 = {length = 32, bytes = 0xeceba818 36ea9a3d 50921d9b e335385b ... dc4e3fc9 ae627b33 };
+    };
+    "assets/src/assets/IQRA2background.png" =     {
+        hash2 = {length = 32, bytes = 0xca519a4b 59dfdb10 b0c87364 62a04974 ... b4f8eac4 a5a4319a };
+    };
+    "assets/src/assets/IQRA2iconArabicoctagon.png" =     {
+        hash2 = {length = 32, bytes = 0x34e50bfb 47716a4e cf77975c 5a2b7d71 ... 137ee36b 87b71fe3 };
+    };
+    "assets/src/assets/IQRA2iconoctagon.png" =     {
+        hash2 = {length = 32, bytes = 0x2e76f399 a7e2763c 4e2146a3 b7eb01d1 ... 9629a860 9bd310f0 };
+    };
+    "assets/src/assets/app_icons/audio.png" =     {
+        hash2 = {length = 32, bytes = 0xc4581f7d 1e93dcfa 8770e50c aa6c850a ... 7d78b6af f25744ab };
+    };
+    "assets/src/assets/app_icons/continue.png" =     {
+        hash2 = {length = 32, bytes = 0x7048eae1 04afe1dd 82386022 de8611fd ... 643db8d5 52e48984 };
+    };
+    "assets/src/assets/app_icons/down-up.png" =     {
+        hash2 = {length = 32, bytes = 0x383fb3a0 273787ec 2bd32c68 94137bc3 ... 96e39eca a7d6bd94 };
+    };
+    "assets/src/assets/app_icons/information.png" =     {
+        hash2 = {length = 32, bytes = 0x37f6b207 44db450a 8d4a5e94 cce2a2ad ... ba37cbe3 f2557c46 };
+    };
+    "assets/src/assets/app_icons/mic-off.png" =     {
+        hash2 = {length = 32, bytes = 0xcff74a2f 351847f9 4f1cae74 165ed928 ... 23e2ca8c 3056f2a2 };
+    };
+    "assets/src/assets/app_icons/mic-on.png" =     {
+        hash2 = {length = 32, bytes = 0x88e3437d 42904003 d18422f5 b249b59e ... cb05bfe9 792a8cdb };
+    };
+    "assets/src/assets/app_icons/navigation.png" =     {
+        hash2 = {length = 32, bytes = 0xfa471252 f443fc67 8d39ac65 77e7da38 ... 2200b7d3 07468124 };
+    };
+    "assets/src/assets/app_icons/note.png" =     {
+        hash2 = {length = 32, bytes = 0x5f584741 86e54778 9a02910a 32be7a2e ... 53c7d542 80ce084c };
+    };
+    "assets/src/assets/app_icons/remove.png" =     {
+        hash2 = {length = 32, bytes = 0xdf93a6f3 35c7c2f0 943514af b6eaaa91 ... 94e2f1bc 9d1acc0f };
+    };
+    "assets/src/assets/app_icons/rename.png" =     {
+        hash2 = {length = 32, bytes = 0x8fdb907b 02c89280 6e9f1451 31b3b041 ... be52966e b758b4f0 };
+    };
+    "assets/src/assets/app_icons/search.png" =     {
+        hash2 = {length = 32, bytes = 0xd8f6ff1f c369a1e0 1a42b015 e5574df9 ... 856a9a14 1f877db7 };
+    };
+    "assets/src/assets/app_icons/select.png" =     {
+        hash2 = {length = 32, bytes = 0x0d5b7f94 4c3ace6b 6a7cb98a d2d48683 ... 26cd92af 7f3ca01c };
+    };
+    "assets/src/assets/app_icons/settings.png" =     {
+        hash2 = {length = 32, bytes = 0x032d38ec af10cb9e b1b29ed3 08bebb61 ... a85ffcaa c4a4370a };
+    };
+    "assets/src/assets/app_icons/share.png" =     {
+        hash2 = {length = 32, bytes = 0x84980356 00065bd8 24131e81 d95dbd11 ... 5bf8ff09 344811da };
+    };
+    "assets/src/assets/app_icons/slider.png" =     {
+        hash2 = {length = 32, bytes = 0xb9459b94 dbaed021 5870eb71 7da3b6ba ... 96466250 7fcb35e4 };
+    };
+    "assets/src/assets/app_icons/translation.png" =     {
+        hash2 = {length = 32, bytes = 0xeb1d3105 baf778b4 92c96d1d 63b92272 ... 6aa0055f 70787838 };
+    };
+    "assets/src/assets/openQuran.png" =     {
+        hash2 = {length = 32, bytes = 0x09579a7a c9b8d670 da1fe777 9fd424db ... 8254b1b5 2ae6720f };
+    };
+    "boost_privacy.bundle/Info.plist" =     {
+        hash2 = {length = 32, bytes = 0x7021742d 5d7b5069 201e3076 e849f80f ... 8141f603 3d10e1a5 };
+    };
+    "embedded.mobileprovision" =     {
+        hash2 = {length = 32, bytes = 0x1f20f636 c2be37c3 976a0a01 06344a01 ... 597381e0 40c02620 };
+    };
+    "glog_privacy.bundle/Info.plist" =     {
+        hash2 = {length = 32, bytes = 0xc649a46d 22c0d201 6c105b7f 43912308 ... 7ff526d3 6310bc60 };
+    };
+    "main.jsbundle" =     {
+        hash2 = {length = 32, bytes = 0x48f609d9 1655ef43 74b21568 d1f8a11f ... ea2a70be 3c801452 };
+    };
+}, AnyHashable("rules2"): {
+    ".*\\.dSYM($|/)" =     {
+        weight = 11;
+    };
+    "^(.*/)?\\.DS_Store$" =     {
+        omit = 1;
+        weight = 2000;
+    };
+    "^.*" = 1;
+    "^.*\\.lproj/" =     {
+        optional = 1;
+        weight = 1000;
+    };
+    "^.*\\.lproj/locversion.plist$" =     {
+        omit = 1;
+        weight = 1100;
+    };
+    "^Base\\.lproj/" =     {
+        weight = 1010;
+    };
+    "^Info\\.plist$" =     {
+        omit = 1;
+        weight = 20;
+    };
+    "^PkgInfo$" =     {
+        omit = 1;
+        weight = 20;
+    };
+    "^embedded\\.provisionprofile$" =     {
+        weight = 20;
+    };
+    "^version\\.plist$" =     {
+        weight = 20;
+    };
+}, AnyHashable("files"): {
+    "001001.mp3" = {length = 20, bytes = 0x9a949eb6e3e85c2973f80c21e7f7cb8ea633211d};
+    "001002.mp3" = {length = 20, bytes = 0x9392e23f919a2645a5cbfeac6411aa1127194f33};
+    "001003.mp3" = {length = 20, bytes = 0xb7bca9ee38711128d09b48c5cba2db9655d987ac};
+    "001004.mp3" = {length = 20, bytes = 0x56f1fbed1081713e1ae62713b17a2bdb17305b98};
+    "001005.mp3" = {length = 20, bytes = 0x255bcb3425b6042e73c09d102b950d7dc88a337c};
+    "001006.mp3" = {length = 20, bytes = 0x05499117d35a568f740755f881bd55db959b718e};
+    "001007.mp3" = {length = 20, bytes = 0x17bdee80da5ba53adfd0ba14e5f82aef12e1c505};
+    "067001.mp3" = {length = 20, bytes = 0x1993d060825b5ba438f22b3834269026ea932ef9};
+    "067002.mp3" = {length = 20, bytes = 0xfcfab6d3e23378f6877eeae57b0356c90bb88d70};
+    "067003.mp3" = {length = 20, bytes = 0x0fe1debdac39bb98d78d3c5aba721f6f976efdd1};
+    "067004.mp3" = {length = 20, bytes = 0x09ced665b8c0a4b406687a812086b0f3bc802f08};
+    "067005.mp3" = {length = 20, bytes = 0x3c1da0219da07a13f4ea67a92e41644496be8c4a};
+    "067006.mp3" = {length = 20, bytes = 0xe6c2861e46af6568e493efe5b0ef18ba0fb07b8d};
+    "067007.mp3" = {length = 20, bytes = 0xf60612a769c3a8eb5b50e0539d8c662bedab9e5f};
+    "067008.mp3" = {length = 20, bytes = 0x8438bc0caded8ce0266a22207a8fe23f30dd6419};
+    "067009.mp3" = {length = 20, bytes = 0x6e227cd35bc8541db700069e512d5c396cff5efc};
+    "067010.mp3" = {length = 20, bytes = 0x784cbd54973ee6ce7c855e4d16bddb351a818400};
+    "067011.mp3" = {length = 20, bytes = 0x167fa275bba586938e59f9f14b2a9e2eda7c3082};
+    "067012.mp3" = {length = 20, bytes = 0x40d47e2433d5eb7ddc002d506e4445fea1369f3c};
+    "067013.mp3" = {length = 20, bytes = 0x8ebf09e65eb5793d6502a6926874ebb7e8de9697};
+    "067014.mp3" = {length = 20, bytes = 0x0f2635a599c079ce8062881f8a66d5b178fe30b6};
+    "067015.mp3" = {length = 20, bytes = 0x39af5c3b0980eb4dc473c588e2c62d101d59c228};
+    "067016.mp3" = {length = 20, bytes = 0xe9aa8a2bf0f0c23c6cec5f4d1fc0b2a46eef1cc3};
+    "067017.mp3" = {length = 20, bytes = 0x590c2ad450c92b281939ac0fc42743102a4e06fb};
+    "067018.mp3" = {length = 20, bytes = 0x04e329ec220f9d73c4c0f46c9f55eb07aae9a2e1};
+    "067019.mp3" = {length = 20, bytes = 0x7cdd1a46169c5655a0cdd409da46c2b67631cded};
+    "067020.mp3" = {length = 20, bytes = 0x42f6120ba8e1e0f20c43d128ad65b4c96e37caa9};
+    "067021.mp3" = {length = 20, bytes = 0x3e0e5681d32282680b61569c2a876497f40c1fde};
+    "067022.mp3" = {length = 20, bytes = 0x02949fc63b50260fd8223f6228974669fe1458a6};
+    "067023.mp3" = {length = 20, bytes = 0xc3cfa8cd1161c3ff934fdea107032f75f3ac16ad};
+    "067024.mp3" = {length = 20, bytes = 0x2b0454fcc4e4fa37fc2360e6eb8b278738d398ff};
+    "067025.mp3" = {length = 20, bytes = 0xe77d5805e5c9fb6bad5dfb7e9727d40f6a99a5e2};
+    "067026.mp3" = {length = 20, bytes = 0x9d45b9412580da1beeaf08dd877068498e155cb5};
+    "067027.mp3" = {length = 20, bytes = 0x2d680f9d87c100ff9524bd0b2836416628758fce};
+    "067028.mp3" = {length = 20, bytes = 0xc7477444ad455d0374a05cc7ea5e3beeab4a123d};
+    "067029.mp3" = {length = 20, bytes = 0x43019850b96c37a6c850213d1803c605de0baa08};
+    "067030.mp3" = {length = 20, bytes = 0xe6696662090b2a0bee53df45dae498b6e2cff633};
+    "AntDesign.ttf" = {length = 20, bytes = 0x4e77868439280fb434d4697c7b911271406c81f3};
+    "AppIcon60x60@2x.png" = {length = 20, bytes = 0xd035c68db9970f459562120d2dc0df6e3ba27989};
+    "Assets.car" = {length = 20, bytes = 0x02f5c09898452c258c83d7165d3a4c846b9c9306};
+    "Entypo.ttf" = {length = 20, bytes = 0x12b5670eb178138f77285d5f2c246d3cc5fa67d6};
+    "EvilIcons.ttf" = {length = 20, bytes = 0x91d377ea3cf47490b256c2ed081704a7dabdae0c};
+    "Feather.ttf" = {length = 20, bytes = 0xe6604258b1ced5efd51360875d782fca65381d47};
+    "FontAwesome.ttf" = {length = 20, bytes = 0x13b1eab65a983c7a73bc7997c479d66943f7c6cb};
+    "FontAwesome5_Brands.ttf" = {length = 20, bytes = 0x3fa2d67cef22da5c3f3eb5730c6afbd6fecf0372};
+    "FontAwesome5_Regular.ttf" = {length = 20, bytes = 0x7d849a3981a716e2ba4a84634bc57d0b8054a6a3};
+    "FontAwesome5_Solid.ttf" = {length = 20, bytes = 0xc1b9fae262f42868c075ac865a8ab34920e20a2c};
+    "FontAwesome6_Brands.ttf" = {length = 20, bytes = 0x7ce89c71d5a51ac65b159c71422783dd86529c66};
+    "FontAwesome6_Regular.ttf" = {length = 20, bytes = 0x775e2ecfc18d22b177274453d4c014ca6be63208};
+    "FontAwesome6_Solid.ttf" = {length = 20, bytes = 0x2b8e11389d98122399667cf64941eb58497dc128};
+    "Fontisto.ttf" = {length = 20, bytes = 0xc090a3ec96a3f1bb9b615c2f3f204ce0dcdcdbc3};
+    "Foundation.ttf" = {length = 20, bytes = 0x4b2bce6c792493a4a5716b6fec2dbefe89492c3f};
+    "Info.plist" = {length = 20, bytes = 0x85b3dd00bc50af59f57cde9008741b4c172c1775};
+    "Ionicons.ttf" = {length = 20, bytes = 0x86e07c3d974eb09099e6e5a9b3b8310303cf0feb};
+    "KSAHeavy.ttf" = {length = 20, bytes = 0xdb21382deec05ca93f4c9633d05662987992b4f5};
+    "LaunchScreen.storyboardc/01J-lp-oVM-view-Ze5-6b-2t3.nib" = {length = 20, bytes = 0x08b2f795104096117d7d4db1a381010ce0f79ba2};
+    "LaunchScreen.storyboardc/Info.plist" = {length = 20, bytes = 0x9f6b7c82c0e97c4e979211b7d69ec84094714f15};
+    "LaunchScreen.storyboardc/UIViewController-01J-lp-oVM.nib" = {length = 20, bytes = 0x65580cd7e2b065c667c2181a23417b06dd5b6b67};
+    "MaterialCommunityIcons.ttf" = {length = 20, bytes = 0x4c2a838b00dbb5e8bb1b368fce0de534e8eb241c};
+    "MaterialIcons.ttf" = {length = 20, bytes = 0x7e02c3f005532ff4d24148567c84089756a7848a};
+    "Montserrat-Bold.ttf" = {length = 20, bytes = 0xbf257f6f91f6522eccea6d4f28d57bb118c98729};
+    "Montserrat-Regular.ttf" = {length = 20, bytes = 0x9ca420aa453eb243037970c0c1c1adfe289f510f};
+    "Octicons.ttf" = {length = 20, bytes = 0x56acefc0731f35ee23b195b1c8cb5fa94a0db97b};
+    PkgInfo = {length = 20, bytes = 0x9f9eea0cfe2d65f2c3d6b092e375b40782d08f31};
+    "PrivacyInfo.xcprivacy" = {length = 20, bytes = 0xa5abfcb1df0e51dde03491f2a6ff34e3bceabdc5};
+    "RCT-Folly_privacy.bundle/Info.plist" = {length = 20, bytes = 0x0cc10ef497216a290f2943f1ac4f269125030d12};
+    "RNCAsyncStorage_resources.bundle/Info.plist" = {length = 20, bytes = 0xfc9628a8572179daa26f759fe52c8b02cba34d13};
+    "RNCAsyncStorage_resources.bundle/PrivacyInfo.xcprivacy" = {length = 20, bytes = 0xb0f0dfc82c17545c123fc70645646c9296e55a03};
+    "RNDeviceInfoPrivacyInfo.bundle/Info.plist" = {length = 20, bytes = 0x62431baff43d46d6859eb3978d652be9894ea326};
+    "RNDeviceInfoPrivacyInfo.bundle/PrivacyInfo.xcprivacy" = {length = 20, bytes = 0x9bc68d2868022d61ed0505a89e0e31f33b0d6a78};
+    "RNSVGFilters.bundle/Info.plist" = {length = 20, bytes = 0x15a672ff032505eb2d93c46d986b4c95ffaa9638};
+    "RNSVGFilters.bundle/RNSVGArithmeticFilter.iphoneos.metallib" = {length = 20, bytes = 0xf952dec4fcc78214b9fb0199da8dcf6f887390ae};
+    "RNSVGFilters.bundle/RNSVGCompositeXor.iphoneos.metallib" = {length = 20, bytes = 0xb8187dac3ecfd0410e2c1b6576e1fd5f771112c3};
+    "React-Core_privacy.bundle/Info.plist" = {length = 20, bytes = 0x9d5bfdb9dea6697bd0fe33928025fbe9e6e3c01c};
+    "React-Core_privacy.bundle/PrivacyInfo.xcprivacy" = {length = 20, bytes = 0x65a85c3a24d211c24976f361d31aa000a3ea6ccb};
+    "React-cxxreact_privacy.bundle/Info.plist" = {length = 20, bytes = 0x64a6433bff1835aa91126add202610e6c36e6d5b};
+    "React-cxxreact_privacy.bundle/PrivacyInfo.xcprivacy" = {length = 20, bytes = 0x77125015d43bede7e7064074541666b886a62788};
+    "SimpleLineIcons.ttf" = {length = 20, bytes = 0x9ffb81a5a11112e292f2cc323e98486bad597599};
+    "UthmanTNB_v2-0.ttf" = {length = 20, bytes = 0xbbf26780ec4e079b5a440f2a46378080d752600d};
+    "UthmanTN_v2-0.ttf" = {length = 20, bytes = 0xb7f621480cd715885719fdbc5a16521447f4c7f3};
+    "Zocial.ttf" = {length = 20, bytes = 0x6a48a962b06cc3acbdfd61df0d9a34744eea5e8d};
+    "assets/node_modules/@react-navigation/elements/lib/module/assets/back-icon-mask.png" = {length = 20, bytes = 0xa1744b39a0eda025e4c8b572c6fd019e18607bb8};
+    "assets/node_modules/@react-navigation/elements/lib/module/assets/back-icon.png" = {length = 20, bytes = 0x91e2ce8b58a725d5ecd084522a75eaca15b9ec0c};
+    "assets/node_modules/@react-navigation/elements/lib/module/assets/back-icon@2x.png" = {length = 20, bytes = 0xad2bc6f26e2e3cc488b4872c205f8ddad0c90fc5};
+    "assets/node_modules/@react-navigation/elements/lib/module/assets/back-icon@3x.png" = {length = 20, bytes = 0xf24146f15bfb1dfaf0e3255c16b85485b1e27810};
+    "assets/node_modules/@react-navigation/elements/lib/module/assets/clear-icon.png" = {length = 20, bytes = 0x2958c643482f074764f9d3c9453fbae5c46d578a};
+    "assets/node_modules/@react-navigation/elements/lib/module/assets/clear-icon@2x.png" = {length = 20, bytes = 0x2d503d58f6f9b3484e444e7b5480a362f15c4d1a};
+    "assets/node_modules/@react-navigation/elements/lib/module/assets/clear-icon@3x.png" = {length = 20, bytes = 0xb5718082c5e9687ab51045c16bbb52e2e13c05ef};
+    "assets/node_modules/@react-navigation/elements/lib/module/assets/close-icon.png" = {length = 20, bytes = 0xf12b4590aed6662658c03a876ebac07f3ade8407};
+    "assets/node_modules/@react-navigation/elements/lib/module/assets/close-icon@2x.png" = {length = 20, bytes = 0x3c7ec73d74742832ab10010dc827bf8c40e31050};
+    "assets/node_modules/@react-navigation/elements/lib/module/assets/close-icon@3x.png" = {length = 20, bytes = 0xcc58502572586a5b03253d55363e2b7189d6488f};
+    "assets/node_modules/@react-navigation/elements/lib/module/assets/search-icon.png" = {length = 20, bytes = 0xa7d893de300737a3703700ed8ab1e9707725904b};
+    "assets/node_modules/@react-navigation/elements/lib/module/assets/search-icon@2x.png" = {length = 20, bytes = 0x44b676bad17ab23d7d586f6a6041495db4dd7fc5};
+    "assets/node_modules/@react-navigation/elements/lib/module/assets/search-icon@3x.png" = {length = 20, bytes = 0x03c3b242263584cc0294f8a1067823016c2074b0};
+    "assets/src/assets/AlAlaq_MostafaIsmaeel/096001.mp3" = {length = 20, bytes = 0x1538df33801283c677d7bccb521321c44acdb266};
+    "assets/src/assets/AlAlaq_MostafaIsmaeel/096002.mp3" = {length = 20, bytes = 0x26208c9c6c3a68602fe2b67db57f583ccb1285a8};
+    "assets/src/assets/AlAlaq_MostafaIsmaeel/096003.mp3" = {length = 20, bytes = 0x65d0d502b858abcd5e1db08ff91414e3b3388534};
+    "assets/src/assets/AlAlaq_MostafaIsmaeel/096004.mp3" = {length = 20, bytes = 0xbb165b0a96c1d9ca94cb521cdf0184765f8a6373};
+    "assets/src/assets/AlAlaq_MostafaIsmaeel/096005.mp3" = {length = 20, bytes = 0x5809433a67c2df7bffc94ba0ade9fab4d7b4b76e};
+    "assets/src/assets/AlAlaq_MostafaIsmaeel/096006.mp3" = {length = 20, bytes = 0x462eb35e87048a22d4114f7c8768ed5fa2338150};
+    "assets/src/assets/AlAlaq_MostafaIsmaeel/096007.mp3" = {length = 20, bytes = 0x64dbb06fb5e9da2abf91b9de836edc4c53688849};
+    "assets/src/assets/AlAlaq_MostafaIsmaeel/096008.mp3" = {length = 20, bytes = 0x2c214aa32690a57041fbcfec44b92b8c86a373e8};
+    "assets/src/assets/AlAlaq_MostafaIsmaeel/096009.mp3" = {length = 20, bytes = 0xae2e4c1db05c9052e2358eb69bb3f34c01a81867};
+    "assets/src/assets/AlAlaq_MostafaIsmaeel/096010.mp3" = {length = 20, bytes = 0xfc7cf40cafe2f4077288388be65269264f2c8035};
+    "assets/src/assets/AlAlaq_MostafaIsmaeel/096011.mp3" = {length = 20, bytes = 0x8249520f3f0ce1cfc2dcb340594aa8c3533a47a9};
+    "assets/src/assets/AlAlaq_MostafaIsmaeel/096012.mp3" = {length = 20, bytes = 0x6ed81aee7918383c8d8c09d8ac9c2b3be4c7cfcc};
+    "assets/src/assets/AlAlaq_MostafaIsmaeel/096013.mp3" = {length = 20, bytes = 0x60200091d18dcd754db93a19f62f643b6d91eb2c};
+    "assets/src/assets/AlAlaq_MostafaIsmaeel/096014.mp3" = {length = 20, bytes = 0xe0e4b44b184a6ae056039d894f430d7cfdeabc4b};
+    "assets/src/assets/AlAlaq_MostafaIsmaeel/096015.mp3" = {length = 20, bytes = 0x9d9a72841856270ac1c7c2cb08c2e07a22a7d23d};
+    "assets/src/assets/AlAlaq_MostafaIsmaeel/096016.mp3" = {length = 20, bytes = 0x2e3e07f43fe3a77700ea2755a9cd44c41b21dd5c};
+    "assets/src/assets/AlAlaq_MostafaIsmaeel/096017.mp3" = {length = 20, bytes = 0x2cf5aec28924aa2f7ee38a0c9739056e96882af8};
+    "assets/src/assets/AlAlaq_MostafaIsmaeel/096018.mp3" = {length = 20, bytes = 0x63b24575860523162720f8316b64b2bda41df27c};
+    "assets/src/assets/AlAlaq_MostafaIsmaeel/096019.mp3" = {length = 20, bytes = 0x8577bf786a7fd4b717d076d95d22594607fd04d7};
+    "assets/src/assets/AlFatiha_Mishary/001001.mp3" = {length = 20, bytes = 0x9a949eb6e3e85c2973f80c21e7f7cb8ea633211d};
+    "assets/src/assets/AlFatiha_Mishary/001002.mp3" = {length = 20, bytes = 0x9392e23f919a2645a5cbfeac6411aa1127194f33};
+    "assets/src/assets/AlFatiha_Mishary/001003.mp3" = {length = 20, bytes = 0xb7bca9ee38711128d09b48c5cba2db9655d987ac};
+    "assets/src/assets/AlFatiha_Mishary/001004.mp3" = {length = 20, bytes = 0x56f1fbed1081713e1ae62713b17a2bdb17305b98};
+    "assets/src/assets/AlFatiha_Mishary/001005.mp3" = {length = 20, bytes = 0x255bcb3425b6042e73c09d102b950d7dc88a337c};
+    "assets/src/assets/AlFatiha_Mishary/001006.mp3" = {length = 20, bytes = 0x05499117d35a568f740755f881bd55db959b718e};
+    "assets/src/assets/AlFatiha_Mishary/001007.mp3" = {length = 20, bytes = 0x17bdee80da5ba53adfd0ba14e5f82aef12e1c505};
+    "assets/src/assets/AlMulk_AlGhamdi/067001.mp3" = {length = 20, bytes = 0x1993d060825b5ba438f22b3834269026ea932ef9};
+    "assets/src/assets/AlMulk_AlGhamdi/067002.mp3" = {length = 20, bytes = 0xfcfab6d3e23378f6877eeae57b0356c90bb88d70};
+    "assets/src/assets/AlMulk_AlGhamdi/067003.mp3" = {length = 20, bytes = 0x0fe1debdac39bb98d78d3c5aba721f6f976efdd1};
+    "assets/src/assets/AlMulk_AlGhamdi/067004.mp3" = {length = 20, bytes = 0x09ced665b8c0a4b406687a812086b0f3bc802f08};
+    "assets/src/assets/AlMulk_AlGhamdi/067005.mp3" = {length = 20, bytes = 0x3c1da0219da07a13f4ea67a92e41644496be8c4a};
+    "assets/src/assets/AlMulk_AlGhamdi/067006.mp3" = {length = 20, bytes = 0xe6c2861e46af6568e493efe5b0ef18ba0fb07b8d};
+    "assets/src/assets/AlMulk_AlGhamdi/067007.mp3" = {length = 20, bytes = 0xf60612a769c3a8eb5b50e0539d8c662bedab9e5f};
+    "assets/src/assets/AlMulk_AlGhamdi/067008.mp3" = {length = 20, bytes = 0x8438bc0caded8ce0266a22207a8fe23f30dd6419};
+    "assets/src/assets/AlMulk_AlGhamdi/067009.mp3" = {length = 20, bytes = 0x6e227cd35bc8541db700069e512d5c396cff5efc};
+    "assets/src/assets/AlMulk_AlGhamdi/067010.mp3" = {length = 20, bytes = 0x784cbd54973ee6ce7c855e4d16bddb351a818400};
+    "assets/src/assets/AlMulk_AlGhamdi/067011.mp3" = {length = 20, bytes = 0x167fa275bba586938e59f9f14b2a9e2eda7c3082};
+    "assets/src/assets/AlMulk_AlGhamdi/067012.mp3" = {length = 20, bytes = 0x40d47e2433d5eb7ddc002d506e4445fea1369f3c};
+    "assets/src/assets/AlMulk_AlGhamdi/067013.mp3" = {length = 20, bytes = 0x8ebf09e65eb5793d6502a6926874ebb7e8de9697};
+    "assets/src/assets/AlMulk_AlGhamdi/067014.mp3" = {length = 20, bytes = 0x0f2635a599c079ce8062881f8a66d5b178fe30b6};
+    "assets/src/assets/AlMulk_AlGhamdi/067015.mp3" = {length = 20, bytes = 0x39af5c3b0980eb4dc473c588e2c62d101d59c228};
+    "assets/src/assets/AlMulk_AlGhamdi/067016.mp3" = {length = 20, bytes = 0xe9aa8a2bf0f0c23c6cec5f4d1fc0b2a46eef1cc3};
+    "assets/src/assets/AlMulk_AlGhamdi/067017.mp3" = {length = 20, bytes = 0x590c2ad450c92b281939ac0fc42743102a4e06fb};
+    "assets/src/assets/AlMulk_AlGhamdi/067018.mp3" = {length = 20, bytes = 0x04e329ec220f9d73c4c0f46c9f55eb07aae9a2e1};
+    "assets/src/assets/AlMulk_AlGhamdi/067019.mp3" = {length = 20, bytes = 0x7cdd1a46169c5655a0cdd409da46c2b67631cded};
+    "assets/src/assets/AlMulk_AlGhamdi/067020.mp3" = {length = 20, bytes = 0x42f6120ba8e1e0f20c43d128ad65b4c96e37caa9};
+    "assets/src/assets/AlMulk_AlGhamdi/067021.mp3" = {length = 20, bytes = 0x3e0e5681d32282680b61569c2a876497f40c1fde};
+    "assets/src/assets/AlMulk_AlGhamdi/067022.mp3" = {length = 20, bytes = 0x02949fc63b50260fd8223f6228974669fe1458a6};
+    "assets/src/assets/AlMulk_AlGhamdi/067023.mp3" = {length = 20, bytes = 0xc3cfa8cd1161c3ff934fdea107032f75f3ac16ad};
+    "assets/src/assets/AlMulk_AlGhamdi/067024.mp3" = {length = 20, bytes = 0x2b0454fcc4e4fa37fc2360e6eb8b278738d398ff};
+    "assets/src/assets/AlMulk_AlGhamdi/067025.mp3" = {length = 20, bytes = 0xe77d5805e5c9fb6bad5dfb7e9727d40f6a99a5e2};
+    "assets/src/assets/AlMulk_AlGhamdi/067026.mp3" = {length = 20, bytes = 0x9d45b9412580da1beeaf08dd877068498e155cb5};
+    "assets/src/assets/AlMulk_AlGhamdi/067027.mp3" = {length = 20, bytes = 0x2d680f9d87c100ff9524bd0b2836416628758fce};
+    "assets/src/assets/AlMulk_AlGhamdi/067028.mp3" = {length = 20, bytes = 0xc7477444ad455d0374a05cc7ea5e3beeab4a123d};
+    "assets/src/assets/AlMulk_AlGhamdi/067029.mp3" = {length = 20, bytes = 0x43019850b96c37a6c850213d1803c605de0baa08};
+    "assets/src/assets/AlMulk_AlGhamdi/067030.mp3" = {length = 20, bytes = 0xe6696662090b2a0bee53df45dae498b6e2cff633};
+    "assets/src/assets/IQRA2background.png" = {length = 20, bytes = 0xe5c99dd3fac79093efc6a1de9b82f4924d42f2dc};
+    "assets/src/assets/IQRA2iconArabicoctagon.png" = {length = 20, bytes = 0x140b45ceee80b8cb98678acf6a09534160f5ab22};
+    "assets/src/assets/IQRA2iconoctagon.png" = {length = 20, bytes = 0x8a59975f0c9671de290eee0dca8e20d43b4253b4};
+    "assets/src/assets/app_icons/audio.png" = {length = 20, bytes = 0x6c75bc3aa5663c46ff01f52722a2065a6e156c54};
+    "assets/src/assets/app_icons/continue.png" = {length = 20, bytes = 0x0f0c9b29c445929cde26d163e1df2e82cd9b47eb};
+    "assets/src/assets/app_icons/down-up.png" = {length = 20, bytes = 0x0c418f6579ff2c94b44ae0a0a5e752d23064d606};
+    "assets/src/assets/app_icons/information.png" = {length = 20, bytes = 0xd341e41bba3b0993c53a02c6e07805fd04ae7d18};
+    "assets/src/assets/app_icons/mic-off.png" = {length = 20, bytes = 0x8b7a8638fec818b9baf185ee395d049f1db07667};
+    "assets/src/assets/app_icons/mic-on.png" = {length = 20, bytes = 0x4b302f020bc6346f9f711a4477b9b9f67d960be8};
+    "assets/src/assets/app_icons/navigation.png" = {length = 20, bytes = 0x42f33dd10e4f95d5dc520f49768f527b7f9acad7};
+    "assets/src/assets/app_icons/note.png" = {length = 20, bytes = 0x818b2a3292c56b4a4fb46e642a7dbcab38f1f302};
+    "assets/src/assets/app_icons/remove.png" = {length = 20, bytes = 0xbebe5d7a6629cbce560b770564db489cf593f778};
+    "assets/src/assets/app_icons/rename.png" = {length = 20, bytes = 0xe78d600d064b3a25bae8c0af9ab0fb6808807002};
+    "assets/src/assets/app_icons/search.png" = {length = 20, bytes = 0xdfec86162d689d9ec59b0fda19abd5ca106b8c22};
+    "assets/src/assets/app_icons/select.png" = {length = 20, bytes = 0x8e87f87e1a02584ce5a23ae6e44fd967e3fa38fe};
+    "assets/src/assets/app_icons/settings.png" = {length = 20, bytes = 0xc5fd8e188d75a45788571fc7376ca0298c1505f5};
+    "assets/src/assets/app_icons/share.png" = {length = 20, bytes = 0xf584d7de4604aeff851534aa1301408fc50c807a};
+    "assets/src/assets/app_icons/slider.png" = {length = 20, bytes = 0x386901337156439624260e7e8b1e71b23d933cfc};
+    "assets/src/assets/app_icons/translation.png" = {length = 20, bytes = 0x22f826bbff083c4d1ecf53d5324b7103c35e7f83};
+    "assets/src/assets/openQuran.png" = {length = 20, bytes = 0xf4e959004ec9c0024c9d8127bcc33be405e43e9b};
+    "boost_privacy.bundle/Info.plist" = {length = 20, bytes = 0xa055aa5fdeb6792db46c58daab91a1099e245eea};
+    "embedded.mobileprovision" = {length = 20, bytes = 0xfb57af02436125637515e4e88ee91d3e2cde835d};
+    "glog_privacy.bundle/Info.plist" = {length = 20, bytes = 0x200ae0e2eceaa5f76e4eda5b867039ceb6db2b8e};
+    "main.jsbundle" = {length = 20, bytes = 0xed8e5b77bf0f0412fdecf6c2bfbba47f9425f787};
+}, AnyHashable("rules"): {
+    "^.*" = 1;
+    "^.*\\.lproj/" =     {
+        optional = 1;
+        weight = 1000;
+    };
+    "^.*\\.lproj/locversion.plist$" =     {
+        omit = 1;
+        weight = 1100;
+    };
+    "^Base\\.lproj/" =     {
+        weight = 1010;
+    };
+    "^version.plist$" = 1;
+}], enableSignatureValidation: true, logAspect: <DVTLogAspect:0x600013b56d60:IDEDistributionPipeline:level=verbose(3):effective-level=verbose(3)>)'
+2025-08-29 04:59:20 +0000  Sending request 7CDD53B7-599B-420D-8621-D9780140F6CA to <https://developerservices2.apple.com/services/v1/certificates> for session <DVTServicesAccountBasedSession: 0x600013af1260; account='<DVTAppleIDBasedDeveloperAccount: 0x6000006e9d00; username='nfreajah@gmail.com'>'>.
+Method: POST
+
+Headers:
+{
+    Accept = "application/vnd.api+json";
+    "Accept-Encoding" = "gzip, deflate";
+    "Content-Length" = 113;
+    "Content-Type" = "application/vnd.api+json";
+    DSESSIONID = 87e442i079921m7srohnnjfm5jg0ti0m5onpet96lm4hiaaio2b;
+    "User-Agent" = Xcode;
+    "X-Apple-App-Info" = "com.apple.gs.xcode.auth";
+    "X-Apple-GS-Token" = "AAAABLwIAAAAAGd0aOARDWdzLnhjb2RlLmF1dGi9AEbZqqqFWQxmwcJIRu9EDRQLyUQvCBn0AnFm6bFNw3owTjFmIJPsNa8lJvafD+rdZQ3EC15RzjWxOxPY3STN0mRcjlX8mWbPR/Dnq3xlJwdvfFBEfqDy6whhIKuOovOy4tfWVP9a+cKutbn2PAmrkr9cekmy";
+    "X-Apple-I-Identity-Id" = "001803-10-71d83f31-3871-45df-9963-32742557cc6b";
+    "X-HTTP-Method-Override" = GET;
+    "X-MMe-Client-Info" = "<MacBookPro16,1> <macOS;15.6.1;24G90> <com.apple.AuthKit/1 (com.apple.dt.Xcode/23792)>";
+    "X-Mme-Device-Id" = "2A97E069-4788-5ECC-9CB5-53074092E6C9";
+    "X-Xcode-Version" = "16.4 (16F6)";
+}
+
+Payload:
+{"urlEncodedQueryParams":"teamId=UYJ823H5DD&filter%5BserialNumber%5D=15291FF821CE9D4DD665712842DF2D33&limit=200"}
+2025-08-29 04:59:21 +0000  Received response for 7CDD53B7-599B-420D-8621-D9780140F6CA @ <https://developerservices2.apple.com/services/v1/certificates>. Code = 0
+2025-08-29 04:59:21 +0000  Response payload: {
+  "data" : [ {
+    "type" : "certificates",
+    "id" : "V25CY2R34T",
+    "attributes" : {
+      "requesterEmail" : "nfreajah@gmail.com",
+      "serialNumber" : "15291FF821CE9D4DD665712842DF2D33",
+      "certificateContent" : "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",
+      "displayName" : "Nadeem Freajah",
+      "requesterLastName" : "Freajah",
+      "csrContent" : null,
+      "machineName" : null,
+      "platform" : null,
+      "requesterFirstName" : "Nadeem",
+      "machineId" : null,
+      "name" : "Apple Distribution: Nadeem Freajah",
+      "responseId" : "1328960e-2487-455f-a26f-c007c1f340ad",
+      "expirationDate" : "2026-08-29T04:49:17.000+00:00",
+      "certificateType" : "DISTRIBUTION_MANAGED"
+    },
+    "links" : {
+      "self" : "https://developerservices2.apple.com:443/services/v1/certificates/V25CY2R34T"
+    }
+  } ],
+  "links" : {
+    "self" : "https://developerservices2.apple.com:443/services/v1/certificates?filter%5BserialNumber%5D=15291FF821CE9D4DD665712842DF2D33&limit=200"
+  },
+  "meta" : {
+    "paging" : {
+      "total" : 1,
+      "limit" : 200
+    }
+  }
+}
+
+2025-08-29 04:59:21 +0000  Sending request CEF39839-9B6D-418C-B21D-B7E0DC20EAE9 to <https://developerservices3.apple.com/services/v1/batch> for session <DVTServicesAccountBasedSession: 0x600013af1260; account='<DVTAppleIDBasedDeveloperAccount: 0x6000006e9d00; username='nfreajah@gmail.com'>'>.
+Method: POST
+
+Headers:
+{
+    Accept = "application/vnd.api+json";
+    "Accept-Encoding" = "gzip, deflate";
+    "Content-Length" = 488;
+    "Content-Type" = "application/vnd.api+json";
+    DSESSIONID = 87e442i079921m7srohnnjfm5jg0ti0m5onpet96lm4hiaaio2b;
+    "User-Agent" = Xcode;
+    "X-Apple-App-Info" = "com.apple.gs.xcode.auth";
+    "X-Apple-GS-Token" = "AAAABLwIAAAAAGd0aOARDWdzLnhjb2RlLmF1dGi9AEbZqqqFWQxmwcJIRu9EDRQLyUQvCBn0AnFm6bFNw3owTjFmIJPsNa8lJvafD+rdZQ3EC15RzjWxOxPY3STN0mRcjlX8mWbPR/Dnq3xlJwdvfFBEfqDy6whhIKuOovOy4tfWVP9a+cKutbn2PAmrkr9cekmy";
+    "X-Apple-I-Identity-Id" = "001803-10-71d83f31-3871-45df-9963-32742557cc6b";
+    "X-MMe-Client-Info" = "<MacBookPro16,1> <macOS;15.6.1;24G90> <com.apple.AuthKit/1 (com.apple.dt.Xcode/23792)>";
+    "X-Mme-Device-Id" = "2A97E069-4788-5ECC-9CB5-53074092E6C9";
+    "X-Xcode-Version" = "16.4 (16F6)";
+}
+
+Payload:
+{"data":{"type":"batch","attributes":{"resourceVersion":"1","resourceList":[{"data":{"attributes":{"digestHash":"5A34756C1E0269BD2E2DAAFDE48F7D20EBAA9761C8F7A3A4034FBCCEE32F4229","cdHashSha256":"5A34756C1E0269BD2E2DAAFDE48F7D20EBAA9761C8F7A3A4034FBCCEE32F4229","teamId":"UYJ823H5DD","name":"0"},"type":"codeSignatures","relationships":{"certificate":{"data":{"id":"V25CY2R34T","type":"certificates"}},"bundleId":{"data":{"id":"H8KUD8378Y","type":"bundleIds"}}}}}],"teamId":"UYJ823H5DD"}}}
+2025-08-29 04:59:21 +0000  Received response for CEF39839-9B6D-418C-B21D-B7E0DC20EAE9 @ <https://developerservices3.apple.com/services/v1/batch>. Code = 0
+2025-08-29 04:59:21 +0000  Response payload: {
+  "data" : {
+    "type" : "batch",
+    "id" : "fc5c64d6-bf54-4b00-9f59-0f90128eb9ad",
+    "attributes" : {
+      "responseId" : "fc5c64d6-bf54-4b00-9f59-0f90128eb9ad",
+      "resourceList" : [ {
+        "type" : "codeSignatures",
+        "id" : "0896ea9e-b12b-444f-84d6-0a8acee60bb3",
+        "attributes" : {
+          "digestHash" : "5A34756C1E0269BD2E2DAAFDE48F7D20EBAA9761C8F7A3A4034FBCCEE32F4229",
+          "cdHashSha256" : "5A34756C1E0269BD2E2DAAFDE48F7D20EBAA9761C8F7A3A4034FBCCEE32F4229",
+          "signature" : "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",
+          "name" : "0",
+          "responseId" : "fc5c64d6-bf54-4b00-9f59-0f90128eb9ad",
+          "cmsSignature" : "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",
+          "timestamp" : false
+        },
+        "relationships" : {
+          "bundleId" : {
+            "data" : {
+              "type" : "bundleIds",
+              "id" : "H8KUD8378Y"
+            },
+            "links" : {
+              "self" : {
+                "href" : "https://developerservices3.apple.com:443/services/v1/codeSignatures/0896ea9e-b12b-444f-84d6-0a8acee60bb3/relationships/bundleId"
+              },
+              "related" : {
+                "href" : "https://developerservices3.apple.com:443/services/v1/codeSignatures/0896ea9e-b12b-444f-84d6-0a8acee60bb3/bundleId"
+              }
+            }
+          },
+          "certificate" : {
+            "data" : {
+              "type" : "certificates",
+              "id" : "V25CY2R34T"
+            },
+            "links" : {
+              "self" : {
+                "href" : "https://developerservices3.apple.com:443/services/v1/codeSignatures/0896ea9e-b12b-444f-84d6-0a8acee60bb3/relationships/certificate"
+              },
+              "related" : {
+                "href" : "https://developerservices3.apple.com:443/services/v1/codeSignatures/0896ea9e-b12b-444f-84d6-0a8acee60bb3/certificate"
+              }
+            }
+          }
+        },
+        "links" : {
+          "self" : {
+            "href" : "https://developerservices3.apple.com:443/services/v1/codeSignatures/0896ea9e-b12b-444f-84d6-0a8acee60bb3"
+          }
+        }
+      } ],
+      "resourceVersion" : "1"
+    },
+    "links" : {
+      "self" : "https://developerservices3.apple.com:443/services/v1/batch/fc5c64d6-bf54-4b00-9f59-0f90128eb9ad"
+    }
+  },
+  "links" : {
+    "self" : "https://developerservices3.apple.com:443/services/v1/batch"
+  }
+}
+
+2025-08-29 04:59:21 +0000  Remote signature for /var/folders/ky/pw2jtzns4hzdjpzsnr54t4zc0000gn/T/XcodeDistPipeline.~~~3q5jLj/Root/Payload/IQRA2.app (arch: arm64) is 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
+2025-08-29 04:59:21 +0000  invoking codesign: <NSConcreteTask: 0x6000139e9a90; launchPath='/usr/bin/codesign', arguments='(
+    "-e",
+    "--edit-cms",
+    "/var/folders/ky/pw2jtzns4hzdjpzsnr54t4zc0000gn/T/cms~~~8L8D2C",
+    "/var/folders/ky/pw2jtzns4hzdjpzsnr54t4zc0000gn/T/XcodeDistPipeline.~~~3q5jLj/Root/Payload/IQRA2.app"
+)'>
+2025-08-29 04:59:21 +0000  codesign output: 
+2025-08-29 04:59:21 +0000  Processing step: IDEDistributionZipODRItemStep
+2025-08-29 04:59:21 +0000  Skipping step: IDEDistributionZipODRItemStep because it said so
+2025-08-29 04:59:21 +0000  Processing step: IDEDistributionCreateIPAStep
+2025-08-29 04:59:21 +0000  Running /usr/bin/rsync '-8aPhhE' '/var/folders/ky/pw2jtzns4hzdjpzsnr54t4zc0000gn/T/XcodeDistPipeline.~~~3q5jLj/Symbols' '--link-dest' '/var/folders/ky/pw2jtzns4hzdjpzsnr54t4zc0000gn/T/XcodeDistPipeline.~~~3q5jLj' '/var/folders/ky/pw2jtzns4hzdjpzsnr54t4zc0000gn/T/XcodeDistPipeline.~~~3q5jLj/Root'
+2025-08-29 04:59:21 +0000  Symbols/
+Symbols/E76678C0-51E6-337C-A57A-129BBBD23DB0.symbols
+2025-08-29 04:59:21 +0000  /usr/bin/rsync exited with 0
+2025-08-29 04:59:21 +0000  Running /usr/bin/ditto '-V' '-c' '-k' '--norsrc' '/var/folders/ky/pw2jtzns4hzdjpzsnr54t4zc0000gn/T/XcodeDistPipeline.~~~3q5jLj/Root' '/var/folders/ky/pw2jtzns4hzdjpzsnr54t4zc0000gn/T/XcodeDistPipeline.~~~3q5jLj/Packages/IQRA2.ipa'
+2025-08-29 04:59:21 +0000  >>> Copying /var/folders/ky/pw2jtzns4hzdjpzsnr54t4zc0000gn/T/XcodeDistPipeline.~~~3q5jLj/Root 
+2025-08-29 04:59:21 +0000  copying file ./Payload/IQRA2.app/_CodeSignature/CodeResources ... 
+2025-08-29 04:59:21 +0000  45931 bytes for ./Payload/IQRA2.app/_CodeSignature/CodeResources
+2025-08-29 04:59:21 +0000  copying file ./Payload/IQRA2.app/Fontisto.ttf ... 
+2025-08-29 04:59:21 +0000  313528 bytes for ./Payload/IQRA2.app/Fontisto.ttf
+copying file ./Payload/IQRA2.app/Octicons.ttf ... 
+2025-08-29 04:59:21 +0000  49404 bytes for ./Payload/IQRA2.app/Octicons.ttf
+copying file ./Payload/IQRA2.app/Feather.ttf ... 
+2025-08-29 04:59:21 +0000  56228 bytes for ./Payload/IQRA2.app/Feather.ttf
+copying file ./Payload/IQRA2.app/IQRA2 ... 
+2025-08-29 04:59:22 +0000  5905984 bytes for ./Payload/IQRA2.app/IQRA2
+copying file ./Payload/IQRA2.app/FontAwesome6_Regular.ttf ... 
+2025-08-29 04:59:22 +0000  67976 bytes for ./Payload/IQRA2.app/FontAwesome6_Regular.ttf
+copying file ./Payload/IQRA2.app/Entypo.ttf ... 
+2025-08-29 04:59:22 +0000  66200 bytes for ./Payload/IQRA2.app/Entypo.ttf
+copying file ./Payload/IQRA2.app/KSAHeavy.ttf ... 
+2025-08-29 04:59:22 +0000  49556 bytes for ./Payload/IQRA2.app/KSAHeavy.ttf
+copying file ./Payload/IQRA2.app/FontAwesome5_Brands.ttf ... 
+2025-08-29 04:59:22 +0000  134040 bytes for ./Payload/IQRA2.app/FontAwesome5_Brands.ttf
+copying file ./Payload/IQRA2.app/MaterialCommunityIcons.ttf ... 
+2025-08-29 04:59:22 +0000  1147844 bytes for ./Payload/IQRA2.app/MaterialCommunityIcons.ttf
+2025-08-29 04:59:22 +0000  copying file ./Payload/IQRA2.app/glog_privacy.bundle/Info.plist ... 
+766 bytes for ./Payload/IQRA2.app/glog_privacy.bundle/Info.plist
+2025-08-29 04:59:22 +0000  copying file ./Payload/IQRA2.app/067003.mp3 ... 
+2025-08-29 04:59:22 +0000  82414 bytes for ./Payload/IQRA2.app/067003.mp3
+copying file ./Payload/IQRA2.app/067017.mp3 ... 
+2025-08-29 04:59:22 +0000  72096 bytes for ./Payload/IQRA2.app/067017.mp3
+copying file ./Payload/IQRA2.app/AppIcon60x60@2x.png ... 
+2025-08-29 04:59:22 +0000  15109 bytes for ./Payload/IQRA2.app/AppIcon60x60@2x.png
+copying file ./Payload/IQRA2.app/067016.mp3 ... 
+2025-08-29 04:59:22 +0000  61124 bytes for ./Payload/IQRA2.app/067016.mp3
+2025-08-29 04:59:22 +0000  copying file ./Payload/IQRA2.app/067002.mp3 ... 
+2025-08-29 04:59:22 +0000  60340 bytes for ./Payload/IQRA2.app/067002.mp3
+copying file ./Payload/IQRA2.app/067028.mp3 ... 
+2025-08-29 04:59:22 +0000  66609 bytes for ./Payload/IQRA2.app/067028.mp3
+2025-08-29 04:59:22 +0000  copying file ./Payload/IQRA2.app/067014.mp3 ... 
+2025-08-29 04:59:22 +0000  28602 bytes for ./Payload/IQRA2.app/067014.mp3
+copying file ./Payload/IQRA2.app/AntDesign.ttf ... 
+2025-08-29 04:59:22 +0000  70344 bytes for ./Payload/IQRA2.app/AntDesign.ttf
+copying file ./Payload/IQRA2.app/067001.mp3 ... 
+2025-08-29 04:59:22 +0000  44797 bytes for ./Payload/IQRA2.app/067001.mp3
+copying file ./Payload/IQRA2.app/067015.mp3 ... 
+2025-08-29 04:59:22 +0000  58511 bytes for ./Payload/IQRA2.app/067015.mp3
+copying file ./Payload/IQRA2.app/067029.mp3 ... 
+2025-08-29 04:59:22 +0000  64781 bytes for ./Payload/IQRA2.app/067029.mp3
+copying file ./Payload/IQRA2.app/067011.mp3 ... 
+2025-08-29 04:59:22 +0000  36569 bytes for ./Payload/IQRA2.app/067011.mp3
+copying file ./Payload/IQRA2.app/067005.mp3 ... 
+2025-08-29 04:59:22 +0000  79670 bytes for ./Payload/IQRA2.app/067005.mp3
+copying file ./Payload/IQRA2.app/Foundation.ttf ... 
+2025-08-29 04:59:22 +0000  56976 bytes for ./Payload/IQRA2.app/Foundation.ttf
+copying file ./Payload/IQRA2.app/Montserrat-Bold.ttf ... 
+2025-08-29 04:59:22 +0000  29560 bytes for ./Payload/IQRA2.app/Montserrat-Bold.ttf
+2025-08-29 04:59:22 +0000  copying file ./Payload/IQRA2.app/Ionicons.ttf ... 
+2025-08-29 04:59:22 +0000  442604 bytes for ./Payload/IQRA2.app/Ionicons.ttf
+2025-08-29 04:59:22 +0000  copying file ./Payload/IQRA2.app/FontAwesome5_Solid.ttf ... 
+2025-08-29 04:59:22 +0000  202744 bytes for ./Payload/IQRA2.app/FontAwesome5_Solid.ttf
+copying file ./Payload/IQRA2.app/FontAwesome5_Regular.ttf ... 
+2025-08-29 04:59:22 +0000  33736 bytes for ./Payload/IQRA2.app/FontAwesome5_Regular.ttf
+2025-08-29 04:59:22 +0000  copying file ./Payload/IQRA2.app/RNDeviceInfoPrivacyInfo.bundle/PrivacyInfo.xcprivacy ... 
+1159 bytes for ./Payload/IQRA2.app/RNDeviceInfoPrivacyInfo.bundle/PrivacyInfo.xcprivacy
+copying file ./Payload/IQRA2.app/RNDeviceInfoPrivacyInfo.bundle/Info.plist ... 
+2025-08-29 04:59:22 +0000  790 bytes for ./Payload/IQRA2.app/RNDeviceInfoPrivacyInfo.bundle/Info.plist
+copying file ./Payload/IQRA2.app/React-cxxreact_privacy.bundle/PrivacyInfo.xcprivacy ... 
+552 bytes for ./Payload/IQRA2.app/React-cxxreact_privacy.bundle/PrivacyInfo.xcprivacy
+2025-08-29 04:59:22 +0000  copying file ./Payload/IQRA2.app/React-cxxreact_privacy.bundle/Info.plist ... 
+789 bytes for ./Payload/IQRA2.app/React-cxxreact_privacy.bundle/Info.plist
+copying file ./Payload/IQRA2.app/067004.mp3 ... 
+2025-08-29 04:59:22 +0000  51459 bytes for ./Payload/IQRA2.app/067004.mp3
+copying file ./Payload/IQRA2.app/067010.mp3 ... 
+2025-08-29 04:59:22 +0000  53157 bytes for ./Payload/IQRA2.app/067010.mp3
+2025-08-29 04:59:22 +0000  copying file ./Payload/IQRA2.app/067006.mp3 ... 
+2025-08-29 04:59:22 +0000  43230 bytes for ./Payload/IQRA2.app/067006.mp3
+copying file ./Payload/IQRA2.app/067012.mp3 ... 
+2025-08-29 04:59:22 +0000  57858 bytes for ./Payload/IQRA2.app/067012.mp3
+copying file ./Payload/IQRA2.app/UthmanTNB_v2-0.ttf ... 
+2025-08-29 04:59:22 +0000  132048 bytes for ./Payload/IQRA2.app/UthmanTNB_v2-0.ttf
+copying file ./Payload/IQRA2.app/FontAwesome.ttf ... 
+2025-08-29 04:59:22 +0000  165548 bytes for ./Payload/IQRA2.app/FontAwesome.ttf
+copying file ./Payload/IQRA2.app/067013.mp3 ... 
+2025-08-29 04:59:22 +0000  53287 bytes for ./Payload/IQRA2.app/067013.mp3
+copying file ./Payload/IQRA2.app/067007.mp3 ... 
+2025-08-29 04:59:22 +0000  48455 bytes for ./Payload/IQRA2.app/067007.mp3
+copying file ./Payload/IQRA2.app/067022.mp3 ... 
+2025-08-29 04:59:22 +0000  102659 bytes for ./Payload/IQRA2.app/067022.mp3
+copying file ./Payload/IQRA2.app/Zocial.ttf ... 
+2025-08-29 04:59:22 +0000  25788 bytes for ./Payload/IQRA2.app/Zocial.ttf
+copying file ./Payload/IQRA2.app/001006.mp3 ... 
+2025-08-29 04:59:22 +0000  89988 bytes for ./Payload/IQRA2.app/001006.mp3
+copying file ./Payload/IQRA2.app/001007.mp3 ... 
+2025-08-29 04:59:22 +0000  212450 bytes for ./Payload/IQRA2.app/001007.mp3
+copying file ./Payload/IQRA2.app/067023.mp3 ... 
+2025-08-29 04:59:22 +0000  65434 bytes for ./Payload/IQRA2.app/067023.mp3
+copying file ./Payload/IQRA2.app/067009.mp3 ... 
+2025-08-29 04:59:22 +0000  116634 bytes for ./Payload/IQRA2.app/067009.mp3
+2025-08-29 04:59:22 +0000  copying file ./Payload/IQRA2.app/RCT-Folly_privacy.bundle/Info.plist ... 
+783 bytes for ./Payload/IQRA2.app/RCT-Folly_privacy.bundle/Info.plist
+copying file ./Payload/IQRA2.app/067021.mp3 ... 
+2025-08-29 04:59:22 +0000  54985 bytes for ./Payload/IQRA2.app/067021.mp3
+copying file ./Payload/IQRA2.app/001005.mp3 ... 
+2025-08-29 04:59:22 +0000  107960 bytes for ./Payload/IQRA2.app/001005.mp3
+copying file ./Payload/IQRA2.app/Assets.car ... 
+2025-08-29 04:59:22 +0000  934127 bytes for ./Payload/IQRA2.app/Assets.car
+copying file ./Payload/IQRA2.app/001004.mp3 ... 
+2025-08-29 04:59:22 +0000  74941 bytes for ./Payload/IQRA2.app/001004.mp3
+copying file ./Payload/IQRA2.app/EvilIcons.ttf ... 
+2025-08-29 04:59:22 +0000  13456 bytes for ./Payload/IQRA2.app/EvilIcons.ttf
+copying file ./Payload/IQRA2.app/067020.mp3 ... 
+2025-08-29 04:59:22 +0000  69613 bytes for ./Payload/IQRA2.app/067020.mp3
+copying file ./Payload/IQRA2.app/067008.mp3 ... 
+2025-08-29 04:59:22 +0000  96128 bytes for ./Payload/IQRA2.app/067008.mp3
+copying file ./Payload/IQRA2.app/067030.mp3 ... 
+2025-08-29 04:59:22 +0000  73794 bytes for ./Payload/IQRA2.app/067030.mp3
+copying file ./Payload/IQRA2.app/067024.mp3 ... 
+2025-08-29 04:59:22 +0000  34218 bytes for ./Payload/IQRA2.app/067024.mp3
+copying file ./Payload/IQRA2.app/067018.mp3 ... 
+2025-08-29 04:59:22 +0000  37483 bytes for ./Payload/IQRA2.app/067018.mp3
+copying file ./Payload/IQRA2.app/main.jsbundle ... 
+2025-08-29 04:59:22 +0000  11662189 bytes for ./Payload/IQRA2.app/main.jsbundle
+copying file ./Payload/IQRA2.app/001001.mp3 ... 
+2025-08-29 04:59:22 +0000  146830 bytes for ./Payload/IQRA2.app/001001.mp3
+copying file ./Payload/IQRA2.app/FontAwesome6_Solid.ttf ... 
+2025-08-29 04:59:22 +0000  423676 bytes for ./Payload/IQRA2.app/FontAwesome6_Solid.ttf
+copying file ./Payload/IQRA2.app/067019.mp3 ... 
+2025-08-29 04:59:22 +0000  103965 bytes for ./Payload/IQRA2.app/067019.mp3
+copying file ./Payload/IQRA2.app/PrivacyInfo.xcprivacy ... 
+2025-08-29 04:59:22 +0000  491 bytes for ./Payload/IQRA2.app/PrivacyInfo.xcprivacy
+copying file ./Payload/IQRA2.app/067025.mp3 ... 
+2025-08-29 04:59:22 +0000  40748 bytes for ./Payload/IQRA2.app/067025.mp3
+copying file ./Payload/IQRA2.app/067027.mp3 ... 
+2025-08-29 04:59:22 +0000  71704 bytes for ./Payload/IQRA2.app/067027.mp3
+copying file ./Payload/IQRA2.app/001003.mp3 ... 
+2025-08-29 04:59:22 +0000  74523 bytes for ./Payload/IQRA2.app/001003.mp3
+2025-08-29 04:59:22 +0000  copying file ./Payload/IQRA2.app/LaunchScreen.storyboardc/01J-lp-oVM-view-Ze5-6b-2t3.nib ... 
+2025-08-29 04:59:22 +0000  3934 bytes for ./Payload/IQRA2.app/LaunchScreen.storyboardc/01J-lp-oVM-view-Ze5-6b-2t3.nib
+copying file ./Payload/IQRA2.app/LaunchScreen.storyboardc/UIViewController-01J-lp-oVM.nib ... 
+924 bytes for ./Payload/IQRA2.app/LaunchScreen.storyboardc/UIViewController-01J-lp-oVM.nib
+copying file ./Payload/IQRA2.app/LaunchScreen.storyboardc/Info.plist ... 
+2025-08-29 04:59:22 +0000  258 bytes for ./Payload/IQRA2.app/LaunchScreen.storyboardc/Info.plist
+copying file ./Payload/IQRA2.app/001002.mp3 ... 
+2025-08-29 04:59:22 +0000  89988 bytes for ./Payload/IQRA2.app/001002.mp3
+2025-08-29 04:59:22 +0000  copying file ./Payload/IQRA2.app/RNSVGFilters.bundle/RNSVGArithmeticFilter.iphoneos.metallib ... 
+2025-08-29 04:59:22 +0000  3993 bytes for ./Payload/IQRA2.app/RNSVGFilters.bundle/RNSVGArithmeticFilter.iphoneos.metallib
+copying file ./Payload/IQRA2.app/RNSVGFilters.bundle/RNSVGCompositeXor.iphoneos.metallib ... 
+2025-08-29 04:59:22 +0000  3509 bytes for ./Payload/IQRA2.app/RNSVGFilters.bundle/RNSVGCompositeXor.iphoneos.metallib
+copying file ./Payload/IQRA2.app/RNSVGFilters.bundle/Info.plist ... 
+768 bytes for ./Payload/IQRA2.app/RNSVGFilters.bundle/Info.plist
+copying file ./Payload/IQRA2.app/067026.mp3 ... 
+2025-08-29 04:59:22 +0000  63475 bytes for ./Payload/IQRA2.app/067026.mp3
+2025-08-29 04:59:22 +0000  copying file ./Payload/IQRA2.app/boost_privacy.bundle/Info.plist ... 
+769 bytes for ./Payload/IQRA2.app/boost_privacy.bundle/Info.plist
+copying file ./Payload/IQRA2.app/Montserrat-Regular.ttf ... 
+2025-08-29 04:59:22 +0000  29016 bytes for ./Payload/IQRA2.app/Montserrat-Regular.ttf
+copying file ./Payload/IQRA2.app/UthmanTN_v2-0.ttf ... 
+2025-08-29 04:59:22 +0000  139336 bytes for ./Payload/IQRA2.app/UthmanTN_v2-0.ttf
+copying file ./Payload/IQRA2.app/SimpleLineIcons.ttf ... 
+2025-08-29 04:59:22 +0000  54056 bytes for ./Payload/IQRA2.app/SimpleLineIcons.ttf
+copying file ./Payload/IQRA2.app/FontAwesome6_Brands.ttf ... 
+2025-08-29 04:59:22 +0000  209376 bytes for ./Payload/IQRA2.app/FontAwesome6_Brands.ttf
+copying file ./Payload/IQRA2.app/embedded.mobileprovision ... 
+2025-08-29 04:59:22 +0000  12549 bytes for ./Payload/IQRA2.app/embedded.mobileprovision
+2025-08-29 04:59:22 +0000  copying file ./Payload/IQRA2.app/assets/node_modules/@react-navigation/elements/lib/module/assets/back-icon@3x.png ... 
+2025-08-29 04:59:22 +0000  761 bytes for ./Payload/IQRA2.app/assets/node_modules/@react-navigation/elements/lib/module/assets/back-icon@3x.png
+copying file ./Payload/IQRA2.app/assets/node_modules/@react-navigation/elements/lib/module/assets/back-icon@2x.png ... 
+405 bytes for ./Payload/IQRA2.app/assets/node_modules/@react-navigation/elements/lib/module/assets/back-icon@2x.png
+2025-08-29 04:59:22 +0000  copying file ./Payload/IQRA2.app/assets/node_modules/@react-navigation/elements/lib/module/assets/search-icon@2x.png ... 
+589 bytes for ./Payload/IQRA2.app/assets/node_modules/@react-navigation/elements/lib/module/assets/search-icon@2x.png
+copying file ./Payload/IQRA2.app/assets/node_modules/@react-navigation/elements/lib/module/assets/clear-icon@3x.png ... 
+2025-08-29 04:59:22 +0000  502 bytes for ./Payload/IQRA2.app/assets/node_modules/@react-navigation/elements/lib/module/assets/clear-icon@3x.png
+copying file ./Payload/IQRA2.app/assets/node_modules/@react-navigation/elements/lib/module/assets/back-icon.png ... 
+290 bytes for ./Payload/IQRA2.app/assets/node_modules/@react-navigation/elements/lib/module/assets/back-icon.png
+copying file ./Payload/IQRA2.app/assets/node_modules/@react-navigation/elements/lib/module/assets/clear-icon@2x.png ... 
+2025-08-29 04:59:22 +0000  334 bytes for ./Payload/IQRA2.app/assets/node_modules/@react-navigation/elements/lib/module/assets/clear-icon@2x.png
+copying file ./Payload/IQRA2.app/assets/node_modules/@react-navigation/elements/lib/module/assets/search-icon@3x.png ... 
+839 bytes for ./Payload/IQRA2.app/assets/node_modules/@react-navigation/elements/lib/module/assets/search-icon@3x.png
+copying file ./Payload/IQRA2.app/assets/node_modules/@react-navigation/elements/lib/module/assets/close-icon.png ... 
+2025-08-29 04:59:22 +0000  141 bytes for ./Payload/IQRA2.app/assets/node_modules/@react-navigation/elements/lib/module/assets/close-icon.png
+copying file ./Payload/IQRA2.app/assets/node_modules/@react-navigation/elements/lib/module/assets/back-icon-mask.png ... 
+653 bytes for ./Payload/IQRA2.app/assets/node_modules/@react-navigation/elements/lib/module/assets/back-icon-mask.png
+2025-08-29 04:59:22 +0000  copying file ./Payload/IQRA2.app/assets/node_modules/@react-navigation/elements/lib/module/assets/close-icon@2x.png ... 
+201 bytes for ./Payload/IQRA2.app/assets/node_modules/@react-navigation/elements/lib/module/assets/close-icon@2x.png
+copying file ./Payload/IQRA2.app/assets/node_modules/@react-navigation/elements/lib/module/assets/close-icon@3x.png ... 
+2025-08-29 04:59:22 +0000  266 bytes for ./Payload/IQRA2.app/assets/node_modules/@react-navigation/elements/lib/module/assets/close-icon@3x.png
+copying file ./Payload/IQRA2.app/assets/node_modules/@react-navigation/elements/lib/module/assets/clear-icon.png ... 
+220 bytes for ./Payload/IQRA2.app/assets/node_modules/@react-navigation/elements/lib/module/assets/clear-icon.png
+copying file ./Payload/IQRA2.app/assets/node_modules/@react-navigation/elements/lib/module/assets/search-icon.png ... 
+2025-08-29 04:59:22 +0000  317 bytes for ./Payload/IQRA2.app/assets/node_modules/@react-navigation/elements/lib/module/assets/search-icon.png
+2025-08-29 04:59:22 +0000  copying file ./Payload/IQRA2.app/assets/src/assets/IQRA2background.png ... 
+2025-08-29 04:59:22 +0000  700372 bytes for ./Payload/IQRA2.app/assets/src/assets/IQRA2background.png
+2025-08-29 04:59:22 +0000  copying file ./Payload/IQRA2.app/assets/src/assets/AlMulk_AlGhamdi/067003.mp3 ... 
+2025-08-29 04:59:22 +0000  82414 bytes for ./Payload/IQRA2.app/assets/src/assets/AlMulk_AlGhamdi/067003.mp3
+2025-08-29 04:59:22 +0000  copying file ./Payload/IQRA2.app/assets/src/assets/AlMulk_AlGhamdi/067017.mp3 ... 
+2025-08-29 04:59:22 +0000  72096 bytes for ./Payload/IQRA2.app/assets/src/assets/AlMulk_AlGhamdi/067017.mp3
+2025-08-29 04:59:22 +0000  copying file ./Payload/IQRA2.app/assets/src/assets/AlMulk_AlGhamdi/067016.mp3 ... 
+2025-08-29 04:59:22 +0000  61124 bytes for ./Payload/IQRA2.app/assets/src/assets/AlMulk_AlGhamdi/067016.mp3
+2025-08-29 04:59:22 +0000  copying file ./Payload/IQRA2.app/assets/src/assets/AlMulk_AlGhamdi/067002.mp3 ... 
+2025-08-29 04:59:22 +0000  60340 bytes for ./Payload/IQRA2.app/assets/src/assets/AlMulk_AlGhamdi/067002.mp3
+2025-08-29 04:59:22 +0000  copying file ./Payload/IQRA2.app/assets/src/assets/AlMulk_AlGhamdi/067028.mp3 ... 
+2025-08-29 04:59:22 +0000  66609 bytes for ./Payload/IQRA2.app/assets/src/assets/AlMulk_AlGhamdi/067028.mp3
+2025-08-29 04:59:22 +0000  copying file ./Payload/IQRA2.app/assets/src/assets/AlMulk_AlGhamdi/067014.mp3 ... 
+2025-08-29 04:59:22 +0000  28602 bytes for ./Payload/IQRA2.app/assets/src/assets/AlMulk_AlGhamdi/067014.mp3
+2025-08-29 04:59:22 +0000  copying file ./Payload/IQRA2.app/assets/src/assets/AlMulk_AlGhamdi/067001.mp3 ... 
+2025-08-29 04:59:22 +0000  44797 bytes for ./Payload/IQRA2.app/assets/src/assets/AlMulk_AlGhamdi/067001.mp3
+2025-08-29 04:59:22 +0000  copying file ./Payload/IQRA2.app/assets/src/assets/AlMulk_AlGhamdi/067015.mp3 ... 
+2025-08-29 04:59:22 +0000  58511 bytes for ./Payload/IQRA2.app/assets/src/assets/AlMulk_AlGhamdi/067015.mp3
+2025-08-29 04:59:22 +0000  copying file ./Payload/IQRA2.app/assets/src/assets/AlMulk_AlGhamdi/067029.mp3 ... 
+2025-08-29 04:59:22 +0000  64781 bytes for ./Payload/IQRA2.app/assets/src/assets/AlMulk_AlGhamdi/067029.mp3
+2025-08-29 04:59:22 +0000  copying file ./Payload/IQRA2.app/assets/src/assets/AlMulk_AlGhamdi/067011.mp3 ... 
+2025-08-29 04:59:22 +0000  36569 bytes for ./Payload/IQRA2.app/assets/src/assets/AlMulk_AlGhamdi/067011.mp3
+2025-08-29 04:59:22 +0000  copying file ./Payload/IQRA2.app/assets/src/assets/AlMulk_AlGhamdi/067005.mp3 ... 
+2025-08-29 04:59:22 +0000  79670 bytes for ./Payload/IQRA2.app/assets/src/assets/AlMulk_AlGhamdi/067005.mp3
+2025-08-29 04:59:22 +0000  copying file ./Payload/IQRA2.app/assets/src/assets/AlMulk_AlGhamdi/067004.mp3 ... 
+2025-08-29 04:59:22 +0000  51459 bytes for ./Payload/IQRA2.app/assets/src/assets/AlMulk_AlGhamdi/067004.mp3
+2025-08-29 04:59:22 +0000  copying file ./Payload/IQRA2.app/assets/src/assets/AlMulk_AlGhamdi/067010.mp3 ... 
+2025-08-29 04:59:22 +0000  53157 bytes for ./Payload/IQRA2.app/assets/src/assets/AlMulk_AlGhamdi/067010.mp3
+2025-08-29 04:59:22 +0000  copying file ./Payload/IQRA2.app/assets/src/assets/AlMulk_AlGhamdi/067006.mp3 ... 
+2025-08-29 04:59:22 +0000  43230 bytes for ./Payload/IQRA2.app/assets/src/assets/AlMulk_AlGhamdi/067006.mp3
+2025-08-29 04:59:22 +0000  copying file ./Payload/IQRA2.app/assets/src/assets/AlMulk_AlGhamdi/067012.mp3 ... 
+2025-08-29 04:59:22 +0000  57858 bytes for ./Payload/IQRA2.app/assets/src/assets/AlMulk_AlGhamdi/067012.mp3
+2025-08-29 04:59:22 +0000  copying file ./Payload/IQRA2.app/assets/src/assets/AlMulk_AlGhamdi/067013.mp3 ... 
+2025-08-29 04:59:22 +0000  53287 bytes for ./Payload/IQRA2.app/assets/src/assets/AlMulk_AlGhamdi/067013.mp3
+2025-08-29 04:59:22 +0000  copying file ./Payload/IQRA2.app/assets/src/assets/AlMulk_AlGhamdi/067007.mp3 ... 
+2025-08-29 04:59:22 +0000  48455 bytes for ./Payload/IQRA2.app/assets/src/assets/AlMulk_AlGhamdi/067007.mp3
+2025-08-29 04:59:22 +0000  copying file ./Payload/IQRA2.app/assets/src/assets/AlMulk_AlGhamdi/067022.mp3 ... 
+2025-08-29 04:59:22 +0000  102659 bytes for ./Payload/IQRA2.app/assets/src/assets/AlMulk_AlGhamdi/067022.mp3
+2025-08-29 04:59:22 +0000  copying file ./Payload/IQRA2.app/assets/src/assets/AlMulk_AlGhamdi/067023.mp3 ... 
+2025-08-29 04:59:22 +0000  65434 bytes for ./Payload/IQRA2.app/assets/src/assets/AlMulk_AlGhamdi/067023.mp3
+2025-08-29 04:59:22 +0000  copying file ./Payload/IQRA2.app/assets/src/assets/AlMulk_AlGhamdi/067009.mp3 ... 
+2025-08-29 04:59:22 +0000  116634 bytes for ./Payload/IQRA2.app/assets/src/assets/AlMulk_AlGhamdi/067009.mp3
+2025-08-29 04:59:22 +0000  copying file ./Payload/IQRA2.app/assets/src/assets/AlMulk_AlGhamdi/067021.mp3 ... 
+2025-08-29 04:59:22 +0000  54985 bytes for ./Payload/IQRA2.app/assets/src/assets/AlMulk_AlGhamdi/067021.mp3
+copying file ./Payload/IQRA2.app/assets/src/assets/AlMulk_AlGhamdi/067020.mp3 ... 
+2025-08-29 04:59:22 +0000  69613 bytes for ./Payload/IQRA2.app/assets/src/assets/AlMulk_AlGhamdi/067020.mp3
+copying file ./Payload/IQRA2.app/assets/src/assets/AlMulk_AlGhamdi/067008.mp3 ... 
+2025-08-29 04:59:22 +0000  96128 bytes for ./Payload/IQRA2.app/assets/src/assets/AlMulk_AlGhamdi/067008.mp3
+copying file ./Payload/IQRA2.app/assets/src/assets/AlMulk_AlGhamdi/067030.mp3 ... 
+2025-08-29 04:59:22 +0000  73794 bytes for ./Payload/IQRA2.app/assets/src/assets/AlMulk_AlGhamdi/067030.mp3
+copying file ./Payload/IQRA2.app/assets/src/assets/AlMulk_AlGhamdi/067024.mp3 ... 
+2025-08-29 04:59:22 +0000  34218 bytes for ./Payload/IQRA2.app/assets/src/assets/AlMulk_AlGhamdi/067024.mp3
+copying file ./Payload/IQRA2.app/assets/src/assets/AlMulk_AlGhamdi/067018.mp3 ... 
+2025-08-29 04:59:22 +0000  37483 bytes for ./Payload/IQRA2.app/assets/src/assets/AlMulk_AlGhamdi/067018.mp3
+copying file ./Payload/IQRA2.app/assets/src/assets/AlMulk_AlGhamdi/067019.mp3 ... 
+2025-08-29 04:59:22 +0000  103965 bytes for ./Payload/IQRA2.app/assets/src/assets/AlMulk_AlGhamdi/067019.mp3
+copying file ./Payload/IQRA2.app/assets/src/assets/AlMulk_AlGhamdi/067025.mp3 ... 
+2025-08-29 04:59:22 +0000  40748 bytes for ./Payload/IQRA2.app/assets/src/assets/AlMulk_AlGhamdi/067025.mp3
+copying file ./Payload/IQRA2.app/assets/src/assets/AlMulk_AlGhamdi/067027.mp3 ... 
+2025-08-29 04:59:22 +0000  71704 bytes for ./Payload/IQRA2.app/assets/src/assets/AlMulk_AlGhamdi/067027.mp3
+copying file ./Payload/IQRA2.app/assets/src/assets/AlMulk_AlGhamdi/067026.mp3 ... 
+2025-08-29 04:59:22 +0000  63475 bytes for ./Payload/IQRA2.app/assets/src/assets/AlMulk_AlGhamdi/067026.mp3
+copying file ./Payload/IQRA2.app/assets/src/assets/IQRA2iconoctagon.png ... 
+2025-08-29 04:59:22 +0000  1075234 bytes for ./Payload/IQRA2.app/assets/src/assets/IQRA2iconoctagon.png
+copying file ./Payload/IQRA2.app/assets/src/assets/IQRA2iconArabicoctagon.png ... 
+2025-08-29 04:59:22 +0000  919402 bytes for ./Payload/IQRA2.app/assets/src/assets/IQRA2iconArabicoctagon.png
+2025-08-29 04:59:22 +0000  copying file ./Payload/IQRA2.app/assets/src/assets/AlAlaq_MostafaIsmaeel/096005.mp3 ... 
+2025-08-29 04:59:22 +0000  48602 bytes for ./Payload/IQRA2.app/assets/src/assets/AlAlaq_MostafaIsmaeel/096005.mp3
+copying file ./Payload/IQRA2.app/assets/src/assets/AlAlaq_MostafaIsmaeel/096011.mp3 ... 
+2025-08-29 04:59:22 +0000  44683 bytes for ./Payload/IQRA2.app/assets/src/assets/AlAlaq_MostafaIsmaeel/096011.mp3
+copying file ./Payload/IQRA2.app/assets/src/assets/AlAlaq_MostafaIsmaeel/096010.mp3 ... 
+2025-08-29 04:59:22 +0000  38101 bytes for ./Payload/IQRA2.app/assets/src/assets/AlAlaq_MostafaIsmaeel/096010.mp3
+copying file ./Payload/IQRA2.app/assets/src/assets/AlAlaq_MostafaIsmaeel/096004.mp3 ... 
+2025-08-29 04:59:22 +0000  41235 bytes for ./Payload/IQRA2.app/assets/src/assets/AlAlaq_MostafaIsmaeel/096004.mp3
+copying file ./Payload/IQRA2.app/assets/src/assets/AlAlaq_MostafaIsmaeel/096012.mp3 ... 
+2025-08-29 04:59:22 +0000  31675 bytes for ./Payload/IQRA2.app/assets/src/assets/AlAlaq_MostafaIsmaeel/096012.mp3
+2025-08-29 04:59:22 +0000  copying file ./Payload/IQRA2.app/assets/src/assets/AlAlaq_MostafaIsmaeel/096006.mp3 ... 
+2025-08-29 04:59:22 +0000  53774 bytes for ./Payload/IQRA2.app/assets/src/assets/AlAlaq_MostafaIsmaeel/096006.mp3
+copying file ./Payload/IQRA2.app/assets/src/assets/AlAlaq_MostafaIsmaeel/096007.mp3 ... 
+2025-08-29 04:59:22 +0000  34339 bytes for ./Payload/IQRA2.app/assets/src/assets/AlAlaq_MostafaIsmaeel/096007.mp3
+copying file ./Payload/IQRA2.app/assets/src/assets/AlAlaq_MostafaIsmaeel/096013.mp3 ... 
+2025-08-29 04:59:22 +0000  47034 bytes for ./Payload/IQRA2.app/assets/src/assets/AlAlaq_MostafaIsmaeel/096013.mp3
+copying file ./Payload/IQRA2.app/assets/src/assets/AlAlaq_MostafaIsmaeel/096017.mp3 ... 
+2025-08-29 04:59:22 +0000  24465 bytes for ./Payload/IQRA2.app/assets/src/assets/AlAlaq_MostafaIsmaeel/096017.mp3
+copying file ./Payload/IQRA2.app/assets/src/assets/AlAlaq_MostafaIsmaeel/096003.mp3 ... 
+2025-08-29 04:59:22 +0000  35123 bytes for ./Payload/IQRA2.app/assets/src/assets/AlAlaq_MostafaIsmaeel/096003.mp3
+copying file ./Payload/IQRA2.app/assets/src/assets/AlAlaq_MostafaIsmaeel/096002.mp3 ... 
+2025-08-29 04:59:22 +0000  39825 bytes for ./Payload/IQRA2.app/assets/src/assets/AlAlaq_MostafaIsmaeel/096002.mp3
+copying file ./Payload/IQRA2.app/assets/src/assets/AlAlaq_MostafaIsmaeel/096016.mp3 ... 
+2025-08-29 04:59:22 +0000  42176 bytes for ./Payload/IQRA2.app/assets/src/assets/AlAlaq_MostafaIsmaeel/096016.mp3
+copying file ./Payload/IQRA2.app/assets/src/assets/AlAlaq_MostafaIsmaeel/096014.mp3 ... 
+2025-08-29 04:59:22 +0000  46251 bytes for ./Payload/IQRA2.app/assets/src/assets/AlAlaq_MostafaIsmaeel/096014.mp3
+copying file ./Payload/IQRA2.app/assets/src/assets/AlAlaq_MostafaIsmaeel/096015.mp3 ... 
+2025-08-29 04:59:22 +0000  72582 bytes for ./Payload/IQRA2.app/assets/src/assets/AlAlaq_MostafaIsmaeel/096015.mp3
+copying file ./Payload/IQRA2.app/assets/src/assets/AlAlaq_MostafaIsmaeel/096001.mp3 ... 
+2025-08-29 04:59:22 +0000  90293 bytes for ./Payload/IQRA2.app/assets/src/assets/AlAlaq_MostafaIsmaeel/096001.mp3
+2025-08-29 04:59:22 +0000  copying file ./Payload/IQRA2.app/assets/src/assets/AlAlaq_MostafaIsmaeel/096018.mp3 ... 
+2025-08-29 04:59:22 +0000  26032 bytes for ./Payload/IQRA2.app/assets/src/assets/AlAlaq_MostafaIsmaeel/096018.mp3
+copying file ./Payload/IQRA2.app/assets/src/assets/AlAlaq_MostafaIsmaeel/096019.mp3 ... 
+2025-08-29 04:59:22 +0000  56439 bytes for ./Payload/IQRA2.app/assets/src/assets/AlAlaq_MostafaIsmaeel/096019.mp3
+copying file ./Payload/IQRA2.app/assets/src/assets/AlAlaq_MostafaIsmaeel/096009.mp3 ... 
+2025-08-29 04:59:22 +0000  37944 bytes for ./Payload/IQRA2.app/assets/src/assets/AlAlaq_MostafaIsmaeel/096009.mp3
+copying file ./Payload/IQRA2.app/assets/src/assets/AlAlaq_MostafaIsmaeel/096008.mp3 ... 
+2025-08-29 04:59:22 +0000  44370 bytes for ./Payload/IQRA2.app/assets/src/assets/AlAlaq_MostafaIsmaeel/096008.mp3
+2025-08-29 04:59:22 +0000  copying file ./Payload/IQRA2.app/assets/src/assets/app_icons/slider.png ... 
+2025-08-29 04:59:22 +0000  5699 bytes for ./Payload/IQRA2.app/assets/src/assets/app_icons/slider.png
+copying file ./Payload/IQRA2.app/assets/src/assets/app_icons/translation.png ... 
+2025-08-29 04:59:22 +0000  10465 bytes for ./Payload/IQRA2.app/assets/src/assets/app_icons/translation.png
+copying file ./Payload/IQRA2.app/assets/src/assets/app_icons/continue.png ... 
+2025-08-29 04:59:22 +0000  3945 bytes for ./Payload/IQRA2.app/assets/src/assets/app_icons/continue.png
+copying file ./Payload/IQRA2.app/assets/src/assets/app_icons/note.png ... 
+2025-08-29 04:59:22 +0000  8017 bytes for ./Payload/IQRA2.app/assets/src/assets/app_icons/note.png
+copying file ./Payload/IQRA2.app/assets/src/assets/app_icons/settings.png ... 
+2025-08-29 04:59:22 +0000  11185 bytes for ./Payload/IQRA2.app/assets/src/assets/app_icons/settings.png
+copying file ./Payload/IQRA2.app/assets/src/assets/app_icons/rename.png ... 
+2025-08-29 04:59:22 +0000  4763 bytes for ./Payload/IQRA2.app/assets/src/assets/app_icons/rename.png
+copying file ./Payload/IQRA2.app/assets/src/assets/app_icons/information.png ... 
+2025-08-29 04:59:22 +0000  5257 bytes for ./Payload/IQRA2.app/assets/src/assets/app_icons/information.png
+copying file ./Payload/IQRA2.app/assets/src/assets/app_icons/search.png ... 
+2025-08-29 04:59:22 +0000  5799 bytes for ./Payload/IQRA2.app/assets/src/assets/app_icons/search.png
+2025-08-29 04:59:22 +0000  copying file ./Payload/IQRA2.app/assets/src/assets/app_icons/mic-on.png ... 
+2025-08-29 04:59:22 +0000  13478 bytes for ./Payload/IQRA2.app/assets/src/assets/app_icons/mic-on.png
+2025-08-29 04:59:22 +0000  copying file ./Payload/IQRA2.app/assets/src/assets/app_icons/remove.png ... 
+2025-08-29 04:59:22 +0000  16895 bytes for ./Payload/IQRA2.app/assets/src/assets/app_icons/remove.png
+2025-08-29 04:59:22 +0000  copying file ./Payload/IQRA2.app/assets/src/assets/app_icons/share.png ... 
+2025-08-29 04:59:22 +0000  10151 bytes for ./Payload/IQRA2.app/assets/src/assets/app_icons/share.png
+2025-08-29 04:59:22 +0000  copying file ./Payload/IQRA2.app/assets/src/assets/app_icons/mic-off.png ... 
+2025-08-29 04:59:22 +0000  13388 bytes for ./Payload/IQRA2.app/assets/src/assets/app_icons/mic-off.png
+2025-08-29 04:59:22 +0000  copying file ./Payload/IQRA2.app/assets/src/assets/app_icons/audio.png ... 
+2025-08-29 04:59:22 +0000  8163 bytes for ./Payload/IQRA2.app/assets/src/assets/app_icons/audio.png
+copying file ./Payload/IQRA2.app/assets/src/assets/app_icons/down-up.png ... 
+2025-08-29 04:59:22 +0000  3016 bytes for ./Payload/IQRA2.app/assets/src/assets/app_icons/down-up.png
+2025-08-29 04:59:22 +0000  copying file ./Payload/IQRA2.app/assets/src/assets/app_icons/select.png ... 
+2025-08-29 04:59:22 +0000  12388 bytes for ./Payload/IQRA2.app/assets/src/assets/app_icons/select.png
+2025-08-29 04:59:22 +0000  copying file ./Payload/IQRA2.app/assets/src/assets/app_icons/navigation.png ... 
+2025-08-29 04:59:22 +0000  7017 bytes for ./Payload/IQRA2.app/assets/src/assets/app_icons/navigation.png
+2025-08-29 04:59:22 +0000  copying file ./Payload/IQRA2.app/assets/src/assets/AlFatiha_Mishary/001006.mp3 ... 
+2025-08-29 04:59:22 +0000  89988 bytes for ./Payload/IQRA2.app/assets/src/assets/AlFatiha_Mishary/001006.mp3
+2025-08-29 04:59:22 +0000  copying file ./Payload/IQRA2.app/assets/src/assets/AlFatiha_Mishary/001007.mp3 ... 
+2025-08-29 04:59:22 +0000  212450 bytes for ./Payload/IQRA2.app/assets/src/assets/AlFatiha_Mishary/001007.mp3
+copying file ./Payload/IQRA2.app/assets/src/assets/AlFatiha_Mishary/001005.mp3 ... 
+2025-08-29 04:59:22 +0000  107960 bytes for ./Payload/IQRA2.app/assets/src/assets/AlFatiha_Mishary/001005.mp3
+copying file ./Payload/IQRA2.app/assets/src/assets/AlFatiha_Mishary/001004.mp3 ... 
+2025-08-29 04:59:22 +0000  74941 bytes for ./Payload/IQRA2.app/assets/src/assets/AlFatiha_Mishary/001004.mp3
+copying file ./Payload/IQRA2.app/assets/src/assets/AlFatiha_Mishary/001001.mp3 ... 
+2025-08-29 04:59:22 +0000  146830 bytes for ./Payload/IQRA2.app/assets/src/assets/AlFatiha_Mishary/001001.mp3
+copying file ./Payload/IQRA2.app/assets/src/assets/AlFatiha_Mishary/001003.mp3 ... 
+2025-08-29 04:59:22 +0000  74523 bytes for ./Payload/IQRA2.app/assets/src/assets/AlFatiha_Mishary/001003.mp3
+copying file ./Payload/IQRA2.app/assets/src/assets/AlFatiha_Mishary/001002.mp3 ... 
+2025-08-29 04:59:22 +0000  89988 bytes for ./Payload/IQRA2.app/assets/src/assets/AlFatiha_Mishary/001002.mp3
+copying file ./Payload/IQRA2.app/assets/src/assets/openQuran.png ... 
+2025-08-29 04:59:22 +0000  2061267 bytes for ./Payload/IQRA2.app/assets/src/assets/openQuran.png
+2025-08-29 04:59:22 +0000  copying file ./Payload/IQRA2.app/Info.plist ... 
+1944 bytes for ./Payload/IQRA2.app/Info.plist
+2025-08-29 04:59:22 +0000  copying file ./Payload/IQRA2.app/RNCAsyncStorage_resources.bundle/PrivacyInfo.xcprivacy ... 
+512 bytes for ./Payload/IQRA2.app/RNCAsyncStorage_resources.bundle/PrivacyInfo.xcprivacy
+copying file ./Payload/IQRA2.app/RNCAsyncStorage_resources.bundle/Info.plist ... 
+2025-08-29 04:59:22 +0000  793 bytes for ./Payload/IQRA2.app/RNCAsyncStorage_resources.bundle/Info.plist
+copying file ./Payload/IQRA2.app/PkgInfo ... 
+8 bytes for ./Payload/IQRA2.app/PkgInfo
+copying file ./Payload/IQRA2.app/MaterialIcons.ttf ... 
+2025-08-29 04:59:22 +0000  356840 bytes for ./Payload/IQRA2.app/MaterialIcons.ttf
+2025-08-29 04:59:22 +0000  copying file ./Payload/IQRA2.app/React-Core_privacy.bundle/PrivacyInfo.xcprivacy ... 
+768 bytes for ./Payload/IQRA2.app/React-Core_privacy.bundle/PrivacyInfo.xcprivacy
+copying file ./Payload/IQRA2.app/React-Core_privacy.bundle/Info.plist ... 
+2025-08-29 04:59:22 +0000  781 bytes for ./Payload/IQRA2.app/React-Core_privacy.bundle/Info.plist
+copying file ./Symbols/E76678C0-51E6-337C-A57A-129BBBD23DB0.symbols ... 
+2025-08-29 04:59:23 +0000  24856268 bytes for ./Symbols/E76678C0-51E6-337C-A57A-129BBBD23DB0.symbols
+2025-08-29 04:59:23 +0000  /usr/bin/ditto exited with 0
+2025-08-29 04:59:23 +0000  Processing step: IDEDistributionAppStoreInformationStep
+2025-08-29 04:59:23 +0000  Skipping step: IDEDistributionAppStoreInformationStep because it said so
+2025-08-29 04:59:23 +0000  Processing step: IDEDistributionGenerateProcessedDistributionItems
+2025-08-29 04:59:23 +0000  IDEDistributionItem init <DVTFilePath:0x600013bafba0:'/var/folders/ky/pw2jtzns4hzdjpzsnr54t4zc0000gn/T/XcodeDistPipeline.~~~3q5jLj/Root/Payload/IQRA2.app'>
+2025-08-29 04:59:23 +0000  Processing step: IDEDistributionCreateManifestStep
+2025-08-29 04:59:23 +0000  Skipping step: IDEDistributionCreateManifestStep because it said so
