@@ -15,10 +15,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate, RCTBridgeDelegate, WCSess
     
     let bridge = RCTBridge(delegate: self, launchOptions: launchOptions)
     let rootView = RCTRootView(bridge: bridge!, moduleName: "IQRA2", initialProperties: nil)
+    rootView.backgroundColor = UIColor.black
     let rootViewController = UIViewController()
     rootViewController.view = rootView
 
     self.window = UIWindow(frame: UIScreen.main.bounds)
+    self.window?.backgroundColor = UIColor.black
     self.window?.rootViewController = rootViewController
     self.window?.makeKeyAndVisible()
     

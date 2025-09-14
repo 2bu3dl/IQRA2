@@ -11,7 +11,8 @@ const HighlightedArabicText = ({
   currentTime, 
   fontSize = 40, 
   isBoldFont = false,
-  style = {} 
+  style = {},
+  textColor = '#333333'
 }) => {
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
 
@@ -65,7 +66,7 @@ const HighlightedArabicText = ({
         { 
           color: isPlaying 
             ? (highlightedIndex === index ? 'rgba(165,115,36,0.8)' : '#5b7f67') // Orange for highlighted word, green for others when playing
-            : '#333333' // Super dark gray when not playing
+            : textColor // Use the passed textColor prop when not playing
         }
       ];
       

@@ -19,7 +19,8 @@ import BookmarkModal from '../components/BookmarkModal';
 import RecordingsModal from '../components/RecordingsModal';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { addHasanat, updateMemorizedAyahs, updateStreak, getCurrentStreak, loadData, saveCurrentPosition, saveLastPosition, toggleBookmark, isBookmarked, isAyahInAnyList } from '../utils/store';
-import { getSurahAyaatWithTransliteration, getAllSurahs } from '../utils/quranData';
+import { getSurahAyaatWithTransliteration, getAllSurahs, getSurahName } from '../utils/quranData';
+import { getCurrentTranslation, getTranslationSources, getTranslation } from '../utils/translations';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useLanguage } from '../utils/languageContext';
 import audioPlayer from '../utils/audioPlayer';
@@ -209,6 +210,7 @@ const MemorizationScreen = ({ route, navigation }) => {
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const ayahListRef = useRef(null);
+  const fullscreenScrollViewRef = useRef(null);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [showStreakAnimation, setShowStreakAnimation] = useState(false);
   const [newStreak, setNewStreak] = useState(0);
@@ -534,6 +536,17 @@ const MemorizationScreen = ({ route, navigation }) => {
     // Removed Surah 2 Ayah 4 debugging
   }, [surahNumber, currentAyahIndex, flashcards]);
 
+  // Cleanup effect for fullscreen states
+  useEffect(() => {
+    return () => {
+      // Cleanup when component unmounts
+      setIsFullscreen(false);
+      setShowTranslationFullscreen(false);
+      setFullscreenSearchText('');
+      setIsExpandButtonPressed(false);
+    };
+  }, []);
+
   const animateFlashcard = (toValue) => {
     Animated.parallel([
       Animated.timing(fadeAnim, {
@@ -817,9 +830,11 @@ const MemorizationScreen = ({ route, navigation }) => {
         return;
       }
       
-      // Clear highlighting immediately to prevent flash
-      setCurrentWordIndex(-1);
-      setCurrentAudioTime(0);
+      // Clear highlighting with a small delay to prevent glitch
+      setTimeout(() => {
+        setCurrentWordIndex(-1);
+        setCurrentAudioTime(0);
+      }, 100);
       
       // Play current ayah
       const currentFlashcard = flashcards[currentAyahIndex];
@@ -1098,6 +1113,153 @@ const MemorizationScreen = ({ route, navigation }) => {
     }
   };
 
+  // Fullscreen toggle function
+  const handleFullscreenToggle = () => {
+    hapticSelection();
+    if (isFullscreen) {
+      // When closing fullscreen, clear search and reset states
+      setFullscreenSearchText('');
+      setIsExpandButtonPressed(false);
+      // Use setTimeout to ensure modal closes properly
+      setTimeout(() => {
+        setIsFullscreen(false);
+      }, 50);
+    } else {
+      setIsFullscreen(true);
+    }
+  };
+
+  // Navigate to specific ayah from fullscreen
+  const handleAyahNavigation = (ayahIndex) => {
+    hapticSelection();
+    // Reset states first
+    setFullscreenSearchText('');
+    setIsExpandButtonPressed(false);
+    // Close fullscreen with delay
+    setTimeout(() => {
+      setIsFullscreen(false);
+      // Navigate to ayah after modal closes
+      setTimeout(() => {
+        setCurrentAyahIndex(ayahIndex);
+      }, 100);
+    }, 50);
+  };
+
+  // Toggle translation view
+  const handleTranslationViewToggle = () => {
+    hapticSelection();
+    setShowTranslationView(!showTranslationView);
+    setIsExpandButtonPressed(false);
+    // Reset scroll position when switching views
+    if (fullscreenScrollViewRef.current) {
+      fullscreenScrollViewRef.current.scrollTo({ y: 0, animated: false });
+    }
+  };
+
+  // Filter flashcards based on search text
+  const getFilteredFlashcards = () => {
+    if (!fullscreenSearchText.trim()) return flashcards;
+    
+    const searchLower = fullscreenSearchText.toLowerCase();
+    return flashcards.filter((card, index) => {
+      const ayahNumber = flashcards.slice(0, index + 1).filter(a => a.type === 'ayah').length;
+      const ayahText = card.type === 'istiadhah' ? "Isti'adhah" :
+                      card.type === 'bismillah' ? 'Bismillah' :
+                      `Ayah ${ayahNumber}`;
+      
+      return ayahText.toLowerCase().includes(searchLower) || 
+             ayahNumber.toString().includes(fullscreenSearchText) ||
+             (card.text && card.text.toLowerCase().includes(searchLower));
+    });
+  };
+
+  // Scroll to bottom or top of fullscreen list
+  const scrollToBottom = () => {
+    hapticSelection();
+    if (fullscreenScrollViewRef.current) {
+      if (isAtBottom) {
+        // Scroll to top
+        fullscreenScrollViewRef.current.scrollTo({ y: 0, animated: true });
+      } else {
+        // Scroll to bottom
+        fullscreenScrollViewRef.current.scrollToEnd({ animated: true });
+      }
+    }
+  };
+
+  // Handle scroll events to track if at bottom
+  const handleScroll = (event) => {
+    const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent;
+    const isAtBottomNow = contentOffset.y + layoutMeasurement.height >= contentSize.height - 20;
+    setIsAtBottom(isAtBottomNow);
+  };
+
+  // Navigate to previous surah (with looping)
+  const goToPreviousSurah = () => {
+    hapticSelection();
+    const previousSurahNumber = surahNumber === 1 ? 114 : surahNumber - 1;
+    navigation.replace('MemorizationScreen', { 
+      surahNumber: previousSurahNumber,
+      surahName: getSurahName(previousSurahNumber)
+    });
+  };
+
+  // Navigate to next surah (with looping)
+  const goToNextSurah = () => {
+    hapticSelection();
+    const nextSurahNumber = surahNumber === 114 ? 1 : surahNumber + 1;
+    navigation.replace('MemorizationScreen', { 
+      surahNumber: nextSurahNumber,
+      surahName: getSurahName(nextSurahNumber)
+    });
+  };
+
+  // Handle full surah recording
+  const handleFullSurahRecord = () => {
+    hapticSelection();
+    console.log('[MemorizationScreen] Full surah recording button pressed');
+    // Close fullscreen modal first, then open recordings modal
+    setIsFullscreen(false);
+    setTimeout(() => {
+      setShowFullSurahRecordingsModal(true);
+    }, 100);
+  };
+
+  // Handle full surah audio playback
+  const handleFullSurahAudio = () => {
+    hapticSelection();
+    // TODO: Implement full surah audio playback
+    console.log('Full surah audio playback started');
+  };
+
+  // Toggle hide mode
+  const handleHideToggle = () => {
+    hapticSelection();
+    setIsHideMode(!isHideMode);
+    if (!isHideMode) {
+      // Initialize all ayah covers as hidden
+      const initialCovers = {};
+      flashcards.forEach((card, index) => {
+        if (card.type === 'ayah') {
+          initialCovers[index] = true; // true means covered
+        }
+      });
+      setAyahCovers(initialCovers);
+    } else {
+      // Clear all covers when exiting hide mode
+      setAyahCovers({});
+    }
+  };
+
+  // Handle ayah cover swipe
+  const handleAyahCoverSwipe = (ayahIndex) => {
+    hapticSelection();
+    setAyahCovers(prev => ({
+      ...prev,
+      [ayahIndex]: !prev[ayahIndex]
+    }));
+  };
+
   const loadSurahNotes = async () => {
     try {
       const notes = {};
@@ -1177,6 +1339,18 @@ const MemorizationScreen = ({ route, navigation }) => {
   // Touch state for recording button
   const [isRecordingButtonPressed, setIsRecordingButtonPressed] = useState(false);
 
+  // Fullscreen state
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isExpandButtonPressed, setIsExpandButtonPressed] = useState(false);
+  const [fullscreenSearchText, setFullscreenSearchText] = useState('');
+  const [showTranslationFullscreen, setShowTranslationFullscreen] = useState(false);
+  const [isHideMode, setIsHideMode] = useState(false);
+  const [ayahCovers, setAyahCovers] = useState({});
+  const [isRecordingSession, setIsRecordingSession] = useState(false);
+  const [isAtBottom, setIsAtBottom] = useState(false);
+  const [showTranslationView, setShowTranslationView] = useState(false);
+  const [currentTranslator, setCurrentTranslator] = useState('sahih');
+
   const fontCandidates = ['UthmanTN_v2-0', 'UthmanTN', 'KFGQPC Uthman Taha Naskh', 'Uthman Taha Naskh'];
   const fontFamily = fontCandidates[currentAyahIndex % fontCandidates.length];
 
@@ -1215,6 +1389,16 @@ const MemorizationScreen = ({ route, navigation }) => {
       }
     };
   }, [isRecording, recordingPulseAnim]);
+
+  // Cleanup effect to prevent freezing
+  React.useEffect(() => {
+    return () => {
+      // Cleanup when component unmounts
+      setIsFullscreen(false);
+      setShowTranslationView(false);
+      setShowTranslationFullscreen(false);
+    };
+  }, []);
 
   // Commented out Al-Kahf modal functionality for now
   // // Check if Al-Kahf modal has been shown before
@@ -1511,7 +1695,32 @@ const MemorizationScreen = ({ route, navigation }) => {
           opacity: isAudioPlaying ? 1 : fadeAnim, 
           transform: [{ scale: isAudioPlaying ? 1 : scaleAnim }] 
         }]}>
-                <Card variant="elevated" style={[styles.card, { flex: 1 }]}> 
+                <Card variant="elevated" style={[
+                  styles.card, 
+                  { flex: 1 },
+                  (flashcards[currentAyahIndex]?.type === 'istiadhah' || 
+                   (flashcards[currentAyahIndex]?.type === 'bismillah' && surahNumber !== 1)) && styles.specialCard
+                ]}>
+                  {/* Fullscreen expand button */}
+                  <TouchableOpacity
+                    style={[
+                      styles.expandButton,
+                      {
+                        opacity: isExpandButtonPressed ? 1 : 0.6,
+                        transform: [{ scale: isExpandButtonPressed ? 1.1 : 1 }]
+                      }
+                    ]}
+                    onPressIn={() => setIsExpandButtonPressed(true)}
+                    onPressOut={() => setIsExpandButtonPressed(false)}
+                    onPress={handleFullscreenToggle}
+                    activeOpacity={0.8}
+                  >
+                    <Image 
+                      source={require('../assets/app_icons/expand.png')} 
+                      style={styles.expandButtonIcon}
+                      resizeMode="contain"
+                    />
+                  </TouchableOpacity> 
                   <ScrollView style={styles.ayahScroll} contentContainerStyle={styles.ayahScrollContent} showsVerticalScrollIndicator={true} bounces={false}>
             {isTextHidden ? (
               <Text
@@ -1628,6 +1837,9 @@ const MemorizationScreen = ({ route, navigation }) => {
                   currentTime={currentAudioTime}
                   fontSize={ayahFontSize}
                   isBoldFont={isBoldFont}
+                  textColor={flashcards[currentAyahIndex]?.type === 'istiadhah' ? '#A57324' :
+                           (flashcards[currentAyahIndex]?.type === 'bismillah' && surahNumber !== 1) ? '#5b7f67' :
+                           '#1a1a1a'}
                   style={[styles.arabicText, { 
                     textAlign: 'center', 
                     alignSelf: 'center', 
@@ -2959,6 +3171,290 @@ const MemorizationScreen = ({ route, navigation }) => {
 
                 {/* All modal content commented out */}
 
+      {/* Fullscreen Modal */}
+      <Modal
+        visible={isFullscreen}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setIsFullscreen(false)}
+      >
+        <View style={styles.fullscreenModalOverlay}>
+          <View style={styles.fullscreenModalContent}>
+            {/* Header with translation and close buttons */}
+            <View style={styles.fullscreenHeader}>
+              {/* Translation button - only show in English mode */}
+              {language !== 'ar' && (
+                <TouchableOpacity
+                  style={styles.fullscreenTranslationButton}
+                  onPress={handleTranslationViewToggle}
+                >
+                  <Image 
+                    source={require('../assets/app_icons/translation.png')} 
+                    style={[
+                      styles.fullscreenTranslationIcon,
+                      showTranslationView && styles.fullscreenToggledIcon
+                    ]}
+                    resizeMode="contain"
+                  />
+                </TouchableOpacity>
+              )}
+              
+              <Text style={styles.fullscreenTitle}>
+                {language === 'ar' ? t(`surah_${surahNumber}`) : getDisplaySurahName(surahNumber)}
+              </Text>
+              
+              <TouchableOpacity
+                style={[
+                  styles.fullscreenCloseButton,
+                  {
+                    opacity: isExpandButtonPressed ? 1 : 0.6,
+                    transform: [{ scale: isExpandButtonPressed ? 1.1 : 1 }]
+                  }
+                ]}
+                onPressIn={() => setIsExpandButtonPressed(true)}
+                onPressOut={() => setIsExpandButtonPressed(false)}
+                onPress={() => setIsFullscreen(false)}
+                activeOpacity={0.8}
+              >
+                <Image 
+                  source={require('../assets/app_icons/expand.png')} 
+                  style={[
+                    styles.fullscreenExpandButtonIcon,
+                    isFullscreen && styles.fullscreenToggledIcon
+                  ]}
+                  resizeMode="contain"
+                />
+              </TouchableOpacity>
+            </View>
+            
+            {/* Search bar and scroll to bottom button */}
+            <View style={styles.fullscreenSearchRow}>
+              <View style={styles.fullscreenSearchContainer}>
+                <Image 
+                  source={require('../assets/app_icons/search.png')} 
+                  style={styles.searchIcon}
+                  resizeMode="contain"
+                />
+                <TextInput
+                  style={styles.fullscreenSearchInput}
+                  placeholder="Search ayat..."
+                  placeholderTextColor="#999"
+                  value={fullscreenSearchText}
+                  onChangeText={setFullscreenSearchText}
+                />
+              </View>
+              <TouchableOpacity
+                style={styles.scrollToBottomButton}
+                onPress={scrollToBottom}
+                activeOpacity={0.7}
+              >
+                <Image 
+                  source={require('../assets/app_icons/down-up.png')} 
+                  style={[
+                    styles.scrollToBottomIcon,
+                    isAtBottom && styles.scrollToBottomIconFlipped
+                  ]}
+                  resizeMode="contain"
+                />
+              </TouchableOpacity>
+            </View>
+            
+            {/* Translation view or ayah list */}
+            {showTranslationView ? (
+              <View style={styles.translationViewContainer}>
+                {/* Translator selector */}
+                <View style={styles.translatorSelector}>
+                  {Object.entries(getTranslationSources()).map(([key, name]) => (
+                    <TouchableOpacity
+                      key={key}
+                      style={[
+                        styles.translatorButton,
+                        currentTranslator === key && styles.translatorButtonActive
+                      ]}
+                      onPress={() => setCurrentTranslator(key)}
+                      activeOpacity={0.7}
+                    >
+                      <Text style={[
+                        styles.translatorButtonText,
+                        currentTranslator === key && styles.translatorButtonTextActive
+                      ]}>
+                        {name}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+                
+                {/* Translation list */}
+                <ScrollView 
+                  style={styles.fullscreenScrollView}
+                  contentContainerStyle={styles.fullscreenScrollContent}
+                  showsVerticalScrollIndicator={true}
+                >
+                  {flashcards.map((card, index) => {
+                    const translation = card.type === 'ayah' 
+                      ? getTranslation(currentTranslator, surahNumber, card.ayah)
+                      : card.translation;
+                    
+                    return (
+                      <View 
+                        key={index} 
+                        style={[
+                          styles.fullscreenAyahCard,
+                          index === currentAyahIndex && styles.currentAyahCard
+                        ]}
+                      >
+                        <Text style={[
+                          styles.fullscreenAyahText,
+                          { color: card.type === 'istiadhah' ? '#A57324' :
+                                   (card.type === 'bismillah' && surahNumber !== 1) ? '#5b7f67' :
+                                   '#333' }
+                        ]}>
+                          {card.text}
+                        </Text>
+                        {translation && (
+                          <Text style={styles.fullscreenTranslationText}>
+                            {translation}
+                          </Text>
+                        )}
+                        {card.type === 'ayah' && (
+                          <Text style={styles.fullscreenAyahNumber}>
+                            {toArabicNumber(flashcards.slice(0, index + 1).filter(a => a.type === 'ayah').length)}
+                          </Text>
+                        )}
+                      </View>
+                    );
+                  })}
+                </ScrollView>
+              </View>
+            ) : (
+              <ScrollView 
+                ref={fullscreenScrollViewRef}
+                style={styles.fullscreenScrollView}
+                contentContainerStyle={styles.fullscreenScrollContent}
+                showsVerticalScrollIndicator={true}
+                onScroll={handleScroll}
+                scrollEventThrottle={16}
+              >
+              {getFilteredFlashcards().map((card, filteredIndex) => {
+                // Find the original index in the flashcards array
+                const originalIndex = flashcards.findIndex(originalCard => 
+                  originalCard === card
+                );
+                
+                return (
+                  <View 
+                    key={originalIndex} 
+                    style={[
+                      styles.fullscreenAyahCard,
+                      originalIndex === currentAyahIndex && styles.currentAyahCard
+                    ]}
+                  >
+                    <TouchableOpacity 
+                      style={styles.fullscreenAyahContent}
+                      onPress={() => handleAyahNavigation(originalIndex)}
+                      activeOpacity={0.7}
+                    >
+                      <Text style={[
+                        styles.fullscreenAyahText,
+                        { color: card.type === 'istiadhah' ? '#A57324' :
+                                 (card.type === 'bismillah' && surahNumber !== 1) ? '#5b7f67' :
+                                 '#333' }
+                      ]}>
+                        {card.text}
+                      </Text>
+                      {card.type === 'ayah' && (
+                        <Text style={styles.fullscreenAyahNumber}>
+                          {toArabicNumber(flashcards.slice(0, originalIndex + 1).filter(a => a.type === 'ayah').length)}
+                        </Text>
+                      )}
+                    </TouchableOpacity>
+                    
+                    {/* Swipeable cover for hide mode */}
+                    {isHideMode && card.type === 'ayah' && ayahCovers[originalIndex] && (
+                      <TouchableOpacity
+                        style={[
+                          styles.fullscreenAyahCover,
+                          { backgroundColor: originalIndex === currentAyahIndex ? '#A57324' : '#5b7f67' }
+                        ]}
+                        onPress={() => handleAyahCoverSwipe(originalIndex)}
+                        activeOpacity={0.8}
+                      >
+                        <Text style={styles.fullscreenAyahCoverText}>
+                          {toArabicNumber(flashcards.slice(0, originalIndex + 1).filter(a => a.type === 'ayah').length)}
+                        </Text>
+                      </TouchableOpacity>
+                    )}
+                  </View>
+                );
+              })}
+            </ScrollView>
+            )}
+            
+            {/* Divider */}
+            <View style={styles.fullscreenActionButtonsDivider} />
+            
+            {/* Surah Navigation and Action Buttons */}
+            <View style={styles.fullscreenActionButtonsContainer}>
+              <TouchableOpacity
+                style={[styles.fullscreenActionButton, styles.fullscreenNavButton]}
+                onPress={goToPreviousSurah}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.fullscreenActionButtonText}>←</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity
+                style={styles.fullscreenActionButton}
+                onPress={handleHideToggle}
+                activeOpacity={0.7}
+              >
+                <Image 
+                  source={require('../assets/app_icons/display-frame.png')} 
+                  style={styles.fullscreenActionButtonIcon}
+                  resizeMode="contain"
+                />
+              </TouchableOpacity>
+              
+              <TouchableOpacity
+                style={[styles.fullscreenActionButton, styles.fullscreenMicOffButton]}
+                onPress={handleFullSurahRecord}
+                activeOpacity={0.7}
+              >
+                <Image 
+                  source={require('../assets/app_icons/mic-off.png')} 
+                  style={[
+                    styles.fullscreenActionButtonIcon,
+                    styles.fullscreenMicOffIcon
+                  ]}
+                  resizeMode="contain"
+                />
+              </TouchableOpacity>
+              
+              <TouchableOpacity
+                style={styles.fullscreenActionButton}
+                onPress={handleFullSurahAudio}
+                activeOpacity={0.7}
+              >
+                <Image 
+                  source={require('../assets/app_icons/audio.png')} 
+                  style={styles.fullscreenActionButtonIcon}
+                  resizeMode="contain"
+                />
+              </TouchableOpacity>
+              
+              <TouchableOpacity
+                style={[styles.fullscreenActionButton, styles.fullscreenNavButton]}
+                onPress={goToNextSurah}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.fullscreenActionButtonText}>→</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+
     </SafeAreaView>
       </ImageBackground>
     </View>
@@ -3346,6 +3842,331 @@ const styles = StyleSheet.create({
     padding: 3,
     borderWidth: 1,
     borderColor: '#5b7f67',
+  },
+  // Expand button styles
+  expandButton: {
+    position: 'absolute',
+    top: 15,
+    right: 15,
+    width: 40,
+    height: 40,
+    backgroundColor: 'transparent',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10,
+  },
+  expandButtonIcon: {
+    width: 24,
+    height: 24,
+    tintColor: '#333',
+  },
+  fullscreenExpandButtonIcon: {
+    width: 24,
+    height: 24,
+    tintColor: 'rgba(255, 255, 255, 0.8)',
+  },
+  // Fullscreen modal styles
+  fullscreenModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.9)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  fullscreenModalContent: {
+    width: '95%',
+    height: '90%',
+    backgroundColor: '#F5E6C8',
+    borderRadius: 20,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 10,
+  },
+  fullscreenHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+    paddingBottom: 15,
+    borderBottomWidth: 2,
+    borderBottomColor: '#A57324',
+  },
+  fullscreenTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#5b7f67',
+    flex: 1,
+    textAlign: 'center',
+  },
+  fullscreenCloseButton: {
+    width: 40,
+    height: 40,
+    backgroundColor: 'rgba(128, 128, 128, 0.3)',
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  fullscreenTranslationButton: {
+    width: 40,
+    height: 40,
+    backgroundColor: 'rgba(128, 128, 128, 0.3)',
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  fullscreenTranslationIcon: {
+    width: 24,
+    height: 24,
+    tintColor: '#A57324',
+  },
+  fullscreenScrollView: {
+    flex: 1,
+  },
+  fullscreenScrollContent: {
+    paddingBottom: 20,
+  },
+  fullscreenAyahCard: {
+    backgroundColor: '#fff',
+    borderRadius: 15,
+    padding: 20,
+    marginBottom: 15,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    borderLeftWidth: 4,
+    borderLeftColor: '#A57324',
+  },
+  fullscreenAyahText: {
+    fontSize: 28,
+    fontFamily: 'KFGQPC HAFS Uthmanic Script Regular',
+    color: '#333',
+    textAlign: 'right',
+    lineHeight: 42,
+    marginBottom: 10,
+  },
+  fullscreenAyahNumber: {
+    fontSize: 16,
+    color: '#A57324',
+    fontWeight: 'bold',
+    textAlign: 'left',
+  },
+  // Search styles
+  fullscreenSearchRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 15,
+    gap: 10,
+  },
+  fullscreenSearchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    borderRadius: 25,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    flex: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  scrollToBottomButton: {
+    width: 50,
+    height: 50,
+    backgroundColor: '#A57324',
+    borderRadius: 25,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  scrollToBottomIcon: {
+    width: 24,
+    height: 24,
+    tintColor: '#F5E6C8',
+  },
+  scrollToBottomIconFlipped: {
+    transform: [{ rotate: '180deg' }],
+  },
+  searchIcon: {
+    width: 20,
+    height: 20,
+    marginRight: 10,
+    tintColor: '#A57324',
+  },
+  fullscreenSearchInput: {
+    flex: 1,
+    fontSize: 16,
+    color: '#333',
+    paddingVertical: 5,
+  },
+  // Current ayah highlighting
+  currentAyahCard: {
+    backgroundColor: '#E8F5E8',
+    borderLeftColor: '#5b7f67',
+    borderLeftWidth: 6,
+  },
+  // Translation text styles
+  fullscreenTranslationText: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'left',
+    lineHeight: 24,
+    marginTop: 5,
+    fontStyle: 'italic',
+  },
+  // Action buttons styles
+  fullscreenActionButtonsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 20,
+    paddingHorizontal: 20,
+    paddingTop: 15,
+    gap: 8,
+  },
+  fullscreenActionButtonsDivider: {
+    height: 2,
+    backgroundColor: 'rgba(128, 128, 128, 0.3)',
+    marginHorizontal: 0,
+    marginTop: 20,
+  },
+  fullscreenActionButton: {
+    width: 50,
+    height: 50,
+    backgroundColor: '#5b7f67',
+    borderRadius: 25,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  fullscreenActionButtonText: {
+    color: '#F5E6C8',
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  fullscreenActionButtonIcon: {
+    width: 24,
+    height: 24,
+    tintColor: '#F5E6C8',
+  },
+  // Ayah cover styles
+  fullscreenAyahContent: {
+    flex: 1,
+  },
+  fullscreenAyahCover: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  fullscreenAyahCoverText: {
+    color: '#F5E6C8',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  // Special card styles for isti3aadhah and bismillah
+  specialCard: {
+    backgroundColor: '#F0E8D8', // Mix between grey (#E8E8E8) and parchment (#F5E6C8)
+    borderRadius: 20,
+    borderColor: '#C0C0C0',
+    borderWidth: 2,
+    shadowColor: '#C0C0C0',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  // Navigation button styles
+  fullscreenNavButton: {
+    backgroundColor: '#A57324',
+  },
+  // Recording button styles
+  fullscreenRecordingButton: {
+    backgroundColor: '#5b7f67',
+  },
+  fullscreenRecordingIcon: {
+    tintColor: '#F5E6C8',
+  },
+  fullscreenMicOffIcon: {
+    tintColor: '#5b7f67',
+  },
+  fullscreenMicOffButton: {
+    backgroundColor: 'transparent',
+    borderWidth: 2,
+    borderColor: '#5b7f67',
+  },
+  // Toggled icon styles
+  fullscreenToggledIcon: {
+    tintColor: '#A57324',
+  },
+  // Translation view styles
+  translationViewContainer: {
+    flex: 1,
+  },
+  translatorSelector: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 8,
+    marginBottom: 5,
+    gap: 8,
+  },
+  translatorButton: {
+    paddingHorizontal: 8,
+    paddingVertical: 6,
+    borderRadius: 12,
+    backgroundColor: 'rgba(128, 128, 128, 0.3)',
+    minWidth: 60,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  translatorButtonActive: {
+    backgroundColor: '#A57324',
+  },
+  translatorButtonText: {
+    color: '#F5E6C8',
+    fontSize: 10,
+    fontWeight: '500',
+  },
+  translatorButtonTextActive: {
+    color: '#F5E6C8',
+    fontWeight: 'bold',
   },
 });
 

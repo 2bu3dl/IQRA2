@@ -316,7 +316,7 @@ class AudioPlayer {
           });
         }
       }
-    }, 100);
+    }, 50); // Reduced interval for smoother highlighting
   }
 
   stopHighlightingTimer() {

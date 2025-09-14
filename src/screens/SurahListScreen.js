@@ -655,6 +655,7 @@ const SurahListScreen = ({ navigation, route }) => {
             }]}>
               <View style={[styles.searchInputContainer, { 
                 backgroundColor: isSearchFocused ? 'rgba(91, 127, 103, 0.3)' : 'rgba(91, 127, 103, 0.2)', // Changed to green shades
+                borderColor: isSearchFocused ? 'rgba(192, 192, 192, 0.8)' : 'rgba(192, 192, 192, 0.4)', // More transparent when not focused
                 flex: isJuzMode ? 1 : undefined,
                 marginRight: isJuzMode ? SIZES.small : 0,
                 ...(Platform.OS === 'android' && { paddingVertical: SIZES.small / 4 })
@@ -664,7 +665,7 @@ const SurahListScreen = ({ navigation, route }) => {
                   style={[styles.searchInput, { 
                     fontFamily: 'KFGQPC HAFS Uthmanic Script Regular', 
                     fontWeight: isSearchFocused ? 'bold' : 'normal', 
-                    textAlign: language === 'ar' ? 'right' : 'left', 
+                    textAlign: 'center', // Center the text
                     writingDirection: language === 'ar' ? 'rtl' : 'ltr',
                     ...(Platform.OS === 'android' && { fontSize: 12 })
                   }]}
@@ -2417,11 +2418,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     borderRadius: 20,
-    padding: SIZES.small / 2, // Reduced padding to make search bar thinner
+    padding: SIZES.small / 3, // Made even thinner
     borderWidth: 1,
-    borderColor: '#C0C0C0',
-    minHeight: 40, // Fixed height to prevent dimension changes
-    height: 40, // Fixed height to prevent dimension changes
+    borderColor: 'rgba(192, 192, 192, 0.4)', // More transparent when not toggled
+    minHeight: 36, // Made slightly thinner
+    height: 36, // Made slightly thinner
   },
   searchIcon: {
     marginRight: SIZES.small,
@@ -2430,6 +2431,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 16,
     color: '#FFFFFF', // Made text whiter
+    textAlign: 'center', // Center the text
     textShadowColor: 'rgba(0, 0, 0, 0.8)', // Add text shadow for better readability
     textShadowOffset: { width: 1, height: 1 },
     textShadowRadius: 2,
