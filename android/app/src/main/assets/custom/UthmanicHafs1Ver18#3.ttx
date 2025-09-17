@@ -1,0 +1,1252 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ttFont sfntVersion="\x00\x01\x00\x00" ttLibVersion="4.55">
+
+  <cmap>
+    <tableVersion version="0"/>
+    <cmap_format_4 platformID="0" platEncID="3" language="0">
+      <map code="0x20" name="space"/><!-- SPACE -->
+      <map code="0x28" name="parenleft"/><!-- LEFT PARENTHESIS -->
+      <map code="0x29" name="parenright"/><!-- RIGHT PARENTHESIS -->
+      <map code="0x30" name="zero"/><!-- DIGIT ZERO -->
+      <map code="0x31" name="one"/><!-- DIGIT ONE -->
+      <map code="0x32" name="two"/><!-- DIGIT TWO -->
+      <map code="0x33" name="three"/><!-- DIGIT THREE -->
+      <map code="0x34" name="four"/><!-- DIGIT FOUR -->
+      <map code="0x35" name="five"/><!-- DIGIT FIVE -->
+      <map code="0x36" name="six"/><!-- DIGIT SIX -->
+      <map code="0x37" name="seven"/><!-- DIGIT SEVEN -->
+      <map code="0x38" name="eight"/><!-- DIGIT EIGHT -->
+      <map code="0x39" name="nine"/><!-- DIGIT NINE -->
+      <map code="0x5b" name="bracketleft"/><!-- LEFT SQUARE BRACKET -->
+      <map code="0x5d" name="bracketright"/><!-- RIGHT SQUARE BRACKET -->
+      <map code="0xa0" name="space"/><!-- NO-BREAK SPACE -->
+      <map code="0x600" name="uni0600"/><!-- ARABIC NUMBER SIGN -->
+      <map code="0x601" name="uni0601"/><!-- ARABIC SIGN SANAH -->
+      <map code="0x602" name="uni0602"/><!-- ARABIC FOOTNOTE MARKER -->
+      <map code="0x603" name="uni0603"/><!-- ARABIC SIGN SAFHA -->
+      <map code="0x604" name="uni0604"/><!-- ARABIC SIGN SAMVAT -->
+      <map code="0x605" name="uni0605"/><!-- ARABIC NUMBER MARK ABOVE -->
+      <map code="0x606" name="uni0606"/><!-- ARABIC-INDIC CUBE ROOT -->
+      <map code="0x607" name="uni0607"/><!-- ARABIC-INDIC FOURTH ROOT -->
+      <map code="0x608" name="uni0608"/><!-- ARABIC RAY -->
+      <map code="0x609" name="uni0609"/><!-- ARABIC-INDIC PER MILLE SIGN -->
+      <map code="0x60a" name="uni060A"/><!-- ARABIC-INDIC PER TEN THOUSAND SIGN -->
+      <map code="0x60b" name="uni060B"/><!-- AFGHANI SIGN -->
+      <map code="0x60c" name="afii57388"/><!-- ARABIC COMMA -->
+      <map code="0x60d" name="uni060D"/><!-- ARABIC DATE SEPARATOR -->
+      <map code="0x60e" name="uni060E"/><!-- ARABIC POETIC VERSE SIGN -->
+      <map code="0x60f" name="uni060F"/><!-- ARABIC SIGN MISRA -->
+      <map code="0x610" name="uni0610"/><!-- ARABIC SIGN SALLALLAHOU ALAYHE WASSALLAM -->
+      <map code="0x611" name="uni0611"/><!-- ARABIC SIGN ALAYHE ASSALLAM -->
+      <map code="0x612" name="uni0612"/><!-- ARABIC SIGN RAHMATULLAH ALAYHE -->
+      <map code="0x613" name="uni0613"/><!-- ARABIC SIGN RADI ALLAHOU ANHU -->
+      <map code="0x614" name="uni0614"/><!-- ARABIC SIGN TAKHALLUS -->
+      <map code="0x615" name="uni0615"/><!-- ARABIC SMALL HIGH TAH -->
+      <map code="0x616" name="uni0616"/><!-- ARABIC SMALL HIGH LIGATURE ALEF WITH LAM WITH YEH -->
+      <map code="0x617" name="uni0617"/><!-- ARABIC SMALL HIGH ZAIN -->
+      <map code="0x618" name="uni0618"/><!-- ARABIC SMALL FATHA -->
+      <map code="0x619" name="uni0619"/><!-- ARABIC SMALL DAMMA -->
+      <map code="0x61a" name="uni061A"/><!-- ARABIC SMALL KASRA -->
+      <map code="0x61b" name="afii57403"/><!-- ARABIC SEMICOLON -->
+      <map code="0x61c" name="uni061C"/><!-- ARABIC LETTER MARK -->
+      <map code="0x61d" name="uni061D"/><!-- ARABIC END OF TEXT MARK -->
+      <map code="0x61e" name="uni061E"/><!-- ARABIC TRIPLE DOT PUNCTUATION MARK -->
+      <map code="0x61f" name="afii57407"/><!-- ARABIC QUESTION MARK -->
+      <map code="0x620" name="uni0620"/><!-- ARABIC LETTER KASHMIRI YEH -->
+      <map code="0x621" name="afii57409"/><!-- ARABIC LETTER HAMZA -->
+      <map code="0x622" name="afii57410"/><!-- ARABIC LETTER ALEF WITH MADDA ABOVE -->
+      <map code="0x623" name="afii57411"/><!-- ARABIC LETTER ALEF WITH HAMZA ABOVE -->
+      <map code="0x624" name="afii57412"/><!-- ARABIC LETTER WAW WITH HAMZA ABOVE -->
+      <map code="0x625" name="afii57413"/><!-- ARABIC LETTER ALEF WITH HAMZA BELOW -->
+      <map code="0x626" name="afii57414"/><!-- ARABIC LETTER YEH WITH HAMZA ABOVE -->
+      <map code="0x627" name="afii57415"/><!-- ARABIC LETTER ALEF -->
+      <map code="0x628" name="afii57416"/><!-- ARABIC LETTER BEH -->
+      <map code="0x629" name="afii57417"/><!-- ARABIC LETTER TEH MARBUTA -->
+      <map code="0x62a" name="afii57418"/><!-- ARABIC LETTER TEH -->
+      <map code="0x62b" name="afii57419"/><!-- ARABIC LETTER THEH -->
+      <map code="0x62c" name="afii57420"/><!-- ARABIC LETTER JEEM -->
+      <map code="0x62d" name="afii57421"/><!-- ARABIC LETTER HAH -->
+      <map code="0x62e" name="afii57422"/><!-- ARABIC LETTER KHAH -->
+      <map code="0x62f" name="afii57423"/><!-- ARABIC LETTER DAL -->
+      <map code="0x630" name="afii57424"/><!-- ARABIC LETTER THAL -->
+      <map code="0x631" name="afii57425"/><!-- ARABIC LETTER REH -->
+      <map code="0x632" name="afii57426"/><!-- ARABIC LETTER ZAIN -->
+      <map code="0x633" name="afii57427"/><!-- ARABIC LETTER SEEN -->
+      <map code="0x634" name="afii57428"/><!-- ARABIC LETTER SHEEN -->
+      <map code="0x635" name="afii57429"/><!-- ARABIC LETTER SAD -->
+      <map code="0x636" name="afii57430"/><!-- ARABIC LETTER DAD -->
+      <map code="0x637" name="afii57431"/><!-- ARABIC LETTER TAH -->
+      <map code="0x638" name="afii57432"/><!-- ARABIC LETTER ZAH -->
+      <map code="0x639" name="afii57433"/><!-- ARABIC LETTER AIN -->
+      <map code="0x63a" name="afii57434"/><!-- ARABIC LETTER GHAIN -->
+      <map code="0x63b" name="uni063B"/><!-- ARABIC LETTER KEHEH WITH TWO DOTS ABOVE -->
+      <map code="0x63c" name="uni063C"/><!-- ARABIC LETTER KEHEH WITH THREE DOTS BELOW -->
+      <map code="0x63d" name="uni063D"/><!-- ARABIC LETTER FARSI YEH WITH INVERTED V -->
+      <map code="0x63e" name="uni063E"/><!-- ARABIC LETTER FARSI YEH WITH TWO DOTS ABOVE -->
+      <map code="0x63f" name="uni063F"/><!-- ARABIC LETTER FARSI YEH WITH THREE DOTS ABOVE -->
+      <map code="0x640" name="afii57440"/><!-- ARABIC TATWEEL -->
+      <map code="0x641" name="afii57441"/><!-- ARABIC LETTER FEH -->
+      <map code="0x642" name="afii57442"/><!-- ARABIC LETTER QAF -->
+      <map code="0x643" name="afii57443"/><!-- ARABIC LETTER KAF -->
+      <map code="0x644" name="afii57444"/><!-- ARABIC LETTER LAM -->
+      <map code="0x645" name="afii57445"/><!-- ARABIC LETTER MEEM -->
+      <map code="0x646" name="afii57446"/><!-- ARABIC LETTER NOON -->
+      <map code="0x647" name="afii57470"/><!-- ARABIC LETTER HEH -->
+      <map code="0x648" name="afii57448"/><!-- ARABIC LETTER WAW -->
+      <map code="0x649" name="afii57449"/><!-- ARABIC LETTER ALEF MAKSURA -->
+      <map code="0x64a" name="afii57450"/><!-- ARABIC LETTER YEH -->
+      <map code="0x64b" name="afii57451"/><!-- ARABIC FATHATAN -->
+      <map code="0x64c" name="afii57452"/><!-- ARABIC DAMMATAN -->
+      <map code="0x64d" name="afii57453"/><!-- ARABIC KASRATAN -->
+      <map code="0x64e" name="afii57454"/><!-- ARABIC FATHA -->
+      <map code="0x64f" name="afii57455"/><!-- ARABIC DAMMA -->
+      <map code="0x650" name="afii57456"/><!-- ARABIC KASRA -->
+      <map code="0x651" name="afii57457"/><!-- ARABIC SHADDA -->
+      <map code="0x652" name="afii57458"/><!-- ARABIC SUKUN -->
+      <map code="0x653" name="uni0653"/><!-- ARABIC MADDAH ABOVE -->
+      <map code="0x654" name="uni0654"/><!-- ARABIC HAMZA ABOVE -->
+      <map code="0x655" name="uni0655"/><!-- ARABIC HAMZA BELOW -->
+      <map code="0x656" name="uni0656"/><!-- ARABIC SUBSCRIPT ALEF -->
+      <map code="0x657" name="uni0657"/><!-- ARABIC INVERTED DAMMA -->
+      <map code="0x658" name="uni0658"/><!-- ARABIC MARK NOON GHUNNA -->
+      <map code="0x659" name="uni0659"/><!-- ARABIC ZWARAKAY -->
+      <map code="0x65a" name="uni065A"/><!-- ARABIC VOWEL SIGN SMALL V ABOVE -->
+      <map code="0x65b" name="uni065B"/><!-- ARABIC VOWEL SIGN INVERTED SMALL V ABOVE -->
+      <map code="0x65c" name="uni065C"/><!-- ARABIC VOWEL SIGN DOT BELOW -->
+      <map code="0x65d" name="uni065D"/><!-- ARABIC REVERSED DAMMA -->
+      <map code="0x65e" name="uni065E"/><!-- ARABIC FATHA WITH TWO DOTS -->
+      <map code="0x65f" name="uni065F"/><!-- ARABIC WAVY HAMZA BELOW -->
+      <map code="0x660" name="a000"/><!-- ARABIC-INDIC DIGIT ZERO -->
+      <map code="0x661" name="a001"/><!-- ARABIC-INDIC DIGIT ONE -->
+      <map code="0x662" name="a002"/><!-- ARABIC-INDIC DIGIT TWO -->
+      <map code="0x663" name="a003"/><!-- ARABIC-INDIC DIGIT THREE -->
+      <map code="0x664" name="a004"/><!-- ARABIC-INDIC DIGIT FOUR -->
+      <map code="0x665" name="a005"/><!-- ARABIC-INDIC DIGIT FIVE -->
+      <map code="0x666" name="a006"/><!-- ARABIC-INDIC DIGIT SIX -->
+      <map code="0x667" name="a007"/><!-- ARABIC-INDIC DIGIT SEVEN -->
+      <map code="0x668" name="a008"/><!-- ARABIC-INDIC DIGIT EIGHT -->
+      <map code="0x669" name="a009"/><!-- ARABIC-INDIC DIGIT NINE -->
+      <map code="0x66a" name="afii57381"/><!-- ARABIC PERCENT SIGN -->
+      <map code="0x66b" name="uni066B"/><!-- ARABIC DECIMAL SEPARATOR -->
+      <map code="0x66c" name="uni066C"/><!-- ARABIC THOUSANDS SEPARATOR -->
+      <map code="0x66d" name="afii63167"/><!-- ARABIC FIVE POINTED STAR -->
+      <map code="0x66e" name="bsa"/><!-- ARABIC LETTER DOTLESS BEH -->
+      <map code="0x66f" name="uni066F"/><!-- ARABIC LETTER DOTLESS QAF -->
+      <map code="0x670" name="uni0670"/><!-- ARABIC LETTER SUPERSCRIPT ALEF -->
+      <map code="0x671" name="uni0671"/><!-- ARABIC LETTER ALEF WASLA -->
+      <map code="0x672" name="uni0672"/><!-- ARABIC LETTER ALEF WITH WAVY HAMZA ABOVE -->
+      <map code="0x673" name="uni0673"/><!-- ARABIC LETTER ALEF WITH WAVY HAMZA BELOW -->
+      <map code="0x674" name="uni0674"/><!-- ARABIC LETTER HIGH HAMZA -->
+      <map code="0x675" name="uni0675"/><!-- ARABIC LETTER HIGH HAMZA ALEF -->
+      <map code="0x676" name="uni0676"/><!-- ARABIC LETTER HIGH HAMZA WAW -->
+      <map code="0x677" name="uni0677"/><!-- ARABIC LETTER U WITH HAMZA ABOVE -->
+      <map code="0x678" name="uni0678"/><!-- ARABIC LETTER HIGH HAMZA YEH -->
+      <map code="0x679" name="afii57511"/><!-- ARABIC LETTER TTEH -->
+      <map code="0x67a" name="uni067A"/><!-- ARABIC LETTER TTEHEH -->
+      <map code="0x67b" name="uni067B"/><!-- ARABIC LETTER BEEH -->
+      <map code="0x67c" name="uni067C"/><!-- ARABIC LETTER TEH WITH RING -->
+      <map code="0x67d" name="uni067D"/><!-- ARABIC LETTER TEH WITH THREE DOTS ABOVE DOWNWARDS -->
+      <map code="0x67e" name="afii57506"/><!-- ARABIC LETTER PEH -->
+      <map code="0x67f" name="uni067F"/><!-- ARABIC LETTER TEHEH -->
+      <map code="0x680" name="uni0680"/><!-- ARABIC LETTER BEHEH -->
+      <map code="0x681" name="uni0681"/><!-- ARABIC LETTER HAH WITH HAMZA ABOVE -->
+      <map code="0x682" name="uni0682"/><!-- ARABIC LETTER HAH WITH TWO DOTS VERTICAL ABOVE -->
+      <map code="0x683" name="uni0683"/><!-- ARABIC LETTER NYEH -->
+      <map code="0x684" name="uni0684"/><!-- ARABIC LETTER DYEH -->
+      <map code="0x685" name="uni0685"/><!-- ARABIC LETTER HAH WITH THREE DOTS ABOVE -->
+      <map code="0x686" name="afii57507"/><!-- ARABIC LETTER TCHEH -->
+      <map code="0x687" name="uni0687"/><!-- ARABIC LETTER TCHEHEH -->
+      <map code="0x688" name="afii57512"/><!-- ARABIC LETTER DDAL -->
+      <map code="0x689" name="uni0689"/><!-- ARABIC LETTER DAL WITH RING -->
+      <map code="0x68a" name="uni068A"/><!-- ARABIC LETTER DAL WITH DOT BELOW -->
+      <map code="0x68b" name="uni068B"/><!-- ARABIC LETTER DAL WITH DOT BELOW AND SMALL TAH -->
+      <map code="0x68c" name="uni068C"/><!-- ARABIC LETTER DAHAL -->
+      <map code="0x68d" name="uni068D"/><!-- ARABIC LETTER DDAHAL -->
+      <map code="0x68e" name="uni068E"/><!-- ARABIC LETTER DUL -->
+      <map code="0x68f" name="uni068F"/><!-- ARABIC LETTER DAL WITH THREE DOTS ABOVE DOWNWARDS -->
+      <map code="0x690" name="uni0690"/><!-- ARABIC LETTER DAL WITH FOUR DOTS ABOVE -->
+      <map code="0x691" name="afii57513"/><!-- ARABIC LETTER RREH -->
+      <map code="0x692" name="uni0692"/><!-- ARABIC LETTER REH WITH SMALL V -->
+      <map code="0x693" name="uni0693"/><!-- ARABIC LETTER REH WITH RING -->
+      <map code="0x694" name="uni0694"/><!-- ARABIC LETTER REH WITH DOT BELOW -->
+      <map code="0x695" name="uni0695"/><!-- ARABIC LETTER REH WITH SMALL V BELOW -->
+      <map code="0x696" name="uni0696"/><!-- ARABIC LETTER REH WITH DOT BELOW AND DOT ABOVE -->
+      <map code="0x697" name="uni0697"/><!-- ARABIC LETTER REH WITH TWO DOTS ABOVE -->
+      <map code="0x698" name="afii57508"/><!-- ARABIC LETTER JEH -->
+      <map code="0x699" name="uni0699"/><!-- ARABIC LETTER REH WITH FOUR DOTS ABOVE -->
+      <map code="0x69a" name="uni069A"/><!-- ARABIC LETTER SEEN WITH DOT BELOW AND DOT ABOVE -->
+      <map code="0x69b" name="uni069B"/><!-- ARABIC LETTER SEEN WITH THREE DOTS BELOW -->
+      <map code="0x69c" name="uni069C"/><!-- ARABIC LETTER SEEN WITH THREE DOTS BELOW AND THREE DOTS ABOVE -->
+      <map code="0x69d" name="uni069D"/><!-- ARABIC LETTER SAD WITH TWO DOTS BELOW -->
+      <map code="0x69e" name="uni069E"/><!-- ARABIC LETTER SAD WITH THREE DOTS ABOVE -->
+      <map code="0x69f" name="uni069F"/><!-- ARABIC LETTER TAH WITH THREE DOTS ABOVE -->
+      <map code="0x6a0" name="uni06A0"/><!-- ARABIC LETTER AIN WITH THREE DOTS ABOVE -->
+      <map code="0x6a1" name="uni06A1"/><!-- ARABIC LETTER DOTLESS FEH -->
+      <map code="0x6a2" name="uni06A2"/><!-- ARABIC LETTER FEH WITH DOT MOVED BELOW -->
+      <map code="0x6a3" name="uni06A3"/><!-- ARABIC LETTER FEH WITH DOT BELOW -->
+      <map code="0x6a4" name="afii57505"/><!-- ARABIC LETTER VEH -->
+      <map code="0x6a5" name="uni06A5"/><!-- ARABIC LETTER FEH WITH THREE DOTS BELOW -->
+      <map code="0x6a6" name="uni06A6"/><!-- ARABIC LETTER PEHEH -->
+      <map code="0x6a7" name="uni06A7"/><!-- ARABIC LETTER QAF WITH DOT ABOVE -->
+      <map code="0x6a8" name="uni06A8"/><!-- ARABIC LETTER QAF WITH THREE DOTS ABOVE -->
+      <map code="0x6a9" name="uni06A9"/><!-- ARABIC LETTER KEHEH -->
+      <map code="0x6aa" name="uni06AA"/><!-- ARABIC LETTER SWASH KAF -->
+      <map code="0x6ab" name="uni06AB"/><!-- ARABIC LETTER KAF WITH RING -->
+      <map code="0x6ac" name="uni06AC"/><!-- ARABIC LETTER KAF WITH DOT ABOVE -->
+      <map code="0x6ad" name="uni06AD"/><!-- ARABIC LETTER NG -->
+      <map code="0x6ae" name="uni06AE"/><!-- ARABIC LETTER KAF WITH THREE DOTS BELOW -->
+      <map code="0x6af" name="afii57509"/><!-- ARABIC LETTER GAF -->
+      <map code="0x6b0" name="uni06B0"/><!-- ARABIC LETTER GAF WITH RING -->
+      <map code="0x6b1" name="uni06B1"/><!-- ARABIC LETTER NGOEH -->
+      <map code="0x6b2" name="uni06B2"/><!-- ARABIC LETTER GAF WITH TWO DOTS BELOW -->
+      <map code="0x6b3" name="uni06B3"/><!-- ARABIC LETTER GUEH -->
+      <map code="0x6b4" name="uni06B4"/><!-- ARABIC LETTER GAF WITH THREE DOTS ABOVE -->
+      <map code="0x6b5" name="uni06B5"/><!-- ARABIC LETTER LAM WITH SMALL V -->
+      <map code="0x6b6" name="uni06B6"/><!-- ARABIC LETTER LAM WITH DOT ABOVE -->
+      <map code="0x6b7" name="uni06B7"/><!-- ARABIC LETTER LAM WITH THREE DOTS ABOVE -->
+      <map code="0x6b8" name="uni06B8"/><!-- ARABIC LETTER LAM WITH THREE DOTS BELOW -->
+      <map code="0x6b9" name="uni06B9"/><!-- ARABIC LETTER NOON WITH DOT BELOW -->
+      <map code="0x6ba" name="afii57514"/><!-- ARABIC LETTER NOON GHUNNA -->
+      <map code="0x6bb" name="uni06BB"/><!-- ARABIC LETTER RNOON -->
+      <map code="0x6bc" name="uni06BC"/><!-- ARABIC LETTER NOON WITH RING -->
+      <map code="0x6bd" name="uni06BD"/><!-- ARABIC LETTER NOON WITH THREE DOTS ABOVE -->
+      <map code="0x6be" name="uni06BE"/><!-- ARABIC LETTER HEH DOACHASHMEE -->
+      <map code="0x6bf" name="uni06BF"/><!-- ARABIC LETTER TCHEH WITH DOT ABOVE -->
+      <map code="0x6c0" name="uni06C0"/><!-- ARABIC LETTER HEH WITH YEH ABOVE -->
+      <map code="0x6c1" name="uni06C1"/><!-- ARABIC LETTER HEH GOAL -->
+      <map code="0x6c2" name="uni06C2"/><!-- ARABIC LETTER HEH GOAL WITH HAMZA ABOVE -->
+      <map code="0x6c3" name="uni06C3"/><!-- ARABIC LETTER TEH MARBUTA GOAL -->
+      <map code="0x6c4" name="uni06C4"/><!-- ARABIC LETTER WAW WITH RING -->
+      <map code="0x6c5" name="uni06C5"/><!-- ARABIC LETTER KIRGHIZ OE -->
+      <map code="0x6c6" name="uni06C6"/><!-- ARABIC LETTER OE -->
+      <map code="0x6c7" name="uni06C7"/><!-- ARABIC LETTER U -->
+      <map code="0x6c8" name="uni06C8"/><!-- ARABIC LETTER YU -->
+      <map code="0x6c9" name="uni06C9"/><!-- ARABIC LETTER KIRGHIZ YU -->
+      <map code="0x6ca" name="uni06CA"/><!-- ARABIC LETTER WAW WITH TWO DOTS ABOVE -->
+      <map code="0x6cb" name="uni06CB"/><!-- ARABIC LETTER VE -->
+      <map code="0x6cc" name="uni06CC"/><!-- ARABIC LETTER FARSI YEH -->
+      <map code="0x6cd" name="uni06CD"/><!-- ARABIC LETTER YEH WITH TAIL -->
+      <map code="0x6ce" name="uni06CE"/><!-- ARABIC LETTER YEH WITH SMALL V -->
+      <map code="0x6cf" name="uni06CF"/><!-- ARABIC LETTER WAW WITH DOT ABOVE -->
+      <map code="0x6d0" name="uni06D0"/><!-- ARABIC LETTER E -->
+      <map code="0x6d1" name="uni06D1"/><!-- ARABIC LETTER YEH WITH THREE DOTS BELOW -->
+      <map code="0x6d2" name="afii57519"/><!-- ARABIC LETTER YEH BARREE -->
+      <map code="0x6d3" name="uni06D3"/><!-- ARABIC LETTER YEH BARREE WITH HAMZA ABOVE -->
+      <map code="0x6d4" name="uni06D4"/><!-- ARABIC FULL STOP -->
+      <map code="0x6d5" name="afii57534"/><!-- ARABIC LETTER AE -->
+      <map code="0x6d6" name="uni06D6"/><!-- ARABIC SMALL HIGH LIGATURE SAD WITH LAM WITH ALEF MAKSURA -->
+      <map code="0x6d7" name="uni06D7"/><!-- ARABIC SMALL HIGH LIGATURE QAF WITH LAM WITH ALEF MAKSURA -->
+      <map code="0x6d8" name="uni06D8"/><!-- ARABIC SMALL HIGH MEEM INITIAL FORM -->
+      <map code="0x6d9" name="uni06D9"/><!-- ARABIC SMALL HIGH LAM ALEF -->
+      <map code="0x6da" name="uni06DA"/><!-- ARABIC SMALL HIGH JEEM -->
+      <map code="0x6db" name="uni06DB"/><!-- ARABIC SMALL HIGH THREE DOTS -->
+      <map code="0x6dc" name="uni06DC"/><!-- ARABIC SMALL HIGH SEEN -->
+      <map code="0x6dd" name="uni06DD"/><!-- ARABIC END OF AYAH -->
+      <map code="0x6de" name="uni06DE"/><!-- ARABIC START OF RUB EL HIZB -->
+      <map code="0x6df" name="uni06DF"/><!-- ARABIC SMALL HIGH ROUNDED ZERO -->
+      <map code="0x6e0" name="uni06E0"/><!-- ARABIC SMALL HIGH UPRIGHT RECTANGULAR ZERO -->
+      <map code="0x6e1" name="uni06E1"/><!-- ARABIC SMALL HIGH DOTLESS HEAD OF KHAH -->
+      <map code="0x6e2" name="uni06E2"/><!-- ARABIC SMALL HIGH MEEM ISOLATED FORM -->
+      <map code="0x6e3" name="uni06E3"/><!-- ARABIC SMALL LOW SEEN -->
+      <map code="0x6e4" name="uni06E4"/><!-- ARABIC SMALL HIGH MADDA -->
+      <map code="0x6e5" name="uni06E5"/><!-- ARABIC SMALL WAW -->
+      <map code="0x6e6" name="uni06E6"/><!-- ARABIC SMALL YEH -->
+      <map code="0x6e7" name="uni06E7"/><!-- ARABIC SMALL HIGH YEH -->
+      <map code="0x6e8" name="uni06E8"/><!-- ARABIC SMALL HIGH NOON -->
+      <map code="0x6e9" name="uni06E9"/><!-- ARABIC PLACE OF SAJDAH -->
+      <map code="0x6ea" name="uni06EA"/><!-- ARABIC EMPTY CENTRE LOW STOP -->
+      <map code="0x6eb" name="uni06EB"/><!-- ARABIC EMPTY CENTRE HIGH STOP -->
+      <map code="0x6ec" name="up"/><!-- ARABIC ROUNDED HIGH STOP WITH FILLED CENTRE -->
+      <map code="0x6ed" name="uni06ED"/><!-- ARABIC SMALL LOW MEEM -->
+      <map code="0x6ee" name="uni06EE"/><!-- ARABIC LETTER DAL WITH INVERTED V -->
+      <map code="0x6ef" name="uni06EF"/><!-- ARABIC LETTER REH WITH INVERTED V -->
+      <map code="0x6f0" name="uni06F0"/><!-- EXTENDED ARABIC-INDIC DIGIT ZERO -->
+      <map code="0x6f1" name="uni06F1"/><!-- EXTENDED ARABIC-INDIC DIGIT ONE -->
+      <map code="0x6f2" name="uni06F2"/><!-- EXTENDED ARABIC-INDIC DIGIT TWO -->
+      <map code="0x6f3" name="uni06F3"/><!-- EXTENDED ARABIC-INDIC DIGIT THREE -->
+      <map code="0x6f4" name="uni06F4"/><!-- EXTENDED ARABIC-INDIC DIGIT FOUR -->
+      <map code="0x6f5" name="uni06F5"/><!-- EXTENDED ARABIC-INDIC DIGIT FIVE -->
+      <map code="0x6f6" name="uni06F6"/><!-- EXTENDED ARABIC-INDIC DIGIT SIX -->
+      <map code="0x6f7" name="uni06F7"/><!-- EXTENDED ARABIC-INDIC DIGIT SEVEN -->
+      <map code="0x6f8" name="uni06F8"/><!-- EXTENDED ARABIC-INDIC DIGIT EIGHT -->
+      <map code="0x6f9" name="uni06F9"/><!-- EXTENDED ARABIC-INDIC DIGIT NINE -->
+      <map code="0x6fa" name="uni06FA"/><!-- ARABIC LETTER SHEEN WITH DOT BELOW -->
+      <map code="0x6fb" name="uni06FB"/><!-- ARABIC LETTER DAD WITH DOT BELOW -->
+      <map code="0x6fc" name="uni06FC"/><!-- ARABIC LETTER GHAIN WITH DOT BELOW -->
+      <map code="0x6fd" name="uni06FD"/><!-- ARABIC SIGN SINDHI AMPERSAND -->
+      <map code="0x6fe" name="uni06FE"/><!-- ARABIC SIGN SINDHI POSTPOSITION MEN -->
+      <map code="0x6ff" name="uni06FF"/><!-- ARABIC LETTER HEH WITH INVERTED V -->
+      <map code="0x200c" name="zeronojoin"/><!-- ZERO WIDTH NON-JOINER -->
+      <map code="0x200d" name="zerojoin"/><!-- ZERO WIDTH JOINER -->
+      <map code="0x200e" name="lefttoright"/><!-- LEFT-TO-RIGHT MARK -->
+      <map code="0x200f" name="righttoleft"/><!-- RIGHT-TO-LEFT MARK -->
+      <map code="0xfc00" name="uniFC00"/><!-- ARABIC LIGATURE YEH WITH HAMZA ABOVE WITH JEEM ISOLATED FORM -->
+      <map code="0xfc01" name="uniFC01"/><!-- ARABIC LIGATURE YEH WITH HAMZA ABOVE WITH HAH ISOLATED FORM -->
+      <map code="0xfc02" name="uniFC02"/><!-- ARABIC LIGATURE YEH WITH HAMZA ABOVE WITH MEEM ISOLATED FORM -->
+      <map code="0xfc03" name="uniFC03"/><!-- ARABIC LIGATURE YEH WITH HAMZA ABOVE WITH ALEF MAKSURA ISOLATED FORM -->
+      <map code="0xfc04" name="uniFC04"/><!-- ARABIC LIGATURE YEH WITH HAMZA ABOVE WITH YEH ISOLATED FORM -->
+      <map code="0xfc05" name="uniFC05"/><!-- ARABIC LIGATURE BEH WITH JEEM ISOLATED FORM -->
+      <map code="0xfc06" name="uniFC06"/><!-- ARABIC LIGATURE BEH WITH HAH ISOLATED FORM -->
+      <map code="0xfc07" name="uniFC07"/><!-- ARABIC LIGATURE BEH WITH KHAH ISOLATED FORM -->
+      <map code="0xfc08" name="uniFC08"/><!-- ARABIC LIGATURE BEH WITH MEEM ISOLATED FORM -->
+      <map code="0xfc09" name="uniFC09"/><!-- ARABIC LIGATURE BEH WITH ALEF MAKSURA ISOLATED FORM -->
+      <map code="0xfc0a" name="uniFC0A"/><!-- ARABIC LIGATURE BEH WITH YEH ISOLATED FORM -->
+      <map code="0xfc0b" name="uniFC0B"/><!-- ARABIC LIGATURE TEH WITH JEEM ISOLATED FORM -->
+      <map code="0xfc0c" name="uniFC0C"/><!-- ARABIC LIGATURE TEH WITH HAH ISOLATED FORM -->
+      <map code="0xfc0d" name="uniFC0D"/><!-- ARABIC LIGATURE TEH WITH KHAH ISOLATED FORM -->
+      <map code="0xfc0e" name="uniFC0E"/><!-- ARABIC LIGATURE TEH WITH MEEM ISOLATED FORM -->
+      <map code="0xfc0f" name="uniFC0F"/><!-- ARABIC LIGATURE TEH WITH ALEF MAKSURA ISOLATED FORM -->
+      <map code="0xfc10" name="uniFC10"/><!-- ARABIC LIGATURE TEH WITH YEH ISOLATED FORM -->
+      <map code="0xfc11" name="uniFC11"/><!-- ARABIC LIGATURE THEH WITH JEEM ISOLATED FORM -->
+      <map code="0xfc12" name="uniFC12"/><!-- ARABIC LIGATURE THEH WITH MEEM ISOLATED FORM -->
+      <map code="0xfc13" name="uniFC13"/><!-- ARABIC LIGATURE THEH WITH ALEF MAKSURA ISOLATED FORM -->
+      <map code="0xfc14" name="uniFC14"/><!-- ARABIC LIGATURE THEH WITH YEH ISOLATED FORM -->
+      <map code="0xfc15" name="uniFC15"/><!-- ARABIC LIGATURE JEEM WITH HAH ISOLATED FORM -->
+      <map code="0xfc16" name="uniFC16"/><!-- ARABIC LIGATURE JEEM WITH MEEM ISOLATED FORM -->
+      <map code="0xfc17" name="uniFC17"/><!-- ARABIC LIGATURE HAH WITH JEEM ISOLATED FORM -->
+      <map code="0xfc18" name="uniFC18"/><!-- ARABIC LIGATURE HAH WITH MEEM ISOLATED FORM -->
+      <map code="0xfc19" name="uniFC19"/><!-- ARABIC LIGATURE KHAH WITH JEEM ISOLATED FORM -->
+      <map code="0xfc1a" name="uniFC1A"/><!-- ARABIC LIGATURE KHAH WITH HAH ISOLATED FORM -->
+      <map code="0xfc1b" name="uniFC1B"/><!-- ARABIC LIGATURE KHAH WITH MEEM ISOLATED FORM -->
+      <map code="0xfc1c" name="uniFC1C"/><!-- ARABIC LIGATURE SEEN WITH JEEM ISOLATED FORM -->
+      <map code="0xfc1d" name="uniFC1D"/><!-- ARABIC LIGATURE SEEN WITH HAH ISOLATED FORM -->
+      <map code="0xfc1e" name="uniFC1E"/><!-- ARABIC LIGATURE SEEN WITH KHAH ISOLATED FORM -->
+      <map code="0xfc1f" name="uniFC1F"/><!-- ARABIC LIGATURE SEEN WITH MEEM ISOLATED FORM -->
+      <map code="0xfc20" name="uniFC20"/><!-- ARABIC LIGATURE SAD WITH HAH ISOLATED FORM -->
+      <map code="0xfc21" name="uniFC21"/><!-- ARABIC LIGATURE SAD WITH MEEM ISOLATED FORM -->
+      <map code="0xfc22" name="uniFC22"/><!-- ARABIC LIGATURE DAD WITH JEEM ISOLATED FORM -->
+      <map code="0xfc23" name="uniFC23"/><!-- ARABIC LIGATURE DAD WITH HAH ISOLATED FORM -->
+      <map code="0xfc24" name="uniFC24"/><!-- ARABIC LIGATURE DAD WITH KHAH ISOLATED FORM -->
+      <map code="0xfc25" name="uniFC25"/><!-- ARABIC LIGATURE DAD WITH MEEM ISOLATED FORM -->
+      <map code="0xfc26" name="uniFC26"/><!-- ARABIC LIGATURE TAH WITH HAH ISOLATED FORM -->
+      <map code="0xfc27" name="uniFC27"/><!-- ARABIC LIGATURE TAH WITH MEEM ISOLATED FORM -->
+      <map code="0xfc28" name="uniFC28"/><!-- ARABIC LIGATURE ZAH WITH MEEM ISOLATED FORM -->
+      <map code="0xfc29" name="uniFC29"/><!-- ARABIC LIGATURE AIN WITH JEEM ISOLATED FORM -->
+      <map code="0xfc2a" name="uniFC2A"/><!-- ARABIC LIGATURE AIN WITH MEEM ISOLATED FORM -->
+      <map code="0xfc2b" name="uniFC2B"/><!-- ARABIC LIGATURE GHAIN WITH JEEM ISOLATED FORM -->
+      <map code="0xfc2c" name="uniFC2C"/><!-- ARABIC LIGATURE GHAIN WITH MEEM ISOLATED FORM -->
+      <map code="0xfc2d" name="uniFC2D"/><!-- ARABIC LIGATURE FEH WITH JEEM ISOLATED FORM -->
+      <map code="0xfc2e" name="uniFC2E"/><!-- ARABIC LIGATURE FEH WITH HAH ISOLATED FORM -->
+      <map code="0xfc2f" name="uniFC2F"/><!-- ARABIC LIGATURE FEH WITH KHAH ISOLATED FORM -->
+      <map code="0xfc30" name="uniFC30"/><!-- ARABIC LIGATURE FEH WITH MEEM ISOLATED FORM -->
+      <map code="0xfc31" name="uniFC31"/><!-- ARABIC LIGATURE FEH WITH ALEF MAKSURA ISOLATED FORM -->
+      <map code="0xfc32" name="uniFC32"/><!-- ARABIC LIGATURE FEH WITH YEH ISOLATED FORM -->
+      <map code="0xfc33" name="uniFC33"/><!-- ARABIC LIGATURE QAF WITH HAH ISOLATED FORM -->
+      <map code="0xfc34" name="uniFC34"/><!-- ARABIC LIGATURE QAF WITH MEEM ISOLATED FORM -->
+      <map code="0xfc35" name="uniFC35"/><!-- ARABIC LIGATURE QAF WITH ALEF MAKSURA ISOLATED FORM -->
+      <map code="0xfc36" name="uniFC36"/><!-- ARABIC LIGATURE QAF WITH YEH ISOLATED FORM -->
+      <map code="0xfc37" name="uniFC37"/><!-- ARABIC LIGATURE KAF WITH ALEF ISOLATED FORM -->
+      <map code="0xfc38" name="uniFC38"/><!-- ARABIC LIGATURE KAF WITH JEEM ISOLATED FORM -->
+      <map code="0xfc39" name="uniFC39"/><!-- ARABIC LIGATURE KAF WITH HAH ISOLATED FORM -->
+      <map code="0xfc3a" name="uniFC3A"/><!-- ARABIC LIGATURE KAF WITH KHAH ISOLATED FORM -->
+      <map code="0xfc3b" name="uniFC3B"/><!-- ARABIC LIGATURE KAF WITH LAM ISOLATED FORM -->
+      <map code="0xfc3c" name="uniFC3C"/><!-- ARABIC LIGATURE KAF WITH MEEM ISOLATED FORM -->
+      <map code="0xfc3d" name="uniFC3D"/><!-- ARABIC LIGATURE KAF WITH ALEF MAKSURA ISOLATED FORM -->
+      <map code="0xfc3e" name="uniFC3E"/><!-- ARABIC LIGATURE KAF WITH YEH ISOLATED FORM -->
+      <map code="0xfc3f" name="uniFC3F"/><!-- ARABIC LIGATURE LAM WITH JEEM ISOLATED FORM -->
+      <map code="0xfc40" name="uniFC40"/><!-- ARABIC LIGATURE LAM WITH HAH ISOLATED FORM -->
+      <map code="0xfc41" name="uniFC41"/><!-- ARABIC LIGATURE LAM WITH KHAH ISOLATED FORM -->
+      <map code="0xfc42" name="uniFC42"/><!-- ARABIC LIGATURE LAM WITH MEEM ISOLATED FORM -->
+      <map code="0xfc43" name="uniFC43"/><!-- ARABIC LIGATURE LAM WITH ALEF MAKSURA ISOLATED FORM -->
+      <map code="0xfc44" name="uniFC44"/><!-- ARABIC LIGATURE LAM WITH YEH ISOLATED FORM -->
+      <map code="0xfc45" name="uniFC45"/><!-- ARABIC LIGATURE MEEM WITH JEEM ISOLATED FORM -->
+      <map code="0xfc46" name="uniFC46"/><!-- ARABIC LIGATURE MEEM WITH HAH ISOLATED FORM -->
+      <map code="0xfc47" name="uniFC47"/><!-- ARABIC LIGATURE MEEM WITH KHAH ISOLATED FORM -->
+      <map code="0xfc48" name="uniFC48"/><!-- ARABIC LIGATURE MEEM WITH MEEM ISOLATED FORM -->
+      <map code="0xfc49" name="uniFC49"/><!-- ARABIC LIGATURE MEEM WITH ALEF MAKSURA ISOLATED FORM -->
+      <map code="0xfc4a" name="uniFC4A"/><!-- ARABIC LIGATURE MEEM WITH YEH ISOLATED FORM -->
+      <map code="0xfc4b" name="uniFC4B"/><!-- ARABIC LIGATURE NOON WITH JEEM ISOLATED FORM -->
+      <map code="0xfc4c" name="uniFC4C"/><!-- ARABIC LIGATURE NOON WITH HAH ISOLATED FORM -->
+      <map code="0xfc4d" name="uniFC4D"/><!-- ARABIC LIGATURE NOON WITH KHAH ISOLATED FORM -->
+      <map code="0xfc4e" name="uniFC4E"/><!-- ARABIC LIGATURE NOON WITH MEEM ISOLATED FORM -->
+      <map code="0xfc4f" name="uniFC4F"/><!-- ARABIC LIGATURE NOON WITH ALEF MAKSURA ISOLATED FORM -->
+      <map code="0xfc50" name="uniFC50"/><!-- ARABIC LIGATURE NOON WITH YEH ISOLATED FORM -->
+      <map code="0xfc51" name="uniFC51"/><!-- ARABIC LIGATURE HEH WITH JEEM ISOLATED FORM -->
+      <map code="0xfc52" name="uniFC52"/><!-- ARABIC LIGATURE HEH WITH MEEM ISOLATED FORM -->
+      <map code="0xfc53" name="uniFC53"/><!-- ARABIC LIGATURE HEH WITH ALEF MAKSURA ISOLATED FORM -->
+      <map code="0xfc54" name="uniFC54"/><!-- ARABIC LIGATURE HEH WITH YEH ISOLATED FORM -->
+      <map code="0xfc55" name="uniFC55"/><!-- ARABIC LIGATURE YEH WITH JEEM ISOLATED FORM -->
+      <map code="0xfc56" name="uniFC56"/><!-- ARABIC LIGATURE YEH WITH HAH ISOLATED FORM -->
+      <map code="0xfc57" name="uniFC57"/><!-- ARABIC LIGATURE YEH WITH KHAH ISOLATED FORM -->
+      <map code="0xfc58" name="uniFC58"/><!-- ARABIC LIGATURE YEH WITH MEEM ISOLATED FORM -->
+      <map code="0xfc59" name="uniFC59"/><!-- ARABIC LIGATURE YEH WITH ALEF MAKSURA ISOLATED FORM -->
+      <map code="0xfc5a" name="uniFC5A"/><!-- ARABIC LIGATURE YEH WITH YEH ISOLATED FORM -->
+      <map code="0xfc5b" name="uniFC5B"/><!-- ARABIC LIGATURE THAL WITH SUPERSCRIPT ALEF ISOLATED FORM -->
+      <map code="0xfc5c" name="uniFC5C"/><!-- ARABIC LIGATURE REH WITH SUPERSCRIPT ALEF ISOLATED FORM -->
+      <map code="0xfc5d" name="uniFC5D"/><!-- ARABIC LIGATURE ALEF MAKSURA WITH SUPERSCRIPT ALEF ISOLATED FORM -->
+      <map code="0xfc5e" name="uniFC5E"/><!-- ARABIC LIGATURE SHADDA WITH DAMMATAN ISOLATED FORM -->
+      <map code="0xfc5f" name="uniFC5F"/><!-- ARABIC LIGATURE SHADDA WITH KASRATAN ISOLATED FORM -->
+      <map code="0xfc60" name="uniFC60"/><!-- ARABIC LIGATURE SHADDA WITH FATHA ISOLATED FORM -->
+      <map code="0xfc61" name="uniFC61"/><!-- ARABIC LIGATURE SHADDA WITH DAMMA ISOLATED FORM -->
+      <map code="0xfc62" name="uniFC62"/><!-- ARABIC LIGATURE SHADDA WITH KASRA ISOLATED FORM -->
+      <map code="0xfc63" name="uniFC63"/><!-- ARABIC LIGATURE SHADDA WITH SUPERSCRIPT ALEF ISOLATED FORM -->
+      <map code="0xfc64" name="uniFC64"/><!-- ARABIC LIGATURE YEH WITH HAMZA ABOVE WITH REH FINAL FORM -->
+      <map code="0xfc65" name="uniFC65"/><!-- ARABIC LIGATURE YEH WITH HAMZA ABOVE WITH ZAIN FINAL FORM -->
+      <map code="0xfc66" name="uniFC66"/><!-- ARABIC LIGATURE YEH WITH HAMZA ABOVE WITH MEEM FINAL FORM -->
+      <map code="0xfc67" name="uniFC67"/><!-- ARABIC LIGATURE YEH WITH HAMZA ABOVE WITH NOON FINAL FORM -->
+      <map code="0xfc68" name="uniFC68"/><!-- ARABIC LIGATURE YEH WITH HAMZA ABOVE WITH ALEF MAKSURA FINAL FORM -->
+      <map code="0xfc69" name="uniFC69"/><!-- ARABIC LIGATURE YEH WITH HAMZA ABOVE WITH YEH FINAL FORM -->
+      <map code="0xfc6a" name="uniFC6A"/><!-- ARABIC LIGATURE BEH WITH REH FINAL FORM -->
+      <map code="0xfc6b" name="uniFC6B"/><!-- ARABIC LIGATURE BEH WITH ZAIN FINAL FORM -->
+      <map code="0xfc6c" name="uniFC6C"/><!-- ARABIC LIGATURE BEH WITH MEEM FINAL FORM -->
+      <map code="0xfc6d" name="uniFC6D"/><!-- ARABIC LIGATURE BEH WITH NOON FINAL FORM -->
+      <map code="0xfc6e" name="uniFC6E"/><!-- ARABIC LIGATURE BEH WITH ALEF MAKSURA FINAL FORM -->
+      <map code="0xfc6f" name="uniFC6F"/><!-- ARABIC LIGATURE BEH WITH YEH FINAL FORM -->
+      <map code="0xfc70" name="uniFC70"/><!-- ARABIC LIGATURE TEH WITH REH FINAL FORM -->
+      <map code="0xfc71" name="uniFC71"/><!-- ARABIC LIGATURE TEH WITH ZAIN FINAL FORM -->
+      <map code="0xfc72" name="uniFC72"/><!-- ARABIC LIGATURE TEH WITH MEEM FINAL FORM -->
+      <map code="0xfc73" name="uniFC73"/><!-- ARABIC LIGATURE TEH WITH NOON FINAL FORM -->
+      <map code="0xfc74" name="uniFC74"/><!-- ARABIC LIGATURE TEH WITH ALEF MAKSURA FINAL FORM -->
+      <map code="0xfc75" name="uniFC75"/><!-- ARABIC LIGATURE TEH WITH YEH FINAL FORM -->
+      <map code="0xfc76" name="uniFC76"/><!-- ARABIC LIGATURE THEH WITH REH FINAL FORM -->
+      <map code="0xfc77" name="uniFC77"/><!-- ARABIC LIGATURE THEH WITH ZAIN FINAL FORM -->
+      <map code="0xfc78" name="uniFC78"/><!-- ARABIC LIGATURE THEH WITH MEEM FINAL FORM -->
+      <map code="0xfc79" name="uniFC79"/><!-- ARABIC LIGATURE THEH WITH NOON FINAL FORM -->
+      <map code="0xfc7a" name="uniFC7A"/><!-- ARABIC LIGATURE THEH WITH ALEF MAKSURA FINAL FORM -->
+      <map code="0xfc7b" name="uniFC7B"/><!-- ARABIC LIGATURE THEH WITH YEH FINAL FORM -->
+      <map code="0xfc7c" name="uniFC7C"/><!-- ARABIC LIGATURE FEH WITH ALEF MAKSURA FINAL FORM -->
+      <map code="0xfc7d" name="uniFC7D"/><!-- ARABIC LIGATURE FEH WITH YEH FINAL FORM -->
+      <map code="0xfc7e" name="uniFC7E"/><!-- ARABIC LIGATURE QAF WITH ALEF MAKSURA FINAL FORM -->
+      <map code="0xfc7f" name="uniFC7F"/><!-- ARABIC LIGATURE QAF WITH YEH FINAL FORM -->
+      <map code="0xfc80" name="uniFC80"/><!-- ARABIC LIGATURE KAF WITH ALEF FINAL FORM -->
+      <map code="0xfc81" name="uniFC81"/><!-- ARABIC LIGATURE KAF WITH LAM FINAL FORM -->
+      <map code="0xfc82" name="uniFC82"/><!-- ARABIC LIGATURE KAF WITH MEEM FINAL FORM -->
+      <map code="0xfc83" name="uniFC83"/><!-- ARABIC LIGATURE KAF WITH ALEF MAKSURA FINAL FORM -->
+      <map code="0xfc84" name="uniFC84"/><!-- ARABIC LIGATURE KAF WITH YEH FINAL FORM -->
+      <map code="0xfc85" name="uniFC85"/><!-- ARABIC LIGATURE LAM WITH MEEM FINAL FORM -->
+      <map code="0xfc86" name="uniFC86"/><!-- ARABIC LIGATURE LAM WITH ALEF MAKSURA FINAL FORM -->
+      <map code="0xfc87" name="uniFC87"/><!-- ARABIC LIGATURE LAM WITH YEH FINAL FORM -->
+      <map code="0xfc88" name="uniFC88"/><!-- ARABIC LIGATURE MEEM WITH ALEF FINAL FORM -->
+      <map code="0xfc89" name="uniFC89"/><!-- ARABIC LIGATURE MEEM WITH MEEM FINAL FORM -->
+      <map code="0xfc8a" name="uniFC8A"/><!-- ARABIC LIGATURE NOON WITH REH FINAL FORM -->
+      <map code="0xfc8b" name="uniFC8B"/><!-- ARABIC LIGATURE NOON WITH ZAIN FINAL FORM -->
+      <map code="0xfc8c" name="uniFC8C"/><!-- ARABIC LIGATURE NOON WITH MEEM FINAL FORM -->
+      <map code="0xfc8d" name="uniFC8D"/><!-- ARABIC LIGATURE NOON WITH NOON FINAL FORM -->
+      <map code="0xfc8e" name="uniFC8E"/><!-- ARABIC LIGATURE NOON WITH ALEF MAKSURA FINAL FORM -->
+      <map code="0xfc8f" name="uniFC8F"/><!-- ARABIC LIGATURE NOON WITH YEH FINAL FORM -->
+      <map code="0xfc90" name="uniFC90"/><!-- ARABIC LIGATURE ALEF MAKSURA WITH SUPERSCRIPT ALEF FINAL FORM -->
+      <map code="0xfc91" name="uniFC91"/><!-- ARABIC LIGATURE YEH WITH REH FINAL FORM -->
+      <map code="0xfc92" name="uniFC92"/><!-- ARABIC LIGATURE YEH WITH ZAIN FINAL FORM -->
+      <map code="0xfc93" name="uniFC93"/><!-- ARABIC LIGATURE YEH WITH MEEM FINAL FORM -->
+      <map code="0xfc94" name="uniFC94"/><!-- ARABIC LIGATURE YEH WITH NOON FINAL FORM -->
+      <map code="0xfc95" name="uniFC95"/><!-- ARABIC LIGATURE YEH WITH ALEF MAKSURA FINAL FORM -->
+      <map code="0xfc96" name="uniFC96"/><!-- ARABIC LIGATURE YEH WITH YEH FINAL FORM -->
+      <map code="0xfc97" name="uniFC97"/><!-- ARABIC LIGATURE YEH WITH HAMZA ABOVE WITH JEEM INITIAL FORM -->
+      <map code="0xfc98" name="uniFC98"/><!-- ARABIC LIGATURE YEH WITH HAMZA ABOVE WITH HAH INITIAL FORM -->
+      <map code="0xfc99" name="uniFC99"/><!-- ARABIC LIGATURE YEH WITH HAMZA ABOVE WITH KHAH INITIAL FORM -->
+      <map code="0xfc9a" name="uniFC9A"/><!-- ARABIC LIGATURE YEH WITH HAMZA ABOVE WITH MEEM INITIAL FORM -->
+      <map code="0xfc9b" name="uniFC9B"/><!-- ARABIC LIGATURE YEH WITH HAMZA ABOVE WITH HEH INITIAL FORM -->
+      <map code="0xfc9c" name="uniFC9C"/><!-- ARABIC LIGATURE BEH WITH JEEM INITIAL FORM -->
+      <map code="0xfc9d" name="uniFC9D"/><!-- ARABIC LIGATURE BEH WITH HAH INITIAL FORM -->
+      <map code="0xfc9e" name="uniFC9E"/><!-- ARABIC LIGATURE BEH WITH KHAH INITIAL FORM -->
+      <map code="0xfc9f" name="uniFC9F"/><!-- ARABIC LIGATURE BEH WITH MEEM INITIAL FORM -->
+      <map code="0xfca0" name="uniFCA0"/><!-- ARABIC LIGATURE BEH WITH HEH INITIAL FORM -->
+      <map code="0xfca1" name="uniFCA1"/><!-- ARABIC LIGATURE TEH WITH JEEM INITIAL FORM -->
+      <map code="0xfca2" name="uniFCA2"/><!-- ARABIC LIGATURE TEH WITH HAH INITIAL FORM -->
+      <map code="0xfca3" name="uniFCA3"/><!-- ARABIC LIGATURE TEH WITH KHAH INITIAL FORM -->
+      <map code="0xfca4" name="uniFCA4"/><!-- ARABIC LIGATURE TEH WITH MEEM INITIAL FORM -->
+      <map code="0xfca5" name="uniFCA5"/><!-- ARABIC LIGATURE TEH WITH HEH INITIAL FORM -->
+      <map code="0xfca6" name="uniFCA6"/><!-- ARABIC LIGATURE THEH WITH MEEM INITIAL FORM -->
+      <map code="0xfca7" name="uniFCA7"/><!-- ARABIC LIGATURE JEEM WITH HAH INITIAL FORM -->
+      <map code="0xfca8" name="uniFCA8"/><!-- ARABIC LIGATURE JEEM WITH MEEM INITIAL FORM -->
+      <map code="0xfca9" name="uniFCA9"/><!-- ARABIC LIGATURE HAH WITH JEEM INITIAL FORM -->
+      <map code="0xfcaa" name="uniFCAA"/><!-- ARABIC LIGATURE HAH WITH MEEM INITIAL FORM -->
+      <map code="0xfcab" name="uniFCAB"/><!-- ARABIC LIGATURE KHAH WITH JEEM INITIAL FORM -->
+      <map code="0xfcac" name="uniFCAC"/><!-- ARABIC LIGATURE KHAH WITH MEEM INITIAL FORM -->
+      <map code="0xfcad" name="uniFCAD"/><!-- ARABIC LIGATURE SEEN WITH JEEM INITIAL FORM -->
+      <map code="0xfcae" name="uniFCAE"/><!-- ARABIC LIGATURE SEEN WITH HAH INITIAL FORM -->
+      <map code="0xfcaf" name="uniFCAF"/><!-- ARABIC LIGATURE SEEN WITH KHAH INITIAL FORM -->
+      <map code="0xfcb0" name="uniFCB0"/><!-- ARABIC LIGATURE SEEN WITH MEEM INITIAL FORM -->
+      <map code="0xfcb1" name="uniFCB1"/><!-- ARABIC LIGATURE SAD WITH HAH INITIAL FORM -->
+      <map code="0xfcb2" name="uniFCB2"/><!-- ARABIC LIGATURE SAD WITH KHAH INITIAL FORM -->
+      <map code="0xfcb3" name="uniFCB3"/><!-- ARABIC LIGATURE SAD WITH MEEM INITIAL FORM -->
+      <map code="0xfcb4" name="uniFCB4"/><!-- ARABIC LIGATURE DAD WITH JEEM INITIAL FORM -->
+      <map code="0xfcb5" name="uniFCB5"/><!-- ARABIC LIGATURE DAD WITH HAH INITIAL FORM -->
+      <map code="0xfcb6" name="uniFCB6"/><!-- ARABIC LIGATURE DAD WITH KHAH INITIAL FORM -->
+      <map code="0xfcb7" name="uniFCB7"/><!-- ARABIC LIGATURE DAD WITH MEEM INITIAL FORM -->
+      <map code="0xfcb8" name="uniFCB8"/><!-- ARABIC LIGATURE TAH WITH HAH INITIAL FORM -->
+      <map code="0xfcb9" name="uniFCB9"/><!-- ARABIC LIGATURE ZAH WITH MEEM INITIAL FORM -->
+      <map code="0xfcba" name="uniFCBA"/><!-- ARABIC LIGATURE AIN WITH JEEM INITIAL FORM -->
+      <map code="0xfcbb" name="uniFCBB"/><!-- ARABIC LIGATURE AIN WITH MEEM INITIAL FORM -->
+      <map code="0xfcbc" name="uniFCBC"/><!-- ARABIC LIGATURE GHAIN WITH JEEM INITIAL FORM -->
+      <map code="0xfcbd" name="uniFCBD"/><!-- ARABIC LIGATURE GHAIN WITH MEEM INITIAL FORM -->
+      <map code="0xfcbe" name="uniFCBE"/><!-- ARABIC LIGATURE FEH WITH JEEM INITIAL FORM -->
+      <map code="0xfcbf" name="uniFCBF"/><!-- ARABIC LIGATURE FEH WITH HAH INITIAL FORM -->
+      <map code="0xfcc0" name="uniFCC0"/><!-- ARABIC LIGATURE FEH WITH KHAH INITIAL FORM -->
+      <map code="0xfcc1" name="uniFCC1"/><!-- ARABIC LIGATURE FEH WITH MEEM INITIAL FORM -->
+      <map code="0xfcc2" name="uniFCC2"/><!-- ARABIC LIGATURE QAF WITH HAH INITIAL FORM -->
+      <map code="0xfcc3" name="uniFCC3"/><!-- ARABIC LIGATURE QAF WITH MEEM INITIAL FORM -->
+      <map code="0xfcc4" name="uniFCC4"/><!-- ARABIC LIGATURE KAF WITH JEEM INITIAL FORM -->
+      <map code="0xfcc5" name="uniFCC5"/><!-- ARABIC LIGATURE KAF WITH HAH INITIAL FORM -->
+      <map code="0xfcc6" name="uniFCC6"/><!-- ARABIC LIGATURE KAF WITH KHAH INITIAL FORM -->
+      <map code="0xfcc7" name="uniFCC7"/><!-- ARABIC LIGATURE KAF WITH LAM INITIAL FORM -->
+      <map code="0xfcc8" name="uniFCC8"/><!-- ARABIC LIGATURE KAF WITH MEEM INITIAL FORM -->
+      <map code="0xfcc9" name="uniFCC9"/><!-- ARABIC LIGATURE LAM WITH JEEM INITIAL FORM -->
+      <map code="0xfcca" name="uniFCCA"/><!-- ARABIC LIGATURE LAM WITH HAH INITIAL FORM -->
+      <map code="0xfccb" name="uniFCCB"/><!-- ARABIC LIGATURE LAM WITH KHAH INITIAL FORM -->
+      <map code="0xfccc" name="uniFCCC"/><!-- ARABIC LIGATURE LAM WITH MEEM INITIAL FORM -->
+      <map code="0xfccd" name="uniFCCD"/><!-- ARABIC LIGATURE LAM WITH HEH INITIAL FORM -->
+      <map code="0xfcce" name="uniFCCE"/><!-- ARABIC LIGATURE MEEM WITH JEEM INITIAL FORM -->
+      <map code="0xfccf" name="uniFCCF"/><!-- ARABIC LIGATURE MEEM WITH HAH INITIAL FORM -->
+      <map code="0xfcd0" name="uniFCD0"/><!-- ARABIC LIGATURE MEEM WITH KHAH INITIAL FORM -->
+      <map code="0xfcd1" name="uniFCD1"/><!-- ARABIC LIGATURE MEEM WITH MEEM INITIAL FORM -->
+      <map code="0xfcd2" name="uniFCD2"/><!-- ARABIC LIGATURE NOON WITH JEEM INITIAL FORM -->
+      <map code="0xfcd3" name="uniFCD3"/><!-- ARABIC LIGATURE NOON WITH HAH INITIAL FORM -->
+      <map code="0xfcd4" name="uniFCD4"/><!-- ARABIC LIGATURE NOON WITH KHAH INITIAL FORM -->
+      <map code="0xfcd5" name="uniFCD5"/><!-- ARABIC LIGATURE NOON WITH MEEM INITIAL FORM -->
+      <map code="0xfcd6" name="uniFCD6"/><!-- ARABIC LIGATURE NOON WITH HEH INITIAL FORM -->
+      <map code="0xfcd7" name="uniFCD7"/><!-- ARABIC LIGATURE HEH WITH JEEM INITIAL FORM -->
+      <map code="0xfcd8" name="uniFCD8"/><!-- ARABIC LIGATURE HEH WITH MEEM INITIAL FORM -->
+      <map code="0xfcd9" name="uniFCD9"/><!-- ARABIC LIGATURE HEH WITH SUPERSCRIPT ALEF INITIAL FORM -->
+      <map code="0xfcda" name="uniFCDA"/><!-- ARABIC LIGATURE YEH WITH JEEM INITIAL FORM -->
+      <map code="0xfcdb" name="uniFCDB"/><!-- ARABIC LIGATURE YEH WITH HAH INITIAL FORM -->
+      <map code="0xfcdc" name="uniFCDC"/><!-- ARABIC LIGATURE YEH WITH KHAH INITIAL FORM -->
+      <map code="0xfcdd" name="uniFCDD"/><!-- ARABIC LIGATURE YEH WITH MEEM INITIAL FORM -->
+      <map code="0xfcde" name="uniFCDE"/><!-- ARABIC LIGATURE YEH WITH HEH INITIAL FORM -->
+      <map code="0xfcdf" name="uniFCDF"/><!-- ARABIC LIGATURE YEH WITH HAMZA ABOVE WITH MEEM MEDIAL FORM -->
+      <map code="0xfce0" name="uniFCE0"/><!-- ARABIC LIGATURE YEH WITH HAMZA ABOVE WITH HEH MEDIAL FORM -->
+      <map code="0xfce1" name="uniFCE1"/><!-- ARABIC LIGATURE BEH WITH MEEM MEDIAL FORM -->
+      <map code="0xfce2" name="uniFCE2"/><!-- ARABIC LIGATURE BEH WITH HEH MEDIAL FORM -->
+      <map code="0xfce3" name="uniFCE3"/><!-- ARABIC LIGATURE TEH WITH MEEM MEDIAL FORM -->
+      <map code="0xfce4" name="uniFCE4"/><!-- ARABIC LIGATURE TEH WITH HEH MEDIAL FORM -->
+      <map code="0xfce5" name="uniFCE5"/><!-- ARABIC LIGATURE THEH WITH MEEM MEDIAL FORM -->
+      <map code="0xfce6" name="uniFCE6"/><!-- ARABIC LIGATURE THEH WITH HEH MEDIAL FORM -->
+      <map code="0xfce7" name="uniFCE7"/><!-- ARABIC LIGATURE SEEN WITH MEEM MEDIAL FORM -->
+      <map code="0xfce8" name="uniFCE8"/><!-- ARABIC LIGATURE SEEN WITH HEH MEDIAL FORM -->
+      <map code="0xfce9" name="uniFCE9"/><!-- ARABIC LIGATURE SHEEN WITH MEEM MEDIAL FORM -->
+      <map code="0xfcea" name="uniFCEA"/><!-- ARABIC LIGATURE SHEEN WITH HEH MEDIAL FORM -->
+      <map code="0xfceb" name="uniFCEB"/><!-- ARABIC LIGATURE KAF WITH LAM MEDIAL FORM -->
+      <map code="0xfcec" name="uniFCEC"/><!-- ARABIC LIGATURE KAF WITH MEEM MEDIAL FORM -->
+      <map code="0xfced" name="uniFCED"/><!-- ARABIC LIGATURE LAM WITH MEEM MEDIAL FORM -->
+      <map code="0xfcee" name="uniFCEE"/><!-- ARABIC LIGATURE NOON WITH MEEM MEDIAL FORM -->
+      <map code="0xfcef" name="uniFCEF"/><!-- ARABIC LIGATURE NOON WITH HEH MEDIAL FORM -->
+      <map code="0xfcf0" name="uniFCF0"/><!-- ARABIC LIGATURE YEH WITH MEEM MEDIAL FORM -->
+      <map code="0xfcf1" name="uniFCF1"/><!-- ARABIC LIGATURE YEH WITH HEH MEDIAL FORM -->
+      <map code="0xfcf2" name="uniFCF2"/><!-- ARABIC LIGATURE SHADDA WITH FATHA MEDIAL FORM -->
+      <map code="0xfcf3" name="uniFCF3"/><!-- ARABIC LIGATURE SHADDA WITH DAMMA MEDIAL FORM -->
+      <map code="0xfcf4" name="uniFCF4"/><!-- ARABIC LIGATURE SHADDA WITH KASRA MEDIAL FORM -->
+      <map code="0xfcf5" name="uniFCF5"/><!-- ARABIC LIGATURE TAH WITH ALEF MAKSURA ISOLATED FORM -->
+      <map code="0xfcf6" name="uniFCF6"/><!-- ARABIC LIGATURE TAH WITH YEH ISOLATED FORM -->
+      <map code="0xfcf7" name="uniFCF7"/><!-- ARABIC LIGATURE AIN WITH ALEF MAKSURA ISOLATED FORM -->
+      <map code="0xfcf8" name="uniFCF8"/><!-- ARABIC LIGATURE AIN WITH YEH ISOLATED FORM -->
+      <map code="0xfcf9" name="uniFCF9"/><!-- ARABIC LIGATURE GHAIN WITH ALEF MAKSURA ISOLATED FORM -->
+      <map code="0xfcfa" name="uniFCFA"/><!-- ARABIC LIGATURE GHAIN WITH YEH ISOLATED FORM -->
+      <map code="0xfcfb" name="uniFCFB"/><!-- ARABIC LIGATURE SEEN WITH ALEF MAKSURA ISOLATED FORM -->
+      <map code="0xfcfc" name="uniFCFC"/><!-- ARABIC LIGATURE SEEN WITH YEH ISOLATED FORM -->
+      <map code="0xfcfd" name="uniFCFD"/><!-- ARABIC LIGATURE SHEEN WITH ALEF MAKSURA ISOLATED FORM -->
+      <map code="0xfcfe" name="uniFCFE"/><!-- ARABIC LIGATURE SHEEN WITH YEH ISOLATED FORM -->
+      <map code="0xfcff" name="uniFCFF"/><!-- ARABIC LIGATURE HAH WITH ALEF MAKSURA ISOLATED FORM -->
+      <map code="0xfd00" name="uniFD00"/><!-- ARABIC LIGATURE HAH WITH YEH ISOLATED FORM -->
+      <map code="0xfd01" name="uniFD01"/><!-- ARABIC LIGATURE JEEM WITH ALEF MAKSURA ISOLATED FORM -->
+      <map code="0xfd02" name="uniFD02"/><!-- ARABIC LIGATURE JEEM WITH YEH ISOLATED FORM -->
+      <map code="0xfd03" name="uniFD03"/><!-- ARABIC LIGATURE KHAH WITH ALEF MAKSURA ISOLATED FORM -->
+      <map code="0xfd04" name="uniFD04"/><!-- ARABIC LIGATURE KHAH WITH YEH ISOLATED FORM -->
+      <map code="0xfd05" name="uniFD05"/><!-- ARABIC LIGATURE SAD WITH ALEF MAKSURA ISOLATED FORM -->
+      <map code="0xfd06" name="uniFD06"/><!-- ARABIC LIGATURE SAD WITH YEH ISOLATED FORM -->
+      <map code="0xfd07" name="uniFD07"/><!-- ARABIC LIGATURE DAD WITH ALEF MAKSURA ISOLATED FORM -->
+      <map code="0xfd08" name="uniFD08"/><!-- ARABIC LIGATURE DAD WITH YEH ISOLATED FORM -->
+      <map code="0xfd09" name="uniFD09"/><!-- ARABIC LIGATURE SHEEN WITH JEEM ISOLATED FORM -->
+      <map code="0xfd0a" name="uniFD0A"/><!-- ARABIC LIGATURE SHEEN WITH HAH ISOLATED FORM -->
+      <map code="0xfd0b" name="uniFD0B"/><!-- ARABIC LIGATURE SHEEN WITH KHAH ISOLATED FORM -->
+      <map code="0xfd0c" name="uniFD0C"/><!-- ARABIC LIGATURE SHEEN WITH MEEM ISOLATED FORM -->
+      <map code="0xfd0d" name="uniFD0D"/><!-- ARABIC LIGATURE SHEEN WITH REH ISOLATED FORM -->
+      <map code="0xfd0e" name="uniFD0E"/><!-- ARABIC LIGATURE SEEN WITH REH ISOLATED FORM -->
+      <map code="0xfd0f" name="uniFD0F"/><!-- ARABIC LIGATURE SAD WITH REH ISOLATED FORM -->
+      <map code="0xfd10" name="uniFD10"/><!-- ARABIC LIGATURE DAD WITH REH ISOLATED FORM -->
+      <map code="0xfd11" name="uniFD11"/><!-- ARABIC LIGATURE TAH WITH ALEF MAKSURA FINAL FORM -->
+      <map code="0xfd12" name="uniFD12"/><!-- ARABIC LIGATURE TAH WITH YEH FINAL FORM -->
+      <map code="0xfd13" name="uniFD13"/><!-- ARABIC LIGATURE AIN WITH ALEF MAKSURA FINAL FORM -->
+      <map code="0xfd14" name="uniFD14"/><!-- ARABIC LIGATURE AIN WITH YEH FINAL FORM -->
+      <map code="0xfd15" name="uniFD15"/><!-- ARABIC LIGATURE GHAIN WITH ALEF MAKSURA FINAL FORM -->
+      <map code="0xfd16" name="uniFD16"/><!-- ARABIC LIGATURE GHAIN WITH YEH FINAL FORM -->
+      <map code="0xfd17" name="uniFD17"/><!-- ARABIC LIGATURE SEEN WITH ALEF MAKSURA FINAL FORM -->
+      <map code="0xfd18" name="uniFD18"/><!-- ARABIC LIGATURE SEEN WITH YEH FINAL FORM -->
+      <map code="0xfd19" name="uniFD19"/><!-- ARABIC LIGATURE SHEEN WITH ALEF MAKSURA FINAL FORM -->
+      <map code="0xfd1a" name="uniFD1A"/><!-- ARABIC LIGATURE SHEEN WITH YEH FINAL FORM -->
+      <map code="0xfd1b" name="uniFD1B"/><!-- ARABIC LIGATURE HAH WITH ALEF MAKSURA FINAL FORM -->
+      <map code="0xfd1c" name="uniFD1C"/><!-- ARABIC LIGATURE HAH WITH YEH FINAL FORM -->
+      <map code="0xfd1d" name="uniFD1D"/><!-- ARABIC LIGATURE JEEM WITH ALEF MAKSURA FINAL FORM -->
+      <map code="0xfd50" name="uniFD50"/><!-- ARABIC LIGATURE TEH WITH JEEM WITH MEEM INITIAL FORM -->
+      <map code="0xfd51" name="uniFD51"/><!-- ARABIC LIGATURE TEH WITH HAH WITH JEEM FINAL FORM -->
+      <map code="0xfd52" name="uniFD52"/><!-- ARABIC LIGATURE TEH WITH HAH WITH JEEM INITIAL FORM -->
+      <map code="0xfd53" name="uniFD53"/><!-- ARABIC LIGATURE TEH WITH HAH WITH MEEM INITIAL FORM -->
+      <map code="0xfd54" name="uniFD54"/><!-- ARABIC LIGATURE TEH WITH KHAH WITH MEEM INITIAL FORM -->
+      <map code="0xfd55" name="uniFD55"/><!-- ARABIC LIGATURE TEH WITH MEEM WITH JEEM INITIAL FORM -->
+      <map code="0xfd56" name="uniFD56"/><!-- ARABIC LIGATURE TEH WITH MEEM WITH HAH INITIAL FORM -->
+      <map code="0xfd57" name="uniFD57"/><!-- ARABIC LIGATURE TEH WITH MEEM WITH KHAH INITIAL FORM -->
+      <map code="0xfd58" name="uniFD58"/><!-- ARABIC LIGATURE JEEM WITH MEEM WITH HAH FINAL FORM -->
+      <map code="0xfd59" name="uniFD59"/><!-- ARABIC LIGATURE JEEM WITH MEEM WITH HAH INITIAL FORM -->
+      <map code="0xfd5a" name="uniFD5A"/><!-- ARABIC LIGATURE HAH WITH MEEM WITH YEH FINAL FORM -->
+      <map code="0xfd5b" name="uniFD5B"/><!-- ARABIC LIGATURE HAH WITH MEEM WITH ALEF MAKSURA FINAL FORM -->
+      <map code="0xfd5c" name="uniFD5C"/><!-- ARABIC LIGATURE SEEN WITH HAH WITH JEEM INITIAL FORM -->
+      <map code="0xfd5d" name="uniFD5D"/><!-- ARABIC LIGATURE SEEN WITH JEEM WITH HAH INITIAL FORM -->
+      <map code="0xfd5e" name="unFD5E"/><!-- ARABIC LIGATURE SEEN WITH JEEM WITH ALEF MAKSURA FINAL FORM -->
+      <map code="0xfd5f" name="uniFD5F"/><!-- ARABIC LIGATURE SEEN WITH MEEM WITH HAH FINAL FORM -->
+      <map code="0xfd60" name="uniFD60"/><!-- ARABIC LIGATURE SEEN WITH MEEM WITH HAH INITIAL FORM -->
+      <map code="0xfd61" name="uniFD61"/><!-- ARABIC LIGATURE SEEN WITH MEEM WITH JEEM INITIAL FORM -->
+      <map code="0xfd62" name="uniFD62"/><!-- ARABIC LIGATURE SEEN WITH MEEM WITH MEEM FINAL FORM -->
+      <map code="0xfd63" name="uniFD63"/><!-- ARABIC LIGATURE SEEN WITH MEEM WITH MEEM INITIAL FORM -->
+      <map code="0xfd64" name="uniFD64"/><!-- ARABIC LIGATURE SAD WITH HAH WITH HAH FINAL FORM -->
+      <map code="0xfd65" name="uniFD65"/><!-- ARABIC LIGATURE SAD WITH HAH WITH HAH INITIAL FORM -->
+      <map code="0xfd66" name="uniFD66"/><!-- ARABIC LIGATURE SAD WITH MEEM WITH MEEM FINAL FORM -->
+      <map code="0xfd67" name="uniFD67"/><!-- ARABIC LIGATURE SHEEN WITH HAH WITH MEEM FINAL FORM -->
+      <map code="0xfd68" name="uniFD68"/><!-- ARABIC LIGATURE SHEEN WITH HAH WITH MEEM INITIAL FORM -->
+      <map code="0xfd69" name="uniFD69"/><!-- ARABIC LIGATURE SHEEN WITH JEEM WITH YEH FINAL FORM -->
+      <map code="0xfd6a" name="unFD6A"/><!-- ARABIC LIGATURE SHEEN WITH MEEM WITH KHAH FINAL FORM -->
+      <map code="0xfd6b" name="uniFD6B"/><!-- ARABIC LIGATURE SHEEN WITH MEEM WITH KHAH INITIAL FORM -->
+      <map code="0xfd6c" name="uniFD6C"/><!-- ARABIC LIGATURE SHEEN WITH MEEM WITH MEEM FINAL FORM -->
+      <map code="0xfd6d" name="uniFD6D"/><!-- ARABIC LIGATURE SHEEN WITH MEEM WITH MEEM INITIAL FORM -->
+      <map code="0xfd6e" name="uniFD6E"/><!-- ARABIC LIGATURE DAD WITH HAH WITH ALEF MAKSURA FINAL FORM -->
+      <map code="0xfd6f" name="uniFD6F"/><!-- ARABIC LIGATURE DAD WITH KHAH WITH MEEM FINAL FORM -->
+      <map code="0xfd70" name="uniFD70"/><!-- ARABIC LIGATURE DAD WITH KHAH WITH MEEM INITIAL FORM -->
+      <map code="0xfd71" name="uniFD71"/><!-- ARABIC LIGATURE TAH WITH MEEM WITH HAH FINAL FORM -->
+      <map code="0xfd72" name="uniFD72"/><!-- ARABIC LIGATURE TAH WITH MEEM WITH HAH INITIAL FORM -->
+      <map code="0xfd73" name="uniFD73"/><!-- ARABIC LIGATURE TAH WITH MEEM WITH MEEM INITIAL FORM -->
+      <map code="0xfd74" name="uniFD74"/><!-- ARABIC LIGATURE TAH WITH MEEM WITH YEH FINAL FORM -->
+      <map code="0xfd75" name="uniFD75"/><!-- ARABIC LIGATURE AIN WITH JEEM WITH MEEM FINAL FORM -->
+      <map code="0xfd76" name="uniFD76"/><!-- ARABIC LIGATURE AIN WITH MEEM WITH MEEM FINAL FORM -->
+      <map code="0xfd77" name="uniFD77"/><!-- ARABIC LIGATURE AIN WITH MEEM WITH MEEM INITIAL FORM -->
+      <map code="0xfd78" name="uniFD78"/><!-- ARABIC LIGATURE AIN WITH MEEM WITH ALEF MAKSURA FINAL FORM -->
+      <map code="0xfd79" name="uniFD79"/><!-- ARABIC LIGATURE GHAIN WITH MEEM WITH MEEM FINAL FORM -->
+      <map code="0xfd7a" name="uniFD7A"/><!-- ARABIC LIGATURE GHAIN WITH MEEM WITH YEH FINAL FORM -->
+      <map code="0xfd7b" name="uniFD7B"/><!-- ARABIC LIGATURE GHAIN WITH MEEM WITH ALEF MAKSURA FINAL FORM -->
+      <map code="0xfd7c" name="uniFD7C"/><!-- ARABIC LIGATURE FEH WITH KHAH WITH MEEM FINAL FORM -->
+      <map code="0xfd7d" name="uniFD7D"/><!-- ARABIC LIGATURE FEH WITH KHAH WITH MEEM INITIAL FORM -->
+    </cmap_format_4>
+    <cmap_format_6 platformID="1" platEncID="0" language="0">
+      <map code="0x0" name="space"/>
+      <map code="0x8" name="space"/>
+      <map code="0x9" name="zero"/>
+      <map code="0xa" name="zero"/>
+      <map code="0xd" name="zero"/>
+      <map code="0x1d" name="space"/>
+      <map code="0x20" name="space"/>
+      <map code="0x28" name="parenleft"/>
+      <map code="0x29" name="parenright"/>
+      <map code="0x30" name="zero"/>
+      <map code="0x31" name="one"/>
+      <map code="0x32" name="two"/>
+      <map code="0x33" name="three"/>
+      <map code="0x34" name="four"/>
+      <map code="0x35" name="five"/>
+      <map code="0x36" name="six"/>
+      <map code="0x37" name="seven"/>
+      <map code="0x38" name="eight"/>
+      <map code="0x39" name="nine"/>
+      <map code="0x5b" name="bracketleft"/>
+      <map code="0x5d" name="bracketright"/>
+      <map code="0xca" name="space"/>
+    </cmap_format_6>
+    <cmap_format_4 platformID="3" platEncID="1" language="0">
+      <map code="0x20" name="space"/><!-- SPACE -->
+      <map code="0x28" name="parenleft"/><!-- LEFT PARENTHESIS -->
+      <map code="0x29" name="parenright"/><!-- RIGHT PARENTHESIS -->
+      <map code="0x30" name="zero"/><!-- DIGIT ZERO -->
+      <map code="0x31" name="one"/><!-- DIGIT ONE -->
+      <map code="0x32" name="two"/><!-- DIGIT TWO -->
+      <map code="0x33" name="three"/><!-- DIGIT THREE -->
+      <map code="0x34" name="four"/><!-- DIGIT FOUR -->
+      <map code="0x35" name="five"/><!-- DIGIT FIVE -->
+      <map code="0x36" name="six"/><!-- DIGIT SIX -->
+      <map code="0x37" name="seven"/><!-- DIGIT SEVEN -->
+      <map code="0x38" name="eight"/><!-- DIGIT EIGHT -->
+      <map code="0x39" name="nine"/><!-- DIGIT NINE -->
+      <map code="0x5b" name="bracketleft"/><!-- LEFT SQUARE BRACKET -->
+      <map code="0x5d" name="bracketright"/><!-- RIGHT SQUARE BRACKET -->
+      <map code="0xa0" name="space"/><!-- NO-BREAK SPACE -->
+      <map code="0x600" name="uni0600"/><!-- ARABIC NUMBER SIGN -->
+      <map code="0x601" name="uni0601"/><!-- ARABIC SIGN SANAH -->
+      <map code="0x602" name="uni0602"/><!-- ARABIC FOOTNOTE MARKER -->
+      <map code="0x603" name="uni0603"/><!-- ARABIC SIGN SAFHA -->
+      <map code="0x604" name="uni0604"/><!-- ARABIC SIGN SAMVAT -->
+      <map code="0x605" name="uni0605"/><!-- ARABIC NUMBER MARK ABOVE -->
+      <map code="0x606" name="uni0606"/><!-- ARABIC-INDIC CUBE ROOT -->
+      <map code="0x607" name="uni0607"/><!-- ARABIC-INDIC FOURTH ROOT -->
+      <map code="0x608" name="uni0608"/><!-- ARABIC RAY -->
+      <map code="0x609" name="uni0609"/><!-- ARABIC-INDIC PER MILLE SIGN -->
+      <map code="0x60a" name="uni060A"/><!-- ARABIC-INDIC PER TEN THOUSAND SIGN -->
+      <map code="0x60b" name="uni060B"/><!-- AFGHANI SIGN -->
+      <map code="0x60c" name="afii57388"/><!-- ARABIC COMMA -->
+      <map code="0x60d" name="uni060D"/><!-- ARABIC DATE SEPARATOR -->
+      <map code="0x60e" name="uni060E"/><!-- ARABIC POETIC VERSE SIGN -->
+      <map code="0x60f" name="uni060F"/><!-- ARABIC SIGN MISRA -->
+      <map code="0x610" name="uni0610"/><!-- ARABIC SIGN SALLALLAHOU ALAYHE WASSALLAM -->
+      <map code="0x611" name="uni0611"/><!-- ARABIC SIGN ALAYHE ASSALLAM -->
+      <map code="0x612" name="uni0612"/><!-- ARABIC SIGN RAHMATULLAH ALAYHE -->
+      <map code="0x613" name="uni0613"/><!-- ARABIC SIGN RADI ALLAHOU ANHU -->
+      <map code="0x614" name="uni0614"/><!-- ARABIC SIGN TAKHALLUS -->
+      <map code="0x615" name="uni0615"/><!-- ARABIC SMALL HIGH TAH -->
+      <map code="0x616" name="uni0616"/><!-- ARABIC SMALL HIGH LIGATURE ALEF WITH LAM WITH YEH -->
+      <map code="0x617" name="uni0617"/><!-- ARABIC SMALL HIGH ZAIN -->
+      <map code="0x618" name="uni0618"/><!-- ARABIC SMALL FATHA -->
+      <map code="0x619" name="uni0619"/><!-- ARABIC SMALL DAMMA -->
+      <map code="0x61a" name="uni061A"/><!-- ARABIC SMALL KASRA -->
+      <map code="0x61b" name="afii57403"/><!-- ARABIC SEMICOLON -->
+      <map code="0x61c" name="uni061C"/><!-- ARABIC LETTER MARK -->
+      <map code="0x61d" name="uni061D"/><!-- ARABIC END OF TEXT MARK -->
+      <map code="0x61e" name="uni061E"/><!-- ARABIC TRIPLE DOT PUNCTUATION MARK -->
+      <map code="0x61f" name="afii57407"/><!-- ARABIC QUESTION MARK -->
+      <map code="0x620" name="uni0620"/><!-- ARABIC LETTER KASHMIRI YEH -->
+      <map code="0x621" name="afii57409"/><!-- ARABIC LETTER HAMZA -->
+      <map code="0x622" name="afii57410"/><!-- ARABIC LETTER ALEF WITH MADDA ABOVE -->
+      <map code="0x623" name="afii57411"/><!-- ARABIC LETTER ALEF WITH HAMZA ABOVE -->
+      <map code="0x624" name="afii57412"/><!-- ARABIC LETTER WAW WITH HAMZA ABOVE -->
+      <map code="0x625" name="afii57413"/><!-- ARABIC LETTER ALEF WITH HAMZA BELOW -->
+      <map code="0x626" name="afii57414"/><!-- ARABIC LETTER YEH WITH HAMZA ABOVE -->
+      <map code="0x627" name="afii57415"/><!-- ARABIC LETTER ALEF -->
+      <map code="0x628" name="afii57416"/><!-- ARABIC LETTER BEH -->
+      <map code="0x629" name="afii57417"/><!-- ARABIC LETTER TEH MARBUTA -->
+      <map code="0x62a" name="afii57418"/><!-- ARABIC LETTER TEH -->
+      <map code="0x62b" name="afii57419"/><!-- ARABIC LETTER THEH -->
+      <map code="0x62c" name="afii57420"/><!-- ARABIC LETTER JEEM -->
+      <map code="0x62d" name="afii57421"/><!-- ARABIC LETTER HAH -->
+      <map code="0x62e" name="afii57422"/><!-- ARABIC LETTER KHAH -->
+      <map code="0x62f" name="afii57423"/><!-- ARABIC LETTER DAL -->
+      <map code="0x630" name="afii57424"/><!-- ARABIC LETTER THAL -->
+      <map code="0x631" name="afii57425"/><!-- ARABIC LETTER REH -->
+      <map code="0x632" name="afii57426"/><!-- ARABIC LETTER ZAIN -->
+      <map code="0x633" name="afii57427"/><!-- ARABIC LETTER SEEN -->
+      <map code="0x634" name="afii57428"/><!-- ARABIC LETTER SHEEN -->
+      <map code="0x635" name="afii57429"/><!-- ARABIC LETTER SAD -->
+      <map code="0x636" name="afii57430"/><!-- ARABIC LETTER DAD -->
+      <map code="0x637" name="afii57431"/><!-- ARABIC LETTER TAH -->
+      <map code="0x638" name="afii57432"/><!-- ARABIC LETTER ZAH -->
+      <map code="0x639" name="afii57433"/><!-- ARABIC LETTER AIN -->
+      <map code="0x63a" name="afii57434"/><!-- ARABIC LETTER GHAIN -->
+      <map code="0x63b" name="uni063B"/><!-- ARABIC LETTER KEHEH WITH TWO DOTS ABOVE -->
+      <map code="0x63c" name="uni063C"/><!-- ARABIC LETTER KEHEH WITH THREE DOTS BELOW -->
+      <map code="0x63d" name="uni063D"/><!-- ARABIC LETTER FARSI YEH WITH INVERTED V -->
+      <map code="0x63e" name="uni063E"/><!-- ARABIC LETTER FARSI YEH WITH TWO DOTS ABOVE -->
+      <map code="0x63f" name="uni063F"/><!-- ARABIC LETTER FARSI YEH WITH THREE DOTS ABOVE -->
+      <map code="0x640" name="afii57440"/><!-- ARABIC TATWEEL -->
+      <map code="0x641" name="afii57441"/><!-- ARABIC LETTER FEH -->
+      <map code="0x642" name="afii57442"/><!-- ARABIC LETTER QAF -->
+      <map code="0x643" name="afii57443"/><!-- ARABIC LETTER KAF -->
+      <map code="0x644" name="afii57444"/><!-- ARABIC LETTER LAM -->
+      <map code="0x645" name="afii57445"/><!-- ARABIC LETTER MEEM -->
+      <map code="0x646" name="afii57446"/><!-- ARABIC LETTER NOON -->
+      <map code="0x647" name="afii57470"/><!-- ARABIC LETTER HEH -->
+      <map code="0x648" name="afii57448"/><!-- ARABIC LETTER WAW -->
+      <map code="0x649" name="afii57449"/><!-- ARABIC LETTER ALEF MAKSURA -->
+      <map code="0x64a" name="afii57450"/><!-- ARABIC LETTER YEH -->
+      <map code="0x64b" name="afii57451"/><!-- ARABIC FATHATAN -->
+      <map code="0x64c" name="afii57452"/><!-- ARABIC DAMMATAN -->
+      <map code="0x64d" name="afii57453"/><!-- ARABIC KASRATAN -->
+      <map code="0x64e" name="afii57454"/><!-- ARABIC FATHA -->
+      <map code="0x64f" name="afii57455"/><!-- ARABIC DAMMA -->
+      <map code="0x650" name="afii57456"/><!-- ARABIC KASRA -->
+      <map code="0x651" name="afii57457"/><!-- ARABIC SHADDA -->
+      <map code="0x652" name="afii57458"/><!-- ARABIC SUKUN -->
+      <map code="0x653" name="uni0653"/><!-- ARABIC MADDAH ABOVE -->
+      <map code="0x654" name="uni0654"/><!-- ARABIC HAMZA ABOVE -->
+      <map code="0x655" name="uni0655"/><!-- ARABIC HAMZA BELOW -->
+      <map code="0x656" name="uni0656"/><!-- ARABIC SUBSCRIPT ALEF -->
+      <map code="0x657" name="uni0657"/><!-- ARABIC INVERTED DAMMA -->
+      <map code="0x658" name="uni0658"/><!-- ARABIC MARK NOON GHUNNA -->
+      <map code="0x659" name="uni0659"/><!-- ARABIC ZWARAKAY -->
+      <map code="0x65a" name="uni065A"/><!-- ARABIC VOWEL SIGN SMALL V ABOVE -->
+      <map code="0x65b" name="uni065B"/><!-- ARABIC VOWEL SIGN INVERTED SMALL V ABOVE -->
+      <map code="0x65c" name="uni065C"/><!-- ARABIC VOWEL SIGN DOT BELOW -->
+      <map code="0x65d" name="uni065D"/><!-- ARABIC REVERSED DAMMA -->
+      <map code="0x65e" name="uni065E"/><!-- ARABIC FATHA WITH TWO DOTS -->
+      <map code="0x65f" name="uni065F"/><!-- ARABIC WAVY HAMZA BELOW -->
+      <map code="0x660" name="a000"/><!-- ARABIC-INDIC DIGIT ZERO -->
+      <map code="0x661" name="a001"/><!-- ARABIC-INDIC DIGIT ONE -->
+      <map code="0x662" name="a002"/><!-- ARABIC-INDIC DIGIT TWO -->
+      <map code="0x663" name="a003"/><!-- ARABIC-INDIC DIGIT THREE -->
+      <map code="0x664" name="a004"/><!-- ARABIC-INDIC DIGIT FOUR -->
+      <map code="0x665" name="a005"/><!-- ARABIC-INDIC DIGIT FIVE -->
+      <map code="0x666" name="a006"/><!-- ARABIC-INDIC DIGIT SIX -->
+      <map code="0x667" name="a007"/><!-- ARABIC-INDIC DIGIT SEVEN -->
+      <map code="0x668" name="a008"/><!-- ARABIC-INDIC DIGIT EIGHT -->
+      <map code="0x669" name="a009"/><!-- ARABIC-INDIC DIGIT NINE -->
+      <map code="0x66a" name="afii57381"/><!-- ARABIC PERCENT SIGN -->
+      <map code="0x66b" name="uni066B"/><!-- ARABIC DECIMAL SEPARATOR -->
+      <map code="0x66c" name="uni066C"/><!-- ARABIC THOUSANDS SEPARATOR -->
+      <map code="0x66d" name="afii63167"/><!-- ARABIC FIVE POINTED STAR -->
+      <map code="0x66e" name="bsa"/><!-- ARABIC LETTER DOTLESS BEH -->
+      <map code="0x66f" name="uni066F"/><!-- ARABIC LETTER DOTLESS QAF -->
+      <map code="0x670" name="uni0670"/><!-- ARABIC LETTER SUPERSCRIPT ALEF -->
+      <map code="0x671" name="uni0671"/><!-- ARABIC LETTER ALEF WASLA -->
+      <map code="0x672" name="uni0672"/><!-- ARABIC LETTER ALEF WITH WAVY HAMZA ABOVE -->
+      <map code="0x673" name="uni0673"/><!-- ARABIC LETTER ALEF WITH WAVY HAMZA BELOW -->
+      <map code="0x674" name="uni0674"/><!-- ARABIC LETTER HIGH HAMZA -->
+      <map code="0x675" name="uni0675"/><!-- ARABIC LETTER HIGH HAMZA ALEF -->
+      <map code="0x676" name="uni0676"/><!-- ARABIC LETTER HIGH HAMZA WAW -->
+      <map code="0x677" name="uni0677"/><!-- ARABIC LETTER U WITH HAMZA ABOVE -->
+      <map code="0x678" name="uni0678"/><!-- ARABIC LETTER HIGH HAMZA YEH -->
+      <map code="0x679" name="afii57511"/><!-- ARABIC LETTER TTEH -->
+      <map code="0x67a" name="uni067A"/><!-- ARABIC LETTER TTEHEH -->
+      <map code="0x67b" name="uni067B"/><!-- ARABIC LETTER BEEH -->
+      <map code="0x67c" name="uni067C"/><!-- ARABIC LETTER TEH WITH RING -->
+      <map code="0x67d" name="uni067D"/><!-- ARABIC LETTER TEH WITH THREE DOTS ABOVE DOWNWARDS -->
+      <map code="0x67e" name="afii57506"/><!-- ARABIC LETTER PEH -->
+      <map code="0x67f" name="uni067F"/><!-- ARABIC LETTER TEHEH -->
+      <map code="0x680" name="uni0680"/><!-- ARABIC LETTER BEHEH -->
+      <map code="0x681" name="uni0681"/><!-- ARABIC LETTER HAH WITH HAMZA ABOVE -->
+      <map code="0x682" name="uni0682"/><!-- ARABIC LETTER HAH WITH TWO DOTS VERTICAL ABOVE -->
+      <map code="0x683" name="uni0683"/><!-- ARABIC LETTER NYEH -->
+      <map code="0x684" name="uni0684"/><!-- ARABIC LETTER DYEH -->
+      <map code="0x685" name="uni0685"/><!-- ARABIC LETTER HAH WITH THREE DOTS ABOVE -->
+      <map code="0x686" name="afii57507"/><!-- ARABIC LETTER TCHEH -->
+      <map code="0x687" name="uni0687"/><!-- ARABIC LETTER TCHEHEH -->
+      <map code="0x688" name="afii57512"/><!-- ARABIC LETTER DDAL -->
+      <map code="0x689" name="uni0689"/><!-- ARABIC LETTER DAL WITH RING -->
+      <map code="0x68a" name="uni068A"/><!-- ARABIC LETTER DAL WITH DOT BELOW -->
+      <map code="0x68b" name="uni068B"/><!-- ARABIC LETTER DAL WITH DOT BELOW AND SMALL TAH -->
+      <map code="0x68c" name="uni068C"/><!-- ARABIC LETTER DAHAL -->
+      <map code="0x68d" name="uni068D"/><!-- ARABIC LETTER DDAHAL -->
+      <map code="0x68e" name="uni068E"/><!-- ARABIC LETTER DUL -->
+      <map code="0x68f" name="uni068F"/><!-- ARABIC LETTER DAL WITH THREE DOTS ABOVE DOWNWARDS -->
+      <map code="0x690" name="uni0690"/><!-- ARABIC LETTER DAL WITH FOUR DOTS ABOVE -->
+      <map code="0x691" name="afii57513"/><!-- ARABIC LETTER RREH -->
+      <map code="0x692" name="uni0692"/><!-- ARABIC LETTER REH WITH SMALL V -->
+      <map code="0x693" name="uni0693"/><!-- ARABIC LETTER REH WITH RING -->
+      <map code="0x694" name="uni0694"/><!-- ARABIC LETTER REH WITH DOT BELOW -->
+      <map code="0x695" name="uni0695"/><!-- ARABIC LETTER REH WITH SMALL V BELOW -->
+      <map code="0x696" name="uni0696"/><!-- ARABIC LETTER REH WITH DOT BELOW AND DOT ABOVE -->
+      <map code="0x697" name="uni0697"/><!-- ARABIC LETTER REH WITH TWO DOTS ABOVE -->
+      <map code="0x698" name="afii57508"/><!-- ARABIC LETTER JEH -->
+      <map code="0x699" name="uni0699"/><!-- ARABIC LETTER REH WITH FOUR DOTS ABOVE -->
+      <map code="0x69a" name="uni069A"/><!-- ARABIC LETTER SEEN WITH DOT BELOW AND DOT ABOVE -->
+      <map code="0x69b" name="uni069B"/><!-- ARABIC LETTER SEEN WITH THREE DOTS BELOW -->
+      <map code="0x69c" name="uni069C"/><!-- ARABIC LETTER SEEN WITH THREE DOTS BELOW AND THREE DOTS ABOVE -->
+      <map code="0x69d" name="uni069D"/><!-- ARABIC LETTER SAD WITH TWO DOTS BELOW -->
+      <map code="0x69e" name="uni069E"/><!-- ARABIC LETTER SAD WITH THREE DOTS ABOVE -->
+      <map code="0x69f" name="uni069F"/><!-- ARABIC LETTER TAH WITH THREE DOTS ABOVE -->
+      <map code="0x6a0" name="uni06A0"/><!-- ARABIC LETTER AIN WITH THREE DOTS ABOVE -->
+      <map code="0x6a1" name="uni06A1"/><!-- ARABIC LETTER DOTLESS FEH -->
+      <map code="0x6a2" name="uni06A2"/><!-- ARABIC LETTER FEH WITH DOT MOVED BELOW -->
+      <map code="0x6a3" name="uni06A3"/><!-- ARABIC LETTER FEH WITH DOT BELOW -->
+      <map code="0x6a4" name="afii57505"/><!-- ARABIC LETTER VEH -->
+      <map code="0x6a5" name="uni06A5"/><!-- ARABIC LETTER FEH WITH THREE DOTS BELOW -->
+      <map code="0x6a6" name="uni06A6"/><!-- ARABIC LETTER PEHEH -->
+      <map code="0x6a7" name="uni06A7"/><!-- ARABIC LETTER QAF WITH DOT ABOVE -->
+      <map code="0x6a8" name="uni06A8"/><!-- ARABIC LETTER QAF WITH THREE DOTS ABOVE -->
+      <map code="0x6a9" name="uni06A9"/><!-- ARABIC LETTER KEHEH -->
+      <map code="0x6aa" name="uni06AA"/><!-- ARABIC LETTER SWASH KAF -->
+      <map code="0x6ab" name="uni06AB"/><!-- ARABIC LETTER KAF WITH RING -->
+      <map code="0x6ac" name="uni06AC"/><!-- ARABIC LETTER KAF WITH DOT ABOVE -->
+      <map code="0x6ad" name="uni06AD"/><!-- ARABIC LETTER NG -->
+      <map code="0x6ae" name="uni06AE"/><!-- ARABIC LETTER KAF WITH THREE DOTS BELOW -->
+      <map code="0x6af" name="afii57509"/><!-- ARABIC LETTER GAF -->
+      <map code="0x6b0" name="uni06B0"/><!-- ARABIC LETTER GAF WITH RING -->
+      <map code="0x6b1" name="uni06B1"/><!-- ARABIC LETTER NGOEH -->
+      <map code="0x6b2" name="uni06B2"/><!-- ARABIC LETTER GAF WITH TWO DOTS BELOW -->
+      <map code="0x6b3" name="uni06B3"/><!-- ARABIC LETTER GUEH -->
+      <map code="0x6b4" name="uni06B4"/><!-- ARABIC LETTER GAF WITH THREE DOTS ABOVE -->
+      <map code="0x6b5" name="uni06B5"/><!-- ARABIC LETTER LAM WITH SMALL V -->
+      <map code="0x6b6" name="uni06B6"/><!-- ARABIC LETTER LAM WITH DOT ABOVE -->
+      <map code="0x6b7" name="uni06B7"/><!-- ARABIC LETTER LAM WITH THREE DOTS ABOVE -->
+      <map code="0x6b8" name="uni06B8"/><!-- ARABIC LETTER LAM WITH THREE DOTS BELOW -->
+      <map code="0x6b9" name="uni06B9"/><!-- ARABIC LETTER NOON WITH DOT BELOW -->
+      <map code="0x6ba" name="afii57514"/><!-- ARABIC LETTER NOON GHUNNA -->
+      <map code="0x6bb" name="uni06BB"/><!-- ARABIC LETTER RNOON -->
+      <map code="0x6bc" name="uni06BC"/><!-- ARABIC LETTER NOON WITH RING -->
+      <map code="0x6bd" name="uni06BD"/><!-- ARABIC LETTER NOON WITH THREE DOTS ABOVE -->
+      <map code="0x6be" name="uni06BE"/><!-- ARABIC LETTER HEH DOACHASHMEE -->
+      <map code="0x6bf" name="uni06BF"/><!-- ARABIC LETTER TCHEH WITH DOT ABOVE -->
+      <map code="0x6c0" name="uni06C0"/><!-- ARABIC LETTER HEH WITH YEH ABOVE -->
+      <map code="0x6c1" name="uni06C1"/><!-- ARABIC LETTER HEH GOAL -->
+      <map code="0x6c2" name="uni06C2"/><!-- ARABIC LETTER HEH GOAL WITH HAMZA ABOVE -->
+      <map code="0x6c3" name="uni06C3"/><!-- ARABIC LETTER TEH MARBUTA GOAL -->
+      <map code="0x6c4" name="uni06C4"/><!-- ARABIC LETTER WAW WITH RING -->
+      <map code="0x6c5" name="uni06C5"/><!-- ARABIC LETTER KIRGHIZ OE -->
+      <map code="0x6c6" name="uni06C6"/><!-- ARABIC LETTER OE -->
+      <map code="0x6c7" name="uni06C7"/><!-- ARABIC LETTER U -->
+      <map code="0x6c8" name="uni06C8"/><!-- ARABIC LETTER YU -->
+      <map code="0x6c9" name="uni06C9"/><!-- ARABIC LETTER KIRGHIZ YU -->
+      <map code="0x6ca" name="uni06CA"/><!-- ARABIC LETTER WAW WITH TWO DOTS ABOVE -->
+      <map code="0x6cb" name="uni06CB"/><!-- ARABIC LETTER VE -->
+      <map code="0x6cc" name="uni06CC"/><!-- ARABIC LETTER FARSI YEH -->
+      <map code="0x6cd" name="uni06CD"/><!-- ARABIC LETTER YEH WITH TAIL -->
+      <map code="0x6ce" name="uni06CE"/><!-- ARABIC LETTER YEH WITH SMALL V -->
+      <map code="0x6cf" name="uni06CF"/><!-- ARABIC LETTER WAW WITH DOT ABOVE -->
+      <map code="0x6d0" name="uni06D0"/><!-- ARABIC LETTER E -->
+      <map code="0x6d1" name="uni06D1"/><!-- ARABIC LETTER YEH WITH THREE DOTS BELOW -->
+      <map code="0x6d2" name="afii57519"/><!-- ARABIC LETTER YEH BARREE -->
+      <map code="0x6d3" name="uni06D3"/><!-- ARABIC LETTER YEH BARREE WITH HAMZA ABOVE -->
+      <map code="0x6d4" name="uni06D4"/><!-- ARABIC FULL STOP -->
+      <map code="0x6d5" name="afii57534"/><!-- ARABIC LETTER AE -->
+      <map code="0x6d6" name="uni06D6"/><!-- ARABIC SMALL HIGH LIGATURE SAD WITH LAM WITH ALEF MAKSURA -->
+      <map code="0x6d7" name="uni06D7"/><!-- ARABIC SMALL HIGH LIGATURE QAF WITH LAM WITH ALEF MAKSURA -->
+      <map code="0x6d8" name="uni06D8"/><!-- ARABIC SMALL HIGH MEEM INITIAL FORM -->
+      <map code="0x6d9" name="uni06D9"/><!-- ARABIC SMALL HIGH LAM ALEF -->
+      <map code="0x6da" name="uni06DA"/><!-- ARABIC SMALL HIGH JEEM -->
+      <map code="0x6db" name="uni06DB"/><!-- ARABIC SMALL HIGH THREE DOTS -->
+      <map code="0x6dc" name="uni06DC"/><!-- ARABIC SMALL HIGH SEEN -->
+      <map code="0x6dd" name="uni06DD"/><!-- ARABIC END OF AYAH -->
+      <map code="0x6de" name="uni06DE"/><!-- ARABIC START OF RUB EL HIZB -->
+      <map code="0x6df" name="uni06DF"/><!-- ARABIC SMALL HIGH ROUNDED ZERO -->
+      <map code="0x6e0" name="uni06E0"/><!-- ARABIC SMALL HIGH UPRIGHT RECTANGULAR ZERO -->
+      <map code="0x6e1" name="uni06E1"/><!-- ARABIC SMALL HIGH DOTLESS HEAD OF KHAH -->
+      <map code="0x6e2" name="uni06E2"/><!-- ARABIC SMALL HIGH MEEM ISOLATED FORM -->
+      <map code="0x6e3" name="uni06E3"/><!-- ARABIC SMALL LOW SEEN -->
+      <map code="0x6e4" name="uni06E4"/><!-- ARABIC SMALL HIGH MADDA -->
+      <map code="0x6e5" name="uni06E5"/><!-- ARABIC SMALL WAW -->
+      <map code="0x6e6" name="uni06E6"/><!-- ARABIC SMALL YEH -->
+      <map code="0x6e7" name="uni06E7"/><!-- ARABIC SMALL HIGH YEH -->
+      <map code="0x6e8" name="uni06E8"/><!-- ARABIC SMALL HIGH NOON -->
+      <map code="0x6e9" name="uni06E9"/><!-- ARABIC PLACE OF SAJDAH -->
+      <map code="0x6ea" name="uni06EA"/><!-- ARABIC EMPTY CENTRE LOW STOP -->
+      <map code="0x6eb" name="uni06EB"/><!-- ARABIC EMPTY CENTRE HIGH STOP -->
+      <map code="0x6ec" name="up"/><!-- ARABIC ROUNDED HIGH STOP WITH FILLED CENTRE -->
+      <map code="0x6ed" name="uni06ED"/><!-- ARABIC SMALL LOW MEEM -->
+      <map code="0x6ee" name="uni06EE"/><!-- ARABIC LETTER DAL WITH INVERTED V -->
+      <map code="0x6ef" name="uni06EF"/><!-- ARABIC LETTER REH WITH INVERTED V -->
+      <map code="0x6f0" name="uni06F0"/><!-- EXTENDED ARABIC-INDIC DIGIT ZERO -->
+      <map code="0x6f1" name="uni06F1"/><!-- EXTENDED ARABIC-INDIC DIGIT ONE -->
+      <map code="0x6f2" name="uni06F2"/><!-- EXTENDED ARABIC-INDIC DIGIT TWO -->
+      <map code="0x6f3" name="uni06F3"/><!-- EXTENDED ARABIC-INDIC DIGIT THREE -->
+      <map code="0x6f4" name="uni06F4"/><!-- EXTENDED ARABIC-INDIC DIGIT FOUR -->
+      <map code="0x6f5" name="uni06F5"/><!-- EXTENDED ARABIC-INDIC DIGIT FIVE -->
+      <map code="0x6f6" name="uni06F6"/><!-- EXTENDED ARABIC-INDIC DIGIT SIX -->
+      <map code="0x6f7" name="uni06F7"/><!-- EXTENDED ARABIC-INDIC DIGIT SEVEN -->
+      <map code="0x6f8" name="uni06F8"/><!-- EXTENDED ARABIC-INDIC DIGIT EIGHT -->
+      <map code="0x6f9" name="uni06F9"/><!-- EXTENDED ARABIC-INDIC DIGIT NINE -->
+      <map code="0x6fa" name="uni06FA"/><!-- ARABIC LETTER SHEEN WITH DOT BELOW -->
+      <map code="0x6fb" name="uni06FB"/><!-- ARABIC LETTER DAD WITH DOT BELOW -->
+      <map code="0x6fc" name="uni06FC"/><!-- ARABIC LETTER GHAIN WITH DOT BELOW -->
+      <map code="0x6fd" name="uni06FD"/><!-- ARABIC SIGN SINDHI AMPERSAND -->
+      <map code="0x6fe" name="uni06FE"/><!-- ARABIC SIGN SINDHI POSTPOSITION MEN -->
+      <map code="0x6ff" name="uni06FF"/><!-- ARABIC LETTER HEH WITH INVERTED V -->
+      <map code="0x200c" name="zeronojoin"/><!-- ZERO WIDTH NON-JOINER -->
+      <map code="0x200d" name="zerojoin"/><!-- ZERO WIDTH JOINER -->
+      <map code="0x200e" name="lefttoright"/><!-- LEFT-TO-RIGHT MARK -->
+      <map code="0x200f" name="righttoleft"/><!-- RIGHT-TO-LEFT MARK -->
+      <map code="0xfc00" name="uniFC00"/><!-- ARABIC LIGATURE YEH WITH HAMZA ABOVE WITH JEEM ISOLATED FORM -->
+      <map code="0xfc01" name="uniFC01"/><!-- ARABIC LIGATURE YEH WITH HAMZA ABOVE WITH HAH ISOLATED FORM -->
+      <map code="0xfc02" name="uniFC02"/><!-- ARABIC LIGATURE YEH WITH HAMZA ABOVE WITH MEEM ISOLATED FORM -->
+      <map code="0xfc03" name="uniFC03"/><!-- ARABIC LIGATURE YEH WITH HAMZA ABOVE WITH ALEF MAKSURA ISOLATED FORM -->
+      <map code="0xfc04" name="uniFC04"/><!-- ARABIC LIGATURE YEH WITH HAMZA ABOVE WITH YEH ISOLATED FORM -->
+      <map code="0xfc05" name="uniFC05"/><!-- ARABIC LIGATURE BEH WITH JEEM ISOLATED FORM -->
+      <map code="0xfc06" name="uniFC06"/><!-- ARABIC LIGATURE BEH WITH HAH ISOLATED FORM -->
+      <map code="0xfc07" name="uniFC07"/><!-- ARABIC LIGATURE BEH WITH KHAH ISOLATED FORM -->
+      <map code="0xfc08" name="uniFC08"/><!-- ARABIC LIGATURE BEH WITH MEEM ISOLATED FORM -->
+      <map code="0xfc09" name="uniFC09"/><!-- ARABIC LIGATURE BEH WITH ALEF MAKSURA ISOLATED FORM -->
+      <map code="0xfc0a" name="uniFC0A"/><!-- ARABIC LIGATURE BEH WITH YEH ISOLATED FORM -->
+      <map code="0xfc0b" name="uniFC0B"/><!-- ARABIC LIGATURE TEH WITH JEEM ISOLATED FORM -->
+      <map code="0xfc0c" name="uniFC0C"/><!-- ARABIC LIGATURE TEH WITH HAH ISOLATED FORM -->
+      <map code="0xfc0d" name="uniFC0D"/><!-- ARABIC LIGATURE TEH WITH KHAH ISOLATED FORM -->
+      <map code="0xfc0e" name="uniFC0E"/><!-- ARABIC LIGATURE TEH WITH MEEM ISOLATED FORM -->
+      <map code="0xfc0f" name="uniFC0F"/><!-- ARABIC LIGATURE TEH WITH ALEF MAKSURA ISOLATED FORM -->
+      <map code="0xfc10" name="uniFC10"/><!-- ARABIC LIGATURE TEH WITH YEH ISOLATED FORM -->
+      <map code="0xfc11" name="uniFC11"/><!-- ARABIC LIGATURE THEH WITH JEEM ISOLATED FORM -->
+      <map code="0xfc12" name="uniFC12"/><!-- ARABIC LIGATURE THEH WITH MEEM ISOLATED FORM -->
+      <map code="0xfc13" name="uniFC13"/><!-- ARABIC LIGATURE THEH WITH ALEF MAKSURA ISOLATED FORM -->
+      <map code="0xfc14" name="uniFC14"/><!-- ARABIC LIGATURE THEH WITH YEH ISOLATED FORM -->
+      <map code="0xfc15" name="uniFC15"/><!-- ARABIC LIGATURE JEEM WITH HAH ISOLATED FORM -->
+      <map code="0xfc16" name="uniFC16"/><!-- ARABIC LIGATURE JEEM WITH MEEM ISOLATED FORM -->
+      <map code="0xfc17" name="uniFC17"/><!-- ARABIC LIGATURE HAH WITH JEEM ISOLATED FORM -->
+      <map code="0xfc18" name="uniFC18"/><!-- ARABIC LIGATURE HAH WITH MEEM ISOLATED FORM -->
+      <map code="0xfc19" name="uniFC19"/><!-- ARABIC LIGATURE KHAH WITH JEEM ISOLATED FORM -->
+      <map code="0xfc1a" name="uniFC1A"/><!-- ARABIC LIGATURE KHAH WITH HAH ISOLATED FORM -->
+      <map code="0xfc1b" name="uniFC1B"/><!-- ARABIC LIGATURE KHAH WITH MEEM ISOLATED FORM -->
+      <map code="0xfc1c" name="uniFC1C"/><!-- ARABIC LIGATURE SEEN WITH JEEM ISOLATED FORM -->
+      <map code="0xfc1d" name="uniFC1D"/><!-- ARABIC LIGATURE SEEN WITH HAH ISOLATED FORM -->
+      <map code="0xfc1e" name="uniFC1E"/><!-- ARABIC LIGATURE SEEN WITH KHAH ISOLATED FORM -->
+      <map code="0xfc1f" name="uniFC1F"/><!-- ARABIC LIGATURE SEEN WITH MEEM ISOLATED FORM -->
+      <map code="0xfc20" name="uniFC20"/><!-- ARABIC LIGATURE SAD WITH HAH ISOLATED FORM -->
+      <map code="0xfc21" name="uniFC21"/><!-- ARABIC LIGATURE SAD WITH MEEM ISOLATED FORM -->
+      <map code="0xfc22" name="uniFC22"/><!-- ARABIC LIGATURE DAD WITH JEEM ISOLATED FORM -->
+      <map code="0xfc23" name="uniFC23"/><!-- ARABIC LIGATURE DAD WITH HAH ISOLATED FORM -->
+      <map code="0xfc24" name="uniFC24"/><!-- ARABIC LIGATURE DAD WITH KHAH ISOLATED FORM -->
+      <map code="0xfc25" name="uniFC25"/><!-- ARABIC LIGATURE DAD WITH MEEM ISOLATED FORM -->
+      <map code="0xfc26" name="uniFC26"/><!-- ARABIC LIGATURE TAH WITH HAH ISOLATED FORM -->
+      <map code="0xfc27" name="uniFC27"/><!-- ARABIC LIGATURE TAH WITH MEEM ISOLATED FORM -->
+      <map code="0xfc28" name="uniFC28"/><!-- ARABIC LIGATURE ZAH WITH MEEM ISOLATED FORM -->
+      <map code="0xfc29" name="uniFC29"/><!-- ARABIC LIGATURE AIN WITH JEEM ISOLATED FORM -->
+      <map code="0xfc2a" name="uniFC2A"/><!-- ARABIC LIGATURE AIN WITH MEEM ISOLATED FORM -->
+      <map code="0xfc2b" name="uniFC2B"/><!-- ARABIC LIGATURE GHAIN WITH JEEM ISOLATED FORM -->
+      <map code="0xfc2c" name="uniFC2C"/><!-- ARABIC LIGATURE GHAIN WITH MEEM ISOLATED FORM -->
+      <map code="0xfc2d" name="uniFC2D"/><!-- ARABIC LIGATURE FEH WITH JEEM ISOLATED FORM -->
+      <map code="0xfc2e" name="uniFC2E"/><!-- ARABIC LIGATURE FEH WITH HAH ISOLATED FORM -->
+      <map code="0xfc2f" name="uniFC2F"/><!-- ARABIC LIGATURE FEH WITH KHAH ISOLATED FORM -->
+      <map code="0xfc30" name="uniFC30"/><!-- ARABIC LIGATURE FEH WITH MEEM ISOLATED FORM -->
+      <map code="0xfc31" name="uniFC31"/><!-- ARABIC LIGATURE FEH WITH ALEF MAKSURA ISOLATED FORM -->
+      <map code="0xfc32" name="uniFC32"/><!-- ARABIC LIGATURE FEH WITH YEH ISOLATED FORM -->
+      <map code="0xfc33" name="uniFC33"/><!-- ARABIC LIGATURE QAF WITH HAH ISOLATED FORM -->
+      <map code="0xfc34" name="uniFC34"/><!-- ARABIC LIGATURE QAF WITH MEEM ISOLATED FORM -->
+      <map code="0xfc35" name="uniFC35"/><!-- ARABIC LIGATURE QAF WITH ALEF MAKSURA ISOLATED FORM -->
+      <map code="0xfc36" name="uniFC36"/><!-- ARABIC LIGATURE QAF WITH YEH ISOLATED FORM -->
+      <map code="0xfc37" name="uniFC37"/><!-- ARABIC LIGATURE KAF WITH ALEF ISOLATED FORM -->
+      <map code="0xfc38" name="uniFC38"/><!-- ARABIC LIGATURE KAF WITH JEEM ISOLATED FORM -->
+      <map code="0xfc39" name="uniFC39"/><!-- ARABIC LIGATURE KAF WITH HAH ISOLATED FORM -->
+      <map code="0xfc3a" name="uniFC3A"/><!-- ARABIC LIGATURE KAF WITH KHAH ISOLATED FORM -->
+      <map code="0xfc3b" name="uniFC3B"/><!-- ARABIC LIGATURE KAF WITH LAM ISOLATED FORM -->
+      <map code="0xfc3c" name="uniFC3C"/><!-- ARABIC LIGATURE KAF WITH MEEM ISOLATED FORM -->
+      <map code="0xfc3d" name="uniFC3D"/><!-- ARABIC LIGATURE KAF WITH ALEF MAKSURA ISOLATED FORM -->
+      <map code="0xfc3e" name="uniFC3E"/><!-- ARABIC LIGATURE KAF WITH YEH ISOLATED FORM -->
+      <map code="0xfc3f" name="uniFC3F"/><!-- ARABIC LIGATURE LAM WITH JEEM ISOLATED FORM -->
+      <map code="0xfc40" name="uniFC40"/><!-- ARABIC LIGATURE LAM WITH HAH ISOLATED FORM -->
+      <map code="0xfc41" name="uniFC41"/><!-- ARABIC LIGATURE LAM WITH KHAH ISOLATED FORM -->
+      <map code="0xfc42" name="uniFC42"/><!-- ARABIC LIGATURE LAM WITH MEEM ISOLATED FORM -->
+      <map code="0xfc43" name="uniFC43"/><!-- ARABIC LIGATURE LAM WITH ALEF MAKSURA ISOLATED FORM -->
+      <map code="0xfc44" name="uniFC44"/><!-- ARABIC LIGATURE LAM WITH YEH ISOLATED FORM -->
+      <map code="0xfc45" name="uniFC45"/><!-- ARABIC LIGATURE MEEM WITH JEEM ISOLATED FORM -->
+      <map code="0xfc46" name="uniFC46"/><!-- ARABIC LIGATURE MEEM WITH HAH ISOLATED FORM -->
+      <map code="0xfc47" name="uniFC47"/><!-- ARABIC LIGATURE MEEM WITH KHAH ISOLATED FORM -->
+      <map code="0xfc48" name="uniFC48"/><!-- ARABIC LIGATURE MEEM WITH MEEM ISOLATED FORM -->
+      <map code="0xfc49" name="uniFC49"/><!-- ARABIC LIGATURE MEEM WITH ALEF MAKSURA ISOLATED FORM -->
+      <map code="0xfc4a" name="uniFC4A"/><!-- ARABIC LIGATURE MEEM WITH YEH ISOLATED FORM -->
+      <map code="0xfc4b" name="uniFC4B"/><!-- ARABIC LIGATURE NOON WITH JEEM ISOLATED FORM -->
+      <map code="0xfc4c" name="uniFC4C"/><!-- ARABIC LIGATURE NOON WITH HAH ISOLATED FORM -->
+      <map code="0xfc4d" name="uniFC4D"/><!-- ARABIC LIGATURE NOON WITH KHAH ISOLATED FORM -->
+      <map code="0xfc4e" name="uniFC4E"/><!-- ARABIC LIGATURE NOON WITH MEEM ISOLATED FORM -->
+      <map code="0xfc4f" name="uniFC4F"/><!-- ARABIC LIGATURE NOON WITH ALEF MAKSURA ISOLATED FORM -->
+      <map code="0xfc50" name="uniFC50"/><!-- ARABIC LIGATURE NOON WITH YEH ISOLATED FORM -->
+      <map code="0xfc51" name="uniFC51"/><!-- ARABIC LIGATURE HEH WITH JEEM ISOLATED FORM -->
+      <map code="0xfc52" name="uniFC52"/><!-- ARABIC LIGATURE HEH WITH MEEM ISOLATED FORM -->
+      <map code="0xfc53" name="uniFC53"/><!-- ARABIC LIGATURE HEH WITH ALEF MAKSURA ISOLATED FORM -->
+      <map code="0xfc54" name="uniFC54"/><!-- ARABIC LIGATURE HEH WITH YEH ISOLATED FORM -->
+      <map code="0xfc55" name="uniFC55"/><!-- ARABIC LIGATURE YEH WITH JEEM ISOLATED FORM -->
+      <map code="0xfc56" name="uniFC56"/><!-- ARABIC LIGATURE YEH WITH HAH ISOLATED FORM -->
+      <map code="0xfc57" name="uniFC57"/><!-- ARABIC LIGATURE YEH WITH KHAH ISOLATED FORM -->
+      <map code="0xfc58" name="uniFC58"/><!-- ARABIC LIGATURE YEH WITH MEEM ISOLATED FORM -->
+      <map code="0xfc59" name="uniFC59"/><!-- ARABIC LIGATURE YEH WITH ALEF MAKSURA ISOLATED FORM -->
+      <map code="0xfc5a" name="uniFC5A"/><!-- ARABIC LIGATURE YEH WITH YEH ISOLATED FORM -->
+      <map code="0xfc5b" name="uniFC5B"/><!-- ARABIC LIGATURE THAL WITH SUPERSCRIPT ALEF ISOLATED FORM -->
+      <map code="0xfc5c" name="uniFC5C"/><!-- ARABIC LIGATURE REH WITH SUPERSCRIPT ALEF ISOLATED FORM -->
+      <map code="0xfc5d" name="uniFC5D"/><!-- ARABIC LIGATURE ALEF MAKSURA WITH SUPERSCRIPT ALEF ISOLATED FORM -->
+      <map code="0xfc5e" name="uniFC5E"/><!-- ARABIC LIGATURE SHADDA WITH DAMMATAN ISOLATED FORM -->
+      <map code="0xfc5f" name="uniFC5F"/><!-- ARABIC LIGATURE SHADDA WITH KASRATAN ISOLATED FORM -->
+      <map code="0xfc60" name="uniFC60"/><!-- ARABIC LIGATURE SHADDA WITH FATHA ISOLATED FORM -->
+      <map code="0xfc61" name="uniFC61"/><!-- ARABIC LIGATURE SHADDA WITH DAMMA ISOLATED FORM -->
+      <map code="0xfc62" name="uniFC62"/><!-- ARABIC LIGATURE SHADDA WITH KASRA ISOLATED FORM -->
+      <map code="0xfc63" name="uniFC63"/><!-- ARABIC LIGATURE SHADDA WITH SUPERSCRIPT ALEF ISOLATED FORM -->
+      <map code="0xfc64" name="uniFC64"/><!-- ARABIC LIGATURE YEH WITH HAMZA ABOVE WITH REH FINAL FORM -->
+      <map code="0xfc65" name="uniFC65"/><!-- ARABIC LIGATURE YEH WITH HAMZA ABOVE WITH ZAIN FINAL FORM -->
+      <map code="0xfc66" name="uniFC66"/><!-- ARABIC LIGATURE YEH WITH HAMZA ABOVE WITH MEEM FINAL FORM -->
+      <map code="0xfc67" name="uniFC67"/><!-- ARABIC LIGATURE YEH WITH HAMZA ABOVE WITH NOON FINAL FORM -->
+      <map code="0xfc68" name="uniFC68"/><!-- ARABIC LIGATURE YEH WITH HAMZA ABOVE WITH ALEF MAKSURA FINAL FORM -->
+      <map code="0xfc69" name="uniFC69"/><!-- ARABIC LIGATURE YEH WITH HAMZA ABOVE WITH YEH FINAL FORM -->
+      <map code="0xfc6a" name="uniFC6A"/><!-- ARABIC LIGATURE BEH WITH REH FINAL FORM -->
+      <map code="0xfc6b" name="uniFC6B"/><!-- ARABIC LIGATURE BEH WITH ZAIN FINAL FORM -->
+      <map code="0xfc6c" name="uniFC6C"/><!-- ARABIC LIGATURE BEH WITH MEEM FINAL FORM -->
+      <map code="0xfc6d" name="uniFC6D"/><!-- ARABIC LIGATURE BEH WITH NOON FINAL FORM -->
+      <map code="0xfc6e" name="uniFC6E"/><!-- ARABIC LIGATURE BEH WITH ALEF MAKSURA FINAL FORM -->
+      <map code="0xfc6f" name="uniFC6F"/><!-- ARABIC LIGATURE BEH WITH YEH FINAL FORM -->
+      <map code="0xfc70" name="uniFC70"/><!-- ARABIC LIGATURE TEH WITH REH FINAL FORM -->
+      <map code="0xfc71" name="uniFC71"/><!-- ARABIC LIGATURE TEH WITH ZAIN FINAL FORM -->
+      <map code="0xfc72" name="uniFC72"/><!-- ARABIC LIGATURE TEH WITH MEEM FINAL FORM -->
+      <map code="0xfc73" name="uniFC73"/><!-- ARABIC LIGATURE TEH WITH NOON FINAL FORM -->
+      <map code="0xfc74" name="uniFC74"/><!-- ARABIC LIGATURE TEH WITH ALEF MAKSURA FINAL FORM -->
+      <map code="0xfc75" name="uniFC75"/><!-- ARABIC LIGATURE TEH WITH YEH FINAL FORM -->
+      <map code="0xfc76" name="uniFC76"/><!-- ARABIC LIGATURE THEH WITH REH FINAL FORM -->
+      <map code="0xfc77" name="uniFC77"/><!-- ARABIC LIGATURE THEH WITH ZAIN FINAL FORM -->
+      <map code="0xfc78" name="uniFC78"/><!-- ARABIC LIGATURE THEH WITH MEEM FINAL FORM -->
+      <map code="0xfc79" name="uniFC79"/><!-- ARABIC LIGATURE THEH WITH NOON FINAL FORM -->
+      <map code="0xfc7a" name="uniFC7A"/><!-- ARABIC LIGATURE THEH WITH ALEF MAKSURA FINAL FORM -->
+      <map code="0xfc7b" name="uniFC7B"/><!-- ARABIC LIGATURE THEH WITH YEH FINAL FORM -->
+      <map code="0xfc7c" name="uniFC7C"/><!-- ARABIC LIGATURE FEH WITH ALEF MAKSURA FINAL FORM -->
+      <map code="0xfc7d" name="uniFC7D"/><!-- ARABIC LIGATURE FEH WITH YEH FINAL FORM -->
+      <map code="0xfc7e" name="uniFC7E"/><!-- ARABIC LIGATURE QAF WITH ALEF MAKSURA FINAL FORM -->
+      <map code="0xfc7f" name="uniFC7F"/><!-- ARABIC LIGATURE QAF WITH YEH FINAL FORM -->
+      <map code="0xfc80" name="uniFC80"/><!-- ARABIC LIGATURE KAF WITH ALEF FINAL FORM -->
+      <map code="0xfc81" name="uniFC81"/><!-- ARABIC LIGATURE KAF WITH LAM FINAL FORM -->
+      <map code="0xfc82" name="uniFC82"/><!-- ARABIC LIGATURE KAF WITH MEEM FINAL FORM -->
+      <map code="0xfc83" name="uniFC83"/><!-- ARABIC LIGATURE KAF WITH ALEF MAKSURA FINAL FORM -->
+      <map code="0xfc84" name="uniFC84"/><!-- ARABIC LIGATURE KAF WITH YEH FINAL FORM -->
+      <map code="0xfc85" name="uniFC85"/><!-- ARABIC LIGATURE LAM WITH MEEM FINAL FORM -->
+      <map code="0xfc86" name="uniFC86"/><!-- ARABIC LIGATURE LAM WITH ALEF MAKSURA FINAL FORM -->
+      <map code="0xfc87" name="uniFC87"/><!-- ARABIC LIGATURE LAM WITH YEH FINAL FORM -->
+      <map code="0xfc88" name="uniFC88"/><!-- ARABIC LIGATURE MEEM WITH ALEF FINAL FORM -->
+      <map code="0xfc89" name="uniFC89"/><!-- ARABIC LIGATURE MEEM WITH MEEM FINAL FORM -->
+      <map code="0xfc8a" name="uniFC8A"/><!-- ARABIC LIGATURE NOON WITH REH FINAL FORM -->
+      <map code="0xfc8b" name="uniFC8B"/><!-- ARABIC LIGATURE NOON WITH ZAIN FINAL FORM -->
+      <map code="0xfc8c" name="uniFC8C"/><!-- ARABIC LIGATURE NOON WITH MEEM FINAL FORM -->
+      <map code="0xfc8d" name="uniFC8D"/><!-- ARABIC LIGATURE NOON WITH NOON FINAL FORM -->
+      <map code="0xfc8e" name="uniFC8E"/><!-- ARABIC LIGATURE NOON WITH ALEF MAKSURA FINAL FORM -->
+      <map code="0xfc8f" name="uniFC8F"/><!-- ARABIC LIGATURE NOON WITH YEH FINAL FORM -->
+      <map code="0xfc90" name="uniFC90"/><!-- ARABIC LIGATURE ALEF MAKSURA WITH SUPERSCRIPT ALEF FINAL FORM -->
+      <map code="0xfc91" name="uniFC91"/><!-- ARABIC LIGATURE YEH WITH REH FINAL FORM -->
+      <map code="0xfc92" name="uniFC92"/><!-- ARABIC LIGATURE YEH WITH ZAIN FINAL FORM -->
+      <map code="0xfc93" name="uniFC93"/><!-- ARABIC LIGATURE YEH WITH MEEM FINAL FORM -->
+      <map code="0xfc94" name="uniFC94"/><!-- ARABIC LIGATURE YEH WITH NOON FINAL FORM -->
+      <map code="0xfc95" name="uniFC95"/><!-- ARABIC LIGATURE YEH WITH ALEF MAKSURA FINAL FORM -->
+      <map code="0xfc96" name="uniFC96"/><!-- ARABIC LIGATURE YEH WITH YEH FINAL FORM -->
+      <map code="0xfc97" name="uniFC97"/><!-- ARABIC LIGATURE YEH WITH HAMZA ABOVE WITH JEEM INITIAL FORM -->
+      <map code="0xfc98" name="uniFC98"/><!-- ARABIC LIGATURE YEH WITH HAMZA ABOVE WITH HAH INITIAL FORM -->
+      <map code="0xfc99" name="uniFC99"/><!-- ARABIC LIGATURE YEH WITH HAMZA ABOVE WITH KHAH INITIAL FORM -->
+      <map code="0xfc9a" name="uniFC9A"/><!-- ARABIC LIGATURE YEH WITH HAMZA ABOVE WITH MEEM INITIAL FORM -->
+      <map code="0xfc9b" name="uniFC9B"/><!-- ARABIC LIGATURE YEH WITH HAMZA ABOVE WITH HEH INITIAL FORM -->
+      <map code="0xfc9c" name="uniFC9C"/><!-- ARABIC LIGATURE BEH WITH JEEM INITIAL FORM -->
+      <map code="0xfc9d" name="uniFC9D"/><!-- ARABIC LIGATURE BEH WITH HAH INITIAL FORM -->
+      <map code="0xfc9e" name="uniFC9E"/><!-- ARABIC LIGATURE BEH WITH KHAH INITIAL FORM -->
+      <map code="0xfc9f" name="uniFC9F"/><!-- ARABIC LIGATURE BEH WITH MEEM INITIAL FORM -->
+      <map code="0xfca0" name="uniFCA0"/><!-- ARABIC LIGATURE BEH WITH HEH INITIAL FORM -->
+      <map code="0xfca1" name="uniFCA1"/><!-- ARABIC LIGATURE TEH WITH JEEM INITIAL FORM -->
+      <map code="0xfca2" name="uniFCA2"/><!-- ARABIC LIGATURE TEH WITH HAH INITIAL FORM -->
+      <map code="0xfca3" name="uniFCA3"/><!-- ARABIC LIGATURE TEH WITH KHAH INITIAL FORM -->
+      <map code="0xfca4" name="uniFCA4"/><!-- ARABIC LIGATURE TEH WITH MEEM INITIAL FORM -->
+      <map code="0xfca5" name="uniFCA5"/><!-- ARABIC LIGATURE TEH WITH HEH INITIAL FORM -->
+      <map code="0xfca6" name="uniFCA6"/><!-- ARABIC LIGATURE THEH WITH MEEM INITIAL FORM -->
+      <map code="0xfca7" name="uniFCA7"/><!-- ARABIC LIGATURE JEEM WITH HAH INITIAL FORM -->
+      <map code="0xfca8" name="uniFCA8"/><!-- ARABIC LIGATURE JEEM WITH MEEM INITIAL FORM -->
+      <map code="0xfca9" name="uniFCA9"/><!-- ARABIC LIGATURE HAH WITH JEEM INITIAL FORM -->
+      <map code="0xfcaa" name="uniFCAA"/><!-- ARABIC LIGATURE HAH WITH MEEM INITIAL FORM -->
+      <map code="0xfcab" name="uniFCAB"/><!-- ARABIC LIGATURE KHAH WITH JEEM INITIAL FORM -->
+      <map code="0xfcac" name="uniFCAC"/><!-- ARABIC LIGATURE KHAH WITH MEEM INITIAL FORM -->
+      <map code="0xfcad" name="uniFCAD"/><!-- ARABIC LIGATURE SEEN WITH JEEM INITIAL FORM -->
+      <map code="0xfcae" name="uniFCAE"/><!-- ARABIC LIGATURE SEEN WITH HAH INITIAL FORM -->
+      <map code="0xfcaf" name="uniFCAF"/><!-- ARABIC LIGATURE SEEN WITH KHAH INITIAL FORM -->
+      <map code="0xfcb0" name="uniFCB0"/><!-- ARABIC LIGATURE SEEN WITH MEEM INITIAL FORM -->
+      <map code="0xfcb1" name="uniFCB1"/><!-- ARABIC LIGATURE SAD WITH HAH INITIAL FORM -->
+      <map code="0xfcb2" name="uniFCB2"/><!-- ARABIC LIGATURE SAD WITH KHAH INITIAL FORM -->
+      <map code="0xfcb3" name="uniFCB3"/><!-- ARABIC LIGATURE SAD WITH MEEM INITIAL FORM -->
+      <map code="0xfcb4" name="uniFCB4"/><!-- ARABIC LIGATURE DAD WITH JEEM INITIAL FORM -->
+      <map code="0xfcb5" name="uniFCB5"/><!-- ARABIC LIGATURE DAD WITH HAH INITIAL FORM -->
+      <map code="0xfcb6" name="uniFCB6"/><!-- ARABIC LIGATURE DAD WITH KHAH INITIAL FORM -->
+      <map code="0xfcb7" name="uniFCB7"/><!-- ARABIC LIGATURE DAD WITH MEEM INITIAL FORM -->
+      <map code="0xfcb8" name="uniFCB8"/><!-- ARABIC LIGATURE TAH WITH HAH INITIAL FORM -->
+      <map code="0xfcb9" name="uniFCB9"/><!-- ARABIC LIGATURE ZAH WITH MEEM INITIAL FORM -->
+      <map code="0xfcba" name="uniFCBA"/><!-- ARABIC LIGATURE AIN WITH JEEM INITIAL FORM -->
+      <map code="0xfcbb" name="uniFCBB"/><!-- ARABIC LIGATURE AIN WITH MEEM INITIAL FORM -->
+      <map code="0xfcbc" name="uniFCBC"/><!-- ARABIC LIGATURE GHAIN WITH JEEM INITIAL FORM -->
+      <map code="0xfcbd" name="uniFCBD"/><!-- ARABIC LIGATURE GHAIN WITH MEEM INITIAL FORM -->
+      <map code="0xfcbe" name="uniFCBE"/><!-- ARABIC LIGATURE FEH WITH JEEM INITIAL FORM -->
+      <map code="0xfcbf" name="uniFCBF"/><!-- ARABIC LIGATURE FEH WITH HAH INITIAL FORM -->
+      <map code="0xfcc0" name="uniFCC0"/><!-- ARABIC LIGATURE FEH WITH KHAH INITIAL FORM -->
+      <map code="0xfcc1" name="uniFCC1"/><!-- ARABIC LIGATURE FEH WITH MEEM INITIAL FORM -->
+      <map code="0xfcc2" name="uniFCC2"/><!-- ARABIC LIGATURE QAF WITH HAH INITIAL FORM -->
+      <map code="0xfcc3" name="uniFCC3"/><!-- ARABIC LIGATURE QAF WITH MEEM INITIAL FORM -->
+      <map code="0xfcc4" name="uniFCC4"/><!-- ARABIC LIGATURE KAF WITH JEEM INITIAL FORM -->
+      <map code="0xfcc5" name="uniFCC5"/><!-- ARABIC LIGATURE KAF WITH HAH INITIAL FORM -->
+      <map code="0xfcc6" name="uniFCC6"/><!-- ARABIC LIGATURE KAF WITH KHAH INITIAL FORM -->
+      <map code="0xfcc7" name="uniFCC7"/><!-- ARABIC LIGATURE KAF WITH LAM INITIAL FORM -->
+      <map code="0xfcc8" name="uniFCC8"/><!-- ARABIC LIGATURE KAF WITH MEEM INITIAL FORM -->
+      <map code="0xfcc9" name="uniFCC9"/><!-- ARABIC LIGATURE LAM WITH JEEM INITIAL FORM -->
+      <map code="0xfcca" name="uniFCCA"/><!-- ARABIC LIGATURE LAM WITH HAH INITIAL FORM -->
+      <map code="0xfccb" name="uniFCCB"/><!-- ARABIC LIGATURE LAM WITH KHAH INITIAL FORM -->
+      <map code="0xfccc" name="uniFCCC"/><!-- ARABIC LIGATURE LAM WITH MEEM INITIAL FORM -->
+      <map code="0xfccd" name="uniFCCD"/><!-- ARABIC LIGATURE LAM WITH HEH INITIAL FORM -->
+      <map code="0xfcce" name="uniFCCE"/><!-- ARABIC LIGATURE MEEM WITH JEEM INITIAL FORM -->
+      <map code="0xfccf" name="uniFCCF"/><!-- ARABIC LIGATURE MEEM WITH HAH INITIAL FORM -->
+      <map code="0xfcd0" name="uniFCD0"/><!-- ARABIC LIGATURE MEEM WITH KHAH INITIAL FORM -->
+      <map code="0xfcd1" name="uniFCD1"/><!-- ARABIC LIGATURE MEEM WITH MEEM INITIAL FORM -->
+      <map code="0xfcd2" name="uniFCD2"/><!-- ARABIC LIGATURE NOON WITH JEEM INITIAL FORM -->
+      <map code="0xfcd3" name="uniFCD3"/><!-- ARABIC LIGATURE NOON WITH HAH INITIAL FORM -->
+      <map code="0xfcd4" name="uniFCD4"/><!-- ARABIC LIGATURE NOON WITH KHAH INITIAL FORM -->
+      <map code="0xfcd5" name="uniFCD5"/><!-- ARABIC LIGATURE NOON WITH MEEM INITIAL FORM -->
+      <map code="0xfcd6" name="uniFCD6"/><!-- ARABIC LIGATURE NOON WITH HEH INITIAL FORM -->
+      <map code="0xfcd7" name="uniFCD7"/><!-- ARABIC LIGATURE HEH WITH JEEM INITIAL FORM -->
+      <map code="0xfcd8" name="uniFCD8"/><!-- ARABIC LIGATURE HEH WITH MEEM INITIAL FORM -->
+      <map code="0xfcd9" name="uniFCD9"/><!-- ARABIC LIGATURE HEH WITH SUPERSCRIPT ALEF INITIAL FORM -->
+      <map code="0xfcda" name="uniFCDA"/><!-- ARABIC LIGATURE YEH WITH JEEM INITIAL FORM -->
+      <map code="0xfcdb" name="uniFCDB"/><!-- ARABIC LIGATURE YEH WITH HAH INITIAL FORM -->
+      <map code="0xfcdc" name="uniFCDC"/><!-- ARABIC LIGATURE YEH WITH KHAH INITIAL FORM -->
+      <map code="0xfcdd" name="uniFCDD"/><!-- ARABIC LIGATURE YEH WITH MEEM INITIAL FORM -->
+      <map code="0xfcde" name="uniFCDE"/><!-- ARABIC LIGATURE YEH WITH HEH INITIAL FORM -->
+      <map code="0xfcdf" name="uniFCDF"/><!-- ARABIC LIGATURE YEH WITH HAMZA ABOVE WITH MEEM MEDIAL FORM -->
+      <map code="0xfce0" name="uniFCE0"/><!-- ARABIC LIGATURE YEH WITH HAMZA ABOVE WITH HEH MEDIAL FORM -->
+      <map code="0xfce1" name="uniFCE1"/><!-- ARABIC LIGATURE BEH WITH MEEM MEDIAL FORM -->
+      <map code="0xfce2" name="uniFCE2"/><!-- ARABIC LIGATURE BEH WITH HEH MEDIAL FORM -->
+      <map code="0xfce3" name="uniFCE3"/><!-- ARABIC LIGATURE TEH WITH MEEM MEDIAL FORM -->
+      <map code="0xfce4" name="uniFCE4"/><!-- ARABIC LIGATURE TEH WITH HEH MEDIAL FORM -->
+      <map code="0xfce5" name="uniFCE5"/><!-- ARABIC LIGATURE THEH WITH MEEM MEDIAL FORM -->
+      <map code="0xfce6" name="uniFCE6"/><!-- ARABIC LIGATURE THEH WITH HEH MEDIAL FORM -->
+      <map code="0xfce7" name="uniFCE7"/><!-- ARABIC LIGATURE SEEN WITH MEEM MEDIAL FORM -->
+      <map code="0xfce8" name="uniFCE8"/><!-- ARABIC LIGATURE SEEN WITH HEH MEDIAL FORM -->
+      <map code="0xfce9" name="uniFCE9"/><!-- ARABIC LIGATURE SHEEN WITH MEEM MEDIAL FORM -->
+      <map code="0xfcea" name="uniFCEA"/><!-- ARABIC LIGATURE SHEEN WITH HEH MEDIAL FORM -->
+      <map code="0xfceb" name="uniFCEB"/><!-- ARABIC LIGATURE KAF WITH LAM MEDIAL FORM -->
+      <map code="0xfcec" name="uniFCEC"/><!-- ARABIC LIGATURE KAF WITH MEEM MEDIAL FORM -->
+      <map code="0xfced" name="uniFCED"/><!-- ARABIC LIGATURE LAM WITH MEEM MEDIAL FORM -->
+      <map code="0xfcee" name="uniFCEE"/><!-- ARABIC LIGATURE NOON WITH MEEM MEDIAL FORM -->
+      <map code="0xfcef" name="uniFCEF"/><!-- ARABIC LIGATURE NOON WITH HEH MEDIAL FORM -->
+      <map code="0xfcf0" name="uniFCF0"/><!-- ARABIC LIGATURE YEH WITH MEEM MEDIAL FORM -->
+      <map code="0xfcf1" name="uniFCF1"/><!-- ARABIC LIGATURE YEH WITH HEH MEDIAL FORM -->
+      <map code="0xfcf2" name="uniFCF2"/><!-- ARABIC LIGATURE SHADDA WITH FATHA MEDIAL FORM -->
+      <map code="0xfcf3" name="uniFCF3"/><!-- ARABIC LIGATURE SHADDA WITH DAMMA MEDIAL FORM -->
+      <map code="0xfcf4" name="uniFCF4"/><!-- ARABIC LIGATURE SHADDA WITH KASRA MEDIAL FORM -->
+      <map code="0xfcf5" name="uniFCF5"/><!-- ARABIC LIGATURE TAH WITH ALEF MAKSURA ISOLATED FORM -->
+      <map code="0xfcf6" name="uniFCF6"/><!-- ARABIC LIGATURE TAH WITH YEH ISOLATED FORM -->
+      <map code="0xfcf7" name="uniFCF7"/><!-- ARABIC LIGATURE AIN WITH ALEF MAKSURA ISOLATED FORM -->
+      <map code="0xfcf8" name="uniFCF8"/><!-- ARABIC LIGATURE AIN WITH YEH ISOLATED FORM -->
+      <map code="0xfcf9" name="uniFCF9"/><!-- ARABIC LIGATURE GHAIN WITH ALEF MAKSURA ISOLATED FORM -->
+      <map code="0xfcfa" name="uniFCFA"/><!-- ARABIC LIGATURE GHAIN WITH YEH ISOLATED FORM -->
+      <map code="0xfcfb" name="uniFCFB"/><!-- ARABIC LIGATURE SEEN WITH ALEF MAKSURA ISOLATED FORM -->
+      <map code="0xfcfc" name="uniFCFC"/><!-- ARABIC LIGATURE SEEN WITH YEH ISOLATED FORM -->
+      <map code="0xfcfd" name="uniFCFD"/><!-- ARABIC LIGATURE SHEEN WITH ALEF MAKSURA ISOLATED FORM -->
+      <map code="0xfcfe" name="uniFCFE"/><!-- ARABIC LIGATURE SHEEN WITH YEH ISOLATED FORM -->
+      <map code="0xfcff" name="uniFCFF"/><!-- ARABIC LIGATURE HAH WITH ALEF MAKSURA ISOLATED FORM -->
+      <map code="0xfd00" name="uniFD00"/><!-- ARABIC LIGATURE HAH WITH YEH ISOLATED FORM -->
+      <map code="0xfd01" name="uniFD01"/><!-- ARABIC LIGATURE JEEM WITH ALEF MAKSURA ISOLATED FORM -->
+      <map code="0xfd02" name="uniFD02"/><!-- ARABIC LIGATURE JEEM WITH YEH ISOLATED FORM -->
+      <map code="0xfd03" name="uniFD03"/><!-- ARABIC LIGATURE KHAH WITH ALEF MAKSURA ISOLATED FORM -->
+      <map code="0xfd04" name="uniFD04"/><!-- ARABIC LIGATURE KHAH WITH YEH ISOLATED FORM -->
+      <map code="0xfd05" name="uniFD05"/><!-- ARABIC LIGATURE SAD WITH ALEF MAKSURA ISOLATED FORM -->
+      <map code="0xfd06" name="uniFD06"/><!-- ARABIC LIGATURE SAD WITH YEH ISOLATED FORM -->
+      <map code="0xfd07" name="uniFD07"/><!-- ARABIC LIGATURE DAD WITH ALEF MAKSURA ISOLATED FORM -->
+      <map code="0xfd08" name="uniFD08"/><!-- ARABIC LIGATURE DAD WITH YEH ISOLATED FORM -->
+      <map code="0xfd09" name="uniFD09"/><!-- ARABIC LIGATURE SHEEN WITH JEEM ISOLATED FORM -->
+      <map code="0xfd0a" name="uniFD0A"/><!-- ARABIC LIGATURE SHEEN WITH HAH ISOLATED FORM -->
+      <map code="0xfd0b" name="uniFD0B"/><!-- ARABIC LIGATURE SHEEN WITH KHAH ISOLATED FORM -->
+      <map code="0xfd0c" name="uniFD0C"/><!-- ARABIC LIGATURE SHEEN WITH MEEM ISOLATED FORM -->
+      <map code="0xfd0d" name="uniFD0D"/><!-- ARABIC LIGATURE SHEEN WITH REH ISOLATED FORM -->
+      <map code="0xfd0e" name="uniFD0E"/><!-- ARABIC LIGATURE SEEN WITH REH ISOLATED FORM -->
+      <map code="0xfd0f" name="uniFD0F"/><!-- ARABIC LIGATURE SAD WITH REH ISOLATED FORM -->
+      <map code="0xfd10" name="uniFD10"/><!-- ARABIC LIGATURE DAD WITH REH ISOLATED FORM -->
+      <map code="0xfd11" name="uniFD11"/><!-- ARABIC LIGATURE TAH WITH ALEF MAKSURA FINAL FORM -->
+      <map code="0xfd12" name="uniFD12"/><!-- ARABIC LIGATURE TAH WITH YEH FINAL FORM -->
+      <map code="0xfd13" name="uniFD13"/><!-- ARABIC LIGATURE AIN WITH ALEF MAKSURA FINAL FORM -->
+      <map code="0xfd14" name="uniFD14"/><!-- ARABIC LIGATURE AIN WITH YEH FINAL FORM -->
+      <map code="0xfd15" name="uniFD15"/><!-- ARABIC LIGATURE GHAIN WITH ALEF MAKSURA FINAL FORM -->
+      <map code="0xfd16" name="uniFD16"/><!-- ARABIC LIGATURE GHAIN WITH YEH FINAL FORM -->
+      <map code="0xfd17" name="uniFD17"/><!-- ARABIC LIGATURE SEEN WITH ALEF MAKSURA FINAL FORM -->
+      <map code="0xfd18" name="uniFD18"/><!-- ARABIC LIGATURE SEEN WITH YEH FINAL FORM -->
+      <map code="0xfd19" name="uniFD19"/><!-- ARABIC LIGATURE SHEEN WITH ALEF MAKSURA FINAL FORM -->
+      <map code="0xfd1a" name="uniFD1A"/><!-- ARABIC LIGATURE SHEEN WITH YEH FINAL FORM -->
+      <map code="0xfd1b" name="uniFD1B"/><!-- ARABIC LIGATURE HAH WITH ALEF MAKSURA FINAL FORM -->
+      <map code="0xfd1c" name="uniFD1C"/><!-- ARABIC LIGATURE HAH WITH YEH FINAL FORM -->
+      <map code="0xfd1d" name="uniFD1D"/><!-- ARABIC LIGATURE JEEM WITH ALEF MAKSURA FINAL FORM -->
+      <map code="0xfd50" name="uniFD50"/><!-- ARABIC LIGATURE TEH WITH JEEM WITH MEEM INITIAL FORM -->
+      <map code="0xfd51" name="uniFD51"/><!-- ARABIC LIGATURE TEH WITH HAH WITH JEEM FINAL FORM -->
+      <map code="0xfd52" name="uniFD52"/><!-- ARABIC LIGATURE TEH WITH HAH WITH JEEM INITIAL FORM -->
+      <map code="0xfd53" name="uniFD53"/><!-- ARABIC LIGATURE TEH WITH HAH WITH MEEM INITIAL FORM -->
+      <map code="0xfd54" name="uniFD54"/><!-- ARABIC LIGATURE TEH WITH KHAH WITH MEEM INITIAL FORM -->
+      <map code="0xfd55" name="uniFD55"/><!-- ARABIC LIGATURE TEH WITH MEEM WITH JEEM INITIAL FORM -->
+      <map code="0xfd56" name="uniFD56"/><!-- ARABIC LIGATURE TEH WITH MEEM WITH HAH INITIAL FORM -->
+      <map code="0xfd57" name="uniFD57"/><!-- ARABIC LIGATURE TEH WITH MEEM WITH KHAH INITIAL FORM -->
+      <map code="0xfd58" name="uniFD58"/><!-- ARABIC LIGATURE JEEM WITH MEEM WITH HAH FINAL FORM -->
+      <map code="0xfd59" name="uniFD59"/><!-- ARABIC LIGATURE JEEM WITH MEEM WITH HAH INITIAL FORM -->
+      <map code="0xfd5a" name="uniFD5A"/><!-- ARABIC LIGATURE HAH WITH MEEM WITH YEH FINAL FORM -->
+      <map code="0xfd5b" name="uniFD5B"/><!-- ARABIC LIGATURE HAH WITH MEEM WITH ALEF MAKSURA FINAL FORM -->
+      <map code="0xfd5c" name="uniFD5C"/><!-- ARABIC LIGATURE SEEN WITH HAH WITH JEEM INITIAL FORM -->
+      <map code="0xfd5d" name="uniFD5D"/><!-- ARABIC LIGATURE SEEN WITH JEEM WITH HAH INITIAL FORM -->
+      <map code="0xfd5e" name="unFD5E"/><!-- ARABIC LIGATURE SEEN WITH JEEM WITH ALEF MAKSURA FINAL FORM -->
+      <map code="0xfd5f" name="uniFD5F"/><!-- ARABIC LIGATURE SEEN WITH MEEM WITH HAH FINAL FORM -->
+      <map code="0xfd60" name="uniFD60"/><!-- ARABIC LIGATURE SEEN WITH MEEM WITH HAH INITIAL FORM -->
+      <map code="0xfd61" name="uniFD61"/><!-- ARABIC LIGATURE SEEN WITH MEEM WITH JEEM INITIAL FORM -->
+      <map code="0xfd62" name="uniFD62"/><!-- ARABIC LIGATURE SEEN WITH MEEM WITH MEEM FINAL FORM -->
+      <map code="0xfd63" name="uniFD63"/><!-- ARABIC LIGATURE SEEN WITH MEEM WITH MEEM INITIAL FORM -->
+      <map code="0xfd64" name="uniFD64"/><!-- ARABIC LIGATURE SAD WITH HAH WITH HAH FINAL FORM -->
+      <map code="0xfd65" name="uniFD65"/><!-- ARABIC LIGATURE SAD WITH HAH WITH HAH INITIAL FORM -->
+      <map code="0xfd66" name="uniFD66"/><!-- ARABIC LIGATURE SAD WITH MEEM WITH MEEM FINAL FORM -->
+      <map code="0xfd67" name="uniFD67"/><!-- ARABIC LIGATURE SHEEN WITH HAH WITH MEEM FINAL FORM -->
+      <map code="0xfd68" name="uniFD68"/><!-- ARABIC LIGATURE SHEEN WITH HAH WITH MEEM INITIAL FORM -->
+      <map code="0xfd69" name="uniFD69"/><!-- ARABIC LIGATURE SHEEN WITH JEEM WITH YEH FINAL FORM -->
+      <map code="0xfd6a" name="unFD6A"/><!-- ARABIC LIGATURE SHEEN WITH MEEM WITH KHAH FINAL FORM -->
+      <map code="0xfd6b" name="uniFD6B"/><!-- ARABIC LIGATURE SHEEN WITH MEEM WITH KHAH INITIAL FORM -->
+      <map code="0xfd6c" name="uniFD6C"/><!-- ARABIC LIGATURE SHEEN WITH MEEM WITH MEEM FINAL FORM -->
+      <map code="0xfd6d" name="uniFD6D"/><!-- ARABIC LIGATURE SHEEN WITH MEEM WITH MEEM INITIAL FORM -->
+      <map code="0xfd6e" name="uniFD6E"/><!-- ARABIC LIGATURE DAD WITH HAH WITH ALEF MAKSURA FINAL FORM -->
+      <map code="0xfd6f" name="uniFD6F"/><!-- ARABIC LIGATURE DAD WITH KHAH WITH MEEM FINAL FORM -->
+      <map code="0xfd70" name="uniFD70"/><!-- ARABIC LIGATURE DAD WITH KHAH WITH MEEM INITIAL FORM -->
+      <map code="0xfd71" name="uniFD71"/><!-- ARABIC LIGATURE TAH WITH MEEM WITH HAH FINAL FORM -->
+      <map code="0xfd72" name="uniFD72"/><!-- ARABIC LIGATURE TAH WITH MEEM WITH HAH INITIAL FORM -->
+      <map code="0xfd73" name="uniFD73"/><!-- ARABIC LIGATURE TAH WITH MEEM WITH MEEM INITIAL FORM -->
+      <map code="0xfd74" name="uniFD74"/><!-- ARABIC LIGATURE TAH WITH MEEM WITH YEH FINAL FORM -->
+      <map code="0xfd75" name="uniFD75"/><!-- ARABIC LIGATURE AIN WITH JEEM WITH MEEM FINAL FORM -->
+      <map code="0xfd76" name="uniFD76"/><!-- ARABIC LIGATURE AIN WITH MEEM WITH MEEM FINAL FORM -->
+      <map code="0xfd77" name="uniFD77"/><!-- ARABIC LIGATURE AIN WITH MEEM WITH MEEM INITIAL FORM -->
+      <map code="0xfd78" name="uniFD78"/><!-- ARABIC LIGATURE AIN WITH MEEM WITH ALEF MAKSURA FINAL FORM -->
+      <map code="0xfd79" name="uniFD79"/><!-- ARABIC LIGATURE GHAIN WITH MEEM WITH MEEM FINAL FORM -->
+      <map code="0xfd7a" name="uniFD7A"/><!-- ARABIC LIGATURE GHAIN WITH MEEM WITH YEH FINAL FORM -->
+      <map code="0xfd7b" name="uniFD7B"/><!-- ARABIC LIGATURE GHAIN WITH MEEM WITH ALEF MAKSURA FINAL FORM -->
+      <map code="0xfd7c" name="uniFD7C"/><!-- ARABIC LIGATURE FEH WITH KHAH WITH MEEM FINAL FORM -->
+      <map code="0xfd7d" name="uniFD7D"/><!-- ARABIC LIGATURE FEH WITH KHAH WITH MEEM INITIAL FORM -->
+    </cmap_format_4>
+  </cmap>
+
+</ttFont>

@@ -1,0 +1,287 @@
+import React, { useEffect } from 'react';
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { COLORS } from './src/utils/theme';
+import { LanguageProvider } from './src/utils/languageContext';
+import { AuthProvider } from './src/utils/authContext';
+import { Linking, LogBox, Platform, View, Text } from 'react-native';
+import { supabase } from './src/utils/supabase';
+// Removed debugging import
+
+// Import screens
+import HomeScreen from './src/screens/HomeScreen';
+import SurahListScreen from './src/screens/SurahListScreen';
+import MemorizationScreen from './src/screens/MemorizationScreen';
+import AuthScreen from './src/screens/AuthScreen';
+import ProfileDashboard from './src/screens/ProfileDashboard';
+import ProfileScreen from './src/screens/ProfileScreen';
+import LeaderboardScreen from './src/screens/LeaderboardScreen';
+import RecordingsScreen from './src/screens/RecordingsScreen';
+import NotesBoardScreen from './src/screens/NotesBoardScreen';
+import Surah94TestComponent from './src/components/Surah94TestComponent';
+import SimpleWordTest from './src/components/SimpleWordTest';
+import FontDebugTest from './src/components/FontDebugTest';
+import LetterConnectionTest from './src/components/LetterConnectionTest';
+import WaslaConnectionTest from './src/components/WaslaConnectionTest';
+import WaslaFixTest from './src/components/WaslaFixTest';
+import WritingDirectionTest from './src/components/WritingDirectionTest';
+import ComprehensiveWaslaTest from './src/components/ComprehensiveWaslaTest';
+import OfficialFontTest from './src/components/OfficialFontTest';
+import CreativeSolutions from './src/components/CreativeSolutions';
+import AlternativeDataTest from './src/components/AlternativeDataTest';
+import FontPatchingTest from './src/components/FontPatchingTest';
+import FontFallbackSolutions from './src/components/FontFallbackSolutions';
+import FontAnalysisResults from './src/components/FontAnalysisResults';
+import MultiFontTest from './src/components/MultiFontTest';
+import HarfBuzzTest from './src/components/HarfBuzzSkiaRenderer';
+import SimpleSkiaTest from './src/components/SimpleSkiaTest';
+import FinalWaslaSolution from './src/components/FinalWaslaSolution';
+import FontCompareScreen from './src/components/FontCompareScreen';
+import QuranTextFallback from './src/components/QuranTextFallback';
+import RawFontTest from './src/components/RawFontTest';
+import FontPriorityTest from './src/components/FontPriorityTest';
+import FontLoadingDebug from './src/components/FontLoadingDebug';
+import WaslaSolutionTest from './src/components/WaslaSolutionTest';
+import UthmanicHafsTest from './src/components/UthmanicHafsTest';
+import FontRequireTest from './src/components/FontRequireTest';
+import WorkingFontTest from './src/components/WorkingFontTest';
+import SimpleFontTest from './src/components/SimpleFontTest';
+// Removed debug component imports
+
+const Stack = createNativeStackNavigator();
+
+function App() {
+  // Suppress legacy architecture warnings
+  LogBox.ignoreLogs([
+    'Warning: React Native is using the legacy architecture',
+    'Warning: The legacy architecture is deprecated',
+    'Warning: Please migrate to the new architecture',
+  ]);
+
+  useEffect(() => {
+    // Handle deep linking
+    const handleDeepLink = (url) => {
+      console.log('Deep link received:', url);
+      // Handle deep linking logic here
+    };
+
+    // Listen for deep links
+    const subscription = Linking.addEventListener('url', handleDeepLink);
+
+    // Handle initial URL if app was opened via deep link
+    Linking.getInitialURL().then((url) => {
+      if (url) {
+        handleDeepLink(url);
+      }
+    });
+
+    return () => {
+      subscription?.remove();
+    };
+  }, []);
+
+  return (
+    <LanguageProvider>
+      <AuthProvider>
+        <NavigationContainer>
+          <Stack.Navigator
+            initialRouteName="Home"
+            screenOptions={{
+              headerShown: false,
+            }}
+          >
+            <Stack.Screen 
+              name="Home" 
+              component={HomeScreen} 
+              options={{ title: 'IQRA2' }}
+            />
+            <Stack.Screen 
+              name="SurahList" 
+              component={SurahListScreen} 
+              options={{ title: 'Surah List' }}
+            />
+            <Stack.Screen 
+              name="Memorization" 
+              component={MemorizationScreen} 
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen 
+              name="Auth" 
+              component={AuthScreen} 
+              options={{ title: 'Authentication' }}
+            />
+            <Stack.Screen 
+              name="ProfileDashboard" 
+              component={ProfileDashboard} 
+              options={{ title: 'Profile Dashboard' }}
+            />
+            <Stack.Screen 
+              name="Profile" 
+              component={ProfileScreen} 
+              options={{ title: 'Profile' }}
+            />
+            <Stack.Screen 
+              name="Leaderboard" 
+              component={LeaderboardScreen} 
+              options={{ title: 'Leaderboard' }}
+            />
+            <Stack.Screen 
+              name="Recordings" 
+              component={RecordingsScreen} 
+              options={{ title: 'Recordings' }}
+            />
+            <Stack.Screen 
+              name="NotesBoard" 
+              component={NotesBoardScreen} 
+              options={{ title: 'Notes Board' }}
+            />
+            
+            {/* Test Components */}
+            <Stack.Screen 
+              name="Surah94Test" 
+              component={Surah94TestComponent} 
+              options={{ title: 'Surah 94 Test' }}
+            />
+            <Stack.Screen 
+              name="SimpleWordTest" 
+              component={SimpleWordTest} 
+              options={{ title: 'Simple Word Test' }}
+            />
+            <Stack.Screen 
+              name="FontDebugTest" 
+              component={FontDebugTest} 
+              options={{ title: 'Font Debug Test' }}
+            />
+            <Stack.Screen 
+              name="LetterConnectionTest" 
+              component={LetterConnectionTest} 
+              options={{ title: 'Letter Connection Test' }}
+            />
+            <Stack.Screen 
+              name="WaslaConnectionTest" 
+              component={WaslaConnectionTest} 
+              options={{ title: 'Wasla Connection Test' }}
+            />
+            <Stack.Screen 
+              name="WaslaFixTest" 
+              component={WaslaFixTest} 
+              options={{ title: 'Wasla Fix Test' }}
+            />
+            <Stack.Screen 
+              name="WritingDirectionTest" 
+              component={WritingDirectionTest} 
+              options={{ title: 'Writing Direction Test' }}
+            />
+            <Stack.Screen 
+              name="ComprehensiveWaslaTest" 
+              component={ComprehensiveWaslaTest} 
+              options={{ title: 'Comprehensive Wasla Test' }}
+            />
+            <Stack.Screen 
+              name="OfficialFontTest" 
+              component={OfficialFontTest} 
+              options={{ title: 'Official Font Test' }}
+            />
+            <Stack.Screen 
+              name="CreativeSolutions" 
+              component={CreativeSolutions} 
+              options={{ title: 'Creative Solutions' }}
+            />
+            <Stack.Screen 
+              name="AlternativeDataTest" 
+              component={AlternativeDataTest} 
+              options={{ title: 'Alternative Data Test' }}
+            />
+            <Stack.Screen 
+              name="FontPatchingTest" 
+              component={FontPatchingTest} 
+              options={{ title: 'Font Patching Test' }}
+            />
+            <Stack.Screen 
+              name="FontFallbackSolutions" 
+              component={FontFallbackSolutions} 
+              options={{ title: 'Font Fallback Solutions' }}
+            />
+            <Stack.Screen 
+              name="FontAnalysisResults" 
+              component={FontAnalysisResults} 
+              options={{ title: 'Font Analysis Results' }}
+            />
+            <Stack.Screen 
+              name="MultiFontTest" 
+              component={MultiFontTest} 
+              options={{ title: 'Multi Font Test' }}
+            />
+            <Stack.Screen 
+              name="HarfBuzzTest" 
+              component={HarfBuzzTest} 
+              options={{ title: 'HarfBuzz Test' }}
+            />
+            <Stack.Screen 
+              name="SimpleSkiaTest" 
+              component={SimpleSkiaTest} 
+              options={{ title: 'Simple Skia Test' }}
+            />
+            <Stack.Screen 
+              name="FinalWaslaSolution" 
+              component={FinalWaslaSolution} 
+              options={{ title: 'Final Wasla Solution' }}
+            />
+            <Stack.Screen 
+              name="FontCompareScreen" 
+              component={FontCompareScreen} 
+              options={{ title: 'Font Compare Screen' }}
+            />
+            <Stack.Screen 
+              name="QuranTextFallback" 
+              component={QuranTextFallback} 
+              options={{ title: 'Quran Text Fallback' }}
+            />
+            <Stack.Screen 
+              name="RawFontTest" 
+              component={RawFontTest} 
+              options={{ title: 'Raw Font Test' }}
+            />
+            <Stack.Screen 
+              name="FontPriorityTest" 
+              component={FontPriorityTest} 
+              options={{ title: 'Font Priority Test' }}
+            />
+            <Stack.Screen 
+              name="FontLoadingDebug" 
+              component={FontLoadingDebug} 
+              options={{ title: 'Font Loading Debug' }}
+            />
+            <Stack.Screen 
+              name="WaslaSolutionTest" 
+              component={WaslaSolutionTest} 
+              options={{ title: 'Wasla Solution Test' }}
+            />
+            <Stack.Screen 
+              name="UthmanicHafsTest" 
+              component={UthmanicHafsTest} 
+              options={{ title: 'Uthmanic Hafs Test' }}
+            />
+            <Stack.Screen 
+              name="FontRequireTest" 
+              component={FontRequireTest} 
+              options={{ title: 'Font Require Test' }}
+            />
+            <Stack.Screen 
+              name="WorkingFontTest" 
+              component={WorkingFontTest} 
+              options={{ title: 'Working Font Test' }}
+            />
+            <Stack.Screen 
+              name="SimpleFontTest" 
+              component={SimpleFontTest} 
+              options={{ title: 'Simple Font Test' }}
+            />
+          </Stack.Navigator>
+        </NavigationContainer>
+      </AuthProvider>
+    </LanguageProvider>
+  );
+}
+
+export default App; 

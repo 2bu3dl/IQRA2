@@ -1,6 +1,7 @@
 import React, { useState, useRef, memo, useMemo, useEffect, useCallback } from 'react';
 import { View, StyleSheet, SafeAreaView, TouchableOpacity, Modal, Animated, Image, ScrollView, TextInput, ImageBackground, TouchableWithoutFeedback, Alert, Pressable, Easing, Platform } from 'react-native';
 import { COLORS as BASE_COLORS, SIZES, FONTS } from '../utils/theme';
+import quranTransliterations from '../assets/quran_transliterations.json';
 import { 
   getResponsiveArabicFontSize, 
   getResponsiveWordWidth, 
@@ -8,6 +9,19 @@ import {
   getResponsiveSpacing,
   RESPONSIVE_FONT_SIZES
 } from '../utils/responsive';
+
+// Helper function to get transliteration from JSON data
+const getTransliteration = (surahNumber, ayahNumber) => {
+  const surah = quranTransliterations[surahNumber.toString()];
+  if (!surah || !surah.ayahs) return null;
+  return surah.ayahs[ayahNumber.toString()] || null;
+};
+
+const getBismillahTransliteration = (surahNumber) => {
+  const surah = quranTransliterations[surahNumber.toString()];
+  if (!surah) return null;
+  return surah.bismillah || null;
+};
 import Text from '../components/Text';
 import Button from '../components/Button';
 import CardOrig from '../components/Card';
@@ -18,6 +32,7 @@ import AnimatedRewardModal from '../components/AnimatedRewardModal';
 import BookmarkModal from '../components/BookmarkModal';
 import RecordingsModal from '../components/RecordingsModal';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import { PanResponder } from 'react-native';
 import { addHasanat, updateMemorizedAyahs, updateStreak, getCurrentStreak, loadData, saveCurrentPosition, saveLastPosition, toggleBookmark, isBookmarked, isAyahInAnyList } from '../utils/store';
 import { getSurahAyaatWithTransliteration, getAllSurahs, getSurahName } from '../utils/quranData';
 import { getCurrentTranslation, getTranslationSources, getTranslation } from '../utils/translations';
@@ -49,7 +64,49 @@ const MemorizationScreen = ({ route, navigation }) => {
     if (language !== 'ar') return num.toString();
     return num.toString().replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]);
   };
-  const { surah, resumeFromIndex, targetAyah } = route.params || {};
+
+  // Convert number to UthmanicHafs1 numerical divider symbols with decorative frames
+  const toUthmanicNumber = (num) => {
+    // Simple approach: use Arabic-Indic numerals only
+    const arabicIndicSymbols = {
+      '0': '\u0660', '1': '\u0661', '2': '\u0662', '3': '\u0663', '4': '\u0664',
+      '5': '\u0665', '6': '\u0666', '7': '\u0667', '8': '\u0668', '9': '\u0669'
+    };
+    
+    const convertedNum = num.toString().replace(/\d/g, d => arabicIndicSymbols[d] || d);
+    return `${convertedNum} \u06DD`; // Add decorative symbol to the right
+  };
+
+
+  // Font loading state - set to true since fonts are bundled with the app
+  const [fontLoaded, setFontLoaded] = useState(true);
+
+  // Function to remove Superscript Circles on final alif characters
+  const removeSuperscriptCircles = (text) => {
+    if (!text) return text;
+    
+    // Remove specific Unicode characters that create superscript circles on final alif
+    // These are likely control characters or combining marks that affect final alif rendering
+    return text
+      .replace(/\u06E1/g, '') // ARABIC SMALL HIGH DOTLESS HEAD OF KHAH
+      .replace(/\u06DF/g, '') // ARABIC SMALL HIGH ROUNDED ZERO  
+      .replace(/\u06DA/g, '') // ARABIC SMALL HIGH SEEN
+      .replace(/\u06E0/g, '') // ARABIC SMALL HIGH UPRIGHT RECTANGULAR ZERO
+      .replace(/\u06E2/g, '') // ARABIC SMALL HIGH MEEM INITIAL FORM
+      .replace(/\u06E3/g, '') // ARABIC SMALL LOW SEEN
+      .replace(/\u06E4/g, '') // ARABIC SMALL HIGH MADDA
+      .replace(/\u06E5/g, '') // ARABIC SMALL WAW
+      .replace(/\u06E6/g, '') // ARABIC SMALL YEH
+      .replace(/\u06E7/g, '') // ARABIC SMALL HIGH YEH
+      .replace(/\u06E8/g, '') // ARABIC SMALL HIGH NOON
+      .replace(/\u06E9/g, '') // ARABIC PLACE OF SAJDAH
+      .replace(/\u06EA/g, '') // ARABIC EMPTY CENTRE LOW STOP
+      .replace(/\u06EB/g, '') // ARABIC EMPTY CENTRE HIGH STOP
+      .replace(/\u06EC/g, '') // ARABIC ROUNDED HIGH STOP WITH FILLED CENTRE
+      .replace(/\u06ED/g, ''); // ARABIC SMALL LOW MEEM
+  }; // Assume font is loaded by default
+  
+  const { surah, resumeFromIndex, targetAyah, isFullscreen: shouldStartFullscreen } = route.params || {};
   const surahNumber = surah?.id || surah?.surah || 1;
   
   // Create a consistent surah name for all operations
@@ -175,7 +232,7 @@ const MemorizationScreen = ({ route, navigation }) => {
   };
   
   // Try multiple naming conventions to ensure compatibility
-  const surahName = getOriginalSurahName(surahNumber);
+  const surahName = getOriginalSurahName(localSurahNumber);
   
   // Also try to get the name from the surah object if available
   const alternativeSurahName = surah?.name || 'Al-Fatihah';
@@ -196,6 +253,8 @@ const MemorizationScreen = ({ route, navigation }) => {
   
   const [ayaat, setAyaat] = useState([]);
   const [currentAyahIndex, setCurrentAyahIndex] = useState(0);
+  const [originalAyahIndex, setOriginalAyahIndex] = useState(0); // Track original ayah when entering fullscreen
+  const [localSurahNumber, setLocalSurahNumber] = useState(surahNumber);
   const [isTextHidden, setIsTextHidden] = useState(false);
   const [showReward, setShowReward] = useState(false);
   const [rewardAmount, setRewardAmount] = useState(0);
@@ -203,12 +262,37 @@ const MemorizationScreen = ({ route, navigation }) => {
   const [searchText, setSearchText] = useState('');
   const [showTranslationModal, setShowTranslationModal] = useState(false);
   const [modalAyahIndex, setModalAyahIndex] = useState(null);
+  
+  // Scroll tracking for dynamic spacing
+  const [isScrolling, setIsScrolling] = useState(false);
+  const [hasScrolledFromTop, setHasScrolledFromTop] = useState(false);
   const sessionHasanat = useRef(0);
   const rewardTimeout = useRef(null);
   const isResuming = useRef(false);
   const flashcardsLoaded = useRef(false);
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const scaleAnim = useRef(new Animated.Value(1)).current;
+  const hideCoverAnims = useRef({}); // Individual animated values for each hide cover
+  const scrollY = useRef(new Animated.Value(0)).current; // For smooth spacing animation
+  
+  // Get or create animated value for a specific cover
+  const getHideCoverAnim = (index) => {
+    if (!hideCoverAnims.current[index]) {
+      hideCoverAnims.current[index] = new Animated.Value(-300); // Start from off-screen left
+    }
+    return hideCoverAnims.current[index];
+  };
+
+  // Cleanup animation values when component unmounts
+  useEffect(() => {
+    return () => {
+      // Stop all animations and reset values to prevent memory leaks
+      Object.values(hideCoverAnims.current).forEach(anim => {
+        anim.stopAnimation();
+      });
+      hideCoverAnims.current = {};
+    };
+  }, []);
   const ayahListRef = useRef(null);
   const fullscreenScrollViewRef = useRef(null);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
@@ -225,9 +309,17 @@ const MemorizationScreen = ({ route, navigation }) => {
   const [currentPlayingAyah, setCurrentPlayingAyah] = useState(null);
   const [isRepeating, setIsRepeating] = useState(false);
   const spinAnim = useRef(new Animated.Value(0)).current;
-  const [ayahFontSize, setAyahFontSize] = useState(getResponsiveArabicFontSize(40));
+  const [ayahFontSize, setAyahFontSize] = useState(getResponsiveArabicFontSize(38));
   const [isBoldFont, setIsBoldFont] = useState(false);
+  const [showTransliteration, setShowTransliteration] = useState(true);
   const [isCurrentAyahBookmarked, setIsCurrentAyahBookmarked] = useState(false);
+  const [isFontSettingsPressed, setIsFontSettingsPressed] = useState(false);
+  const [isNavigationPressed, setIsNavigationPressed] = useState(false);
+  const [isTranslationPressed, setIsTranslationPressed] = useState(false);
+  const [isXButtonPressed, setIsXButtonPressed] = useState(false);
+  const [isBuildButtonPressed, setIsBuildButtonPressed] = useState(false);
+  const [isBuilderXButtonPressed, setIsBuilderXButtonPressed] = useState(false);
+  const [isExpandButtonTouched, setIsExpandButtonTouched] = useState(false);
   const [showBookmarkModal, setShowBookmarkModal] = useState(false);
   const [currentWordIndex, setCurrentWordIndex] = useState(-1);
   const [currentAudioTime, setCurrentAudioTime] = useState(0);
@@ -254,7 +346,7 @@ const MemorizationScreen = ({ route, navigation }) => {
   const [visibleChunks, setVisibleChunks] = useState(1);
 
   const allSurahs = getAllSurahs();
-  const currentSurahIndex = allSurahs.findIndex(s => s.surah === surahNumber);
+  const currentSurahIndex = allSurahs.findIndex(s => s.surah === localSurahNumber);
   const prevSurah = currentSurahIndex > 0 ? allSurahs[currentSurahIndex - 1] : null;
   const nextSurah = currentSurahIndex < allSurahs.length - 1 ? allSurahs[currentSurahIndex + 1] : null;
 
@@ -270,9 +362,9 @@ const MemorizationScreen = ({ route, navigation }) => {
   React.useEffect(() => {
     async function fetchAyaat() {
       try {
-      const data = await getSurahAyaatWithTransliteration(surahNumber);
-        console.log('[MemorizationScreen] Loaded ayaat for surah', surahNumber, ':', data);
-        if (surahNumber === 2) {
+      const data = await getSurahAyaatWithTransliteration(localSurahNumber);
+        console.log('[MemorizationScreen] Loaded ayaat for surah', localSurahNumber, ':', data);
+        if (localSurahNumber === 2) {
           const ayah4 = data.find(ayah => ayah.ayah === 4);
           if (ayah4) {
             console.log('[MemorizationScreen] Ayah 4 text:', ayah4.text);
@@ -293,7 +385,7 @@ const MemorizationScreen = ({ route, navigation }) => {
     }
     }
     fetchAyaat();
-  }, [surahNumber]);
+  }, [localSurahNumber]);
 
   // Set up highlighting callback
   React.useEffect(() => {
@@ -301,7 +393,10 @@ const MemorizationScreen = ({ route, navigation }) => {
       console.log('[MemorizationScreen] Highlighting update:', currentWord?.text, 'at time:', currentTime);
       // Only update word index if we have a valid word (not -1) and audio is actually playing
       if (currentWord && currentWord.index !== undefined && currentWord.index >= 0) {
-        setCurrentWordIndex(currentWord.index);
+        // Use requestAnimationFrame for smoother UI updates
+        requestAnimationFrame(() => {
+          setCurrentWordIndex(currentWord.index);
+        });
       }
       setCurrentAudioTime(currentTime);
     });
@@ -455,12 +550,12 @@ const MemorizationScreen = ({ route, navigation }) => {
     });
     
     // 2. Bismillah (if not Al-Fatihah and not Surah 9)
-    if (surahNumber !== 1 && surahNumber !== 9) {
+    if (localSurahNumber !== 1 && localSurahNumber !== 9) {
       const bismillahText = 'بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ';
       cards.push({
         type: 'bismillah',
         text: bismillahText,
-        transliteration: 'Bismillāhir-Raḥmānir-Raḥīm',
+        transliteration: getBismillahTransliteration(localSurahNumber) || 'Bismillāhir-Raḥmānir-Raḥī',
         translation: 'In the name of Allah, the Entirely Merciful, the Especially Merciful.'
       });
     }
@@ -468,14 +563,26 @@ const MemorizationScreen = ({ route, navigation }) => {
         // 3. All ayat as normal
     for (let i = 0; i < ayaat.length; i++) {
       const ayah = ayaat[i];
+      const ayahNumber = i + 1;
+      const transliteration = getTransliteration(localSurahNumber, ayahNumber);
+      
       if (ayah.text) {
-        cards.push({ ...ayah, text: ayah.text, type: 'ayah' });
+        cards.push({ 
+          ...ayah, 
+          text: ayah.text, 
+          type: 'ayah',
+          transliteration: transliteration || ayah.transliteration
+        });
       } else {
-        cards.push({ ...ayah, type: 'ayah' });
+        cards.push({ 
+          ...ayah, 
+          type: 'ayah',
+          transliteration: transliteration || ayah.transliteration
+        });
       }
     }
     return cards;
-  }, [ayaat, surahNumber]);
+  }, [ayaat, localSurahNumber]);
 
   // Handle resume from specific index
   React.useEffect(() => {
@@ -534,7 +641,7 @@ const MemorizationScreen = ({ route, navigation }) => {
 
   useEffect(() => {
     // Removed Surah 2 Ayah 4 debugging
-  }, [surahNumber, currentAyahIndex, flashcards]);
+  }, [localSurahNumber, currentAyahIndex, flashcards]);
 
   // Cleanup effect for fullscreen states
   useEffect(() => {
@@ -855,12 +962,12 @@ const MemorizationScreen = ({ route, navigation }) => {
           return;
         }
         
-        const audioSource = getAyahAudioUri(surahNumber, ayahNumber);
+        const audioSource = getAyahAudioUri(localSurahNumber, ayahNumber);
         console.log('[MemorizationScreen] Audio source for ayah', ayahNumber, ':', audioSource);
         
         if (audioSource) {
           // Get metadata for highlighting
-          let metadata = getAyahMetadata(surahNumber, ayahNumber);
+          let metadata = getAyahMetadata(localSurahNumber, ayahNumber);
           if (!metadata) {
             // Try to get metadata for special cards
             metadata = getSpecialCardMetadata(currentFlashcard.type);
@@ -927,7 +1034,7 @@ const MemorizationScreen = ({ route, navigation }) => {
       for (let i = 0; i <= currentAyahIndex; i++) {
         if (flashcards[i].type === 'ayah') ayahNumber++;
       }
-      const audioSource = getAyahAudioUri(surahNumber, ayahNumber);
+      const audioSource = getAyahAudioUri(localSurahNumber, ayahNumber);
       if (audioSource) {
         await audioPlayer.seekToStart();
         await audioPlayer.playAudio(audioSource, null, surahName, ayahNumber);
@@ -1117,7 +1224,8 @@ const MemorizationScreen = ({ route, navigation }) => {
   const handleFullscreenToggle = () => {
     hapticSelection();
     if (isFullscreen) {
-      // When closing fullscreen, clear search and reset states
+      // When closing fullscreen, return to original ayah and clear states
+      setCurrentAyahIndex(originalAyahIndex);
       setFullscreenSearchText('');
       setIsExpandButtonPressed(false);
       // Use setTimeout to ensure modal closes properly
@@ -1125,6 +1233,8 @@ const MemorizationScreen = ({ route, navigation }) => {
         setIsFullscreen(false);
       }, 50);
     } else {
+      // When entering fullscreen, save current ayah index
+      setOriginalAyahIndex(currentAyahIndex);
       setIsFullscreen(true);
     }
   };
@@ -1187,31 +1297,54 @@ const MemorizationScreen = ({ route, navigation }) => {
     }
   };
 
-  // Handle scroll events to track if at bottom
+  // Handle scroll events to track if at bottom and smooth spacing animation
   const handleScroll = (event) => {
     const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent;
     const isAtBottomNow = contentOffset.y + layoutMeasurement.height >= contentSize.height - 20;
     setIsAtBottom(isAtBottomNow);
+    
+    // Update animated scroll value for smooth spacing animation
+    scrollY.setValue(contentOffset.y);
+    
+    // Dynamic spacing logic (for fallback)
+    const currentScrollY = contentOffset.y;
+    const hasScrolled = currentScrollY > 10;
+    setHasScrolledFromTop(hasScrolled);
+    
+    // Debounce scrolling state
+    setIsScrolling(true);
+    clearTimeout(handleScroll.timeoutId);
+    handleScroll.timeoutId = setTimeout(() => {
+      setIsScrolling(false);
+    }, 150);
   };
 
   // Navigate to previous surah (with looping)
   const goToPreviousSurah = () => {
     hapticSelection();
-    const previousSurahNumber = surahNumber === 1 ? 114 : surahNumber - 1;
-    navigation.replace('MemorizationScreen', { 
-      surahNumber: previousSurahNumber,
-      surahName: getSurahName(previousSurahNumber)
-    });
+    const previousSurahNumber = localSurahNumber === 1 ? 114 : localSurahNumber - 1;
+    
+    // Instead of navigating, just update the current surah data
+    // This will trigger a re-render with the new surah while staying in fullscreen
+    setLocalSurahNumber(previousSurahNumber);
+    setCurrentAyahIndex(0); // Start from beginning
+    setIsTextHidden(false);
+    setAyahCovers({}); // Clear any covers
+    setIsHideMode(false); // Reset hide mode
   };
 
   // Navigate to next surah (with looping)
   const goToNextSurah = () => {
     hapticSelection();
-    const nextSurahNumber = surahNumber === 114 ? 1 : surahNumber + 1;
-    navigation.replace('MemorizationScreen', { 
-      surahNumber: nextSurahNumber,
-      surahName: getSurahName(nextSurahNumber)
-    });
+    const nextSurahNumber = localSurahNumber === 114 ? 1 : localSurahNumber + 1;
+    
+    // Instead of navigating, just update the current surah data
+    // This will trigger a re-render with the new surah while staying in fullscreen
+    setLocalSurahNumber(nextSurahNumber);
+    setCurrentAyahIndex(0); // Start from beginning
+    setIsTextHidden(false);
+    setAyahCovers({}); // Clear any covers
+    setIsHideMode(false); // Reset hide mode
   };
 
   // Handle full surah recording
@@ -1225,11 +1358,242 @@ const MemorizationScreen = ({ route, navigation }) => {
     }, 100);
   };
 
+
+  // State for tracking full surah audio playback
+  const [isFullSurahPlaying, setIsFullSurahPlaying] = useState(false);
+  const [currentPlayingAyahIndex, setCurrentPlayingAyahIndex] = useState(0);
+  const [ayahCards, setAyahCards] = useState([]);
+  const [audioTimeoutId, setAudioTimeoutId] = useState(null);
+  const [isAudioTransitioning, setIsAudioTransitioning] = useState(false);
+  const [showAyahSelector, setShowAyahSelector] = useState(false);
+  const [isAudioButtonPressed, setIsAudioButtonPressed] = useState(false);
+
   // Handle full surah audio playback
-  const handleFullSurahAudio = () => {
+  const handleFullSurahAudio = async () => {
     hapticSelection();
-    // TODO: Implement full surah audio playback
-    console.log('Full surah audio playback started');
+    
+    if (isFullSurahPlaying) {
+      // If full surah is playing, stop it
+      await audioPlayer.stopAudio();
+      
+      // Clear any pending timeout
+      if (audioTimeoutId) {
+        clearTimeout(audioTimeoutId);
+        setAudioTimeoutId(null);
+      }
+      
+      setIsFullSurahPlaying(false);
+      setIsAudioPlaying(false);
+      setCurrentPlayingAyah(null);
+      setCurrentPlayingAyahIndex(0);
+      setIsAudioTransitioning(false);
+      setCurrentWordIndex(-1);
+      setCurrentAudioTime(0);
+      setIsAudioButtonPressed(false);
+      return;
+    }
+    
+    try {
+      // Get all ayahs in the surah
+      const ayahCardsList = flashcards.filter(card => card.type === 'ayah');
+      
+      if (ayahCardsList.length === 0) {
+        console.warn('No ayahs found in this surah');
+        Alert.alert('No Ayahs Found', 'No ayahs found to start audio playback.');
+        return;
+      }
+      
+      setAyahCards(ayahCardsList);
+      setCurrentPlayingAyahIndex(0);
+      setIsFullSurahPlaying(true);
+      
+      console.log('[handleFullSurahAudio] Starting full surah playback from first ayah');
+      console.log('[handleFullSurahAudio] isFullSurahPlaying will be set to true');
+      
+      // Start playing from the first ayah
+      await playAyahAtIndex(ayahCardsList, 0);
+      
+    } catch (error) {
+      console.error('Error starting full surah audio:', error);
+      Alert.alert('Audio Error', 'Failed to start audio playback.');
+    }
+  };
+
+  // Handle starting audio from specific ayah
+  const handleStartFromAyah = async (ayahIndex) => {
+    hapticSelection();
+    setShowAyahSelector(false);
+    
+    try {
+      // Get all ayah cards
+      const ayahCardsList = flashcards.filter(card => card.type === 'ayah');
+      
+      if (ayahCardsList.length === 0) {
+        Alert.alert('No Ayahs', 'No ayahs found in this surah.');
+        return;
+      }
+      
+      // Stop any current audio
+      if (isFullSurahPlaying) {
+        await audioPlayer.stopAudio();
+        if (audioTimeoutId) {
+          clearTimeout(audioTimeoutId);
+          setAudioTimeoutId(null);
+        }
+      }
+      
+      setAyahCards(ayahCardsList);
+      setCurrentPlayingAyahIndex(ayahIndex);
+      setIsFullSurahPlaying(true);
+      
+      // Start playing from the selected ayah
+      await playAyahAtIndex(ayahCardsList, ayahIndex);
+      
+    } catch (error) {
+      console.error('Error starting audio from ayah:', error);
+      Alert.alert('Audio Error', 'Failed to start audio playback.');
+    }
+  };
+
+  // Scroll to current playing ayah and center it
+  const scrollToPlayingAyah = (ayahIndex) => {
+    console.log('[ScrollToAyah] Attempting to scroll to ayah index:', ayahIndex);
+    
+    if (fullscreenScrollViewRef.current && ayahCards.length > 0) {
+      // Try a more accurate approach - use a larger estimated height
+      // Each ayah card might be taller than 120px
+      const ayahHeight = 180; // Increased further for better centering
+      const ayahPosition = ayahIndex * ayahHeight;
+      
+      console.log('[ScrollToAyah] Estimated ayah position:', ayahPosition);
+      
+      // Try using scrollToOffset which might be more reliable
+      // First try to get the scroll view dimensions
+      fullscreenScrollViewRef.current.measure((x, y, width, height) => {
+        // Calculate the center position
+        const centerOffset = height / 2;
+        const scrollPosition = Math.max(0, ayahPosition - centerOffset);
+        
+        console.log('[ScrollToAyah] Scroll view height:', height);
+        console.log('[ScrollToAyah] Center offset:', centerOffset);
+        console.log('[ScrollToAyah] Target scroll position:', scrollPosition);
+        
+        // Try scrollToOffset first (if available), then fallback to scrollTo
+        if (fullscreenScrollViewRef.current.scrollToOffset) {
+          fullscreenScrollViewRef.current.scrollToOffset({
+            offset: scrollPosition,
+            animated: true
+          });
+          console.log('[ScrollToAyah] Used scrollToOffset to position:', scrollPosition);
+        } else {
+          fullscreenScrollViewRef.current.scrollTo({
+            y: scrollPosition,
+            animated: true
+          });
+          console.log('[ScrollToAyah] Used scrollTo to position:', scrollPosition);
+        }
+      });
+    } else {
+      console.log('[ScrollToAyah] Cannot scroll - missing ref or ayahCards');
+    }
+  };
+
+
+  // Play ayah at specific index
+  const playAyahAtIndex = async (ayahCardsList, index) => {
+    console.log('playAyahAtIndex called with index:', index, 'total ayahs:', ayahCardsList.length);
+    console.log('isFullSurahPlaying:', isFullSurahPlaying);
+    
+    // Clear any existing timeout
+    if (audioTimeoutId) {
+      clearTimeout(audioTimeoutId);
+      setAudioTimeoutId(null);
+    }
+    
+    if (index >= ayahCardsList.length) {
+      // All ayahs completed
+      setIsFullSurahPlaying(false);
+      setIsAudioPlaying(false);
+      setCurrentPlayingAyah(null);
+      setCurrentPlayingAyahIndex(0);
+      console.log('Full surah audio playback completed');
+      return;
+    }
+    
+    const ayah = ayahCardsList[index];
+    const ayahNumber = ayah.ayah;
+    const audioSource = getAyahAudioUri(localSurahNumber, ayahNumber);
+    
+    if (audioSource) {
+      const surahName = getDisplaySurahName(localSurahNumber);
+      const metadata = getAyahMetadata(localSurahNumber, ayahNumber);
+      
+      setCurrentAudioMetadata(metadata);
+      setCurrentPlayingAyah(ayahNumber);
+      setCurrentPlayingAyahIndex(index);
+      
+      // Scroll to the current playing ayah with a small delay to ensure scroll view is ready
+      setTimeout(() => {
+        scrollToPlayingAyah(index);
+      }, 100);
+      
+      const playResult = await audioPlayer.playAudio(audioSource, metadata, surahName, ayahNumber);
+      
+      if (playResult) {
+        setIsAudioPlaying(true);
+        console.log('Playing ayah:', ayahNumber, 'at index:', index);
+        
+        // Simple approach: use audio player's built-in onEnded callback
+        audioPlayer.setOnEndedCallback(() => {
+          console.log('Audio ended for ayah', ayahNumber, 'at index', index);
+          console.log('Current isFullSurahPlaying state:', isFullSurahPlaying);
+          console.log('Total ayahs:', ayahCardsList.length);
+          
+          // Always check if we should continue (index-based check instead of state)
+          if (index < ayahCardsList.length - 1) {
+            console.log('Auto-advancing to next ayah');
+            // Immediately trigger next ayah
+            playAyahAtIndex(ayahCardsList, index + 1);
+          } else {
+            console.log('Reached end of surah');
+            setIsFullSurahPlaying(false);
+            setIsAudioPlaying(false);
+            setCurrentPlayingAyah(null);
+            setCurrentPlayingAyahIndex(0);
+            setIsAudioButtonPressed(false);
+          }
+        });
+
+        // Simple approach: just scroll once when starting the ayah
+        // The original working implementation was much simpler
+      } else {
+        console.error('Failed to play ayah:', ayahNumber);
+        setIsFullSurahPlaying(false);
+        setIsAudioPlaying(false);
+        setCurrentPlayingAyah(null);
+      }
+    } else {
+      console.warn('Audio source not available for ayah:', ayahNumber);
+      setIsFullSurahPlaying(false);
+      setIsAudioPlaying(false);
+      setCurrentPlayingAyah(null);
+    }
+  };
+
+  // Handle next ayah button (when recitation button is transformed)
+  const handleNextAyah = () => {
+    if (isFullSurahPlaying && currentPlayingAyahIndex < ayahCards.length - 1) {
+      hapticSelection();
+      playAyahAtIndex(ayahCards, currentPlayingAyahIndex + 1);
+    }
+  };
+
+  // Handle previous ayah button (when hide button is transformed)
+  const handlePreviousAyah = () => {
+    if (isFullSurahPlaying && currentPlayingAyahIndex > 0) {
+      hapticSelection();
+      playAyahAtIndex(ayahCards, currentPlayingAyahIndex - 1);
+    }
   };
 
   // Toggle hide mode
@@ -1237,27 +1601,218 @@ const MemorizationScreen = ({ route, navigation }) => {
     hapticSelection();
     setIsHideMode(!isHideMode);
     if (!isHideMode) {
-      // Initialize all ayah covers as hidden
+      // Initialize all ayah covers as hidden and animate them sliding in
       const initialCovers = {};
+      const ayahCards = flashcards.filter(card => card.type === 'ayah');
+      
+      // For long surahs, use a simpler approach to avoid too many animations
+      if (ayahCards.length > 50) {
+        // For long surahs, just show covers without staggered animation
       flashcards.forEach((card, index) => {
         if (card.type === 'ayah') {
-          initialCovers[index] = true; // true means covered
-        }
-      });
+            initialCovers[index] = true;
+            // Set initial position without animation for performance
+            getHideCoverAnim(index).setValue(0);
+          }
+        });
+      } else {
+        // For shorter surahs, use staggered animation
+        flashcards.forEach((card, index) => {
+          if (card.type === 'ayah') {
+            initialCovers[index] = true;
+            setTimeout(() => {
+              Animated.timing(getHideCoverAnim(index), {
+                toValue: 0,
+                duration: 300,
+                useNativeDriver: true,
+              }).start();
+            }, index * 50);
+          }
+        });
+      }
       setAyahCovers(initialCovers);
     } else {
-      // Clear all covers when exiting hide mode
+      // Animate all covers sliding out and then clear them
+      const ayahIndices = Object.keys(ayahCovers);
+      
+      if (ayahIndices.length > 50) {
+        // For long surahs, clear immediately without animation
       setAyahCovers({});
+        // Reset all animation values
+        ayahIndices.forEach(index => {
+          getHideCoverAnim(parseInt(index)).setValue(-300);
+        });
+      } else {
+        // For shorter surahs, use animation
+        ayahIndices.forEach((index, i) => {
+          Animated.timing(getHideCoverAnim(parseInt(index)), {
+            toValue: -300,
+            duration: 300,
+            useNativeDriver: true,
+          }).start();
+        });
+        setTimeout(() => {
+          setAyahCovers({});
+        }, 300);
+      }
     }
   };
 
   // Handle ayah cover swipe
   const handleAyahCoverSwipe = (ayahIndex) => {
     hapticSelection();
+    
+    const currentAnim = getHideCoverAnim(ayahIndex);
+    const isCurrentlyCovered = ayahCovers[ayahIndex];
+    
+    if (isCurrentlyCovered) {
+      // Cover is showing, slide it out to the left
+      Animated.timing(currentAnim, {
+        toValue: -300,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
+    } else {
+      // Cover is hidden, slide it in from the left
+      Animated.timing(currentAnim, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
+    }
+    
     setAyahCovers(prev => ({
       ...prev,
       [ayahIndex]: !prev[ayahIndex]
     }));
+  };
+
+  // Create PanResponder for hide covers
+  const createCoverPanResponder = (ayahIndex) => {
+    const currentAnim = getHideCoverAnim(ayahIndex);
+    let startX = 0;
+    
+    return PanResponder.create({
+      onStartShouldSetPanResponder: () => false,
+      onMoveShouldSetPanResponder: (evt, gestureState) => {
+        // Only respond to horizontal drags
+        return Math.abs(gestureState.dx) > Math.abs(gestureState.dy) && Math.abs(gestureState.dx) > 10;
+      },
+      
+      onPanResponderGrant: (evt) => {
+        startX = evt.nativeEvent.pageX;
+      },
+      
+      onPanResponderMove: (evt, gestureState) => {
+        const translationX = gestureState.dx;
+        const newValue = Math.max(-300, Math.min(0, translationX));
+        currentAnim.setValue(newValue);
+      },
+      
+      onPanResponderRelease: (evt, gestureState) => {
+        const translationX = gestureState.dx;
+        const threshold = -150; // Threshold for completing the action
+        const isCurrentlyCovered = ayahCovers[ayahIndex];
+        
+        if (isCurrentlyCovered) {
+          // If cover is showing and dragged left enough, hide it
+          if (translationX < threshold) {
+            Animated.timing(currentAnim, {
+              toValue: -300,
+              duration: 200,
+              useNativeDriver: true,
+            }).start();
+            setAyahCovers(prev => ({
+              ...prev,
+              [ayahIndex]: false
+            }));
+          } else {
+            // Snap back to original position
+            Animated.timing(currentAnim, {
+              toValue: 0,
+              duration: 200,
+              useNativeDriver: true,
+            }).start();
+          }
+        } else {
+          // If cover is hidden and dragged right enough, show it
+          if (translationX > threshold) {
+            Animated.timing(currentAnim, {
+              toValue: 0,
+              duration: 200,
+              useNativeDriver: true,
+            }).start();
+            setAyahCovers(prev => ({
+              ...prev,
+              [ayahIndex]: true
+            }));
+          } else {
+            // Snap back to hidden position
+            Animated.timing(currentAnim, {
+              toValue: -300,
+              duration: 200,
+              useNativeDriver: true,
+            }).start();
+          }
+        }
+      },
+    });
+  };
+
+  // Create PanResponder for border accent
+  const createBorderAccentPanResponder = (ayahIndex) => {
+    const currentAnim = getHideCoverAnim(ayahIndex);
+    let startX = 0;
+    
+    return PanResponder.create({
+      onStartShouldSetPanResponder: () => false,
+      onMoveShouldSetPanResponder: (evt, gestureState) => {
+        // Only respond to horizontal drags
+        return Math.abs(gestureState.dx) > Math.abs(gestureState.dy) && Math.abs(gestureState.dx) > 10;
+      },
+      
+      onPanResponderGrant: (evt) => {
+        startX = evt.nativeEvent.pageX;
+        // Start hiding the ayah
+        currentAnim.setValue(-300);
+        
+        setAyahCovers(prev => ({
+          ...prev,
+          [ayahIndex]: true
+        }));
+      },
+      
+      onPanResponderMove: (evt, gestureState) => {
+        const translationX = gestureState.dx;
+        const newValue = Math.max(-300, Math.min(0, -300 + translationX));
+        currentAnim.setValue(newValue);
+      },
+      
+      onPanResponderRelease: (evt, gestureState) => {
+        const translationX = gestureState.dx;
+        const threshold = 150; // Threshold for completing the hide
+        
+        if (translationX > threshold) {
+          // Complete the hide
+          Animated.timing(currentAnim, {
+            toValue: 0,
+            duration: 200,
+            useNativeDriver: true,
+          }).start();
+        } else {
+          // Cancel the hide
+          Animated.timing(currentAnim, {
+            toValue: -300,
+            duration: 200,
+            useNativeDriver: true,
+          }).start();
+          setAyahCovers(prev => ({
+            ...prev,
+            [ayahIndex]: false
+          }));
+        }
+      },
+    });
   };
 
   const loadSurahNotes = async () => {
@@ -1341,17 +1896,28 @@ const MemorizationScreen = ({ route, navigation }) => {
 
   // Fullscreen state
   const [isFullscreen, setIsFullscreen] = useState(false);
+  
+  // Handle fullscreen state from navigation params
+  useEffect(() => {
+    if (shouldStartFullscreen) {
+      setOriginalAyahIndex(currentAyahIndex);
+      setIsFullscreen(true);
+    }
+  }, [shouldStartFullscreen, currentAyahIndex]);
+  
   const [isExpandButtonPressed, setIsExpandButtonPressed] = useState(false);
+  const [isPreviousButtonPressed, setIsPreviousButtonPressed] = useState(false);
   const [fullscreenSearchText, setFullscreenSearchText] = useState('');
   const [showTranslationFullscreen, setShowTranslationFullscreen] = useState(false);
   const [isHideMode, setIsHideMode] = useState(false);
   const [ayahCovers, setAyahCovers] = useState({});
+  const [dragStates, setDragStates] = useState({}); // Track drag states for each cover
   const [isRecordingSession, setIsRecordingSession] = useState(false);
   const [isAtBottom, setIsAtBottom] = useState(false);
   const [showTranslationView, setShowTranslationView] = useState(false);
   const [currentTranslator, setCurrentTranslator] = useState('sahih');
 
-  const fontCandidates = ['UthmanTN_v2-0', 'UthmanTN', 'KFGQPC Uthman Taha Naskh', 'Uthman Taha Naskh'];
+  const fontCandidates = ['UthmanTN_v2-0', 'UthmanTN', 'KFGQPC HAFS Uthmanic Script', 'HAFS Uthmanic Script'];
   const fontFamily = fontCandidates[currentAyahIndex % fontCandidates.length];
 
   // Monitor recording status to reset button state when recording ends
@@ -1563,6 +2129,37 @@ const MemorizationScreen = ({ route, navigation }) => {
     }
   };
 
+  // Show loading screen while fonts are loading
+  if (!fontLoaded) {
+    return (
+      <View style={{ flex: 1, backgroundColor: '#000' }}>
+        <ImageBackground 
+          source={require('../assets/IQRA2background.png')} 
+          style={{ flex: 1, width: '100%', height: '100%', justifyContent: 'center', alignItems: 'center' }}
+          imageStyle={{ opacity: 0.2 }}
+        >
+          <View style={{
+            padding: Platform.OS === 'android' ? 8 : 8,
+            marginTop: 5,
+            ...(Platform.OS === 'ios' && {
+              shadowColor: '#fae29f',
+              shadowOffset: { width: 0, height: 0 },
+              shadowOpacity: 1.0,
+              shadowRadius: 15,
+              elevation: 12,
+            }),
+          }}>
+            <Image 
+              source={require('../assets/openQuran.png')} 
+              style={{ width: 35, height: 35 }} 
+              resizeMode="contain" 
+            />
+          </View>
+        </ImageBackground>
+      </View>
+    );
+  }
+
   return (
     <View style={{ flex: 1, backgroundColor: '#000' }}>
       <ImageBackground 
@@ -1572,29 +2169,31 @@ const MemorizationScreen = ({ route, navigation }) => {
       >
         <SafeAreaView style={[styles.container, { backgroundColor: 'transparent' }]}>
       <View style={styles.headerWithHome}>
-        <TouchableOpacity
-          style={styles.homeButton}
-              onPress={async () => {
-                // Explicitly save current position
-                try {
-        await saveCurrentPosition(surahName, currentAyahIndex);
-        await saveLastPosition(surahName, surahNumber, currentAyahIndex);
-        console.log('[MemorizationScreen] Explicitly saved on Home:', surahName, currentAyahIndex);
-                } catch (error) {
-                  console.error('[MemorizationScreen] Error saving current position on Home:', error);
-                }
-            if (sessionHasanat.current > 0) {
-              addHasanat(sessionHasanat.current);
-              sessionHasanat.current = 0;
-            }
-            navigation.navigate('Home', { refresh: true });
-          }}
-        >
-              <Image source={language === 'ar' ? require('../assets/IQRA2iconArabicoctagon.png') : require('../assets/IQRA2iconoctagon.png')} style={[styles.homeIcon]} resizeMode="contain" />
-        </TouchableOpacity>
+        <Animated.View style={[styles.homeIconContainer]}>
+          <TouchableOpacity
+            style={styles.homeButton}
+                onPress={async () => {
+                  // Explicitly save current position
+                  try {
+          await saveCurrentPosition(surahName, currentAyahIndex);
+          await saveLastPosition(surahName, surahNumber, currentAyahIndex);
+          console.log('[MemorizationScreen] Explicitly saved on Home:', surahName, currentAyahIndex);
+                  } catch (error) {
+                    console.error('[MemorizationScreen] Error saving current position on Home:', error);
+                  }
+              if (sessionHasanat.current > 0) {
+                addHasanat(sessionHasanat.current);
+                sessionHasanat.current = 0;
+              }
+              navigation.navigate('Home', { refresh: true });
+            }}
+          >
+                <Image source={language === 'ar' ? require('../assets/IQRA2iconArabicoctagon.png') : require('../assets/IQRA2iconoctagon.png')} style={[styles.homeIcon]} resizeMode="contain" />
+          </TouchableOpacity>
+        </Animated.View>
         <View style={styles.headerTextContainer}>
               <Text variant="h2" style={{ textAlign: 'center', width: '100%', color: '#5b7f67' }}>
-                {language === 'ar' ? t(`surah_${surahNumber}`) : (getDisplaySurahName(surahNumber) || 'Surah')}
+                {language === 'ar' ? t(`surah_${localSurahNumber}`) : (getDisplaySurahName(localSurahNumber) || 'Surah')}
               </Text>
           <Text variant="body1" style={{ textAlign: 'center', width: '100%', color: '#F5E6C8' }}>
                 {flashcards && flashcards[currentAyahIndex]?.type === 'ayah'
@@ -1626,6 +2225,9 @@ const MemorizationScreen = ({ route, navigation }) => {
         <TouchableOpacity
           style={styles.headerButton}
           onPress={() => setShowGoToModal(true)}
+          onPressIn={() => setIsNavigationPressed(true)}
+          onPressOut={() => setIsNavigationPressed(false)}
+          activeOpacity={1}
         >
           <View style={{
             borderWidth: 2,
@@ -1637,6 +2239,7 @@ const MemorizationScreen = ({ route, navigation }) => {
             shadowOpacity: 0.1,
             shadowRadius: 4,
             elevation: 3,
+            backgroundColor: showGoToModal ? 'rgba(165,115,36,0.8)' : (isNavigationPressed ? 'rgba(165,115,36,0.8)' : 'rgba(165,115,36,0.2)'),
           }}>
             <Image 
               source={require('../assets/app_icons/navigation.png')} 
@@ -1647,12 +2250,15 @@ const MemorizationScreen = ({ route, navigation }) => {
         </TouchableOpacity>
               {/* Hide translation button for first two cards of every surah except for 1st and 9th surah. For 1st and 9th surah, only hide for first card. */}
               {!(
-                (surahNumber !== 1 && surahNumber !== 9 && (currentAyahIndex === 0 || currentAyahIndex === 1)) ||
-                ((surahNumber === 1 || surahNumber === 9) && currentAyahIndex === 0)
+                (localSurahNumber !== 1 && localSurahNumber !== 9 && (currentAyahIndex === 0 || currentAyahIndex === 1)) ||
+                ((localSurahNumber === 1 || localSurahNumber === 9) && currentAyahIndex === 0)
               ) && (
                 <TouchableOpacity
                   style={[styles.headerButton, { marginTop: 8 }]}
                   onPress={openTranslationModal}
+                  onPressIn={() => setIsTranslationPressed(true)}
+                  onPressOut={() => setIsTranslationPressed(false)}
+                  activeOpacity={1}
                 >
                   <View style={{
                     borderWidth: 2,
@@ -1664,6 +2270,7 @@ const MemorizationScreen = ({ route, navigation }) => {
                     shadowOpacity: 0.1,
                     shadowRadius: 4,
                     elevation: 3,
+                    backgroundColor: showTranslationView ? '#5b7f67' : (isTranslationPressed ? '#5b7f67' : 'rgba(91,127,103,0.2)'),
                   }}>
                     <Image 
                       source={require('../assets/app_icons/translation.png')} 
@@ -1683,11 +2290,11 @@ const MemorizationScreen = ({ route, navigation }) => {
                 variant="h2"
                 style={[
                   language === 'ar'
-                    ? { fontFamily: 'KFGQPC HAFS Uthmanic Script Regular', fontSize: 28, color: '#5b7f67', textAlign: 'center', marginBottom: 8 }
+                    ? { fontFamily: 'KFGQPC HAFS Uthmanic Script', fontSize: 28, color: '#5b7f67', textAlign: 'center', marginBottom: 8 }
                     : [FONTS.h2.getFont(language), { color: '#5b7f67', textAlign: 'center', marginBottom: 8 }],
                 ]}
               >
-                {language === 'ar' ? t(`surah_${surahNumber}`) : getDisplaySurahName(surahNumber)}
+                {language === 'ar' ? t(`surah_${localSurahNumber}`) : getDisplaySurahName(localSurahNumber)}
               </Text>
             </View>
             */}
@@ -1699,7 +2306,7 @@ const MemorizationScreen = ({ route, navigation }) => {
                   styles.card, 
                   { flex: 1 },
                   (flashcards[currentAyahIndex]?.type === 'istiadhah' || 
-                   (flashcards[currentAyahIndex]?.type === 'bismillah' && surahNumber !== 1)) && styles.specialCard
+                   (flashcards[currentAyahIndex]?.type === 'bismillah' && localSurahNumber !== 1)) && styles.specialCard
                 ]}>
                   {/* Fullscreen expand button */}
                   <TouchableOpacity
@@ -1710,14 +2317,23 @@ const MemorizationScreen = ({ route, navigation }) => {
                         transform: [{ scale: isExpandButtonPressed ? 1.1 : 1 }]
                       }
                     ]}
-                    onPressIn={() => setIsExpandButtonPressed(true)}
-                    onPressOut={() => setIsExpandButtonPressed(false)}
+                    onPressIn={() => {
+                      setIsExpandButtonPressed(true);
+                      setIsExpandButtonTouched(true);
+                    }}
+                    onPressOut={() => {
+                      setIsExpandButtonPressed(false);
+                      setIsExpandButtonTouched(false);
+                    }}
                     onPress={handleFullscreenToggle}
-                    activeOpacity={0.8}
+                    activeOpacity={1}
                   >
                     <Image 
                       source={require('../assets/app_icons/expand.png')} 
-                      style={styles.expandButtonIcon}
+                      style={[
+                        styles.expandButtonIcon,
+                        { tintColor: (isFullscreen || isExpandButtonTouched) ? 'rgba(165,115,36,0.8)' : '#333' }
+                      ]}
                       resizeMode="contain"
                     />
                   </TouchableOpacity> 
@@ -1726,11 +2342,12 @@ const MemorizationScreen = ({ route, navigation }) => {
               <Text
                 variant="h2"
                 style={[styles.arabicText, { 
-                  fontFamily: 'KFGQPC HAFS Uthmanic Script Regular', 
+                  fontFamily: isBoldFont ? 'KFGQPC Uthman Taha Naskh Bold' : 'KFGQPC HAFS Uthmanic Script', 
                   fontSize: ayahFontSize, 
                   textAlign: 'center', 
                   alignSelf: 'center', 
                   writingDirection: 'rtl',
+                  // Remove font features entirely
                   textAlignVertical: 'center',
                   includeFontPadding: false
                 }]}
@@ -1757,11 +2374,16 @@ const MemorizationScreen = ({ route, navigation }) => {
                       return (
                         <Text style={[styles.arabicText, { 
                           fontSize: ayahFontSize,
-                          fontFamily: 'KFGQPC HAFS Uthmanic Script Regular',
-                          lineHeight: ayahFontSize * 1.5,
+                          fontFamily: isBoldFont ? 'KFGQPC Uthman Taha Naskh Bold' : 'KFGQPC HAFS Uthmanic Script',
+                          lineHeight: ayahFontSize * 2.8,
+                          // Remove font features entirely
                           color: '#FF8C00',
                           textAlign: 'center',
-                          includeFontPadding: false
+                          includeFontPadding: false,
+                          paddingTop: 20,
+                          paddingBottom: 20,
+                          marginTop: 10,
+                          marginBottom: 10
                         }]}>
                           {'⬡'.repeat(Math.min(44, Math.ceil(flashcards[currentAyahIndex]?.text.length / 2)))}
                         </Text>
@@ -1807,13 +2429,16 @@ const MemorizationScreen = ({ route, navigation }) => {
                               key={`word-${index}`}
                               style={[styles.arabicText, { 
                                 fontSize: ayahFontSize,
-                                fontFamily: 'KFGQPC HAFS Uthmanic Script Regular',
-                                lineHeight: ayahFontSize * 1.5,
+                                fontFamily: isBoldFont ? 'KFGQPC Uthman Taha Naskh Bold' : 'KFGQPC HAFS Uthmanic Script',
+                                lineHeight: ayahFontSize * 2.8,
+                                // Remove font features entirely
                                 color: isVisible ? '#5b7f67' : orangeShades[shadeIndex],
                                 marginHorizontal: 2,
                                 marginVertical: 4,
                                 textAlign: 'center',
                                 includeFontPadding: false,
+                                paddingTop: 15,
+                                paddingBottom: 15,
                                 width: getResponsiveWordWidth(word.length, ayahFontSize), // Responsive width for all elements
                                 minWidth: getResponsiveWordWidth(word.length, ayahFontSize),
                                 maxWidth: getResponsiveWordWidth(word.length, ayahFontSize),
@@ -1831,21 +2456,22 @@ const MemorizationScreen = ({ route, navigation }) => {
                 </View>
               ) : (
                 <HighlightedArabicText
-                  text={flashcards[currentAyahIndex]?.text || ''}
+                  text={removeSuperscriptCircles(flashcards[currentAyahIndex]?.text || '')}
                   metadata={currentAudioMetadata}
                   isPlaying={isAudioPlaying}
                   currentTime={currentAudioTime}
                   fontSize={ayahFontSize}
                   isBoldFont={isBoldFont}
                   textColor={flashcards[currentAyahIndex]?.type === 'istiadhah' ? '#A57324' :
-                           (flashcards[currentAyahIndex]?.type === 'bismillah' && surahNumber !== 1) ? '#5b7f67' :
+                           (flashcards[currentAyahIndex]?.type === 'bismillah' && localSurahNumber !== 1) ? '#5b7f67' :
                            '#1a1a1a'}
                   style={[styles.arabicText, { 
                     textAlign: 'center', 
                     alignSelf: 'center', 
                     writingDirection: 'rtl',
                     textAlignVertical: 'center',
-                    includeFontPadding: false
+                    includeFontPadding: false,
+                    // Remove font features entirely
                   }]}
                 />
               )
@@ -1853,35 +2479,44 @@ const MemorizationScreen = ({ route, navigation }) => {
             
             {/* Show transliteration with fixed distance from Arabic text */}
             {!isTextHidden && language === 'en' && (
-              <Text
-                variant="body2"
-                style={styles.transliterationText}
-                align="center"
-              >
-                {stripHtmlTags(flashcards[currentAyahIndex]?.transliteration || '')}
-              </Text>
+              <View style={{ 
+                marginTop: flashcards[currentAyahIndex]?.type === 'istiadhah' ? 2 : 8, 
+                minHeight: flashcards[currentAyahIndex]?.type === 'istiadhah' ? 30 : 40 
+              }}>
+                <Text
+                  variant="body2"
+                  style={[styles.transliterationText, { opacity: showTransliteration ? 1 : 0 }]}
+                  align="center"
+                >
+                  {stripHtmlTags(flashcards[currentAyahIndex]?.transliteration || '')}
+                </Text>
+              </View>
             )}
             
             {/* Show bismillah translation for bismillah card only in English mode */}
             {flashcards[currentAyahIndex]?.type === 'bismillah' && language === 'en' && (
-              <Text
-                variant="body2"
-                style={[styles.transliterationText, { color: '#5b7f67', fontWeight: 'bold', marginTop: 8 }]}
-                align="center"
-              >
-                {flashcards[currentAyahIndex]?.translation}
-              </Text>
+              <View style={{ marginTop: 2, minHeight: 30 }}>
+                <Text
+                  variant="body2"
+                  style={[styles.transliterationText, { color: '#5b7f67', fontWeight: 'bold', marginTop: 0 }]}
+                  align="center"
+                >
+                  {flashcards[currentAyahIndex]?.translation}
+                </Text>
+              </View>
             )}
             
             {/* Show istiadhah translation for istiadhah card only in English mode */}
             {flashcards[currentAyahIndex]?.type === 'istiadhah' && language === 'en' && (
-              <Text
-                variant="body2"
-                style={[styles.transliterationText, { color: '#5b7f67', fontWeight: 'bold', marginTop: 8 }]}
-                align="center"
-              >
-                {flashcards[currentAyahIndex]?.translation}
-              </Text>
+              <View style={{ marginTop: 2, minHeight: 30 }}>
+                <Text
+                  variant="body2"
+                  style={[styles.transliterationText, { color: '#5b7f67', fontWeight: 'bold', marginTop: 0 }]}
+                  align="center"
+                >
+                  {flashcards[currentAyahIndex]?.translation}
+                </Text>
+              </View>
             )}
             
             {/* Builder Mode Progress Indicator */}
@@ -1913,7 +2548,7 @@ const MemorizationScreen = ({ route, navigation }) => {
             </View>
             {/* Button row below flashcard */}
             {flashcards && flashcards[currentAyahIndex] && ((flashcards[currentAyahIndex]?.type === 'ayah') || 
-              (flashcards[currentAyahIndex]?.type === 'bismillah' && surahNumber === 1)) && 
+              (flashcards[currentAyahIndex]?.type === 'bismillah' && localSurahNumber === 1)) && 
               flashcards[currentAyahIndex]?.type !== 'istiadhah' && (
                       <View style={styles.buttonRow}>
               {/* Left side buttons */}
@@ -1922,6 +2557,9 @@ const MemorizationScreen = ({ route, navigation }) => {
                 <TouchableOpacity
                   style={styles.settingsButton}
                   onPress={() => setShowSettingsModal(true)}
+                  onPressIn={() => setIsFontSettingsPressed(true)}
+                  onPressOut={() => setIsFontSettingsPressed(false)}
+                  activeOpacity={1}
                 >
                   <View style={{
                     borderWidth: 2,
@@ -1937,6 +2575,7 @@ const MemorizationScreen = ({ route, navigation }) => {
                     height: 48,
                     alignItems: 'center',
                     justifyContent: 'center',
+                    backgroundColor: showSettingsModal ? '#5b7f67' : (isFontSettingsPressed ? '#5b7f67' : 'rgba(91,127,103,0.2)'),
                   }}>
                     <Image 
                       source={require('../assets/app_icons/slider.png')} 
@@ -1997,20 +2636,10 @@ const MemorizationScreen = ({ route, navigation }) => {
                 <View style={{ flexDirection: 'row', alignItems: 'center', marginHorizontal: 20 }}>
                   {/* Build/Unbuild Button (Left) */}
                   <TouchableOpacity
-                    style={[styles.revealButtonNew, {
-                      backgroundColor: visibleChunks > 1 ? 'rgba(165,115,36,0.8)' : '#5b7f67', // Orange for Unbuild, Green for Build
-                      padding: SIZES.medium,
-                      width: 60,
-                      minHeight: 40,
+                    style={{
                       alignItems: 'center',
                       justifyContent: 'center',
-                      borderRadius: 12,
-                      borderWidth: 2,
-                      borderColor: visibleChunks > 1 ? '#5b7f67' : 'rgba(165,115,36,0.8)', // Green outline for Unbuild
-                      borderRightWidth: 0,
-                      borderTopRightRadius: 0,
-                      borderBottomRightRadius: 0,
-                    }]}
+                    }}
                     onPress={() => {
                       hapticSelection();
                       if (visibleChunks < Math.ceil(builderWords.length / wordsPerBatch)) {
@@ -2023,16 +2652,53 @@ const MemorizationScreen = ({ route, navigation }) => {
                         setIsCurrentBatchHidden(false);
                       }
                     }}
-                    disabled={builderWords.length === 0}
+                    onPressIn={() => {
+                      console.log('Build button pressed in - setting state to true');
+                      setIsBuildButtonPressed(true);
+                    }}
+                    onPressOut={() => {
+                      console.log('Build button pressed out - setting state to false');
+                      setIsBuildButtonPressed(false);
+                    }}
+                    activeOpacity={1}
+                    disabled={(() => {
+                      const isDisabled = builderWords.length === 0;
+                      console.log('Build button disabled:', isDisabled, 'builderWords.length:', builderWords.length);
+                      return isDisabled;
+                    })()}
                   >
-                    <Text variant="body1" color="primary" style={[styles.revealButtonText, { 
-                      fontSize: 20,
-                      color: visibleChunks > 1 ? '#5b7f67' : '#F5E6C8', // Green text for Unbuild, White for Build
-                      fontWeight: 'bold',
-                      textAlign: 'center',
-                    }]}>
-                      {visibleChunks < Math.ceil(builderWords.length / wordsPerBatch) ? '+' : '−'}
-                    </Text>
+                    <View style={{
+                      backgroundColor: (() => {
+                        const bgColor = isBuildButtonPressed ? 'rgba(165,115,36,0.8)' : (visibleChunks > 1 ? 'rgba(165,115,36,0.8)' : 'rgba(91,127,103,0.2)');
+                        console.log('Build button backgroundColor:', bgColor, 'isBuildButtonPressed:', isBuildButtonPressed, 'visibleChunks:', visibleChunks);
+                        return bgColor;
+                      })(), // Orange when pressed or for Unbuild, Green for Build
+                      padding: SIZES.medium,
+                      width: 60,
+                      minHeight: 40,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      borderRadius: 12,
+                      borderWidth: 2,
+                      borderColor: visibleChunks > 1 ? '#5b7f67' : 'rgba(165,115,36,0.8)', // Green outline for Unbuild
+                      borderRightWidth: 0,
+                      borderTopRightRadius: 0,
+                      borderBottomRightRadius: 0,
+                      shadowColor: '#000',
+                      shadowOffset: { width: 0, height: 2 },
+                      shadowOpacity: 0.3,
+                      shadowRadius: 4,
+                      elevation: 5,
+                    }}>
+                      <Text variant="body1" color="primary" style={[styles.revealButtonText, { 
+                        fontSize: 20,
+                        color: visibleChunks > 1 ? '#5b7f67' : '#F5E6C8', // Green text for Unbuild, White for Build
+                        fontWeight: 'bold',
+                        textAlign: 'center',
+                      }]}>
+                        {visibleChunks < Math.ceil(builderWords.length / wordsPerBatch) ? '+' : '−'}
+                      </Text>
+                    </View>
                   </TouchableOpacity>
 
                   {/* Cover/Uncover Button (Right) */}
@@ -2123,7 +2789,7 @@ const MemorizationScreen = ({ route, navigation }) => {
                       height: 48,
                       alignItems: 'center',
                       justifyContent: 'center',
-                      backgroundColor: hasRecordings ? 'rgba(165,115,36,0.8)' : 'transparent',
+                      backgroundColor: hasRecordings ? 'rgba(165,115,36,0.8)' : 'rgba(165,115,36,0.2)',
                     }}>
                       {isRecording ? (
                         isRecordingButtonPressed ? (
@@ -2195,7 +2861,7 @@ const MemorizationScreen = ({ route, navigation }) => {
                     height: 48,
                     alignItems: 'center',
                     justifyContent: 'center',
-                    backgroundColor: isAudioPlaying ? '#5b7f67' : 'transparent',
+                    backgroundColor: isAudioPlaying ? '#5b7f67' : 'rgba(91,127,103,0.2)',
                   }}>
                     <Image
                       source={require('../assets/app_icons/audio.png')}
@@ -2500,7 +3166,7 @@ const MemorizationScreen = ({ route, navigation }) => {
             {showNoteInput && currentNoteAyah && (
               <View style={styles.noteInputContainer}>
                 <Text style={styles.noteInputLabel}>
-                  {language === 'ar' ? `[${surahNumber}: ${currentNoteAyah.number}] ملاحظة` : `[${surahNumber}: ${currentNoteAyah.number}] Note`}
+                  {language === 'ar' ? `[${localSurahNumber}: ${currentNoteAyah.number}] ملاحظة` : `[${localSurahNumber}: ${currentNoteAyah.number}] Note`}
                 </Text>
                 <TextInput
                   style={styles.noteInput}
@@ -2699,7 +3365,7 @@ const MemorizationScreen = ({ route, navigation }) => {
         }}
         onSurahList={() => {
           setShowReward(false);
-          navigation.navigate('SurahList', { refresh: true, currentSurahId: surahNumber, refreshRecordings: true });
+          navigation.navigate('SurahList', { progressUpdated: true, currentSurahId: surahNumber, refreshRecordings: true });
         }}
         onNext={async () => {
           setShowReward(false);
@@ -2753,7 +3419,7 @@ const MemorizationScreen = ({ route, navigation }) => {
         }}
         onSurahList={() => {
           setShowFullSurahReward(false);
-          navigation.navigate('SurahList', { refresh: true, currentSurahId: surahNumber, refreshRecordings: true });
+          navigation.navigate('SurahList', { progressUpdated: true, currentSurahId: surahNumber, refreshRecordings: true });
         }}
         onNext={async () => {
           setShowFullSurahReward(false);
@@ -2854,7 +3520,7 @@ const MemorizationScreen = ({ route, navigation }) => {
                 position: 'absolute',
                 top: 16,
                 right: 16,
-                backgroundColor: '#FF4444',
+                backgroundColor: isXButtonPressed ? '#CC0000' : '#CCCCCC',
                 borderRadius: 20,
                 width: 40,
                 height: 40,
@@ -2867,18 +3533,31 @@ const MemorizationScreen = ({ route, navigation }) => {
                 elevation: 3,
               }}
               onPress={() => setShowSettingsModal(false)}
+              onPressIn={() => setIsXButtonPressed(true)}
+              onPressOut={() => setIsXButtonPressed(false)}
             >
               <Text style={{ 
-                color: 'white', 
+                color: isXButtonPressed ? '#CCCCCC' : '#CC0000', 
                 fontSize: 20, 
                 fontWeight: 'bold',
                 lineHeight: 20,
+                textShadowColor: 'rgba(0,0,0,0.3)',
+                textShadowOffset: { width: 0, height: 0 },
+                textShadowRadius: 2,
               }}>
                 ×
               </Text>
             </TouchableOpacity>
 
-            <Text variant="h2" style={{ marginBottom: 16, marginTop: 8, color: '#A57324' }}>Font Settings</Text>
+            <View style={{ alignItems: 'center', marginBottom: 16, marginTop: 8 }}>
+              <Text variant="h2" style={{ color: '#A57324', marginBottom: 4 }}>Font Settings</Text>
+              <View style={{ 
+                width: 120, 
+                height: 2, 
+                backgroundColor: '#CCCCCC',
+                borderRadius: 1
+              }} />
+            </View>
             
             {/* Font Size Slider */}
             <Text style={{ marginBottom: 6, fontWeight: 'bold', color: '#5b7f67', fontSize: 16 }}>Qur2an Font Size</Text>
@@ -2894,32 +3573,66 @@ const MemorizationScreen = ({ route, navigation }) => {
               thumbTintColor="#A57324"
             />
             
-            {/* Font Style Toggle */}
-            <Text style={{ marginBottom: 6, fontWeight: 'bold', color: '#5b7f67', fontSize: 16 }}>Qur2an Font Style</Text>
-            <TouchableOpacity
-              style={{
-                backgroundColor: isBoldFont ? '#5b7f67' : '#CCCCCC',
-                paddingHorizontal: 20,
-                paddingVertical: 10,
-                borderRadius: 8,
-                marginBottom: 16,
-                shadowColor: '#000',
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.3,
-                shadowRadius: 4,
-                elevation: 3,
-              }}
-              onPress={() => setIsBoldFont(!isBoldFont)}
-            >
-              <Text style={{ 
-                color: isBoldFont ? '#F5E6C8' : '#5b7f67', 
-                fontWeight: 'bold', 
-                fontSize: 16,
-                textAlign: 'center'
-              }}>
-                {isBoldFont ? 'BOLD' : 'Regular'}
-              </Text>
-            </TouchableOpacity>
+            {/* Font Style and Transliteration Toggle Row */}
+            <View style={{ flexDirection: 'row', justifyContent: 'center', marginBottom: 16, gap: 20 }}>
+              {/* Font Style Toggle */}
+              <View style={{ alignItems: 'center' }}>
+                <Text style={{ marginBottom: 6, fontWeight: 'bold', color: '#5b7f67', fontSize: 16, textAlign: 'center' }}>Font Style</Text>
+                <TouchableOpacity
+                  style={{
+                    backgroundColor: isBoldFont ? '#5b7f67' : 'rgba(91,127,103,0.2)',
+                    paddingHorizontal: 20,
+                    paddingVertical: 12,
+                    borderRadius: 20,
+                    shadowColor: '#000',
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.3,
+                    shadowRadius: 4,
+                    elevation: 3,
+                    minWidth: 100,
+                  }}
+                  onPress={() => setIsBoldFont(!isBoldFont)}
+                >
+                  <Text style={{ 
+                    color: isBoldFont ? '#F5E6C8' : '#5b7f67', 
+                    fontWeight: 'bold', 
+                    fontSize: 14,
+                    textAlign: 'center'
+                  }}>
+                    {isBoldFont ? 'BOLD' : 'Regular'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+              
+              {/* Transliteration Toggle */}
+              <View style={{ alignItems: 'center' }}>
+                <Text style={{ marginBottom: 6, fontWeight: 'bold', color: '#5b7f67', fontSize: 16, textAlign: 'center' }}>Transliteration</Text>
+                <TouchableOpacity
+                  style={{
+                    backgroundColor: showTransliteration ? '#5b7f67' : 'rgba(91,127,103,0.2)',
+                    paddingHorizontal: 20,
+                    paddingVertical: 12,
+                    borderRadius: 20,
+                    shadowColor: '#000',
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.3,
+                    shadowRadius: 4,
+                    elevation: 3,
+                    minWidth: 100,
+                  }}
+                  onPress={() => setShowTransliteration(!showTransliteration)}
+                >
+                  <Text style={{ 
+                    color: showTransliteration ? '#F5E6C8' : '#5b7f67', 
+                    fontWeight: 'bold', 
+                    fontSize: 14,
+                    textAlign: 'center'
+                  }}>
+                    {showTransliteration ? 'ON' : 'OFF'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
           </TouchableOpacity>
         </TouchableOpacity>
       </Modal>
@@ -3000,7 +3713,7 @@ const MemorizationScreen = ({ route, navigation }) => {
                     position: 'absolute',
                     top: 16,
                     right: 16,
-                    backgroundColor: '#FF4444',
+                    backgroundColor: isBuilderXButtonPressed ? '#CC0000' : '#CCCCCC',
                     borderRadius: 20,
                     width: 40,
                     height: 40,
@@ -3013,12 +3726,17 @@ const MemorizationScreen = ({ route, navigation }) => {
                     elevation: 3,
                   }}
                   onPress={() => setShowBuilderModal(false)}
+                  onPressIn={() => setIsBuilderXButtonPressed(true)}
+                  onPressOut={() => setIsBuilderXButtonPressed(false)}
                 >
                   <Text style={{ 
-                    color: 'white', 
+                    color: isBuilderXButtonPressed ? '#CCCCCC' : '#CC0000', 
                     fontSize: 20, 
                     fontWeight: 'bold',
                     lineHeight: 20,
+                    textShadowColor: 'rgba(0,0,0,0.3)',
+                    textShadowOffset: { width: 0, height: 0 },
+                    textShadowRadius: 2,
                   }}>
                     ×
                   </Text>
@@ -3185,14 +3903,17 @@ const MemorizationScreen = ({ route, navigation }) => {
               {/* Translation button - only show in English mode */}
               {language !== 'ar' && (
                 <TouchableOpacity
-                  style={styles.fullscreenTranslationButton}
+                   style={[
+                     styles.fullscreenTranslationButton,
+                     showTranslationView && styles.fullscreenTranslationButtonToggled
+                   ]}
                   onPress={handleTranslationViewToggle}
                 >
                   <Image 
                     source={require('../assets/app_icons/translation.png')} 
                     style={[
                       styles.fullscreenTranslationIcon,
-                      showTranslationView && styles.fullscreenToggledIcon
+                        showTranslationView && styles.fullscreenTranslationIconToggled
                     ]}
                     resizeMode="contain"
                   />
@@ -3200,7 +3921,7 @@ const MemorizationScreen = ({ route, navigation }) => {
               )}
               
               <Text style={styles.fullscreenTitle}>
-                {language === 'ar' ? t(`surah_${surahNumber}`) : getDisplaySurahName(surahNumber)}
+                {language === 'ar' ? t(`surah_${localSurahNumber}`) : getDisplaySurahName(localSurahNumber)}
               </Text>
               
               <TouchableOpacity
@@ -3259,6 +3980,11 @@ const MemorizationScreen = ({ route, navigation }) => {
               </TouchableOpacity>
             </View>
             
+            {/* Top border for ayah list */}
+            {!showTranslationView && (
+              <View style={styles.fullscreenListTopBorder} />
+            )}
+            
             {/* Translation view or ayah list */}
             {showTranslationView ? (
               <View style={styles.translationViewContainer}>
@@ -3292,24 +4018,31 @@ const MemorizationScreen = ({ route, navigation }) => {
                 >
                   {flashcards.map((card, index) => {
                     const translation = card.type === 'ayah' 
-                      ? getTranslation(currentTranslator, surahNumber, card.ayah)
+                      ? getTranslation(currentTranslator, localSurahNumber, card.ayah)
                       : card.translation;
                     
                     return (
                       <View 
                         key={index} 
                         style={[
-                          styles.fullscreenAyahCard,
-                          index === currentAyahIndex && styles.currentAyahCard
+                          index === flashcards.length - 1 ? styles.fullscreenAyahCardLast : styles.fullscreenAyahCard,
+                          index === originalAyahIndex && styles.originalAyahCard, // Dark background highlight for original ayah (no border)
+                          isFullSurahPlaying && ayahCards[currentPlayingAyahIndex] && flashcards[index].ayah === ayahCards[currentPlayingAyahIndex].ayah && styles.playingAyahCard, // Green highlight for playing ayah
+                          card.type === 'istiadhah' && styles.isti3aadhahCard, // Permanent dark gray background and border for isti3aadhah
+                          card.type === 'bismillah' && localSurahNumber !== 1 && styles.bismillahCard, // Permanent light gray background and border for bismillah (except Al-Fatihah)
+                          index === originalAyahIndex && card.type !== 'istiadhah' && card.type !== 'bismillah' && styles.currentAyahCard // Green border for current ayah (only if not special card)
                         ]}
                       >
                         <Text style={[
                           styles.fullscreenAyahText,
-                          { color: card.type === 'istiadhah' ? '#A57324' :
-                                   (card.type === 'bismillah' && surahNumber !== 1) ? '#5b7f67' :
-                                   '#333' }
+                          { 
+                            color: card.type === 'istiadhah' ? '#A57324' :
+                                   (card.type === 'bismillah' && localSurahNumber !== 1) ? '#5b7f67' :
+                                   '#333',
+                            fontFamily: isBoldFont ? 'KFGQPC Uthman Taha Naskh Bold' : (Platform.OS === 'ios' ? 'KFGQPC HAFS Uthmanic Script' : 'KFGQPC_HAFS_Uthmanic_Script')
+                          }
                         ]}>
-                          {card.text}
+                          {removeSuperscriptCircles(card.text)}
                         </Text>
                         {translation && (
                           <Text style={styles.fullscreenTranslationText}>
@@ -3318,7 +4051,7 @@ const MemorizationScreen = ({ route, navigation }) => {
                         )}
                         {card.type === 'ayah' && (
                           <Text style={styles.fullscreenAyahNumber}>
-                            {toArabicNumber(flashcards.slice(0, index + 1).filter(a => a.type === 'ayah').length)}
+                            {toUthmanicNumber(flashcards.slice(0, index + 1).filter(a => a.type === 'ayah').length)}
                           </Text>
                         )}
                       </View>
@@ -3327,12 +4060,18 @@ const MemorizationScreen = ({ route, navigation }) => {
                 </ScrollView>
               </View>
             ) : (
-              <ScrollView 
+              <Animated.ScrollView
                 ref={fullscreenScrollViewRef}
                 style={styles.fullscreenScrollView}
                 contentContainerStyle={styles.fullscreenScrollContent}
                 showsVerticalScrollIndicator={true}
-                onScroll={handleScroll}
+                onScroll={Animated.event(
+                  [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+                  { 
+                    useNativeDriver: false,
+                    listener: handleScroll 
+                  }
+                )}
                 scrollEventThrottle={16}
               >
               {getFilteredFlashcards().map((card, filteredIndex) => {
@@ -3345,8 +4084,12 @@ const MemorizationScreen = ({ route, navigation }) => {
                   <View 
                     key={originalIndex} 
                     style={[
-                      styles.fullscreenAyahCard,
-                      originalIndex === currentAyahIndex && styles.currentAyahCard
+                      filteredIndex === getFilteredFlashcards().length - 1 ? styles.fullscreenAyahCardLast : styles.fullscreenAyahCard,
+                      originalIndex === originalAyahIndex && styles.originalAyahCard, // Dark background highlight for original ayah (no border)
+                      isFullSurahPlaying && ayahCards[currentPlayingAyahIndex] && flashcards[originalIndex].ayah === ayahCards[currentPlayingAyahIndex].ayah && styles.playingAyahCard, // Green highlight for playing ayah
+                      card.type === 'istiadhah' && styles.isti3aadhahCard, // Permanent dark gray background and border for isti3aadhah
+                      card.type === 'bismillah' && localSurahNumber !== 1 && styles.bismillahCard, // Permanent light gray background and border for bismillah (except Al-Fatihah)
+                      originalIndex === originalAyahIndex && card.type !== 'istiadhah' && card.type !== 'bismillah' && styles.currentAyahCard // Green border for current ayah (only if not special card)
                     ]}
                   >
                     <TouchableOpacity 
@@ -3356,47 +4099,63 @@ const MemorizationScreen = ({ route, navigation }) => {
                     >
                       <Text style={[
                         styles.fullscreenAyahText,
-                        { color: card.type === 'istiadhah' ? '#A57324' :
-                                 (card.type === 'bismillah' && surahNumber !== 1) ? '#5b7f67' :
-                                 '#333' }
+                        { 
+                          color: card.type === 'istiadhah' ? '#A57324' :
+                                 (card.type === 'bismillah' && localSurahNumber !== 1) ? '#5b7f67' :
+                                 '#333',
+                          fontFamily: isBoldFont ? 'KFGQPC Uthman Taha Naskh Bold' : (Platform.OS === 'ios' ? 'KFGQPC HAFS Uthmanic Script' : 'KFGQPC_HAFS_Uthmanic_Script')
+                        }
                       ]}>
-                        {card.text}
+                        {removeSuperscriptCircles(card.text)}
                       </Text>
                       {card.type === 'ayah' && (
                         <Text style={styles.fullscreenAyahNumber}>
-                          {toArabicNumber(flashcards.slice(0, originalIndex + 1).filter(a => a.type === 'ayah').length)}
+                          {toUthmanicNumber(flashcards.slice(0, originalIndex + 1).filter(a => a.type === 'ayah').length)}
                         </Text>
                       )}
                     </TouchableOpacity>
                     
-                    {/* Swipeable cover for hide mode */}
+                    {/* Draggable cover for hide mode */}
                     {isHideMode && card.type === 'ayah' && ayahCovers[originalIndex] && (
-                      <TouchableOpacity
+                      <Animated.View
                         style={[
                           styles.fullscreenAyahCover,
-                          { backgroundColor: originalIndex === currentAyahIndex ? '#A57324' : '#5b7f67' }
+                          { 
+                            backgroundColor: originalIndex === currentAyahIndex ? '#A57324' : '#5b7f67',
+                            transform: [{ translateX: getHideCoverAnim(originalIndex) }]
+                          }
                         ]}
+                        {...createCoverPanResponder(originalIndex).panHandlers}
+                      >
+                        <TouchableOpacity
+                          style={styles.fullscreenAyahCoverTouchable}
                         onPress={() => handleAyahCoverSwipe(originalIndex)}
                         activeOpacity={0.8}
                       >
                         <Text style={styles.fullscreenAyahCoverText}>
-                          {toArabicNumber(flashcards.slice(0, originalIndex + 1).filter(a => a.type === 'ayah').length)}
+                            {toUthmanicNumber(flashcards.slice(0, originalIndex + 1).filter(a => a.type === 'ayah').length)}
                         </Text>
                       </TouchableOpacity>
+                      </Animated.View>
                     )}
                   </View>
                 );
               })}
-            </ScrollView>
+            </Animated.ScrollView>
             )}
             
-            {/* Divider */}
-            <View style={styles.fullscreenActionButtonsDivider} />
+            {/* Bottom border for ayah list */}
+            {!showTranslationView && (
+              <View style={styles.fullscreenListBottomBorder} />
+            )}
             
             {/* Surah Navigation and Action Buttons */}
             <View style={styles.fullscreenActionButtonsContainer}>
               <TouchableOpacity
-                style={[styles.fullscreenActionButton, styles.fullscreenNavButton]}
+                style={[
+                  styles.fullscreenActionButton, 
+                  isFullSurahPlaying ? styles.fullscreenActionButton : styles.fullscreenNavButton
+                ]}
                 onPress={goToPreviousSurah}
                 activeOpacity={0.7}
               >
@@ -3404,46 +4163,96 @@ const MemorizationScreen = ({ route, navigation }) => {
               </TouchableOpacity>
               
               <TouchableOpacity
-                style={styles.fullscreenActionButton}
-                onPress={handleHideToggle}
+                style={[
+                  styles.fullscreenActionButton,
+                  isFullSurahPlaying ? 
+                    (currentPlayingAyahIndex === 0 ? styles.fullscreenParchmentButton : 
+                     isPreviousButtonPressed ? styles.fullscreenRecordingButtonActive : styles.fullscreenNavButton) : 
+                    (isHideMode ? styles.fullscreenRecordingButtonActive : styles.fullscreenActionButton)
+                ]}
+                onPress={isFullSurahPlaying ? handlePreviousAyah : handleHideToggle}
+                onPressIn={() => {
+                  if (isFullSurahPlaying) {
+                    setIsPreviousButtonPressed(true);
+                  }
+                }}
+                onPressOut={() => {
+                  setIsPreviousButtonPressed(false);
+                }}
                 activeOpacity={0.7}
               >
                 <Image 
-                  source={require('../assets/app_icons/display-frame.png')} 
-                  style={styles.fullscreenActionButtonIcon}
-                  resizeMode="contain"
-                />
-              </TouchableOpacity>
-              
-              <TouchableOpacity
-                style={[styles.fullscreenActionButton, styles.fullscreenMicOffButton]}
-                onPress={handleFullSurahRecord}
-                activeOpacity={0.7}
-              >
-                <Image 
-                  source={require('../assets/app_icons/mic-off.png')} 
+                  source={isFullSurahPlaying ? require('../assets/app_icons/continue.png') : require('../assets/app_icons/display-frame.png')} 
                   style={[
                     styles.fullscreenActionButtonIcon,
-                    styles.fullscreenMicOffIcon
+                    isFullSurahPlaying && { transform: [{ scaleX: -1 }] }, // Flip horizontally for previous
+                    isFullSurahPlaying && currentPlayingAyahIndex === 0 && { tintColor: '#5b7f67' }, // Green when on first ayah
+                    isFullSurahPlaying && currentPlayingAyahIndex > 0 && { tintColor: '#F5E6C8' }, // Parchment when not on first ayah
+                    !isFullSurahPlaying && (isHideMode ? { tintColor: '#F5E6C8' } : { tintColor: '#5b7f67' }) // Parchment icon when toggled, green icon when not
                   ]}
                   resizeMode="contain"
                 />
               </TouchableOpacity>
               
               <TouchableOpacity
-                style={styles.fullscreenActionButton}
-                onPress={handleFullSurahAudio}
+                style={[
+                  styles.fullscreenActionButton, 
+                  styles.fullscreenMicOffButton,
+                  isFullSurahPlaying && 
+                    (currentPlayingAyahIndex === ayahCards.length - 1 ? styles.fullscreenParchmentButton : 
+                     isPreviousButtonPressed ? styles.fullscreenActionButton : styles.fullscreenNavButton)
+                ]}
+                onPress={isFullSurahPlaying ? handleNextAyah : handleFullSurahRecord}
                 activeOpacity={0.7}
               >
                 <Image 
-                  source={require('../assets/app_icons/audio.png')} 
-                  style={styles.fullscreenActionButtonIcon}
+                  source={isFullSurahPlaying ? require('../assets/app_icons/continue.png') : require('../assets/app_icons/mic-off.png')} 
+                  style={[
+                    styles.fullscreenActionButtonIcon,
+                    styles.fullscreenMicOffIcon,
+                    isFullSurahPlaying && currentPlayingAyahIndex < ayahCards.length - 1 && { tintColor: '#F5E6C8' } // Orange when not on last ayah
+                  ]}
                   resizeMode="contain"
                 />
               </TouchableOpacity>
               
               <TouchableOpacity
-                style={[styles.fullscreenActionButton, styles.fullscreenNavButton]}
+                style={[
+                  styles.fullscreenActionButton,
+                  isAudioButtonPressed && styles.fullscreenAudioButtonActive,
+                  isFullSurahPlaying && styles.fullscreenStopButton
+                ]}
+                onPress={handleFullSurahAudio}
+                onPressIn={() => setIsAudioButtonPressed(true)}
+                onPressOut={() => setIsAudioButtonPressed(false)}
+                onLongPress={() => {
+                  if (!isFullSurahPlaying) {
+                    setShowAyahSelector(true);
+                  }
+                }}
+                activeOpacity={1}
+              >
+                {isFullSurahPlaying ? (
+                  <View style={styles.stopIcon}>
+                    <View style={styles.stopIconSquare} />
+                  </View>
+                ) : (
+                <Image 
+                  source={require('../assets/app_icons/audio.png')} 
+                    style={[
+                      styles.fullscreenActionButtonIcon,
+                      { tintColor: isAudioButtonPressed ? '#F5E6C8' : '#5b7f67' }
+                    ]}
+                  resizeMode="contain"
+                />
+                )}
+              </TouchableOpacity>
+              
+              <TouchableOpacity
+                style={[
+                  styles.fullscreenActionButton, 
+                  isFullSurahPlaying ? styles.fullscreenActionButton : styles.fullscreenNavButton
+                ]}
                 onPress={goToNextSurah}
                 activeOpacity={0.7}
               >
@@ -3454,6 +4263,48 @@ const MemorizationScreen = ({ route, navigation }) => {
         </View>
       </Modal>
 
+      {/* Ayah Selector Modal */}
+      <Modal
+        visible={showAyahSelector}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowAyahSelector(false)}
+      >
+        <TouchableWithoutFeedback onPress={() => setShowAyahSelector(false)}>
+          <View style={styles.modalOverlay}>
+            <TouchableWithoutFeedback>
+              <View style={styles.ayahSelectorModal}>
+                <Text style={styles.ayahSelectorTitle}>
+                  {language === 'ar' ? 'اختر الآية للبدء' : 'Select Ayah to Start'}
+                </Text>
+                <ScrollView style={styles.ayahSelectorScrollView}>
+                  {flashcards
+                    .filter(card => card.type === 'ayah')
+                    .map((card, index) => (
+                      <TouchableOpacity
+                        key={index}
+                        style={styles.ayahSelectorItem}
+                        onPress={() => handleStartFromAyah(index)}
+                      >
+                        <Text style={styles.ayahSelectorItemText}>
+                          {language === 'ar' ? `الآية ${toArabicNumber(index + 1)}` : `Ayah ${index + 1}`}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                </ScrollView>
+                <TouchableOpacity
+                  style={styles.ayahSelectorCloseButton}
+                  onPress={() => setShowAyahSelector(false)}
+                >
+                  <Text style={styles.ayahSelectorCloseText}>
+                    {language === 'ar' ? 'إغلاق' : 'Close'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </TouchableWithoutFeedback>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
 
     </SafeAreaView>
       </ImageBackground>
@@ -3473,6 +4324,13 @@ const styles = StyleSheet.create({
   },
   homeButton: {
     marginRight: SIZES.medium,
+  },
+  homeIconContainer: {
+    shadowColor: '#fae29f',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.5,
+    shadowRadius: 15,
+    elevation: 10,
   },
   homeIcon: {
     width: 64,
@@ -3510,9 +4368,11 @@ const styles = StyleSheet.create({
     maxHeight: '85%',
   },
   arabicText: {
-    lineHeight: 75,
+    lineHeight: 140,
     color: '#1a1a1a',
     fontSize: 46,
+    paddingTop: 25,
+    paddingBottom: 30,
   },
   revealButton: {
     marginVertical: SIZES.medium,
@@ -3553,7 +4413,6 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
     color: '#999999',
     fontSize: 20,
-    marginTop: 20,
     lineHeight: 32,
     backgroundColor: 'transparent',
   },
@@ -3716,7 +4575,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     flexGrow: 1,
-    paddingVertical: 60,
+    paddingVertical: 40,
     minHeight: 400,
   },
   surahNavButton: {
@@ -3846,8 +4705,8 @@ const styles = StyleSheet.create({
   // Expand button styles
   expandButton: {
     position: 'absolute',
-    top: 15,
-    right: 15,
+    bottom: 8,
+    right: 8,
     width: 40,
     height: 40,
     backgroundColor: 'transparent',
@@ -3863,7 +4722,7 @@ const styles = StyleSheet.create({
   fullscreenExpandButtonIcon: {
     width: 24,
     height: 24,
-    tintColor: 'rgba(255, 255, 255, 0.8)',
+    tintColor: 'rgba(255, 255, 255, 1.0)',
   },
   // Fullscreen modal styles
   fullscreenModalOverlay: {
@@ -3877,19 +4736,25 @@ const styles = StyleSheet.create({
     height: '90%',
     backgroundColor: '#F5E6C8',
     borderRadius: 20,
-    padding: 20,
+    paddingTop: 10,
+    paddingHorizontal: 20,
+    paddingBottom: 20,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
     elevation: 10,
+    marginTop: -10,
   },
   fullscreenHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 20,
-    paddingBottom: 15,
+    marginTop: 0,
+    marginBottom: 15,
+    paddingTop: 5,
+    paddingBottom: 10,
+    paddingHorizontal: 10,
     borderBottomWidth: 2,
     borderBottomColor: '#A57324',
   },
@@ -3897,14 +4762,15 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     color: '#5b7f67',
+    fontFamily: 'Montserrat-Bold',
     flex: 1,
     textAlign: 'center',
   },
   fullscreenCloseButton: {
-    width: 40,
-    height: 40,
-    backgroundColor: 'rgba(128, 128, 128, 0.3)',
-    borderRadius: 20,
+    width: 44,
+    height: 44,
+    backgroundColor: '#F5E6C8',
+    borderRadius: 22,
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
@@ -3914,10 +4780,10 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   fullscreenTranslationButton: {
-    width: 40,
-    height: 40,
-    backgroundColor: 'rgba(128, 128, 128, 0.3)',
-    borderRadius: 20,
+    width: 44,
+    height: 44,
+    backgroundColor: '#F5E6C8',
+    borderRadius: 22,
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
@@ -3931,11 +4797,28 @@ const styles = StyleSheet.create({
     height: 24,
     tintColor: '#A57324',
   },
+  fullscreenTranslationButtonToggled: {
+    backgroundColor: '#A57324',
+  },
+  fullscreenTranslationIconToggled: {
+    tintColor: '#F5E6C8',
+  },
   fullscreenScrollView: {
     flex: 1,
   },
+  fullscreenListTopBorder: {
+    height: 2,
+    backgroundColor: 'rgba(128, 128, 128, 0.3)',
+    marginHorizontal: 0,
+  },
+  fullscreenListBottomBorder: {
+    height: 2,
+    backgroundColor: 'rgba(128, 128, 128, 0.3)',
+    marginHorizontal: 0,
+  },
   fullscreenScrollContent: {
-    paddingBottom: 20,
+    paddingBottom: 0,
+    flexGrow: 1,
   },
   fullscreenAyahCard: {
     backgroundColor: '#fff',
@@ -3950,19 +4833,36 @@ const styles = StyleSheet.create({
     borderLeftWidth: 4,
     borderLeftColor: '#A57324',
   },
+  fullscreenAyahCardLast: {
+    backgroundColor: '#fff',
+    borderRadius: 15,
+    padding: 20,
+    marginBottom: 15,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    borderLeftWidth: 4,
+    borderLeftColor: '#A57324',
+  },
   fullscreenAyahText: {
     fontSize: 28,
-    fontFamily: 'KFGQPC HAFS Uthmanic Script Regular',
+    fontFamily: Platform.OS === 'ios' ? 'KFGQPC HAFS Uthmanic Script' : 'KFGQPC_HAFS_Uthmanic_Script',
     color: '#333',
     textAlign: 'right',
-    lineHeight: 42,
+    lineHeight: 55,
     marginBottom: 10,
+    // Try to fix sukun rendering issue without affecting letter connections
+    // Enable all OpenType features for proper Uthmani shaping
+    // Remove font features entirely to see if that helps with final alif rendering
   },
   fullscreenAyahNumber: {
-    fontSize: 16,
+    fontSize: 20,
     color: '#A57324',
     fontWeight: 'bold',
     textAlign: 'left',
+    fontFamily: 'Montserrat-Bold',
   },
   // Search styles
   fullscreenSearchRow: {
@@ -3975,9 +4875,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#fff',
-    borderRadius: 25,
-    paddingHorizontal: 20,
-    paddingVertical: 12,
+    borderRadius: 18,
+    paddingHorizontal: 14,
+    paddingVertical: 6,
     flex: 1,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
@@ -3986,21 +4886,16 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   scrollToBottomButton: {
-    width: 50,
-    height: 50,
+    width: 36,
+    height: 36,
     backgroundColor: '#A57324',
-    borderRadius: 25,
+    borderRadius: 18,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
   },
   scrollToBottomIcon: {
-    width: 24,
-    height: 24,
+    width: 18,
+    height: 18,
     tintColor: '#F5E6C8',
   },
   scrollToBottomIconFlipped: {
@@ -4024,6 +4919,16 @@ const styles = StyleSheet.create({
     borderLeftColor: '#5b7f67',
     borderLeftWidth: 6,
   },
+  // Playing ayah highlighting
+  playingAyahCard: {
+    backgroundColor: 'rgba(91, 127, 103, 0.15)',
+    borderLeftColor: '#5b7f67',
+    borderLeftWidth: 6,
+  },
+  // Original ayah highlighting (dark background only, no border)
+  originalAyahCard: {
+    backgroundColor: 'rgba(0, 0, 0, 0.2)',
+  },
   // Translation text styles
   fullscreenTranslationText: {
     fontSize: 16,
@@ -4037,10 +4942,12 @@ const styles = StyleSheet.create({
   fullscreenActionButtonsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 20,
+    marginTop: 0,
     paddingHorizontal: 20,
-    paddingTop: 15,
+    paddingTop: 20,
+    paddingBottom: 20,
     gap: 8,
+    zIndex: 10, // Ensure it stays on top of scroll view
   },
   fullscreenActionButtonsDivider: {
     height: 2,
@@ -4051,15 +4958,15 @@ const styles = StyleSheet.create({
   fullscreenActionButton: {
     width: 50,
     height: 50,
-    backgroundColor: '#5b7f67',
+    backgroundColor: 'rgba(128, 128, 128, 0.3)',
     borderRadius: 25,
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.25,
     shadowRadius: 4,
-    elevation: 3,
+    elevation: 5,
   },
   fullscreenActionButtonText: {
     color: '#F5E6C8',
@@ -4090,10 +4997,89 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 5,
   },
+  fullscreenAyahCoverTouchable: {
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   fullscreenAyahCoverText: {
     color: '#F5E6C8',
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: 'bold',
+    fontFamily: 'Montserrat-Bold',
+  },
+  fullscreenBorderAccent: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    bottom: 0,
+    width: 12,
+    zIndex: 10,
+  },
+  // Permanent background colors and border accents for special cards
+  isti3aadhahCard: {
+    backgroundColor: 'rgba(102, 102, 102, 0.1)', // Light dark gray background
+    borderLeftColor: '#666666', // Dark gray border accent
+    borderLeftWidth: 6,
+  },
+  bismillahCard: {
+    backgroundColor: 'rgba(204, 204, 204, 0.1)', // Light gray background
+    borderLeftColor: '#CCCCCC', // Light gray border accent
+    borderLeftWidth: 6,
+  },
+  // Current ayah border accent
+  currentAyahCard: {
+    borderLeftColor: '#5b7f67', // Green border accent
+    borderLeftWidth: 6,
+  },
+  // Ayah selector modal styles
+  ayahSelectorModal: {
+    backgroundColor: '#F5E6C8',
+    borderRadius: 20,
+    padding: 20,
+    margin: 40,
+    maxHeight: '70%',
+    minHeight: '40%',
+  },
+  ayahSelectorTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#5b7f67',
+    textAlign: 'center',
+    marginBottom: 20,
+    fontFamily: 'Montserrat-Bold',
+  },
+  ayahSelectorScrollView: {
+    flex: 1,
+    maxHeight: 300,
+  },
+  ayahSelectorItem: {
+    backgroundColor: '#E8E8E8',
+    borderRadius: 10,
+    padding: 15,
+    marginVertical: 5,
+    borderWidth: 1,
+    borderColor: '#CCCCCC',
+  },
+  ayahSelectorItemText: {
+    fontSize: 16,
+    color: '#333',
+    textAlign: 'center',
+    fontFamily: 'Montserrat-Bold',
+  },
+  ayahSelectorCloseButton: {
+    backgroundColor: '#A57324',
+    borderRadius: 10,
+    padding: 15,
+    marginTop: 15,
+  },
+  ayahSelectorCloseText: {
+    color: '#F5E6C8',
+    fontSize: 16,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    fontFamily: 'Montserrat-Bold',
   },
   // Special card styles for isti3aadhah and bismillah
   specialCard: {
@@ -4111,12 +5097,51 @@ const styles = StyleSheet.create({
   fullscreenNavButton: {
     backgroundColor: '#A57324',
   },
+  fullscreenParchmentButton: {
+    backgroundColor: '#F5E6C8',
+  },
   // Recording button styles
   fullscreenRecordingButton: {
+    backgroundColor: 'rgba(128, 128, 128, 0.3)',
+  },
+  fullscreenRecordingButtonActive: {
     backgroundColor: '#5b7f67',
+  },
+  fullscreenAudioButtonActive: {
+    backgroundColor: '#5b7f67',
+  },
+  fullscreenStopButton: {
+    backgroundColor: '#F5E6C8',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  fullscreenHideButton: {
+    backgroundColor: '#5b7f67',
+  },
+  fullscreenHideButtonActive: {
+    backgroundColor: 'rgba(128, 128, 128, 0.3)',
+  },
+  fullscreenHideIconActive: {
+    tintColor: '#5b7f67',
   },
   fullscreenRecordingIcon: {
     tintColor: '#F5E6C8',
+  },
+  // Stop icon styles
+  stopIcon: {
+    width: 24,
+    height: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  stopIconSquare: {
+    width: 14,
+    height: 14,
+    backgroundColor: '#5b7f67',
+    borderRadius: 2,
   },
   fullscreenMicOffIcon: {
     tintColor: '#5b7f67',

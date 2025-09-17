@@ -40,7 +40,13 @@ const LeaderboardScreen = ({ navigation }) => {
   const [userRank, setUserRank] = useState(null);
   const [error, setError] = useState(null);
   const [showInfoModal, setShowInfoModal] = useState(false);
+  const [rankBannerPressed, setRankBannerPressed] = useState(false);
+  const [isScrolling, setIsScrolling] = useState(false);
+  const [hasScrolledFromTop, setHasScrolledFromTop] = useState(false);
+  const [showSpacing, setShowSpacing] = useState(true);
   const subscriptionRef = useRef(null);
+  const flatListRef = useRef(null);
+  const scrollTimeoutRef = useRef(null);
 
   const tabs = [
     { id: 'memorization', title: language === 'ar' ? 'الحفظ' : 'Memorized' },
@@ -57,6 +63,11 @@ const LeaderboardScreen = ({ navigation }) => {
     { id: 'monthly', title: language === 'ar' ? 'شهري' : 'Monthly' },
   ];
 
+  const streakSubtabs = [
+    { id: 'current', title: language === 'ar' ? 'الحالي' : 'Current' },
+    { id: 'best', title: language === 'ar' ? 'الأفضل' : 'Best' },
+  ];
+
   useEffect(() => {
     loadLeaderboardData();
     setupSubscription();
@@ -64,6 +75,9 @@ const LeaderboardScreen = ({ navigation }) => {
     return () => {
       if (subscriptionRef.current) {
         subscriptionRef.current();
+      }
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
       }
     };
   }, [activeTab]);
@@ -125,19 +139,18 @@ const LeaderboardScreen = ({ navigation }) => {
   const handleTabPress = (tabId) => {
     hapticSelection();
     setActiveTab(tabId);
-    if (tabId !== 'hasanat') {
+    if (tabId === 'hasanat') {
+      setActiveSubtab('total');
+    } else if (tabId === 'streak') {
+      setActiveSubtab('current');
+    } else {
       setActiveSubtab('total');
     }
   };
 
   const handleSubtabPress = (subtabId) => {
     hapticSelection();
-    if (subtabId === 'daily') {
-      setActiveTab('streak');
-      setActiveSubtab('total');
-    } else {
-      setActiveSubtab(subtabId);
-    }
+    setActiveSubtab(subtabId);
   };
 
   const getRankColor = (rank) => {
@@ -232,19 +245,48 @@ const LeaderboardScreen = ({ navigation }) => {
     );
   };
 
+  const scrollToUserPosition = () => {
+    if (!user || !userRank || !flatListRef.current) return;
+    
+    // Find user's position in the leaderboard data
+    const userIndex = leaderboardData.findIndex(item => item.userId === user.id);
+    if (userIndex >= 0) {
+      flatListRef.current.scrollToIndex({
+        index: userIndex,
+        animated: true,
+        viewPosition: 0.5, // Center the user's item
+      });
+    }
+  };
+
   const renderUserRankBanner = () => {
     if (!user || !userRank) return null;
     
     return (
-      <View style={styles.userRankBanner}>
-        <View style={styles.userRankContent}>
-          <Text style={styles.userRankTitle}>
-            {language === 'ar' ? 'الترتيب العالمي:' : 'Global Rank:'}
-          </Text>
-          <Text style={styles.userRankValue}>
-            #{userRank}
-          </Text>
-        </View>
+      <View style={styles.userRankBannerContainer}>
+        <TouchableOpacity 
+          style={[
+            styles.userRankBanner,
+            rankBannerPressed && styles.userRankBannerPressed
+          ]}
+          onPress={() => {
+            hapticSelection();
+            scrollToUserPosition();
+          }}
+          onPressIn={() => setRankBannerPressed(true)}
+          onPressOut={() => setRankBannerPressed(false)}
+          activeOpacity={1}
+        >
+          <View style={styles.userRankContent}>
+            <Text style={styles.userRankTitle}>
+              {language === 'ar' ? 'الترتيب العالمي:' : 'Global Rank:'}
+            </Text>
+            <Text style={styles.userRankValue}>
+              #{userRank}
+            </Text>
+          </View>
+        </TouchableOpacity>
+        {showSpacing && <View style={styles.userRankBannerSpacing} />}
       </View>
     );
   };
@@ -333,31 +375,63 @@ const LeaderboardScreen = ({ navigation }) => {
 
           {/* Hasanat Subtabs */}
           {activeTab === 'hasanat' && (
-            <ScrollView 
-              horizontal 
-              showsHorizontalScrollIndicator={false}
-              style={styles.subtabBar}
-              contentContainerStyle={styles.subtabBarContent}
-            >
-              {hasanatSubtabs.map((subtab, index) => (
-                <TouchableOpacity
-                  key={subtab.id}
-                  style={[
-                    styles.subtabButton,
-                    activeSubtab === subtab.id && styles.activeSubtabButton
-                  ]}
-                  onPress={() => handleSubtabPress(subtab.id)}
-                >
-                  <Text style={[
-                    styles.subtabText,
-                    activeSubtab === subtab.id && styles.activeSubtabText
-                  ]}>
-                    {subtab.title}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-                      )}
+            <View style={styles.subtabBarContainer}>
+              <ScrollView 
+                horizontal 
+                showsHorizontalScrollIndicator={false}
+                style={styles.subtabBar}
+                contentContainerStyle={styles.subtabBarContent}
+              >
+                {hasanatSubtabs.map((subtab, index) => (
+                  <TouchableOpacity
+                    key={subtab.id}
+                    style={[
+                      styles.subtabButton,
+                      activeSubtab === subtab.id && styles.activeSubtabButton
+                    ]}
+                    onPress={() => handleSubtabPress(subtab.id)}
+                  >
+                    <Text style={[
+                      styles.subtabText,
+                      activeSubtab === subtab.id && styles.activeSubtabText
+                    ]}>
+                      {subtab.title}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            </View>
+          )}
+
+          {/* Streak Subtabs */}
+          {activeTab === 'streak' && (
+            <View style={styles.subtabBarContainer}>
+              <ScrollView 
+                horizontal 
+                showsHorizontalScrollIndicator={false}
+                style={styles.subtabBar}
+                contentContainerStyle={styles.subtabBarContent}
+              >
+                {streakSubtabs.map((subtab, index) => (
+                  <TouchableOpacity
+                    key={subtab.id}
+                    style={[
+                      styles.subtabButton,
+                      activeSubtab === subtab.id && styles.activeSubtabButton
+                    ]}
+                    onPress={() => handleSubtabPress(subtab.id)}
+                  >
+                    <Text style={[
+                      styles.subtabText,
+                      activeSubtab === subtab.id && styles.activeSubtabText
+                    ]}>
+                      {subtab.title}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            </View>
+          )}
 
           {/* User Rank Banner */}
           {renderUserRankBanner()}
@@ -387,6 +461,7 @@ const LeaderboardScreen = ({ navigation }) => {
             </Card>
           ) : (
             <FlatList
+              ref={flatListRef}
               data={leaderboardData}
               renderItem={renderLeaderboardItem}
               keyExtractor={(item) => item.userId}
@@ -400,6 +475,45 @@ const LeaderboardScreen = ({ navigation }) => {
                 />
               }
               showsVerticalScrollIndicator={false}
+              onScroll={(event) => {
+                const offsetY = event.nativeEvent.contentOffset.y;
+                
+                // Clear any existing timeout
+                if (scrollTimeoutRef.current) {
+                  clearTimeout(scrollTimeoutRef.current);
+                }
+                
+                // Immediately hide spacing when scrolling down
+                if (offsetY > 0) {
+                  setHasScrolledFromTop(true);
+                  setShowSpacing(false);
+                } else {
+                  setHasScrolledFromTop(false);
+                  // Debounce showing spacing when returning to top
+                  scrollTimeoutRef.current = setTimeout(() => {
+                    setShowSpacing(true);
+                  }, 150);
+                }
+              }}
+              onScrollBeginDrag={() => {
+                setIsScrolling(true);
+                setShowSpacing(false);
+              }}
+              onScrollEndDrag={() => setIsScrolling(false)}
+              onMomentumScrollBegin={() => setIsScrolling(true)}
+              onMomentumScrollEnd={() => {
+                setIsScrolling(false);
+                // Additional check when momentum ends
+                if (!hasScrolledFromTop) {
+                  scrollTimeoutRef.current = setTimeout(() => {
+                    setShowSpacing(true);
+                  }, 100);
+                }
+              }}
+              onScrollToIndexFailed={(info) => {
+                // Handle scroll to index failure gracefully
+                console.log('Scroll to index failed:', info);
+              }}
             />
           )}
           
@@ -470,6 +584,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: 20,
   },
+  subtabBarContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+    marginBottom: 10,
+  },
   subtabBar: {
     paddingHorizontal: 0,
     marginBottom: 0,
@@ -536,13 +656,22 @@ const styles = StyleSheet.create({
   activeSubtabText: {
     color: '#3E2723',
   },
-  userRankBanner: {
-    marginHorizontal: 20,
+  userRankBannerContainer: {
+    marginHorizontal: 15,
     marginBottom: 0,
+  },
+  userRankBanner: {
     backgroundColor: 'rgba(165,115,36,0.8)',
-    borderRadius: 25,
-    paddingVertical: 8,
-    paddingHorizontal: 16,
+    borderRadius: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+  },
+  userRankBannerPressed: {
+    backgroundColor: '#5b7f67',
+  },
+  userRankBannerSpacing: {
+    height: 0,
+    backgroundColor: 'transparent',
   },
   userRankContent: {
     flexDirection: 'row',
@@ -606,6 +735,7 @@ const styles = StyleSheet.create({
   leaderboardContent: {
     paddingHorizontal: 0,
     paddingBottom: 0,
+    paddingTop: 6,
   },
   leaderboardItem: {
     flexDirection: 'row',
@@ -619,8 +749,8 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(165,115,36,0.3)',
   },
   currentUserItem: {
-    backgroundColor: 'rgba(107, 163, 104, 0.2)',
-    borderColor: COLORS.primary,
+    backgroundColor: 'rgba(91, 127, 103, 0.2)',
+    borderColor: '#5b7f67',
     borderWidth: 2,
   },
   topThreeItem: {
@@ -663,11 +793,11 @@ const styles = StyleSheet.create({
   },
 
   currentUserText: {
-    color: COLORS.primary,
+    color: '#5b7f67',
     fontWeight: 'bold',
   },
   youLabel: {
-    color: COLORS.primary,
+    color: '#5b7f67',
     fontWeight: 'normal',
     fontStyle: 'italic',
   },
@@ -689,12 +819,12 @@ const styles = StyleSheet.create({
     borderColor: COLORS.primary,
   },
   profilePicLetter: {
-    fontSize: 16,
+    fontSize: 19,
     fontWeight: 'bold',
     fontFamily: 'KSAHeavy',
     textAlign: 'center',
     includeFontPadding: false,
-    lineHeight: 16,
+    lineHeight: 19,
   },
   userStats: {
     color: '#666',

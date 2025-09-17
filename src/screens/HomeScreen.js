@@ -2,6 +2,8 @@ import React, { useEffect, useState, useRef } from 'react';
 import { View, StyleSheet, SafeAreaView, Image, ImageBackground, Modal, TouchableOpacity, Dimensions, Alert, TextInput, Animated, ScrollView, FlatList, Platform, PanResponder } from 'react-native';
 import { useAuth } from '../utils/authContext';
 import { COLORS as BASE_COLORS, SIZES, FONTS } from '../utils/theme';
+
+console.log('🏠 HomeScreen: Starting to load...');
 import { 
   SCREEN_SIZES, 
   getResponsiveFontSize, 
@@ -18,6 +20,7 @@ import Button from '../components/Button';
 import Card from '../components/Card';
 import { loadData, resetProgress, checkStreakBroken, getCustomLists, getListSurahs } from '../utils/store';
 import { syncProgressData, saveProgressToCloud, replaceCloudData, backupCloudData, getOfflineQueueStatus, manualSync, isOnline } from '../utils/cloudStore';
+import { makeSupabaseRequest } from '../utils/supabase';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useLanguage } from '../utils/languageContext';
@@ -92,8 +95,11 @@ const formatStreakNumber = (num) => {
 
 
 const HomeScreen = ({ navigation, route }) => {
+  console.log('🏠 HomeScreen: Component started rendering...');
   const { language, changeLanguage, t } = useLanguage();
+  console.log('🏠 HomeScreen: Language context loaded:', language);
   const { user, logout, isAuthenticated } = useAuth();
+  console.log('🏠 HomeScreen: Auth context loaded:', { isAuthenticated, hasUser: !!user });
   
   // Get screen dimensions for responsive layout
   const { width, height } = Dimensions.get('window');
@@ -124,6 +130,8 @@ const HomeScreen = ({ navigation, route }) => {
   const [introVisible, setIntroVisible] = useState(false);
   const [infoVisible, setInfoVisible] = useState(false);
   const [infoActiveTab, setInfoActiveTab] = useState('numerals'); // 'numerals' or 'tajweed'
+  const [isInfoPressed, setIsInfoPressed] = useState(false);
+  const [isSettingsPressed, setIsSettingsPressed] = useState(false);
   const [duaVisible, setDuaVisible] = useState(false);
   const [duaExpanded, setDuaExpanded] = useState(false);
   const [duaButtonPressed, setDuaButtonPressed] = useState(false);
@@ -132,6 +140,13 @@ const HomeScreen = ({ navigation, route }) => {
   const [confirmResetVisible, setConfirmResetVisible] = useState(false);
   const [resetType, setResetType] = useState('all'); // 'all' or 'today'
   const [includeRecordings, setIncludeRecordings] = useState(false);
+  
+  // Profile data for avatar display
+  const [profileLetter, setProfileLetter] = useState('ء');
+  const [letterColor, setLetterColor] = useState('#6BA368');
+  const [backgroundColor, setBackgroundColor] = useState('#F5E6C8');
+  const [username, setUsername] = useState('');
+  const [hasProgressToday, setHasProgressToday] = useState(false);
   
   // Anonymous progress merge state (kept for future use)
   /*
@@ -197,6 +212,29 @@ const HomeScreen = ({ navigation, route }) => {
       setAuthVisible(false);
     }
   }, [isAuthenticated, hasCheckedAuth]);
+  
+  // Load user profile data when authenticated
+  useEffect(() => {
+    const loadUserProfile = async () => {
+      if (isAuthenticated && user?.id) {
+        try {
+          const result = await makeSupabaseRequest(`user_profiles?select=*&id=eq.${user.id}`);
+          
+          if (result.success && result.data && result.data.length > 0) {
+            const profile = result.data[0];
+            setProfileLetter(profile.profile_letter || 'ء');
+            setLetterColor(profile.letter_color || '#6BA368');
+            setBackgroundColor(profile.background_color || '#F5E6C8');
+            setUsername(profile.username || profile.display_name || user?.email?.split('@')[0] || 'user');
+          }
+        } catch (error) {
+          console.error('[HomeScreen] Error loading user profile:', error);
+        }
+      }
+    };
+
+    loadUserProfile();
+  }, [isAuthenticated, user?.id]);
   
   // Helper functions for notes
   const getSurahName = (surahNumber) => {
@@ -462,37 +500,37 @@ const HomeScreen = ({ navigation, route }) => {
     // Icon container glow
     iconContainer: {
       shadowRadius: {
-        android: { normal: 8, pressed: 12 },
-        ios: { normal: 35, pressed: 40 }
+        android: { normal: 6, pressed: 10 },
+        ios: { normal: 35, pressed: 30 }
       },
       shadowOpacity: {
-        android: { normal: 1.0, pressed: 2.0 },
-        ios: { normal: 5.0, pressed: 8.5 }
+        android: { normal: 0.8, pressed: 1.5 },
+        ios: { normal: 3.5, pressed: 8.0 }
       },
       elevation: {
-        android: { normal: 5, pressed: 8 },
-        ios: { normal: 15, pressed: 25 }
+        android: { normal: 4, pressed: 6 },
+        ios: { normal: 12, pressed: 18 }
       },
     },
     // Text button glow
     textButton: {
       shadowOpacity: {
-        android: { normal: 0.2, pressed: 0.4 },
-        ios: { normal: 0.6, pressed: 1.0 }
+        android: { normal: 0.15, pressed: 0.3 },
+        ios: { normal: 0.4, pressed: 0.7 }
       },
       shadowRadius: {
-        android: { normal: 4, pressed: 8 },
-        ios: { normal: 10, pressed: 24 }
+        android: { normal: 3, pressed: 6 },
+        ios: { normal: 8, pressed: 18 }
       },
       elevation: {
-        android: { normal: 3, pressed: 6 },
-        ios: { normal: 8, pressed: 20 }
+        android: { normal: 2, pressed: 4 },
+        ios: { normal: 6, pressed: 15 }
       },
     },
     // Text glow
     text: {
-      shadowRadius: 4,
-      shadowOpacity: 1.0,
+      shadowRadius: 3,
+      shadowOpacity: 0.8,
     },
   };
   
@@ -638,6 +676,16 @@ const HomeScreen = ({ navigation, route }) => {
   const loadScreenData = async () => {
       const loadedData = await loadData();
       setData(loadedData);
+      
+      // Check if progress has been made today
+      try {
+        const todayHasanat = await AsyncStorage.getItem('today_hasanat');
+        const hasProgress = todayHasanat && parseInt(todayHasanat) > 0;
+        setHasProgressToday(hasProgress);
+      } catch (error) {
+        console.error('Error checking today\'s progress:', error);
+        setHasProgressToday(false);
+      }
       
       // Load goal data
       try {
@@ -912,6 +960,21 @@ const HomeScreen = ({ navigation, route }) => {
     }
   }, [data.streak, newStreak, showStreakAnimation]);
 
+  // Monitor today's hasanat changes to update streak color
+  useEffect(() => {
+    const checkTodayProgress = async () => {
+      try {
+        const todayHasanat = await AsyncStorage.getItem('today_hasanat');
+        const hasProgress = todayHasanat && parseInt(todayHasanat) > 0;
+        setHasProgressToday(hasProgress);
+      } catch (error) {
+        console.error('Error checking today\'s progress:', error);
+      }
+    };
+    
+    checkTodayProgress();
+  }, [data.totalHasanat]); // Monitor totalHasanat changes which indicates new progress
+
   // Check for streak animation trigger from navigation params
   useEffect(() => {
     if (route.params?.showStreakAnimation && data.streak > 0) {
@@ -937,7 +1000,16 @@ const HomeScreen = ({ navigation, route }) => {
 
           
           <View style={styles.logoContainer}>
-            <TouchableOpacity style={styles.introButton} onPress={() => setInfoVisible(true)} onPressIn={() => hapticSelection()}>
+            <TouchableOpacity 
+              style={styles.introButton} 
+              onPress={() => setInfoVisible(true)} 
+              onPressIn={() => {
+                hapticSelection();
+                setIsInfoPressed(true);
+              }}
+              onPressOut={() => setIsInfoPressed(false)}
+              activeOpacity={1}
+            >
               <View style={{
                 borderWidth: 2,
                 borderColor: '#5b7f67',
@@ -948,6 +1020,7 @@ const HomeScreen = ({ navigation, route }) => {
                 shadowOpacity: 0.3,
                 shadowRadius: 4,
                 elevation: 5,
+                backgroundColor: infoVisible ? '#5b7f67' : (isInfoPressed ? '#5b7f67' : 'rgba(91,127,103,0.2)'),
               }}>
                 <Image 
                   source={require('../assets/app_icons/information.png')} 
@@ -1006,7 +1079,12 @@ const HomeScreen = ({ navigation, route }) => {
               onPress={() => {
                 setSettingsVisible(true);
               }} 
-              onPressIn={() => hapticSelection()}
+              onPressIn={() => {
+                hapticSelection();
+                setIsSettingsPressed(true);
+              }}
+              onPressOut={() => setIsSettingsPressed(false)}
+              activeOpacity={1}
             >
               <View style={{
                 borderWidth: 2,
@@ -1018,6 +1096,7 @@ const HomeScreen = ({ navigation, route }) => {
                 shadowOpacity: 0.3,
                 shadowRadius: 4,
                 elevation: 5,
+                backgroundColor: settingsVisible ? 'rgba(165,115,36,0.8)' : (isSettingsPressed ? 'rgba(165,115,36,0.8)' : 'rgba(165,115,36,0.2)'),
               }}>
                 <Image 
                   source={require('../assets/app_icons/settings.png')} 
@@ -1161,7 +1240,7 @@ const HomeScreen = ({ navigation, route }) => {
                       alignItems: 'center',
                       justifyContent: 'center',
                       backgroundColor: 'transparent',
-                      borderRadius: SIZES.base,
+                      borderRadius: SIZES.base * 2,
                       flexDirection: 'column',
                       width: '100%',
                       height: '100%',
@@ -1201,7 +1280,7 @@ const HomeScreen = ({ navigation, route }) => {
                   </View>
                   <View style={{ 
                     backgroundColor: 'rgba(0,0,0,0.8)', 
-                    borderRadius: 8, 
+                    borderRadius: 20, 
                     paddingHorizontal: 20, 
                     paddingTop: language === 'ar' ? 12 : 16,
                     paddingBottom: language === 'ar' ? 16 : 12,
@@ -1645,11 +1724,12 @@ const HomeScreen = ({ navigation, route }) => {
                               color: 'rgba(245,200,96,0.8)', 
                               fontWeight: 'bold', 
                               textAlign: 'center', 
-                              fontSize: formatLargeNumber(data.totalHasanat).fontSize,
+                              fontSize: formatStreakNumber(data.totalHasanat).fontSize,
+                              lineHeight: formatStreakNumber(data.totalHasanat).fontSize * 1.2,
                               textShadowColor: '#fae29f',
                               textShadowOffset: { width: 0, height: 0 },
                               textShadowRadius: 2,
-                            }} numberOfLines={1} ellipsizeMode="tail">{toArabicNumber(formatLargeNumber(data.totalHasanat).text)}</Text>
+                            }} numberOfLines={1} ellipsizeMode="tail">{toArabicNumber(formatStreakNumber(data.totalHasanat).text)}</Text>
                           </View>
                           <Text variant="body2" color="textSecondary" style={{ textAlign: 'center' }}>+{toArabicNumber(formatLargeNumber(data.todayHasanat).text)} {t('today_hasanat')}</Text>
                           <Text variant="body2" style={{ textAlign: 'center', color: '#F5E6C8', marginTop: 4, marginBottom: 2 }}>{t('insha2allah')}</Text>
@@ -1701,7 +1781,7 @@ const HomeScreen = ({ navigation, route }) => {
                               }]}>{t('streak')}</Text>
                             </View>
                               <View style={{ backgroundColor: 'rgba(0,0,0,0.75)', borderRadius: 8, paddingHorizontal: 16, paddingVertical: 8, alignSelf: 'center', marginVertical: 8, alignItems: 'center', justifyContent: 'center' }}>
-                                <Text variant="h1" style={{ color: '#5b7f67', textAlign: 'center', fontWeight: 'bold', fontSize: formatStreakNumber(data.streak).fontSize, lineHeight: formatStreakNumber(data.streak).fontSize * 1.2 }} numberOfLines={1} ellipsizeMode="tail">{toArabicNumber(formatStreakNumber(data.streak).text)}</Text>
+                                <Text variant="h1" style={{ color: hasProgressToday ? '#5b7f67' : 'rgba(128,128,128,0.8)', textAlign: 'center', fontWeight: 'bold', fontSize: formatStreakNumber(data.streak).fontSize, lineHeight: formatStreakNumber(data.streak).fontSize * 1.2 }} numberOfLines={1} ellipsizeMode="tail">{toArabicNumber(formatStreakNumber(data.streak).text)}</Text>
                               </View>
                                                               <Text variant="body2" color="textSecondary" style={{ textAlign: 'center', marginTop: -4 }}>{t('days')}</Text>
                                                              <Text variant="body2" style={{ textAlign: 'center', color: '#F5E6C8', marginTop: 1, marginBottom: 10 }}>{t('masha2allah')}</Text>
@@ -2034,7 +2114,7 @@ const HomeScreen = ({ navigation, route }) => {
                   textAlign: 'center',
                   lineHeight: 32
                 }}>
-                  {isAuthenticated ? `Welcome ${user?.email?.split('@')[0] || 'User'}!` : t('welcome_to_iqra2')}
+                  {isAuthenticated ? `Welcome ${username || user?.email?.split('@')[0] || 'User'}!` : t('welcome_to_iqra2')}
                 </Text>
                 <Text variant="body1" style={{ 
                   marginBottom: 30, 
@@ -2655,104 +2735,51 @@ const HomeScreen = ({ navigation, route }) => {
                 </Text>
               </Text>
               
-              {/* Language Selection */}
-              <Text variant="h3" style={{ 
-                marginBottom: 8, 
-                color: 'rgba(200,150,50,0.7)',
-                shadowColor: '#000',
-                shadowOffset: { width: 0, height: 1 },
-                shadowOpacity: 0.15,
-                shadowRadius: 1,
-                textShadowColor: '#000',
-                textShadowOffset: { width: 0, height: 1 },
-                textShadowRadius: 1,
-              }}>{t('language')}</Text>
-              <View style={{ flexDirection: 'row', marginBottom: 32, gap: 8 }}>
-                <Button
-                  title={t('english_button')}
-                  onPress={() => { hapticSelection(); changeLanguage('en'); }}
-                  style={{ 
-                    backgroundColor: language === 'en' ? '#33694e' : 'rgba(128,128,128,0.6)', 
-                    flex: 1,
-                    marginRight: 4,
-                    shadowColor: '#000',
-                    shadowOffset: { width: 0, height: 4 },
-                    shadowOpacity: 0.5,
-                    shadowRadius: 6,
-                    elevation: 8,
-                  }}
-                />
-                <Button
-                  title={t('arabic_button')}
-                  onPress={() => { hapticSelection(); changeLanguage('ar'); }}
-                  style={{ 
-                    backgroundColor: language === 'ar' ? '#33694e' : 'rgba(128,128,128,0.6)', 
-                    flex: 1,
-                    marginLeft: 4,
-                    shadowColor: '#000',
-                    shadowOffset: { width: 0, height: 4 },
-                    shadowOpacity: 0.5,
-                    shadowRadius: 6,
-                    elevation: 8,
-                  }}
-                />
-              </View>
-              
               {/* Account Section */}
               {isAuthenticated ? (
-                <View style={{ marginBottom: 16 }}>
+                <View style={{ marginBottom: 16, alignItems: 'center' }}>
+                  <TouchableOpacity
+                    style={{
+                      width: 110,
+                      height: 110,
+                      borderRadius: 55,
+                      backgroundColor: backgroundColor,
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      shadowColor: '#000',
+                      shadowOffset: { width: 0, height: 4 },
+                      shadowOpacity: 0.3,
+                      shadowRadius: 6,
+                      elevation: 8,
+                    }}
+                    onPress={() => {
+                      hapticSelection();
+                      setSettingsVisible(false);
+                      navigation.navigate('Profile');
+                    }}
+                  >
+                    <Text style={{
+                      fontSize: 66,
+                      fontWeight: 'bold',
+                      color: letterColor,
+                      textAlign: 'center',
+                      includeFontPadding: false,
+                      lineHeight: 66,
+                    }}>
+                      {profileLetter}
+                    </Text>
+                  </TouchableOpacity>
+                  
                   <Text variant="body2" style={{ 
                     color: '#CCCCCC', 
-                    marginBottom: 12,
+                    marginBottom: 16,
                     textAlign: 'center'
                   }}>
                     {t('logged_in_as')}{' '}
                     <Text style={styles.usernameText}>
-                      {user?.email?.split('@')[0] || 'user'}
+                      {username || user?.email?.split('@')[0] || 'user'}
                     </Text>
                   </Text>
-                  
-                  <View style={{ flexDirection: 'row', gap: 8, marginBottom: 8, marginHorizontal: -10 }}>
-                    <Button
-                      title={t('logout')}
-                      onPress={async () => {
-                        hapticSelection();
-                        const result = await logout();
-                          if (result.success) {
-                          // Clear the first launch flag so login screen can show again
-                          await AsyncStorage.removeItem('app_has_launched');
-                          Alert.alert(t('success'), t('logout') + ' ' + t('success').toLowerCase());
-                        }
-                      }}
-                      style={{ 
-                        backgroundColor: 'rgba(220,20,60,0.7)', 
-                        flex: 1,
-                        shadowColor: '#000',
-                        shadowOffset: { width: 0, height: 4 },
-                        shadowOpacity: 0.5,
-                        shadowRadius: 6,
-                        elevation: 8,
-                      }}
-                    />
-                    
-                    <Button
-                      title="Profile"
-                      onPress={() => {
-                        hapticSelection();
-                        setSettingsVisible(false);
-                        navigation.navigate('Profile');
-                      }}
-                      style={{ 
-                        backgroundColor: '#33694e', 
-                        flex: 1,
-                        shadowColor: '#000',
-                        shadowOffset: { width: 0, height: 4 },
-                        shadowOpacity: 0.5,
-                        shadowRadius: 6,
-                        elevation: 8,
-                      }}
-                    />
-                  </View>
                 </View>
               ) : (
                 <Button
@@ -2781,70 +2808,7 @@ const HomeScreen = ({ navigation, route }) => {
                   onPressIn={() => hapticSelection()}
                 />
               )}
-              
-              <TouchableOpacity
-                onPress={() => {
-                  hapticSelection();
-                  setSettingsVisible(false);
-                  setConfirmResetVisible(true);
-                }}
-                style={{ 
-                  backgroundColor: 'rgba(165,115,36,0.8)', 
-                  marginBottom: 12,
-                  shadowColor: '#000',
-                  shadowOffset: { width: 0, height: 4 },
-                  shadowOpacity: 0.5,
-                  shadowRadius: 6,
-                  elevation: 8,
-                  paddingVertical: 16,
-                  paddingHorizontal: 24,
-                  borderRadius: 12,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-                disabled={resetting}
-                onPressIn={() => hapticSelection()}
-              >
-                <Text style={{ color: '#FFFFFF', fontSize: 16, fontWeight: '600', textAlign: 'center' }}>
-                  {resetting ? t('resetting') : t('reset_today')}
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => {
-                  hapticSelection();
-                    setResetType('all');
-                  setSettingsVisible(false);
-                  setConfirmResetVisible(true);
-                }}
-                style={{ 
-                  backgroundColor: 'rgba(220,20,60,0.9)', 
-                  marginBottom: 12,
-                  shadowColor: '#000',
-                  shadowOffset: { width: 0, height: 4 },
-                  shadowOpacity: 0.5,
-                  shadowRadius: 6,
-                  elevation: 8,
-                  paddingVertical: 16,
-                  paddingHorizontal: 24,
-                  borderRadius: 12,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-                disabled={resetting}
-                onPressIn={() => hapticSelection()}
-              >
-                <Text style={{ color: '#FFFFFF', fontSize: 16, fontWeight: '600', textAlign: 'center' }}>
-                  {resetting ? t('resetting') : (
-                    language === 'en' ? (
-                      <>
-                        Reset <Text style={{ fontWeight: 'bold' }}>ALL</Text> Progress
-                      </>
-                    ) : t('reset_all')
-                  )}
-                </Text>
-              </TouchableOpacity>
 
-              
               <View style={{ marginTop: 16 }}>
               <Button
                   title={t('close')}
@@ -3058,7 +3022,7 @@ const HomeScreen = ({ navigation, route }) => {
                     disabled={resetting}
                   >
                     <Text style={styles.confirmModalConfirmText}>
-                      {resetting ? t('resetting') : (resetType === 'today' ? 'Reset Today' : t('confirm_reset'))}
+                      {resetting ? t('resetting') : (resetType === 'today' ? 'Reset Today' : 'Reset ALL')}
                     </Text>
                   </TouchableOpacity>
                 </View>

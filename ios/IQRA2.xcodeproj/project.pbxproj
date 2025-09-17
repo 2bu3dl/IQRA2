@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 70;
+	objectVersion = 56;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -12,7 +12,7 @@
 		23AD0F3B98084826AD3818C9 /* Montserrat-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 497E90635E1D4D63B9C1FBF7 /* Montserrat-Bold.ttf */; };
 		4D295F6FF2844572A81971B99A48165E /* UthmanicHafs1Ver18.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 4BD637D96489409C8BEC29C3E9AFF54B /* UthmanicHafs1Ver18.ttf */; };
 		5E3C4B353CF9D22E37D6CED0 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */; };
-		761780ED2CA45674006654EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761780EC2CA45674006654EE /* AppDelegate.swift */; };
+		761780ED2CA45674006654EE /* AppDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = 761780EC2CA45674006654EE /* AppDelegate.mm */; };
 		78FF702459244C3D998A120C /* UthmanTN_v2-0.ttf in Resources */ = {isa = PBXBuildFile; fileRef = E36218C1AA38425399953908 /* UthmanTN_v2-0.ttf */; };
 		796D9C8EB21E4BF7A76348E4 /* KSAHeavy.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 52C00D17AFA24336AA59F63A /* KSAHeavy.ttf */; };
 		CE5CC92097EE4694873E4173 /* Montserrat-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 2F04E8AC4AD243DA8DBD43E4 /* Montserrat-Regular.ttf */; };
@@ -90,7 +90,7 @@
 		4BD637D96489409C8BEC29C3E9AFF54B /* UthmanicHafs1Ver18.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = UthmanicHafs1Ver18.ttf; path = ../src/assets/fonts/UthmanicHafs1Ver18.ttf; sourceTree = "<group>"; };
 		52C00D17AFA24336AA59F63A /* KSAHeavy.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = KSAHeavy.ttf; path = ../src/assets/fonts/KSAHeavy.ttf; sourceTree = "<group>"; };
 		5DCACB8F33CDC322A6C60F78 /* libPods-IQRA2.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-IQRA2.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		761780EC2CA45674006654EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = IQRA2/AppDelegate.swift; sourceTree = "<group>"; };
+		761780EC2CA45674006654EE /* AppDelegate.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; name = AppDelegate.mm; path = IQRA2/AppDelegate.mm; sourceTree = "<group>"; };
 		78C94F5480BF404C80F4F382 /* UthmanTNB_v2-0.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "UthmanTNB_v2-0.ttf"; path = "../src/assets/fonts/UthmanTNB_v2-0.ttf"; sourceTree = "<group>"; };
 		811694F41412CDC2BAFE3A9F /* libPods-IQRA2.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-IQRA2.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		912CA44E9648C7E50B00E240 /* Pods-IQRA2.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-IQRA2.debug.xcconfig"; path = "Target Support Files/Pods-IQRA2/Pods-IQRA2.debug.xcconfig"; sourceTree = "<group>"; };
@@ -146,11 +146,6 @@
 		FE9B98642E24C68A00CE6688 /* 067009.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = 067009.mp3; path = ../src/assets/AlMulk_AlGhamdi/067009.mp3; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
-/* Begin PBXFileSystemSynchronizedRootGroup section */
-		FE4B9B982E2F00810080B3DC /* IQRA2Watch Extension Watch App */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = "IQRA2Watch Extension Watch App"; sourceTree = "<group>"; };
-		FE4B9BA92E2F00830080B3DC /* IQRA2Watch Extension Watch AppTests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = "IQRA2Watch Extension Watch AppTests"; sourceTree = "<group>"; };
-/* End PBXFileSystemSynchronizedRootGroup section */
-
 /* Begin PBXFrameworksBuildPhase section */
 		13B07F8C1A680F5B00A75B9A /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
@@ -191,7 +186,7 @@
 				FE162E542E74934C0078DAA0 /* LaunchScreen.storyboard */,
 				FE4B9BC12E2F02690080B3DC /* IQRA2.entitlements */,
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
-				761780EC2CA45674006654EE /* AppDelegate.swift */,
+				761780EC2CA45674006654EE /* AppDelegate.mm */,
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */,
 				FE162E502E7486100078DAA0 /* IQRA2background.png */,
@@ -307,6 +302,20 @@
 			path = Pods;
 			sourceTree = "<group>";
 		};
+		FE4B9B982E2F00810080B3DC /* IQRA2Watch Extension Watch App */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = "IQRA2Watch Extension Watch App";
+			sourceTree = "<group>";
+		};
+		FE4B9BA92E2F00830080B3DC /* IQRA2Watch Extension Watch AppTests */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = "IQRA2Watch Extension Watch AppTests";
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -342,9 +351,6 @@
 			);
 			dependencies = (
 			);
-			fileSystemSynchronizedGroups = (
-				FE4B9B982E2F00810080B3DC /* IQRA2Watch Extension Watch App */,
-			);
 			name = "IQRA2Watch Extension Watch App";
 			productName = "IQRA2Watch Extension Watch App";
 			productReference = FE4B9B972E2F00810080B3DC /* IQRA2Watch Extension Watch App.app */;
@@ -362,9 +368,6 @@
 			);
 			dependencies = (
 				FE4B9BA82E2F00830080B3DC /* PBXTargetDependency */,
-			);
-			fileSystemSynchronizedGroups = (
-				FE4B9BA92E2F00830080B3DC /* IQRA2Watch Extension Watch AppTests */,
 			);
 			name = "IQRA2Watch Extension Watch AppTests";
 			productName = "IQRA2Watch Extension Watch AppTests";
@@ -540,13 +543,9 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-IQRA2/Pods-IQRA2-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
-			inputPaths = (
-			);
 			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-IQRA2/Pods-IQRA2-resources-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -584,7 +583,7 @@
 			files = (
 				FE6998932E3E90710066DE56 /* AudioRecorderModule.m in Sources */,
 				FE6998942E3E90710066DE56 /* AudioRecorderModule.swift in Sources */,
-				761780ED2CA45674006654EE /* AppDelegate.swift in Sources */,
+				761780ED2CA45674006654EE /* AppDelegate.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -754,7 +753,10 @@
 					"-DFOLLY_CFG_NO_COROUTINES=1",
 					"-DFOLLY_HAVE_CLOCK_GETTIME=1",
 				);
-				OTHER_LDFLAGS = "$(inherited)  ";
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					" ",
+				);
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) DEBUG";
@@ -823,7 +825,10 @@
 					"-DFOLLY_CFG_NO_COROUTINES=1",
 					"-DFOLLY_HAVE_CLOCK_GETTIME=1",
 				);
-				OTHER_LDFLAGS = "$(inherited)  ";
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					" ",
+				);
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				USE_HERMES = false;

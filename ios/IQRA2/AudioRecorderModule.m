@@ -1,12 +1,10 @@
-// Temporarily commented out due to missing React Native dependencies
-/*
 #import <React/RCTBridgeModule.h>
 #import <React/RCTEventEmitter.h>
 
 @interface RCT_EXTERN_MODULE(AudioRecorderModule, RCTEventEmitter)
 
 RCT_EXTERN_METHOD(startRecording:(NSString *)surahName
-                  ayahNumber:(NSInteger)ayahNumber
+                  ayahNumber:(NSString *)ayahNumber
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 
@@ -35,10 +33,9 @@ RCT_EXTERN_METHOD(renameRecording:(NSString *)filePath
 RCT_EXTERN_METHOD(listRecordings:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 
-RCT_EXTERN_METHOD(loadRecordings:(NSString *)surahName
-                  ayahNumber:(NSInteger)ayahNumber
+RCT_EXTERN_METHOD(listRecordings:(NSString *)surahName
+                  ayahNumber:(NSString *)ayahNumber
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 
-@end
-*/ 
+@end 

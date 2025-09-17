@@ -177,7 +177,6 @@ const AchievementsCard = ({ userStats, targetUserId }) => {
             <Text style={styles.viewAllText}>
               {language === 'ar' ? 'عرض الكل' : 'View All'}
             </Text>
-            <Ionicons name="chevron-forward" size={16} color={COLORS.primary} />
           </TouchableOpacity>
         </View>
         
@@ -275,7 +274,6 @@ const styles = StyleSheet.create({
     color: COLORS.primary,
     fontSize: 14,
     fontWeight: '600',
-    marginRight: 4,
   },
   progressContainer: {
     marginBottom: 16,

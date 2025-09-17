@@ -1,40 +1,40 @@
 #import <React/RCTBridgeModule.h>
+#import <React/RCTEventEmitter.h>
 
-@interface RCT_EXTERN_MODULE(AudioRecorderModule, NSObject)
+@interface RCT_EXTERN_MODULE(AudioRecorderModule, RCTEventEmitter)
 
-// Recording methods
 RCT_EXTERN_METHOD(startRecording:(NSString *)surahName
-                  ayahNumber:(NSInteger)ayahNumber
+                  ayahNumber:(NSString *)ayahNumber
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 
 RCT_EXTERN_METHOD(stopRecording:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 
-// Playback methods
-RCT_EXTERN_METHOD(playRecording:(NSString *)uri
+RCT_EXTERN_METHOD(playRecording:(NSString *)filePath
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 
 RCT_EXTERN_METHOD(stopPlayback:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 
-// Status methods
 RCT_EXTERN_METHOD(getStatus:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 
-// File management methods
-RCT_EXTERN_METHOD(deleteRecording:(NSString *)uri
+RCT_EXTERN_METHOD(deleteRecording:(NSString *)filePath
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 
-RCT_EXTERN_METHOD(renameRecording:(NSString *)oldUri
+RCT_EXTERN_METHOD(renameRecording:(NSString *)filePath
                   newName:(NSString *)newName
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 
+RCT_EXTERN_METHOD(listRecordings:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
+
 RCT_EXTERN_METHOD(listRecordings:(NSString *)surahName
-                  ayahNumber:(NSInteger)ayahNumber
+                  ayahNumber:(NSString *)ayahNumber
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 

@@ -2079,6 +2079,34 @@ PODS:
     - React-Core
   - RNFS (2.20.0):
     - React-Core
+  - RNGestureHandler (2.28.0):
+    - boost
+    - DoubleConversion
+    - fast_float
+    - fmt
+    - glog
+    - RCT-Folly
+    - RCT-Folly/Fabric
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-jsc
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - SocketRocket
+    - Yoga
   - RNLocalize (3.5.1):
     - React-Core
   - RNReactNativeHapticFeedback (2.3.3):
@@ -2250,6 +2278,7 @@ DEPENDENCIES:
   - "RNCAsyncStorage (from `../node_modules/@react-native-async-storage/async-storage`)"
   - RNDeviceInfo (from `../node_modules/react-native-device-info`)
   - RNFS (from `../node_modules/react-native-fs`)
+  - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
   - RNLocalize (from `../node_modules/react-native-localize`)
   - RNReactNativeHapticFeedback (from `../node_modules/react-native-haptic-feedback`)
   - RNScreens (from `../node_modules/react-native-screens`)
@@ -2416,6 +2445,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-device-info"
   RNFS:
     :path: "../node_modules/react-native-fs"
+  RNGestureHandler:
+    :path: "../node_modules/react-native-gesture-handler"
   RNLocalize:
     :path: "../node_modules/react-native-localize"
   RNReactNativeHapticFeedback:
@@ -2506,6 +2537,7 @@ SPEC CHECKSUMS:
   RNCAsyncStorage: 23e56519cc41d3bade3c8d4479f7760cb1c11996
   RNDeviceInfo: feea80a690d2bde1fe51461cf548039258bd03f2
   RNFS: 4ac0f0ea233904cb798630b3c077808c06931688
+  RNGestureHandler: d07eb77035a9c114e6e5f6ca80dd21d18b205ca8
   RNLocalize: 652e4e5b8515033e33ec9542b818e5c59cdf63dc
   RNReactNativeHapticFeedback: 011f130ca3b56a57c3582db0753e55bbb83d457b
   RNScreens: fbea62825083ea0803ffb13bf1e5e2be72bfcdc1
@@ -2515,6 +2547,6 @@ SPEC CHECKSUMS:
   SwiftAudioEx: f6aa653770f3a0d3851edaf8d834a30aee4a7646
   Yoga: daa1e4de4b971b977b23bc842aaa3e135324f1f3
 
-PODFILE CHECKSUM: 754963f5c376f11c7a8003b02992c1f8b7b7c539
+PODFILE CHECKSUM: 8ca605f7699c3f41df112f3dd1cff945b02c8a85
 
 COCOAPODS: 1.16.2

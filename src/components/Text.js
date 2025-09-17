@@ -11,6 +11,7 @@ const Text = ({
   weight,
   align,
   lang,
+  isBoldFont,
   ...props
 }) => {
   const getTextStyle = () => {
@@ -25,6 +26,10 @@ const Text = ({
 
     if (weight) {
       baseStyle.fontWeight = weight;
+    }
+
+    if (isBoldFont) {
+      baseStyle.fontFamily = 'KFGQPC Uthman Taha Naskh Bold';
     }
 
     if (align) {

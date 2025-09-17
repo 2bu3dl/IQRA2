@@ -1,6 +1,9 @@
 import Foundation
 import AVFoundation
-import React
+
+// React Native Promise Types (inline definitions)
+typealias RCTPromiseResolveBlock = (Any?) -> Void
+typealias RCTPromiseRejectBlock = (String, String, Error?) -> Void
 
 @objc(AudioRecorderModule)
 class AudioRecorderModule: NSObject {
@@ -20,19 +23,15 @@ class AudioRecorderModule: NSObject {
   
   @objc
   func startRecording(_ surahName: String, ayahNumber: String, resolver: @escaping RCTPromiseResolveBlock, rejecter: @escaping RCTPromiseRejectBlock) {
-    do {
-      // Request microphone permission
-      AVAudioSession.sharedInstance().requestRecordPermission { [weak self] granted in
-        DispatchQueue.main.async {
-          if granted {
-            self?.setupRecording(surahName: surahName, ayahNumber: ayahNumber, resolver: resolver, rejecter: rejecter)
-          } else {
-            rejecter("PERMISSION_DENIED", "Microphone permission denied", nil)
-          }
+    // Request microphone permission
+    AVAudioSession.sharedInstance().requestRecordPermission { [weak self] granted in
+      DispatchQueue.main.async {
+        if granted {
+          self?.setupRecording(surahName: surahName, ayahNumber: ayahNumber, resolver: resolver, rejecter: rejecter)
+        } else {
+          rejecter("PERMISSION_DENIED", "Microphone permission denied", nil)
         }
       }
-    } catch {
-      rejecter("SETUP_ERROR", "Failed to setup audio session", error)
     }
   }
   

@@ -9,7 +9,7 @@
     "watch": "react-native run-ios --simulator='Apple Watch Series 10 (46mm)'",
     "watch-simulator": "xcrun simctl boot 'Apple Watch Series 10 (46mm)' && npm run watch",
     "lint": "eslint .",
-    "start": "REACT_NATIVE_SUPPRESS_LEGACY_ARCHITECTURE_WARNING=true react-native start",
+    "start": "REACT_NATIVE_SUPPRESS_LEGACY_ARCHITECTURE_WARNING=true react-native start --host 0.0.0.0",
     "test": "jest",
     "postinstall": "patch-package"
   },
@@ -28,6 +28,7 @@
     "react-native-device-info": "^14.0.4",
     "react-native-dotenv": "^3.4.11",
     "react-native-fs": "^2.20.0",
+    "react-native-gesture-handler": "^2.28.0",
     "react-native-haptic-feedback": "^2.3.3",
     "react-native-localize": "^3.5.1",
     "react-native-safe-area-context": "^5.4.1",

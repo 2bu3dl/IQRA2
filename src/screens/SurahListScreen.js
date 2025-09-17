@@ -872,10 +872,12 @@ const AllSurahsTab = ({ navigation, route, searchText, isJuzMode, juzData, isSea
 
   const [data, setData] = useState({
     memorizedAyahs: {
-      'Al-Fatihah': {
-        total: 7,
-        memorized: 0,
-      },
+      'Al-Fatihah': { total: 7, memorized: 0 },
+      'Al-Baqarah': { total: 286, memorized: 0 },
+      'Aali 3imran': { total: 200, memorized: 0 },
+      'An-Nisa2': { total: 176, memorized: 0 },
+      'Al-Ma2ida': { total: 120, memorized: 0 },
+      // Add more default entries for instant rendering
     },
   });
   const [selectedSurahId, setSelectedSurahId] = useState(null);
@@ -886,7 +888,6 @@ const AllSurahsTab = ({ navigation, route, searchText, isJuzMode, juzData, isSea
 
   const flatListRef = useRef(null);
   const scrollBarRef = useRef(null);
-  const scrollY = useRef(new Animated.Value(0)).current;
 
   // Original surah names mapping for search functionality
   const ORIGINAL_SURAH_NAMES = {
@@ -1198,24 +1199,26 @@ const AllSurahsTab = ({ navigation, route, searchText, isJuzMode, juzData, isSea
   };
 
   useEffect(() => {
+    // Load data only once on mount for instant rendering
     loadScreenData();
+  }, []);
 
-    // Refresh data when screen comes into focus
+  // Listen for specific progress updates instead of full reload
+  useEffect(() => {
     const unsubscribeFocus = navigation.addListener('focus', () => {
-      console.log('[SurahListScreen] Screen focused, refreshing data...');
-      loadScreenData();
-    });
-
-    // Also refresh when screen becomes visible (for better reliability)
-    const unsubscribeBlur = navigation.addListener('blur', () => {
-      console.log('[SurahListScreen] Screen blurred');
+      // Only reload if we have a refresh parameter indicating progress was made
+      if (route.params?.progressUpdated) {
+        console.log('[SurahListScreen] Progress update detected, refreshing data...');
+        loadScreenData();
+        // Clear the parameter
+        navigation.setParams({ progressUpdated: undefined });
+      }
     });
 
     return () => {
       unsubscribeFocus();
-      unsubscribeBlur();
     };
-  }, [navigation]);
+  }, [navigation, route.params?.progressUpdated]);
 
   // Handle refresh parameter from navigation and clear it after use
   useEffect(() => {
@@ -1477,34 +1480,14 @@ const AllSurahsTab = ({ navigation, route, searchText, isJuzMode, juzData, isSea
   const renderScrollBar = () => {
     if (contentHeight <= visibleHeight) return null; // Don't show if no scrolling needed
     
-    // Calculate actual scroll bar height based on container positioning (top: 180, bottom: 200)
-    // Assuming screen height around 800px, actual height would be 800 - 180 - 200 = 420px
-    const scrollBarHeight = visibleHeight - 380; // 180 (top) + 200 (bottom) = 380
-    const handleHeight = 40;
-    const trackHeight = Math.max(100, scrollBarHeight - handleHeight); // Ensure minimum track height
-    
-    const scrollableDistance = contentHeight - visibleHeight;
-    
-    const handlePosition = scrollY.interpolate({
-      inputRange: [0, scrollableDistance],
-      outputRange: [0, trackHeight],
-      extrapolate: 'clamp',
-    });
-
+    // Simple static scroll bar without animations for instant rendering
     return (
       <View style={[styles.scrollBarContainer, {
         right: language === 'ar' ? undefined : 0,
         left: language === 'ar' ? 0 : undefined
       }]}>
         <View style={styles.scrollBar}>
-          <Animated.View 
-            style={[
-              styles.scrollHandle,
-              {
-                transform: [{ translateY: handlePosition }],
-              },
-            ]} 
-          />
+          <View style={styles.scrollHandle} />
         </View>
       </View>
     );
@@ -1513,7 +1496,7 @@ const AllSurahsTab = ({ navigation, route, searchText, isJuzMode, juzData, isSea
   return (
     <View style={{ flex: 1 }}>
           <View style={[styles.contentContainer, { height: '100%' }]}>
-            <Animated.FlatList
+            <FlatList
               ref={flatListRef}
               data={filteredSurahs}
               renderItem={renderSurahItem}
@@ -1526,8 +1509,6 @@ const AllSurahsTab = ({ navigation, route, searchText, isJuzMode, juzData, isSea
               
 
               onScroll={(event) => {
-                // Update scrollY for scroll bar animation
-                scrollY.setValue(event.nativeEvent.contentOffset.y);
                 // Real-time search bar hide/show based on scroll position
                 const currentScrollY = event.nativeEvent.contentOffset.y;
                 // Only hide search bar if it's not currently visible and focused

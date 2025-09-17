@@ -2,9 +2,16 @@
  * @format
  */
 
-import { AppRegistry, Platform } from 'react-native';
+console.log('🚀 index.js: Starting app registration...');
+
+import { AppRegistry } from 'react-native';
+console.log('✅ index.js: AppRegistry imported');
+
 import App from './App';
+console.log('✅ index.js: App component imported');
+
 import { name as appName } from './app.json';
+console.log('✅ index.js: App name loaded:', appName);
 
 // Suppress legacy architecture warning
 global.__suppressLegacyArchitectureWarning = true;
@@ -21,18 +28,9 @@ console.warn = (...args) => {
   originalWarn.apply(console, args);
 };
 
-AppRegistry.registerComponent(appName, () => App);
-
-// Initialize track player service after app registration (iOS only)
-if (Platform.OS === 'ios') {
-  const TrackPlayer = require('react-native-track-player').default;
-  const { PlaybackService } = require('./src/services/PlaybackService');
-  
-  // Register the track player service with proper error handling
-  try {
-    TrackPlayer.registerPlaybackService(() => PlaybackService);
-    console.log('[TrackPlayer] Service registered successfully for iOS');
-  } catch (error) {
-    console.warn('[TrackPlayer] Failed to register service:', error);
-  }
-}
+console.log('📱 index.js: Registering app component...');
+AppRegistry.registerComponent(appName, () => {
+  console.log('🎯 index.js: App component wrapper called');
+  return App;
+});
+console.log('✅ index.js: App component registered successfully');

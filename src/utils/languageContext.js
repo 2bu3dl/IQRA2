@@ -14,34 +14,56 @@ export const useLanguage = () => {
 };
 
 export const LanguageProvider = ({ children }) => {
+  console.log('🌐 LanguageProvider: Initializing...');
   const [language, setLanguage] = useState('en');
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    console.log('🌐 LanguageProvider: Starting language load...');
     loadLanguage();
   }, []);
 
   const loadLanguage = async () => {
     try {
+      console.log('🌐 LanguageProvider: Loading saved language...');
       const savedLanguage = await AsyncStorage.getItem('app_language');
+      console.log('🌐 LanguageProvider: Saved language:', savedLanguage);
+      
       if (savedLanguage) {
         setLanguage(savedLanguage);
+        console.log('🌐 LanguageProvider: Set language to saved value:', savedLanguage);
         // Force RTL for Arabic language on app start
         if (savedLanguage === 'ar') {
-          I18nManager.forceRTL(true);
+          console.log('🌐 LanguageProvider: Setting RTL for Arabic');
+          // Only force RTL if not already set to avoid device issues
+          if (!I18nManager.isRTL) {
+            I18nManager.forceRTL(true);
+            console.log('🌐 LanguageProvider: RTL forced to true');
+          } else {
+            console.log('🌐 LanguageProvider: RTL already set');
+          }
         }
       } else {
+        console.log('🌐 LanguageProvider: No saved language, detecting system language...');
         // Detect system language if not set
         const locales = RNLocalize.getLocales();
+        console.log('🌐 LanguageProvider: System locales:', locales);
+        
         if (Array.isArray(locales) && locales.length > 0 && locales[0].languageCode === 'ar') {
           setLanguage('ar');
-          I18nManager.forceRTL(true);
+          console.log('🌐 LanguageProvider: Set language to Arabic from system');
+          // Only force RTL if not already set to avoid device issues
+          if (!I18nManager.isRTL) {
+            I18nManager.forceRTL(true);
+            console.log('🌐 LanguageProvider: RTL forced to true for system Arabic');
+          }
         } else {
           setLanguage('en');
+          console.log('🌐 LanguageProvider: Set language to English (default)');
         }
       }
     } catch (error) {
-      console.log('Error loading language:', error);
+      console.error('❌ LanguageProvider: Error loading language:', error);
     } finally {
       setIsLoading(false);
     }
@@ -89,7 +111,7 @@ export const LanguageProvider = ({ children }) => {
       'resetting': 'Resetting...',
       'confirm_reset_title': 'Confirm Reset',
       'confirm_reset_message': 'Are you sure you want to reset ALL your progress? This action cannot be undone.',
-      'confirm_reset': 'Yes, Reset All',
+      'confirm_reset': 'Reset ALL',
       'cancel': 'Cancel',
       'language': 'Language',
       'english': 'English',
@@ -354,7 +376,7 @@ export const LanguageProvider = ({ children }) => {
       'resetting': 'جاري إعادة التعيين...',
       'confirm_reset_title': 'تأكيد إعادة التعيين',
       'confirm_reset_message': 'هل أنت متأكد من أنك تريد إعادة تعيين كل تقدمك؟ لا يمكن التراجع عن هذا الإجراء.',
-      'confirm_reset': 'نعم، إعادة تعيين الكل',
+      'confirm_reset': 'إعادة تعيين الكل',
       'cancel': 'إلغاء',
       'language': 'اللغة',
       'english': 'الإنجليزية',

@@ -18,8 +18,10 @@ import { COLORS as BASE_COLORS, SIZES, FONTS } from '../utils/theme';
 import Text from '../components/Text';
 import Button from '../components/Button';
 import Card from '../components/Card';
-import { makeSupabaseRequest } from '../utils/supabase';
+import { makeSupabaseRequest, supabase } from '../utils/supabase';
 import { hapticSelection } from '../utils/hapticFeedback';
+import { resetProgress } from '../utils/store';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { validateUsername, validateDisplayName, logValidationAttempt } from '../utils/validation';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import AchievementsCard from '../components/AchievementsCard';
@@ -28,7 +30,7 @@ const COLORS = { ...BASE_COLORS, primary: '#6BA368', accent: '#FFD700' };
 
 const ProfileScreen = ({ navigation, route }) => {
   const { user, logout } = useAuth();
-  const { language, t } = useLanguage();
+  const { language, changeLanguage, t } = useLanguage();
   const [loading, setLoading] = useState(false);
   
   // Arabic alphabet letters for profile picture selection
@@ -77,6 +79,11 @@ const ProfileScreen = ({ navigation, route }) => {
   const [letterColor, setLetterColor] = useState('#6BA368');
   const [backgroundColor, setBackgroundColor] = useState('#F5E6C8');
   const [isBackgroundMode, setIsBackgroundMode] = useState(false);
+  
+  // Store original values for cancel functionality
+  const [originalProfileLetter, setOriginalProfileLetter] = useState('ء');
+  const [originalLetterColor, setOriginalLetterColor] = useState('#6BA368');
+  const [originalBackgroundColor, setOriginalBackgroundColor] = useState('#F5E6C8');
   const [scrollProgress, setScrollProgress] = useState(0);
   const letterScrollRef = useRef(null);
   const [stats, setStats] = useState({
@@ -85,6 +92,19 @@ const ProfileScreen = ({ navigation, route }) => {
     totalAyaat: 0,
     memorizedAyaat: 0
   });
+  
+  // Reset functionality state
+  const [resetting, setResetting] = useState(false);
+  const [confirmResetVisible, setConfirmResetVisible] = useState(false);
+  const [resetType, setResetType] = useState('all'); // 'all' or 'today'
+  const [includeRecordings, setIncludeRecordings] = useState(false);
+  
+  // Email change functionality state
+  const [showEmailChangeModal, setShowEmailChangeModal] = useState(false);
+  const [newEmail, setNewEmail] = useState('');
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [isChangingEmail, setIsChangingEmail] = useState(false);
+  const [isEmailButtonPressed, setIsEmailButtonPressed] = useState(false);
   
   // Get the user ID to display (either from route params or current user)
   const targetUserId = route?.params?.userId || user?.id;
@@ -136,6 +156,11 @@ const ProfileScreen = ({ navigation, route }) => {
             setProfileLetter(profile.profile_letter || 'ء');
             setLetterColor(profile.letter_color || '#6BA368');
             setBackgroundColor(profile.background_color || '#F5E6C8');
+            
+            // Store original values for cancel functionality
+            setOriginalProfileLetter(profile.profile_letter || 'ء');
+            setOriginalLetterColor(profile.letter_color || '#6BA368');
+            setOriginalBackgroundColor(profile.background_color || '#F5E6C8');
           } else {
             // Profile should be created automatically by trigger, but if it doesn't exist,
             // create it now
@@ -394,6 +419,75 @@ const ProfileScreen = ({ navigation, route }) => {
     }
   };
 
+  const handleEmailChange = async () => {
+    if (!newEmail || !currentPassword) {
+      Alert.alert(
+        language === 'ar' ? 'خطأ' : 'Error',
+        language === 'ar' ? 'يرجى ملء جميع الحقول' : 'Please fill in all fields'
+      );
+      return;
+    }
+
+    if (!newEmail.includes('@')) {
+      Alert.alert(
+        language === 'ar' ? 'خطأ' : 'Error',
+        language === 'ar' ? 'يرجى إدخال بريد إلكتروني صحيح' : 'Please enter a valid email address'
+      );
+      return;
+    }
+
+    setIsChangingEmail(true);
+    try {
+      // First, verify the current password by attempting to sign in
+      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+        email: user.email,
+        password: currentPassword,
+      });
+
+      if (authError) {
+        Alert.alert(
+          language === 'ar' ? 'خطأ' : 'Error',
+          language === 'ar' ? 'كلمة المرور غير صحيحة' : 'Incorrect password'
+        );
+        return;
+      }
+
+      // Update the email
+      const { data: updateData, error: updateError } = await supabase.auth.updateUser({
+        email: newEmail
+      });
+
+      if (updateError) {
+        console.error('[ProfileScreen] Email update error:', updateError);
+        Alert.alert(
+          language === 'ar' ? 'خطأ' : 'Error',
+          language === 'ar' ? 'فشل في تغيير البريد الإلكتروني' : 'Failed to change email'
+        );
+        return;
+      }
+
+      Alert.alert(
+        language === 'ar' ? 'نجح' : 'Success',
+        language === 'ar' ? 'تم إرسال رابط التحقق إلى البريد الإلكتروني الجديد' : 'Verification link sent to new email address',
+        [{ text: language === 'ar' ? 'حسناً' : 'OK' }]
+      );
+
+      // Close modal and reset form
+      setShowEmailChangeModal(false);
+      setNewEmail('');
+      setCurrentPassword('');
+      
+    } catch (error) {
+      console.error('[ProfileScreen] Email change error:', error);
+      Alert.alert(
+        language === 'ar' ? 'خطأ' : 'Error',
+        language === 'ar' ? 'حدث خطأ غير متوقع' : 'An unexpected error occurred'
+      );
+    } finally {
+      setIsChangingEmail(false);
+    }
+  };
+
   const handleLogout = async () => {
     try {
       Alert.alert(
@@ -640,6 +734,90 @@ const ProfileScreen = ({ navigation, route }) => {
                   {language === 'ar' ? 'إعدادات الحساب' : 'Account Settings'}
                 </Text>
 
+                {/* Language Selection */}
+                <Text variant="h4" style={styles.subsectionTitle}>
+                  {language === 'ar' ? 'اللغة' : 'Language'}
+                </Text>
+                <View style={styles.languageButtonContainer}>
+                  <Button
+                    title={t('english_button')}
+                    onPress={() => { hapticSelection(); changeLanguage('en'); }}
+                    style={[
+                      styles.languageButton,
+                      { backgroundColor: language === 'en' ? '#33694e' : 'rgba(128,128,128,0.6)' }
+                    ]}
+                  />
+                  <Button
+                    title={t('arabic_button')}
+                    onPress={() => { hapticSelection(); changeLanguage('ar'); }}
+                    style={[
+                      styles.languageButton,
+                      { backgroundColor: language === 'ar' ? '#33694e' : 'rgba(128,128,128,0.6)' }
+                    ]}
+                  />
+                </View>
+
+                {/* Reset Progress */}
+                <Text variant="h4" style={styles.subsectionTitle}>
+                  {language === 'ar' ? 'إعادة تعيين التقدم' : 'Reset Progress'}
+                </Text>
+                <View style={styles.resetButtonContainer}>
+                  <TouchableOpacity
+                    style={styles.resetTodayButton}
+                    onPress={() => {
+                      hapticSelection();
+                      setResetType('today');
+                      setConfirmResetVisible(true);
+                    }}
+                    disabled={resetting}
+                  >
+                    <Text style={styles.resetTodayButtonText}>
+                      {resetting ? t('resetting') : t('reset_today')}
+                    </Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.resetAllButton}
+                    onPress={() => {
+                      hapticSelection();
+                      setResetType('all');
+                      setConfirmResetVisible(true);
+                    }}
+                    disabled={resetting}
+                  >
+                    <Text style={styles.resetAllButtonText}>
+                      {resetting ? t('resetting') : (language === 'en' ? 'Reset All Progress' : 'إعادة تعيين كل التقدم')}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+
+                {/* Account Actions */}
+                <Text variant="h4" style={styles.subsectionTitle}>
+                  {language === 'ar' ? 'إعدادات الحساب' : 'Account Actions'}
+                </Text>
+                <TouchableOpacity
+                  style={[
+                    styles.changeEmailButton,
+                    isEmailButtonPressed && styles.changeEmailButtonPressed,
+                    { marginBottom: 12 }
+                  ]}
+                  onPress={() => {
+                    hapticSelection();
+                    setShowEmailChangeModal(true);
+                  }}
+                  onPressIn={() => {
+                    hapticSelection();
+                    setIsEmailButtonPressed(true);
+                  }}
+                  onPressOut={() => setIsEmailButtonPressed(false)}
+                >
+                  <Text style={[
+                    styles.changeEmailButtonText,
+                    isEmailButtonPressed && styles.changeEmailButtonTextPressed
+                  ]}>
+                    {language === 'ar' ? 'تغيير البريد الإلكتروني' : 'Change Email'}
+                  </Text>
+                </TouchableOpacity>
+
                 <TouchableOpacity
                   style={[
                     styles.logoutButton,
@@ -819,7 +997,13 @@ const ProfileScreen = ({ navigation, route }) => {
             <View style={styles.actionButtonsContainer}>
               <TouchableOpacity
                 style={styles.cancelButton}
-                onPress={() => setShowLetterPicker(false)}
+                onPress={() => {
+                  // Restore original values
+                  setProfileLetter(originalProfileLetter);
+                  setLetterColor(originalLetterColor);
+                  setBackgroundColor(originalBackgroundColor);
+                  setShowLetterPicker(false);
+                }}
               >
                 <Text style={styles.cancelButtonText}>
                   {language === 'ar' ? 'إلغاء' : 'Cancel'}
@@ -829,6 +1013,10 @@ const ProfileScreen = ({ navigation, route }) => {
                 style={styles.saveButton}
                 onPress={() => {
                   saveProfileColors(letterColor, backgroundColor);
+                  // Update original values to current values after saving
+                  setOriginalProfileLetter(profileLetter);
+                  setOriginalLetterColor(letterColor);
+                  setOriginalBackgroundColor(backgroundColor);
                   setShowLetterPicker(false);
                 }}
               >
@@ -838,6 +1026,207 @@ const ProfileScreen = ({ navigation, route }) => {
               </TouchableOpacity>
             </View>
           </View>
+        </TouchableOpacity>
+      </Modal>
+
+      {/* Reset Confirmation Modal */}
+      <Modal
+        visible={confirmResetVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setConfirmResetVisible(false)}
+      >
+        <TouchableOpacity 
+          style={styles.modalOverlay}
+          activeOpacity={1}
+          onPress={() => setConfirmResetVisible(false)}
+        >
+          <TouchableOpacity 
+            style={styles.confirmModalContainer}
+            activeOpacity={1}
+            onPress={(e) => e.stopPropagation()}
+          >
+            <View style={styles.confirmModalContent}>
+              <View style={styles.confirmModalHeader}>
+                <Text style={styles.confirmModalTitle}>
+                  {resetType === 'today' ? 'Reset Today\'s Progress' : t('confirm_reset_title')}
+                </Text>
+                <Text style={styles.confirmModalSubtitle}>
+                  {resetType === 'today' 
+                    ? 'This will reset only today\'s hasanat and progress. Your streak and total progress will remain intact.'
+                    : t('confirm_reset_message')
+                  }
+                </Text>
+              </View>
+
+              {/* Recordings Checkbox - only show for ALL reset */}
+              {resetType === 'all' && (
+                <View style={styles.confirmModalCheckbox}>
+                  <TouchableOpacity
+                    style={styles.checkboxContainer}
+                    onPress={() => {
+                      hapticSelection();
+                      setIncludeRecordings(!includeRecordings);
+                    }}
+                  >
+                    <View style={[
+                      styles.checkbox,
+                      includeRecordings && styles.checkboxChecked
+                    ]}>
+                      {includeRecordings && (
+                        <Text style={styles.checkboxText}>✓</Text>
+                      )}
+                    </View>
+                    <Text style={styles.checkboxLabel}>
+                      ALL recordings included
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+
+              <View style={styles.confirmModalButtons}>
+                <TouchableOpacity
+                  style={styles.confirmModalCancelButton}
+                  onPress={() => {
+                    hapticSelection();
+                    setConfirmResetVisible(false);
+                  }}
+                >
+                  <Text style={styles.confirmModalCancelText}>
+                    {t('cancel')}
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.confirmModalConfirmButton}
+                  onPress={async () => {
+                    hapticSelection();
+                    setResetting(true);
+                    setConfirmResetVisible(false);
+                    
+                    if (resetType === 'today') {
+                      // Reset only today's hasanat
+                      const today = new Date().toISOString().split('T')[0];
+                      const currentTodayHasanat = await AsyncStorage.getItem('today_hasanat');
+                      const currentTotalHasanat = await AsyncStorage.getItem('total_hasanat');
+                      
+                      // Subtract today's hasanat from total
+                      const todayAmount = parseInt(currentTodayHasanat || '0');
+                      const totalAmount = parseInt(currentTotalHasanat || '0');
+                      const newTotal = Math.max(0, totalAmount - todayAmount);
+                      
+                      await AsyncStorage.setItem('today_hasanat', '0');
+                      await AsyncStorage.setItem('total_hasanat', newTotal.toString());
+                      // Don't reset last_activity_date when only resetting today's hasanat
+                      // This preserves streak calculation
+                      // Also reset streak_updated_today to allow streak recalculation
+                      await AsyncStorage.removeItem('streak_updated_today');
+                    } else {
+                      // Reset all progress
+                      await resetProgress(includeRecordings);
+                      setIncludeRecordings(false); // Reset checkbox state
+                    }
+                    
+                    setResetting(false);
+                    // Reload stats to reflect changes
+                    loadUserStats();
+                  }}
+                  disabled={resetting}
+                >
+                  <Text style={styles.confirmModalConfirmText}>
+                    {resetting ? t('resetting') : (resetType === 'today' ? 'Reset Today' : t('confirm_reset'))}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </TouchableOpacity>
+        </TouchableOpacity>
+      </Modal>
+
+      {/* Email Change Modal */}
+      <Modal
+        visible={showEmailChangeModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowEmailChangeModal(false)}
+      >
+        <TouchableOpacity 
+          style={styles.modalOverlay}
+          activeOpacity={1}
+          onPress={() => setShowEmailChangeModal(false)}
+        >
+          <TouchableOpacity 
+            style={styles.emailChangeModalContainer}
+            activeOpacity={1}
+            onPress={(e) => e.stopPropagation()}
+          >
+            <View style={styles.emailChangeModalContent}>
+              <Text style={styles.emailChangeModalTitle}>
+                {language === 'ar' ? 'تغيير البريد الإلكتروني' : 'Change Email'}
+              </Text>
+              
+              <Text style={styles.emailChangeModalSubtitle}>
+                {language === 'ar' 
+                  ? 'أدخل البريد الإلكتروني الجديد وكلمة المرور الحالية' 
+                  : 'Enter your new email and current password'
+                }
+              </Text>
+
+              <TextInput
+                style={styles.emailChangeInput}
+                placeholder={language === 'ar' ? 'البريد الإلكتروني الجديد' : 'New Email'}
+                placeholderTextColor="#999"
+                value={newEmail}
+                onChangeText={setNewEmail}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                autoCorrect={false}
+              />
+
+              <TextInput
+                style={styles.emailChangeInput}
+                placeholder={language === 'ar' ? 'كلمة المرور الحالية' : 'Current Password'}
+                placeholderTextColor="#999"
+                value={currentPassword}
+                onChangeText={setCurrentPassword}
+                secureTextEntry
+                autoCapitalize="none"
+                autoCorrect={false}
+              />
+
+              <View style={styles.emailChangeButtons}>
+                <TouchableOpacity
+                  style={styles.emailChangeCancelButton}
+                  onPress={() => {
+                    hapticSelection();
+                    setShowEmailChangeModal(false);
+                    setNewEmail('');
+                    setCurrentPassword('');
+                  }}
+                >
+                  <Text style={styles.emailChangeCancelText}>
+                    {language === 'ar' ? 'إلغاء' : 'Cancel'}
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[
+                    styles.emailChangeConfirmButton,
+                    isChangingEmail && styles.emailChangeButtonDisabled
+                  ]}
+                  onPress={handleEmailChange}
+                  disabled={isChangingEmail}
+                >
+                  <Text style={styles.emailChangeConfirmText}>
+                    {isChangingEmail 
+                      ? (language === 'ar' ? 'جاري التغيير...' : 'Changing...') 
+                      : (language === 'ar' ? 'تغيير' : 'Change Email')
+                    }
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </TouchableOpacity>
         </TouchableOpacity>
       </Modal>
     </View>
@@ -929,18 +1318,15 @@ const styles = StyleSheet.create({
     backgroundColor: '#F5E6C8',
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 3,
-    borderColor: COLORS.primary,
-    padding: 12,
   },
   avatarLetter: {
-    fontSize: 64,
+    fontSize: 72,
     fontWeight: 'bold',
     color: COLORS.primary,
     fontFamily: 'KSAHeavy',
     textAlign: 'center',
     includeFontPadding: false,
-    lineHeight: 64,
+    lineHeight: 72,
   },
   profileInfo: {
     alignItems: 'center',
@@ -1022,13 +1408,36 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   saveButton: {
-    minWidth: 80,
+    minWidth: 40,
     borderRadius: 20,
   },
   actionsCard: {
     marginBottom: 40,
     backgroundColor: 'rgba(245, 230, 200, 0.95)',
     borderRadius: 20,
+  },
+  changeEmailButton: {
+    borderColor: '#33694e',
+    borderWidth: 2,
+    borderRadius: 20,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(51, 105, 78, 0.1)',
+  },
+  changeEmailButtonPressed: {
+    backgroundColor: '#33694e',
+    borderColor: '#33694e',
+    opacity: 1,
+  },
+  changeEmailButtonText: {
+    color: '#33694e',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  changeEmailButtonTextPressed: {
+    color: '#FFFFFF',
   },
   logoutButton: {
     borderColor: '#E53E3E',
@@ -1088,8 +1497,6 @@ const styles = StyleSheet.create({
     borderRadius: 50,
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 3,
-    borderColor: 'rgba(165,115,36,0.8)',
   },
   previewLetter: {
     fontSize: 52,
@@ -1301,6 +1708,248 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   saveButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  
+  // New styles for language and reset functionality
+  subsectionTitle: {
+    color: '#3E2723',
+    fontWeight: 'bold',
+    fontSize: 18,
+    marginBottom: 8,
+    marginTop: 16,
+  },
+  languageButtonContainer: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 16,
+  },
+  languageButton: {
+    flex: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.5,
+    shadowRadius: 6,
+    elevation: 8,
+  },
+  resetButtonContainer: {
+    gap: 8,
+    marginBottom: 16,
+  },
+  resetTodayButton: {
+    backgroundColor: 'rgba(165,115,36,0.8)',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.5,
+    shadowRadius: 6,
+    elevation: 8,
+  },
+  resetTodayButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  resetAllButton: {
+    backgroundColor: 'rgba(220,20,60,0.9)',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.5,
+    shadowRadius: 6,
+    elevation: 8,
+  },
+  resetAllButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  
+  // Reset confirmation modal styles
+  confirmModalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  confirmModalContent: {
+    backgroundColor: 'rgba(245, 230, 200, 0.95)',
+    borderRadius: 20,
+    padding: 20,
+    width: '90%',
+    maxWidth: 400,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 8,
+  },
+  confirmModalHeader: {
+    marginBottom: 20,
+  },
+  confirmModalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#3E2723',
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  confirmModalSubtitle: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
+    lineHeight: 22,
+  },
+  confirmModalCheckbox: {
+    marginBottom: 20,
+  },
+  checkboxContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 8,
+  },
+  checkbox: {
+    width: 20,
+    height: 20,
+    borderWidth: 2,
+    borderColor: '#33694e',
+    borderRadius: 4,
+    marginRight: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  checkboxChecked: {
+    backgroundColor: '#33694e',
+  },
+  checkboxText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+  checkboxLabel: {
+    fontSize: 16,
+    color: '#3E2723',
+    flex: 1,
+  },
+  confirmModalButtons: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  confirmModalCancelButton: {
+    flex: 1,
+    backgroundColor: 'rgba(128,128,128,0.6)',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  confirmModalCancelText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  confirmModalConfirmButton: {
+    flex: 1,
+    backgroundColor: '#E53E3E',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  confirmModalConfirmText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  
+  // Email change modal styles
+  emailChangeModalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  emailChangeModalContent: {
+    backgroundColor: 'rgba(245, 230, 200, 0.95)',
+    borderRadius: 20,
+    padding: 20,
+    width: '90%',
+    maxWidth: 400,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 8,
+  },
+  emailChangeModalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#3E2723',
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  emailChangeModalSubtitle: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
+    marginBottom: 20,
+    lineHeight: 22,
+  },
+  emailChangeInput: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+    borderRadius: 15,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    fontSize: 16,
+    marginBottom: 16,
+    color: '#3E2723',
+  },
+  emailChangeButtons: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 8,
+  },
+  emailChangeCancelButton: {
+    flex: 1,
+    backgroundColor: 'rgba(128,128,128,0.6)',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emailChangeCancelText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  emailChangeConfirmButton: {
+    flex: 1,
+    backgroundColor: '#33694e',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emailChangeButtonDisabled: {
+    backgroundColor: 'rgba(51, 105, 78, 0.6)',
+  },
+  emailChangeConfirmText: {
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '600',

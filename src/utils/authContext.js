@@ -15,11 +15,17 @@ import logger from './logger';
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
+  console.log('🔐 AuthProvider: Initializing...');
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
   // Handle user state changes
   const onAuthStateChange = (event, session) => {
+    console.log('🔐 AuthProvider: User state changed', { 
+      event, 
+      hasUser: !!session?.user,
+      userId: session?.user?.id 
+    });
     logger.log('Auth', 'User state changed', { 
       event, 
       hasUser: !!session?.user,
@@ -30,16 +36,26 @@ export const AuthProvider = ({ children }) => {
   };
 
   useEffect(() => {
+    console.log('🔐 AuthProvider: Setting up auth state...');
+    
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log('🔐 AuthProvider: Initial session retrieved:', !!session?.user);
       setUser(session?.user || null);
+      setLoading(false);
+    }).catch((error) => {
+      console.error('❌ AuthProvider: Error getting initial session:', error);
       setLoading(false);
     });
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(onAuthStateChange);
+    console.log('🔐 AuthProvider: Auth state listener set up');
 
-    return () => subscription.unsubscribe();
+    return () => {
+      console.log('🧹 AuthProvider: Cleaning up auth subscription');
+      subscription.unsubscribe();
+    };
   }, []);
 
   // Login with email/password or username

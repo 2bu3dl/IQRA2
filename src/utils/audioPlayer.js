@@ -37,6 +37,8 @@ class AudioPlayer {
     this.currentMetadata = null;
     this.highlightingCallbacks = [];
     this.audioElement = null;
+    this.onEndedCallback = null;
+    this.trackPlayerSetup = false;
   }
 
   async initialize() {
@@ -51,20 +53,33 @@ class AudioPlayer {
       } else if (Platform.OS === 'ios' && TrackPlayer) {
         // iOS: Initialize TrackPlayer
         try {
-          await TrackPlayer.setupPlayer();
-          await TrackPlayer.updateOptions({
-            capabilities: [
-              'play',
-              'pause',
-              'stop',
-            ],
-            compactCapabilities: [
-              'play',
-              'pause',
-              'stop',
-            ],
+          if (!this.trackPlayerSetup) {
+            await TrackPlayer.setupPlayer();
+            await TrackPlayer.updateOptions({
+              capabilities: [
+                'play',
+                'pause',
+                'stop',
+              ],
+              compactCapabilities: [
+                'play',
+                'pause',
+                'stop',
+              ],
+            });
+            this.trackPlayerSetup = true;
+            console.log('[AudioPlayer] TrackPlayer initialized successfully on iOS');
+          } else {
+            console.log('[AudioPlayer] TrackPlayer already setup on iOS');
+          }
+          
+          // Set up TrackPlayer event listeners
+          TrackPlayer.addEventListener(Event.PlaybackState, (state) => {
+            if (state.state === State.Ended && this.onEndedCallback) {
+              console.log('[AudioPlayer] TrackPlayer playback ended');
+              this.onEndedCallback();
+            }
           });
-          console.log('[AudioPlayer] TrackPlayer initialized successfully on iOS');
         } catch (trackPlayerError) {
           console.warn('[AudioPlayer] TrackPlayer initialization failed on iOS, falling back to simulation:', trackPlayerError);
         }
@@ -128,13 +143,18 @@ class AudioPlayer {
             this.isPlaying = false;
             this.currentAyah = null;
             this.stopHighlightingTimer();
+            
+            // Call the onEnded callback if set
+            if (this.onEndedCallback) {
+              this.onEndedCallback();
+            }
           };
           
         } catch (error) {
           console.error('[AudioPlayer] Error with HTML5 Audio:', error);
           this.fallbackToSimulation();
         }
-      } else if (Platform.OS === 'ios' && TrackPlayer && this.isInitialized) {
+      } else if (Platform.OS === 'ios' && TrackPlayer && this.isInitialized && this.trackPlayerSetup) {
         // iOS: Use TrackPlayer
         try {
           // Clear any existing tracks
@@ -187,6 +207,11 @@ class AudioPlayer {
       this.isPlaying = false;
       this.currentAyah = null;
       this.stopHighlightingTimer();
+      
+      // Call the onEnded callback if set
+      if (this.onEndedCallback) {
+        this.onEndedCallback();
+      }
     }, 5000); // Simulate 5 seconds of audio
   }
 
@@ -196,7 +221,7 @@ class AudioPlayer {
         if (Platform.OS === 'web' && this.audioElement) {
           this.audioElement.pause();
           this.audioElement.currentTime = 0;
-        } else if (Platform.OS === 'ios' && TrackPlayer && this.isInitialized) {
+        } else if (Platform.OS === 'ios' && TrackPlayer && this.isInitialized && this.trackPlayerSetup) {
           try {
             await TrackPlayer.stop();
             await TrackPlayer.reset();
@@ -227,7 +252,7 @@ class AudioPlayer {
           isPaused: this.audioElement.paused,
           isStopped: this.audioElement.ended,
         };
-      } else if (Platform.OS === 'ios' && TrackPlayer && this.isInitialized) {
+      } else if (Platform.OS === 'ios' && TrackPlayer && this.isInitialized && this.trackPlayerSetup) {
         try {
           const state = await TrackPlayer.getState();
           return {
@@ -305,18 +330,21 @@ class AudioPlayer {
       clearInterval(this.highlightingInterval);
     }
 
-    this.highlightingInterval = setInterval(() => {
-      if (this.isPlaying && this.currentMetadata && this.currentMetadata.words) {
-        const currentTime = this.getCurrentTime();
-        const currentWord = this.findCurrentWord(currentTime);
-        
-        if (currentWord !== null) {
-          this.highlightingCallbacks.forEach(callback => {
-            callback(currentWord, currentTime);
-          });
+    // Add a small delay before starting highlighting to prevent glitch
+    setTimeout(() => {
+      this.highlightingInterval = setInterval(() => {
+        if (this.isPlaying && this.currentMetadata && this.currentMetadata.words) {
+          const currentTime = this.getCurrentTime();
+          const currentWord = this.findCurrentWord(currentTime);
+          
+          if (currentWord !== null) {
+            this.highlightingCallbacks.forEach(callback => {
+              callback(currentWord, currentTime);
+            });
+          }
         }
-      }
-    }, 50); // Reduced interval for smoother highlighting
+      }, 50); // Balanced frequency for smooth highlighting without excessive CPU usage
+    }, 100); // Reduced delay for faster highlighting start
   }
 
   stopHighlightingTimer() {
@@ -337,13 +365,26 @@ class AudioPlayer {
     };
   }
 
+  // Set callback for when audio ends
+  setOnEndedCallback(callback) {
+    this.onEndedCallback = callback;
+  }
+
   getCurrentTime() {
     if (Platform.OS === 'web' && this.audioElement) {
       return this.audioElement.currentTime;
     }
-    if (this.currentSound) {
-      return this.currentSound.getCurrentTime();
+    if (this.currentSound && typeof this.currentSound.getCurrentTime === 'function') {
+      try {
+        const currentTime = this.currentSound.getCurrentTime();
+        if (currentTime !== undefined && currentTime !== null) {
+          return currentTime;
+        }
+      } catch (error) {
+        console.warn('[AudioPlayer] Error getting current time from sound:', error);
+      }
     }
+    // Fallback to simulation only if we have a start time
     if (!this.playbackStartTime) return 0;
     return (Date.now() - this.playbackStartTime) / 1000;
   }

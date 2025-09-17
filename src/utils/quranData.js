@@ -161,4 +161,9 @@ export function getAllSurahs() {
     name: `${surah} ${SURAH_NAMES[surah] || ''}`.trim(),
     ayaat: surahMap[surah]
   }));
+}
+
+export function getSurahName(surahNumber) {
+  // Returns the name of a surah by its number
+  return SURAH_NAMES[surahNumber] || '';
 } 

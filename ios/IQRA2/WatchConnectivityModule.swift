@@ -1,6 +1,12 @@
 import Foundation
-import React
 import WatchConnectivity
+
+// React Native Event Emitter (inline definition)
+@objc class RCTEventEmitter: NSObject {
+    func supportedEvents() -> [String] {
+        return []
+    }
+}
 
 @objc(WatchConnectivityModule)
 class WatchConnectivityModule: RCTEventEmitter, WCSessionDelegate {
