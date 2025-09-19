@@ -1658,6 +1658,46 @@ const MemorizationScreen = ({ route, navigation }) => {
     }
   };
 
+  // Check if all ayat are uncovered and auto-untoggle hide button
+  const checkAndAutoUntoggleHideButton = (newAyahCovers) => {
+    const ayahIndices = flashcards.map((card, index) => card.type === 'ayah' ? index : null).filter(index => index !== null);
+    const allUncovered = ayahIndices.every(index => !newAyahCovers[index]);
+    
+    if (allUncovered && isHideMode) {
+      // All ayat are uncovered, untoggle hide button
+      setTimeout(() => {
+        setIsHideMode(false);
+        setAyahCovers({});
+      }, 100);
+    }
+  };
+
+  // Handle long press on ayah card to cover it
+  const handleAyahLongPress = (ayahIndex, cardType) => {
+    if (cardType !== 'ayah') return;
+    
+    hapticSelection();
+    
+    // Toggle hide button if not already on
+    if (!isHideMode) {
+      setIsHideMode(true);
+    }
+    
+    // Cover the ayah
+    const currentAnim = getHideCoverAnim(ayahIndex);
+    Animated.spring(currentAnim, {
+      toValue: 0,
+      tension: 100,
+      friction: 8,
+      useNativeDriver: true,
+    }).start();
+    
+    setAyahCovers(prev => ({
+      ...prev,
+      [ayahIndex]: true
+    }));
+  };
+
   // Handle ayah cover swipe
   const handleAyahCoverSwipe = (ayahIndex) => {
     hapticSelection();
@@ -1681,139 +1721,115 @@ const MemorizationScreen = ({ route, navigation }) => {
       }).start();
     }
     
-    setAyahCovers(prev => ({
-      ...prev,
-      [ayahIndex]: !prev[ayahIndex]
-    }));
+    const newAyahCovers = {
+      ...ayahCovers,
+      [ayahIndex]: !ayahCovers[ayahIndex]
+    };
+    
+    setAyahCovers(newAyahCovers);
+    checkAndAutoUntoggleHideButton(newAyahCovers);
   };
 
-  // Create PanResponder for hide covers
+  // Create PanResponder for hide covers - only responds when actually dragging the cover
   const createCoverPanResponder = (ayahIndex) => {
     const currentAnim = getHideCoverAnim(ayahIndex);
     let startX = 0;
+    let isDragging = false;
+    let initialValue = 0;
+    let hasMovedHorizontally = false;
     
     return PanResponder.create({
-      onStartShouldSetPanResponder: () => false,
+      onStartShouldSetPanResponder: () => false, // Don't capture immediately
       onMoveShouldSetPanResponder: (evt, gestureState) => {
-        // Only respond to horizontal drags
-        return Math.abs(gestureState.dx) > Math.abs(gestureState.dy) && Math.abs(gestureState.dx) > 10;
+        // Only respond to clear horizontal drags on the cover itself
+        const horizontalMovement = Math.abs(gestureState.dx);
+        const verticalMovement = Math.abs(gestureState.dy);
+        
+        // Must be clearly horizontal movement (not diagonal)
+        if (horizontalMovement > 10 && horizontalMovement > verticalMovement * 1.5) {
+          hasMovedHorizontally = true;
+          return true;
+        }
+        
+        // If we've already started horizontal movement, keep capturing
+        if (hasMovedHorizontally) {
+          return true;
+        }
+        
+        return false;
       },
       
       onPanResponderGrant: (evt) => {
         startX = evt.nativeEvent.pageX;
+        isDragging = true;
+        hasMovedHorizontally = false;
+        setIsDraggingCover(true); // Pause scroll when dragging
+        currentAnim.stopAnimation();
+        // Get current value safely
+        initialValue = currentAnim._value || 0;
       },
       
       onPanResponderMove: (evt, gestureState) => {
+        if (!isDragging) return;
+        
         const translationX = gestureState.dx;
-        const newValue = Math.max(-300, Math.min(0, translationX));
-        currentAnim.setValue(newValue);
+        const translationY = gestureState.dy;
+        
+        // Track if we're moving horizontally
+        if (Math.abs(translationX) > Math.abs(translationY)) {
+          hasMovedHorizontally = true;
+        }
+        
+        // Only update cover position if we're moving horizontally
+        if (hasMovedHorizontally) {
+          const isCurrentlyCovered = ayahCovers[ayahIndex];
+          
+          // Calculate position based on current state
+          let newValue;
+          if (isCurrentlyCovered) {
+            // If covered, allow sliding left to reveal
+            newValue = Math.max(-300, Math.min(0, initialValue + translationX));
+          } else {
+            // If not covered, allow sliding right to cover
+            newValue = Math.max(-300, Math.min(0, initialValue + translationX));
+          }
+          
+          currentAnim.setValue(newValue);
+        }
       },
       
       onPanResponderRelease: (evt, gestureState) => {
-        const translationX = gestureState.dx;
-        const threshold = -150; // Threshold for completing the action
-        const isCurrentlyCovered = ayahCovers[ayahIndex];
+        if (!isDragging) return;
+        isDragging = false;
+        setIsDraggingCover(false); // Resume scroll when done dragging
         
-        if (isCurrentlyCovered) {
-          // If cover is showing and dragged left enough, hide it
-          if (translationX < threshold) {
-            Animated.timing(currentAnim, {
-              toValue: -300,
-              duration: 200,
-              useNativeDriver: true,
-            }).start();
-            setAyahCovers(prev => ({
-              ...prev,
-              [ayahIndex]: false
-            }));
-          } else {
-            // Snap back to original position
-            Animated.timing(currentAnim, {
-              toValue: 0,
-              duration: 200,
-              useNativeDriver: true,
-            }).start();
-          }
-        } else {
-          // If cover is hidden and dragged right enough, show it
-          if (translationX > threshold) {
-            Animated.timing(currentAnim, {
-              toValue: 0,
-              duration: 200,
-              useNativeDriver: true,
-            }).start();
-            setAyahCovers(prev => ({
-              ...prev,
-              [ayahIndex]: true
-            }));
-          } else {
-            // Snap back to hidden position
-            Animated.timing(currentAnim, {
-              toValue: -300,
-              duration: 200,
-              useNativeDriver: true,
-            }).start();
-          }
+        // Only update cover state if we were actually dragging horizontally
+        if (hasMovedHorizontally) {
+          const currentValue = currentAnim._value || 0;
+          const isCovered = currentValue > -150;
+          
+          // Animate to final position (snap to covered or uncovered)
+          Animated.spring(currentAnim, {
+            toValue: isCovered ? 0 : -300,
+            tension: 100,
+            friction: 8,
+            useNativeDriver: true,
+          }).start();
+          
+          const newAyahCovers = {
+            ...ayahCovers,
+            [ayahIndex]: isCovered
+          };
+          
+          setAyahCovers(newAyahCovers);
+          checkAndAutoUntoggleHideButton(newAyahCovers);
         }
+        
+        hasMovedHorizontally = false;
       },
     });
   };
 
-  // Create PanResponder for border accent
-  const createBorderAccentPanResponder = (ayahIndex) => {
-    const currentAnim = getHideCoverAnim(ayahIndex);
-    let startX = 0;
-    
-    return PanResponder.create({
-      onStartShouldSetPanResponder: () => false,
-      onMoveShouldSetPanResponder: (evt, gestureState) => {
-        // Only respond to horizontal drags
-        return Math.abs(gestureState.dx) > Math.abs(gestureState.dy) && Math.abs(gestureState.dx) > 10;
-      },
-      
-      onPanResponderGrant: (evt) => {
-        startX = evt.nativeEvent.pageX;
-        // Start hiding the ayah
-        currentAnim.setValue(-300);
-        
-        setAyahCovers(prev => ({
-          ...prev,
-          [ayahIndex]: true
-        }));
-      },
-      
-      onPanResponderMove: (evt, gestureState) => {
-        const translationX = gestureState.dx;
-        const newValue = Math.max(-300, Math.min(0, -300 + translationX));
-        currentAnim.setValue(newValue);
-      },
-      
-      onPanResponderRelease: (evt, gestureState) => {
-        const translationX = gestureState.dx;
-        const threshold = 150; // Threshold for completing the hide
-        
-        if (translationX > threshold) {
-          // Complete the hide
-          Animated.timing(currentAnim, {
-            toValue: 0,
-            duration: 200,
-            useNativeDriver: true,
-          }).start();
-        } else {
-          // Cancel the hide
-          Animated.timing(currentAnim, {
-            toValue: -300,
-            duration: 200,
-            useNativeDriver: true,
-          }).start();
-          setAyahCovers(prev => ({
-            ...prev,
-            [ayahIndex]: false
-          }));
-        }
-      },
-    });
-  };
 
   const loadSurahNotes = async () => {
     try {
@@ -1913,6 +1929,7 @@ const MemorizationScreen = ({ route, navigation }) => {
   const [ayahCovers, setAyahCovers] = useState({});
   const [dragStates, setDragStates] = useState({}); // Track drag states for each cover
   const [isRecordingSession, setIsRecordingSession] = useState(false);
+  const [isDraggingCover, setIsDraggingCover] = useState(false); // Track if any cover is being dragged
   const [isAtBottom, setIsAtBottom] = useState(false);
   const [showTranslationView, setShowTranslationView] = useState(false);
   const [currentTranslator, setCurrentTranslator] = useState('sahih');
@@ -3958,7 +3975,7 @@ const MemorizationScreen = ({ route, navigation }) => {
                 />
                 <TextInput
                   style={styles.fullscreenSearchInput}
-                  placeholder="Search ayat..."
+                  placeholder="Search ayah.."
                   placeholderTextColor="#999"
                   value={fullscreenSearchText}
                   onChangeText={setFullscreenSearchText}
@@ -4015,6 +4032,7 @@ const MemorizationScreen = ({ route, navigation }) => {
                   style={styles.fullscreenScrollView}
                   contentContainerStyle={styles.fullscreenScrollContent}
                   showsVerticalScrollIndicator={true}
+                  scrollEnabled={!isDraggingCover}
                 >
                   {flashcards.map((card, index) => {
                     const translation = card.type === 'ayah' 
@@ -4065,6 +4083,7 @@ const MemorizationScreen = ({ route, navigation }) => {
                 style={styles.fullscreenScrollView}
                 contentContainerStyle={styles.fullscreenScrollContent}
                 showsVerticalScrollIndicator={true}
+                scrollEnabled={!isDraggingCover}
                 onScroll={Animated.event(
                   [{ nativeEvent: { contentOffset: { y: scrollY } } }],
                   { 
@@ -4095,6 +4114,7 @@ const MemorizationScreen = ({ route, navigation }) => {
                     <TouchableOpacity 
                       style={styles.fullscreenAyahContent}
                       onPress={() => handleAyahNavigation(originalIndex)}
+                      onLongPress={() => handleAyahLongPress(originalIndex, card.type)}
                       activeOpacity={0.7}
                     >
                       <Text style={[
