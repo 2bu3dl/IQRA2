@@ -18,6 +18,7 @@ import {
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useLanguage } from '../utils/languageContext';
+import { hapticSelection } from '../utils/hapticFeedback';
 import Svg, { Polygon, Line } from 'react-native-svg';
 import { COLORS as BASE_COLORS, SIZES, FONTS } from '../utils/theme';
 import { 
@@ -1571,7 +1572,7 @@ const AllSurahsTab = ({ navigation, route, searchText, isJuzMode, juzData, isSea
 // Phase 2: Juz Wheel Tab Component
 const JuzWheelTab = ({ navigation, setJuzFilter, setPreviousJuzFilter, setActiveTab, setSearchText, language }) => {
   const { t } = useLanguage();
-  const [selectedJuz, setSelectedJuz] = useState(30); // Start at 30 by default
+  const [selectedJuz, setSelectedJuz] = useState(1); // Start at juz 1 by default
   
   // Helper to convert numbers to Arabic-Indic if needed
   const toArabicNumber = (num) => {
@@ -1579,11 +1580,11 @@ const JuzWheelTab = ({ navigation, setJuzFilter, setPreviousJuzFilter, setActive
     return num.toString().replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]);
   };
   const panResponder = useRef(null);
-  const [containerLayout, setContainerLayout] = useState(getResponsiveContainerDimensions(300, 300));
+  const [containerLayout, setContainerLayout] = useState(getResponsiveContainerDimensions(400, 400));
   const lastHapticTime = useRef(0); // Add reference to track last haptic feedback time
 
   const handleJuzPress = () => {
-    // haptic feedback removed;
+    hapticSelection();
     console.log(`Filtering to Juz ${selectedJuz}`);
     
     const juzData = JUZ_SURAH_MAPPING[selectedJuz];
@@ -1613,8 +1614,9 @@ const JuzWheelTab = ({ navigation, setJuzFilter, setPreviousJuzFilter, setActive
     const distance = Math.sqrt(relativeX * relativeX + relativeY * relativeY);
     
     // Only respond to touches within the polygon ring area
-    // Inner radius: 80 (central button area), Outer radius: 150 (edge of component)
-    if (distance < 80 || distance > 150) {
+    // Inner radius: 60 (central button area), Outer radius: 180 (extended touch area)
+    // This makes the touch area larger and more centered for better sensitivity
+    if (distance < 60 || distance > 180) {
       return selectedJuz; // Return current selection if touch is outside valid area
     }
     
@@ -1661,7 +1663,7 @@ const JuzWheelTab = ({ navigation, setJuzFilter, setPreviousJuzFilter, setActive
           setSelectedJuz(juzNumber);
           const now = Date.now();
           if (now - lastHapticTime.current > 50) { // Limit haptic feedback to every 50ms
-            // haptic feedback removed;
+            hapticSelection();
             lastHapticTime.current = now;
           }
         }
@@ -1683,9 +1685,7 @@ const JuzWheelTab = ({ navigation, setJuzFilter, setPreviousJuzFilter, setActive
 
   return (
     <View style={styles.juzContainer}>
-      <RNText variant="h2" style={[styles.juzTitle, { fontFamily: language === 'ar' ? 'KFGQPC HAFS Uthmanic Script Regular' : 'Montserrat-Bold' }]}>
-        {language === 'ar' ? 'اختر' : 'Select'}
-      </RNText>
+      {/* Removed the "Select" text as requested */}
 
       <View 
         style={styles.polygonContainer}
@@ -1695,13 +1695,13 @@ const JuzWheelTab = ({ navigation, setJuzFilter, setPreviousJuzFilter, setActive
                        {/* Background hexagon */}
                <Svg width={containerLayout.width} height={containerLayout.height} style={styles.polygonSvg}>
                  <Polygon
-                   points={generatePolygonPoints(150, 150, 140)}
+                   points={generatePolygonPoints(200, 200, 190)}
                    fill="rgba(165, 115, 36, 0.1)"
                    stroke="#A57324"
                    strokeWidth="2"
                  />
                  <Polygon
-                   points={generatePolygonPoints(150, 150, 120)}
+                   points={generatePolygonPoints(200, 200, 160)}
                    fill="rgba(165, 115, 36, 0.05)"
                    stroke="#A57324"
                    strokeWidth="1"
@@ -1711,8 +1711,8 @@ const JuzWheelTab = ({ navigation, setJuzFilter, setPreviousJuzFilter, setActive
                  {/* 30 lines pointing inward */}
                  {Array.from({ length: 30 }, (_, i) => {
                    const angle = (2 * Math.PI * i) / 30;
-                   const outerRadius = 145;
-                   const innerRadius = 125;
+                   const outerRadius = 195;
+                   const innerRadius = 165;
                    
                    // Calculate angle to match touch detection
                    // Juz 1 at top (12 o'clock) = -90° in standard coordinates
@@ -1720,10 +1720,10 @@ const JuzWheelTab = ({ navigation, setJuzFilter, setPreviousJuzFilter, setActive
                    const angleInDegrees = -90 + (i * 12); // Start at top, go clockwise
                    const adjustedAngle = (angleInDegrees * Math.PI) / 180; // Convert to radians
                    
-                   const outerX = 150 + outerRadius * Math.cos(adjustedAngle);
-                   const outerY = 150 + outerRadius * Math.sin(adjustedAngle);
-                   const innerX = 150 + innerRadius * Math.cos(adjustedAngle);
-                   const innerY = 150 + innerRadius * Math.sin(adjustedAngle);
+                   const outerX = 200 + outerRadius * Math.cos(adjustedAngle);
+                   const outerY = 200 + outerRadius * Math.sin(adjustedAngle);
+                   const innerX = 200 + innerRadius * Math.cos(adjustedAngle);
+                   const innerY = 200 + innerRadius * Math.sin(adjustedAngle);
                    
                    const isSelected = i + 1 === selectedJuz;
                    
@@ -1771,14 +1771,14 @@ const JuzWheelTab = ({ navigation, setJuzFilter, setPreviousJuzFilter, setActive
                  
                  {/* Central hexagon button */}
                  <Polygon
-                   points={generatePolygonPoints(150, 150, 70)}
+                   points={generatePolygonPoints(200, 200, 90)}
                    fill="rgba(51, 105, 78, 0.2)"
                    stroke="#33694e"
                    strokeWidth="2"
                  />
                  {/* Glow effect for central button */}
                  <Polygon
-                   points={generatePolygonPoints(150, 150, 75)}
+                   points={generatePolygonPoints(200, 200, 95)}
                    fill="transparent"
                    stroke="rgba(51, 105, 78, 0.4)"
                    strokeWidth="1"
@@ -2918,7 +2918,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: SIZES.large,
     backgroundColor: 'transparent', // Made fully transparent
-    marginTop: -30, // Brought up a tiny bit more (from -20)
+    marginTop: -60, // Brought up more to center the wheel
   },
   juzTitle: {
     fontSize: 24,
@@ -2934,8 +2934,8 @@ const styles = StyleSheet.create({
     marginBottom: SIZES.extraLarge,
   },
   polygonContainer: {
-    width: 300,
-    height: 300,
+    width: 400, // Made larger as requested
+    height: 400, // Made larger as requested
     justifyContent: 'center',
     alignItems: 'center',
     position: 'relative',
@@ -2945,9 +2945,9 @@ const styles = StyleSheet.create({
   },
   centralJuzButton: {
     position: 'absolute',
-    width: 140,
-    height: 140,
-    borderRadius: 70,
+    width: 180, // Made larger to match the larger wheel
+    height: 180, // Made larger to match the larger wheel
+    borderRadius: 90,
     backgroundColor: 'transparent', // Made transparent since hexagon is in SVG
     justifyContent: 'center',
     alignItems: 'center',

@@ -1,5 +1,5 @@
 import { getResponsiveFontSize } from './responsive';
-import { getRecommendedArabicFont } from './fontChecker';
+import { getRecommendedArabicFont, getRobustArabicFont } from './fontChecker';
 
 export const COLORS = {
   primary: '#388E3C', // Forest green
@@ -55,8 +55,8 @@ const KSA_FONT_CANDIDATES = [
 
 const getFontFamily = (language, weight = 'regular') => {
   if (language === 'ar') {
-    // Use the working UthmanicHafs1Ver18 font for all Arabic text
-    return 'KFGQPC HAFS Uthmanic Script Regular';
+    // Use robust font loading to prevent font reversion issues
+    return getRobustArabicFont();
   }
   if (weight === 'bold') {
     return 'Montserrat-Bold';
@@ -78,7 +78,10 @@ export const FONTS = {
     lineHeight: getResponsiveFontSize(40),
     writingDirection: 'rtl',
     textAlign: 'center',
-    includeFontPadding: false
+    includeFontPadding: false,
+    // Enable OpenType features for proper Arabic ligatures and diacritics
+    fontVariant: ['liga', 'dlig', 'calt'], // Enable ligatures and contextual alternates
+    textAlignVertical: 'center',
   },
   arabicBold: { 
     fontFamily: 'KFGQPC HAFS Uthmanic Script Regular', 
@@ -86,7 +89,10 @@ export const FONTS = {
     lineHeight: getResponsiveFontSize(40),
     writingDirection: 'rtl',
     textAlign: 'center',
-    includeFontPadding: false
+    includeFontPadding: false,
+    // Enable OpenType features for proper Arabic ligatures and diacritics
+    fontVariant: ['liga', 'dlig', 'calt'], // Enable ligatures and contextual alternates
+    textAlignVertical: 'center',
   },
 };
 

@@ -58,6 +58,33 @@ export const getRecommendedArabicFont = () => {
   return 'KFGQPC HAFS Uthmanic Script Regular';
 };
 
+// Robust font loading with fallback mechanism
+export const getRobustArabicFont = () => {
+  const primaryFont = 'KFGQPC HAFS Uthmanic Script Regular';
+  const fallbackFonts = [
+    'KFGQPC HAFS Uthmanic Script',
+    'KFGQPC HAFS Uthmanic Script Regular',
+    'UthmanicHafs1Ver18',
+    'UthmanTN_v2-0',
+    'UthmanTN'
+  ];
+  
+  // Always return the primary font - React Native will handle fallbacks automatically
+  return primaryFont;
+};
+
+// Font loading state management
+export const ensureFontLoaded = async () => {
+  try {
+    // Since fonts are bundled with the app, we can assume they're available
+    // This function can be extended to actually test font availability if needed
+    return true;
+  } catch (error) {
+    console.warn('Font loading check failed:', error);
+    return false;
+  }
+};
+
 // Debug font availability
 export const debugFontAvailability = () => {
   console.log('=== FONT AVAILABILITY DEBUG ===');

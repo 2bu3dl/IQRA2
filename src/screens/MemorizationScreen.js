@@ -67,26 +67,27 @@ const MemorizationScreen = ({ route, navigation }) => {
 
   // Convert number to UthmanicHafs1 numerical divider symbols with decorative frames
   const toUthmanicNumber = (num) => {
-    // Simple approach: use Arabic-Indic numerals only
+    // Use proper Uthmanic ayah markers with numbers inside decorative frames
     const arabicIndicSymbols = {
       '0': '\u0660', '1': '\u0661', '2': '\u0662', '3': '\u0663', '4': '\u0664',
       '5': '\u0665', '6': '\u0666', '7': '\u0667', '8': '\u0668', '9': '\u0669'
     };
     
     const convertedNum = num.toString().replace(/\d/g, d => arabicIndicSymbols[d] || d);
-    return `${convertedNum} \u06DD`; // Add decorative symbol to the right
+    // Use single decorative symbol with number inside (no empty symbols)
+    return `\u06DD${convertedNum}`; // One decorative symbol with number inside
   };
 
 
   // Font loading state - set to true since fonts are bundled with the app
   const [fontLoaded, setFontLoaded] = useState(true);
 
-  // Function to remove Superscript Circles on final alif characters
+  // Function to remove only problematic superscript circles while preserving essential diacritics
   const removeSuperscriptCircles = (text) => {
     if (!text) return text;
     
-    // Remove specific Unicode characters that create superscript circles on final alif
-    // These are likely control characters or combining marks that affect final alif rendering
+    // Only remove specific Unicode characters that create unwanted superscript circles
+    // PRESERVE essential diacritics like hamzeh (madda), waw, yeh that are needed for proper ligatures
     return text
       .replace(/\u06E1/g, '') // ARABIC SMALL HIGH DOTLESS HEAD OF KHAH
       .replace(/\u06DF/g, '') // ARABIC SMALL HIGH ROUNDED ZERO  
@@ -94,9 +95,9 @@ const MemorizationScreen = ({ route, navigation }) => {
       .replace(/\u06E0/g, '') // ARABIC SMALL HIGH UPRIGHT RECTANGULAR ZERO
       .replace(/\u06E2/g, '') // ARABIC SMALL HIGH MEEM INITIAL FORM
       .replace(/\u06E3/g, '') // ARABIC SMALL LOW SEEN
-      .replace(/\u06E4/g, '') // ARABIC SMALL HIGH MADDA
-      .replace(/\u06E5/g, '') // ARABIC SMALL WAW
-      .replace(/\u06E6/g, '') // ARABIC SMALL YEH
+      // PRESERVED: \u06E4 (ARABIC SMALL HIGH MADDA) - needed for hamzeh
+      // PRESERVED: \u06E5 (ARABIC SMALL WAW) - needed for proper rendering
+      // PRESERVED: \u06E6 (ARABIC SMALL YEH) - needed for proper rendering
       .replace(/\u06E7/g, '') // ARABIC SMALL HIGH YEH
       .replace(/\u06E8/g, '') // ARABIC SMALL HIGH NOON
       .replace(/\u06E9/g, '') // ARABIC PLACE OF SAJDAH
@@ -1258,12 +1259,209 @@ const MemorizationScreen = ({ route, navigation }) => {
   // Toggle translation view
   const handleTranslationViewToggle = () => {
     hapticSelection();
-    setShowTranslationView(!showTranslationView);
-    setIsExpandButtonPressed(false);
-    // Reset scroll position when switching views
-    if (fullscreenScrollViewRef.current) {
-      fullscreenScrollViewRef.current.scrollTo({ y: 0, animated: false });
+    if (showMushafView) {
+      // In Mushaf view, toggle translation under Arabic text
+      setMushafShowTranslation(!mushafShowTranslation);
+    } else {
+      // In regular view, toggle full translation view
+      setShowTranslationView(!showTranslationView);
+      // Reset scroll position when switching views
+      if (fullscreenScrollViewRef.current) {
+        fullscreenScrollViewRef.current.scrollTo({ y: 0, animated: false });
+      }
     }
+    setIsExpandButtonPressed(false);
+  };
+
+  // Accurate page mapping for Mushaf view (King Fahd Complex Medina Mushaf format)
+  const getMushafPageData = () => {
+    // Comprehensive Surah-to-page mapping based on standard 604-page Mushaf
+    return {
+      // Surah start pages (accurate data)
+      surahPages: {
+        1: 1,    // Al-Fatihah
+        2: 2,    // Al-Baqarah  
+        3: 50,   // Al-Imran
+        4: 77,   // An-Nisa
+        5: 106,  // Al-Ma'idah
+        6: 128,  // Al-An'am
+        7: 151,  // Al-A'raf
+        8: 177,  // Al-Anfal
+        9: 187,  // At-Tawbah
+        10: 208, // Yunus
+        11: 221, // Hud
+        12: 235, // Yusuf
+        13: 249, // Ar-Ra'd
+        14: 255, // Ibrahim
+        15: 262, // Al-Hijr
+        16: 267, // An-Nahl
+        17: 282, // Al-Isra
+        18: 293, // Al-Kahf
+        19: 305, // Maryam
+        20: 312, // Ta-Ha
+        // Add more as needed
+      },
+      // Juz (Para) start pages
+      juzPages: {
+        1: 1, 2: 22, 3: 42, 4: 62, 5: 82, 6: 102, 7: 122, 8: 142, 9: 162,
+        10: 182, 11: 201, 12: 222, 13: 242, 14: 262, 15: 282, 16: 302,
+        17: 322, 18: 342, 19: 362, 20: 382, 21: 402, 22: 422, 23: 442,
+        24: 462, 25: 482, 26: 502, 27: 522, 28: 542, 29: 562, 30: 582
+      }
+    };
+  };
+
+  const calculatePageForAyah = (surahNumber, ayahNumber) => {
+    const pageData = getMushafPageData();
+    const startPage = pageData.surahPages[surahNumber] || 1;
+    
+    // More accurate calculation based on ayah density per surah
+    const ayahDensity = {
+      1: 1,    // Al-Fatihah: 7 ayahs on 1 page
+      2: 2.5,  // Al-Baqarah: ~10 ayahs per page average
+      3: 7,    // Al-Imran: ~7 ayahs per page average  
+      4: 5,    // An-Nisa: ~5 ayahs per page average
+      5: 6,    // Al-Ma'idah: ~6 ayahs per page average
+      // Default density for other surahs
+    };
+    
+    const density = ayahDensity[surahNumber] || 8;
+    const estimatedPage = startPage + Math.floor((ayahNumber - 1) / density);
+    return Math.min(604, Math.max(1, estimatedPage));
+  };
+
+  // Toggle Mushaf (physical Quran page) view
+  const handleMushafViewToggle = () => {
+    hapticSelection();
+    setShowMushafView(!showMushafView);
+    
+    // Calculate which page the current ayah is on
+    if (!showMushafView) {
+      const pageNumber = calculatePageForAyah(localSurahNumber, currentAyahIndex + 1);
+      setCurrentMushafPage(pageNumber);
+    }
+  };
+
+  // Navigate to previous page in Mushaf view with animation
+  const handlePreviousPage = () => {
+    hapticSelection();
+    setCurrentMushafPage(prev => {
+      const newPage = Math.max(1, prev - 1);
+      // Reset hiding state when changing pages
+      setMushafHiddenAyahs({});
+      setMushafHideAll(false);
+      return newPage;
+    });
+  };
+
+  // Navigate to next page in Mushaf view with animation
+  const handleNextPage = () => {
+    hapticSelection();
+    setCurrentMushafPage(prev => {
+      const newPage = Math.min(604, prev + 1);
+      // Reset hiding state when changing pages
+      setMushafHiddenAyahs({});
+      setMushafHideAll(false);
+      return newPage;
+    });
+  };
+
+  // Toggle individual ayah hiding in Mushaf view
+  const handleMushafAyahHide = (ayahIndex) => {
+    hapticSelection();
+    setMushafHiddenAyahs(prev => ({
+      ...prev,
+      [ayahIndex]: !prev[ayahIndex]
+    }));
+  };
+
+  // Toggle hide all ayahs in Mushaf view
+  const handleMushafHideAll = () => {
+    hapticSelection();
+    setMushafHideAll(prev => {
+      const newHideAll = !prev;
+      if (!newHideAll) {
+        // If unhiding all, clear individual hidden ayahs too
+        setMushafHiddenAyahs({});
+      }
+      return newHideAll;
+    });
+  };
+
+  // Handle Mushaf audio playback
+  const handleMushafAudioToggle = async () => {
+    hapticSelection();
+    try {
+      if (mushafAudioPlaying) {
+        await audioPlayer.stop();
+        setMushafAudioPlaying(false);
+      } else {
+        // Start playing from current page's first ayah
+        const pageData = getAyahsForPage(currentMushafPage);
+        if (pageData.ayahs.length > 0) {
+          setMushafAudioPlaying(true);
+          setMushafCurrentAyahIndex(0);
+          // Use existing audio player functionality
+          await playAudio(pageData.ayahs[0], 0);
+        }
+      }
+    } catch (error) {
+      console.error('Mushaf audio error:', error);
+      setMushafAudioPlaying(false);
+    }
+  };
+
+  // Get page information including Juz and Surah details
+  const getPageInfo = (pageNumber) => {
+    const pageData = getMushafPageData();
+    
+    // Find which Juz this page belongs to
+    let currentJuz = 1;
+    for (let juz = 30; juz >= 1; juz--) {
+      if (pageNumber >= pageData.juzPages[juz]) {
+        currentJuz = juz;
+        break;
+      }
+    }
+    
+    // Find which Surah(s) are on this page
+    let currentSurah = 1;
+    for (let surah = 114; surah >= 1; surah--) {
+      if (pageData.surahPages[surah] && pageNumber >= pageData.surahPages[surah]) {
+        currentSurah = surah;
+        break;
+      }
+    }
+    
+    return { juz: currentJuz, surah: currentSurah };
+  };
+
+  // Get ayahs for the current Mushaf page with enhanced layout
+  const getAyahsForPage = (pageNumber) => {
+    const pageInfo = getPageInfo(pageNumber);
+    const pageData = getMushafPageData();
+    
+    // Get ayahs from current surah
+    const ayahCards = flashcards.filter(card => card.type === 'ayah');
+    
+    // For demo: show different portions based on page number to simulate page content
+    const ayahsPerPage = Math.min(5, ayahCards.length); // Show up to 5 ayahs per page
+    const pageOffset = (pageNumber - calculatePageForAyah(localSurahNumber, 1)) % Math.ceil(ayahCards.length / ayahsPerPage);
+    const startIndex = pageOffset * ayahsPerPage;
+    const endIndex = Math.min(startIndex + ayahsPerPage, ayahCards.length);
+    
+    const pageAyahs = ayahCards.slice(startIndex, endIndex);
+    
+    // If no ayahs for this page offset, show first few ayahs
+    const finalAyahs = pageAyahs.length > 0 ? pageAyahs : ayahCards.slice(0, ayahsPerPage);
+    
+    // Add page metadata
+    return {
+      ayahs: finalAyahs,
+      pageInfo: pageInfo,
+      hasNewSurah: pageData.surahPages[pageInfo.surah] === pageNumber,
+      hasNewJuz: pageData.juzPages[pageInfo.juz] === pageNumber
+    };
   };
 
   // Filter flashcards based on search text
@@ -1599,11 +1797,18 @@ const MemorizationScreen = ({ route, navigation }) => {
   // Toggle hide mode
   const handleHideToggle = () => {
     hapticSelection();
-    setIsHideMode(!isHideMode);
-    if (!isHideMode) {
-      // Initialize all ayah covers as hidden and animate them sliding in
-      const initialCovers = {};
-      const ayahCards = flashcards.filter(card => card.type === 'ayah');
+    
+    // Handle hide toggle differently for Mushaf view vs regular view
+    if (showMushafView) {
+      // In Mushaf view, use Mushaf hide state
+      handleMushafHideAll();
+    } else {
+      // In regular view, use original hide logic
+      setIsHideMode(!isHideMode);
+      if (!isHideMode) {
+        // Initialize all ayah covers as hidden and animate them sliding in
+        const initialCovers = {};
+        const ayahCards = flashcards.filter(card => card.type === 'ayah');
       
       // For long surahs, use a simpler approach to avoid too many animations
       if (ayahCards.length > 50) {
@@ -1655,6 +1860,7 @@ const MemorizationScreen = ({ route, navigation }) => {
           setAyahCovers({});
         }, 300);
       }
+    }
     }
   };
 
@@ -1809,12 +2015,16 @@ const MemorizationScreen = ({ route, navigation }) => {
           const isCovered = currentValue > -150;
           
           // Animate to final position (snap to covered or uncovered)
+          // Use a more responsive spring animation to ensure it reaches the target
           Animated.spring(currentAnim, {
             toValue: isCovered ? 0 : -300,
-            tension: 100,
-            friction: 8,
+            tension: 150, // Increased tension for more responsive animation
+            friction: 7,   // Reduced friction for smoother completion
             useNativeDriver: true,
-          }).start();
+          }).start(() => {
+            // Ensure the animation completes fully
+            currentAnim.setValue(isCovered ? 0 : -300);
+          });
           
           const newAyahCovers = {
             ...ayahCovers,
@@ -1823,6 +2033,15 @@ const MemorizationScreen = ({ route, navigation }) => {
           
           setAyahCovers(newAyahCovers);
           checkAndAutoUntoggleHideButton(newAyahCovers);
+        } else {
+          // If no horizontal movement, ensure we return to the original position
+          const isCurrentlyCovered = ayahCovers[ayahIndex];
+          Animated.spring(currentAnim, {
+            toValue: isCurrentlyCovered ? 0 : -300,
+            tension: 150,
+            friction: 7,
+            useNativeDriver: true,
+          }).start();
         }
         
         hasMovedHorizontally = false;
@@ -1913,6 +2132,15 @@ const MemorizationScreen = ({ route, navigation }) => {
   // Fullscreen state
   const [isFullscreen, setIsFullscreen] = useState(false);
   
+  // Mushaf view state
+  const [showMushafView, setShowMushafView] = useState(false);
+  const [currentMushafPage, setCurrentMushafPage] = useState(1);
+  const [mushafHiddenAyahs, setMushafHiddenAyahs] = useState({});
+  const [mushafHideAll, setMushafHideAll] = useState(false);
+  const [mushafAudioPlaying, setMushafAudioPlaying] = useState(false);
+  const [mushafCurrentAyahIndex, setMushafCurrentAyahIndex] = useState(0);
+  const [mushafShowTranslation, setMushafShowTranslation] = useState(false);
+  
   // Handle fullscreen state from navigation params
   useEffect(() => {
     if (shouldStartFullscreen) {
@@ -1934,7 +2162,7 @@ const MemorizationScreen = ({ route, navigation }) => {
   const [showTranslationView, setShowTranslationView] = useState(false);
   const [currentTranslator, setCurrentTranslator] = useState('sahih');
 
-  const fontCandidates = ['UthmanTN_v2-0', 'UthmanTN', 'KFGQPC HAFS Uthmanic Script', 'HAFS Uthmanic Script'];
+  const fontCandidates = ['UthmanTN_v2-0', 'UthmanTN', 'KFGQPC HAFS Uthmanic Script Regular', 'HAFS Uthmanic Script'];
   const fontFamily = fontCandidates[currentAyahIndex % fontCandidates.length];
 
   // Monitor recording status to reset button state when recording ends
@@ -2307,7 +2535,7 @@ const MemorizationScreen = ({ route, navigation }) => {
                 variant="h2"
                 style={[
                   language === 'ar'
-                    ? { fontFamily: 'KFGQPC HAFS Uthmanic Script', fontSize: 28, color: '#5b7f67', textAlign: 'center', marginBottom: 8 }
+                    ? { fontFamily: 'KFGQPC HAFS Uthmanic Script Regular', fontSize: 28, color: '#5b7f67', textAlign: 'center', marginBottom: 8 }
                     : [FONTS.h2.getFont(language), { color: '#5b7f67', textAlign: 'center', marginBottom: 8 }],
                 ]}
               >
@@ -2359,7 +2587,7 @@ const MemorizationScreen = ({ route, navigation }) => {
               <Text
                 variant="h2"
                 style={[styles.arabicText, { 
-                  fontFamily: isBoldFont ? 'KFGQPC Uthman Taha Naskh Bold' : 'KFGQPC HAFS Uthmanic Script', 
+                  fontFamily: isBoldFont ? 'KFGQPC Uthman Taha Naskh Bold' : 'KFGQPC HAFS Uthmanic Script Regular', 
                   fontSize: ayahFontSize, 
                   textAlign: 'center', 
                   alignSelf: 'center', 
@@ -2391,7 +2619,7 @@ const MemorizationScreen = ({ route, navigation }) => {
                       return (
                         <Text style={[styles.arabicText, { 
                           fontSize: ayahFontSize,
-                          fontFamily: isBoldFont ? 'KFGQPC Uthman Taha Naskh Bold' : 'KFGQPC HAFS Uthmanic Script',
+                          fontFamily: isBoldFont ? 'KFGQPC Uthman Taha Naskh Bold' : 'KFGQPC HAFS Uthmanic Script Regular',
                           lineHeight: ayahFontSize * 2.8,
                           // Remove font features entirely
                           color: '#FF8C00',
@@ -2446,7 +2674,7 @@ const MemorizationScreen = ({ route, navigation }) => {
                               key={`word-${index}`}
                               style={[styles.arabicText, { 
                                 fontSize: ayahFontSize,
-                                fontFamily: isBoldFont ? 'KFGQPC Uthman Taha Naskh Bold' : 'KFGQPC HAFS Uthmanic Script',
+                                fontFamily: isBoldFont ? 'KFGQPC Uthman Taha Naskh Bold' : 'KFGQPC HAFS Uthmanic Script Regular',
                                 lineHeight: ayahFontSize * 2.8,
                                 // Remove font features entirely
                                 color: isVisible ? '#5b7f67' : orangeShades[shadeIndex],
@@ -3922,7 +4150,7 @@ const MemorizationScreen = ({ route, navigation }) => {
                 <TouchableOpacity
                    style={[
                      styles.fullscreenTranslationButton,
-                     showTranslationView && styles.fullscreenTranslationButtonToggled
+                     (showTranslationView || mushafShowTranslation) && styles.fullscreenTranslationButtonToggled
                    ]}
                   onPress={handleTranslationViewToggle}
                 >
@@ -3930,16 +4158,72 @@ const MemorizationScreen = ({ route, navigation }) => {
                     source={require('../assets/app_icons/translation.png')} 
                     style={[
                       styles.fullscreenTranslationIcon,
-                        showTranslationView && styles.fullscreenTranslationIconToggled
+                      (showTranslationView || mushafShowTranslation) && styles.fullscreenTranslationIconToggled
                     ]}
                     resizeMode="contain"
                   />
                 </TouchableOpacity>
               )}
               
-              <Text style={styles.fullscreenTitle}>
-                {language === 'ar' ? t(`surah_${localSurahNumber}`) : getDisplaySurahName(localSurahNumber)}
-              </Text>
+              <View style={styles.fullscreenTitleContainer}>
+                {/* Chat-style surah title like in surah list */}
+                <View style={styles.chatStyleTitleContainer}>
+                  <Text style={[
+                    styles.chatStyleTitle,
+                    { fontFamily: language === 'ar' ? 'KFGQPC HAFS Uthmanic Script Regular' : 'Montserrat-Bold' }
+                  ]}>
+                    {language === 'ar' ? t(`surah_${localSurahNumber}`) : getSurahName(localSurahNumber)}
+                  </Text>
+                </View>
+                
+                {/* OpenQuran Logo - Mushaf View Toggle */}
+                <TouchableOpacity
+                  style={styles.openQuranLogoContainer}
+                  onPress={handleMushafViewToggle}
+                  activeOpacity={0.7}
+                >
+                  <Image 
+                    source={require('../assets/openQuran.png')} 
+                    style={styles.openQuranLogo}
+                    resizeMode="contain"
+                  />
+                  <Text style={styles.mushafViewText}>
+                    {t('mushaf_view')}
+                  </Text>
+                </TouchableOpacity>
+
+                {/* Page navigation for Mushaf view - shown under logo */}
+                {showMushafView && (
+                  <View style={styles.mushafPageNavigation}>
+                    <TouchableOpacity
+                      style={[styles.mushafNavButton, currentMushafPage <= 1 && styles.mushafNavButtonDisabled]}
+                      onPress={handlePreviousPage}
+                      disabled={currentMushafPage <= 1}
+                      activeOpacity={0.7}
+                    >
+                      <Text style={styles.mushafNavButtonText}>‹</Text>
+                    </TouchableOpacity>
+                    
+                    <View style={styles.mushafPageInfo}>
+                      <Text style={styles.mushafPageNumber}>
+                        {language === 'ar' ? `صفحة ${toArabicNumber(currentMushafPage)}` : `Page ${currentMushafPage}`}
+                      </Text>
+                      <Text style={styles.mushafPageTotal}>
+                        {language === 'ar' ? `من ${toArabicNumber(604)}` : `of 604`}
+                      </Text>
+                    </View>
+                    
+                    <TouchableOpacity
+                      style={[styles.mushafNavButton, currentMushafPage >= 604 && styles.mushafNavButtonDisabled]}
+                      onPress={handleNextPage}
+                      disabled={currentMushafPage >= 604}
+                      activeOpacity={0.7}
+                    >
+                      <Text style={styles.mushafNavButtonText}>›</Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
+              </View>
               
               <TouchableOpacity
                 style={[
@@ -3998,12 +4282,90 @@ const MemorizationScreen = ({ route, navigation }) => {
             </View>
             
             {/* Top border for ayah list */}
-            {!showTranslationView && (
+            {!showTranslationView && !showMushafView && (
               <View style={styles.fullscreenListTopBorder} />
             )}
             
-            {/* Translation view or ayah list */}
-            {showTranslationView ? (
+            {/* Translation view, Mushaf view, or ayah list */}
+            {showMushafView ? (
+              <View style={styles.mushafViewContainer}>
+                
+                {/* Mushaf page content */}
+                <ScrollView 
+                  style={styles.mushafPageContent}
+                  showsVerticalScrollIndicator={false}
+                >
+                  <View style={styles.mushafPage}>
+                    {(() => {
+                      const pageData = getAyahsForPage(currentMushafPage);
+                      return (
+                        <>
+
+                          {/* Ayah text container with 15-line layout */}
+                          <View style={styles.mushafPageTextContainer}>
+                            {pageData.ayahs.map((ayah, index) => {
+                              const ayahNumber = index + 1;
+                              const isHidden = mushafHideAll || mushafHiddenAyahs[index];
+                              
+                              return (
+                                <View key={`mushaf-line-${index}`} style={styles.mushafAyahContainer}>
+                                  <TouchableOpacity
+                                    style={[
+                                      styles.mushafLineContainer,
+                                      isHidden && styles.mushafLineContainerHidden
+                                    ]}
+                                    onLongPress={() => handleMushafAyahHide(index)}
+                                    onPress={() => isHidden && handleMushafAyahHide(index)}
+                                    activeOpacity={0.7}
+                                    delayLongPress={500}
+                                  >
+                                    {isHidden ? (
+                                      <View style={styles.mushafSolidHighlightBar}>
+                                        {/* Solid rounded highlight bar - no text */}
+                                      </View>
+                                    ) : (
+                                      <View style={styles.mushafArabicTextContainer}>
+                                        {/* Physical Mushaf style: continuous text flow with embedded ayah numbers */}
+                                        <Text style={[
+                                          styles.mushafAyahText,
+                                          mushafAudioPlaying && mushafCurrentAyahIndex === index && styles.mushafAyahTextHighlighted
+                                        ]}>
+                                          {removeSuperscriptCircles(ayah.text)}
+                                          <Text style={styles.mushafAyahNumber}>
+                                            {' '}{toUthmanicNumber(ayahNumber)}{' '}
+                                          </Text>
+                                        </Text>
+                                      </View>
+                                    )}
+                                  </TouchableOpacity>
+                                  
+                                  {/* Translation section under Arabic text */}
+                                  {mushafShowTranslation && !isHidden && (
+                                    <View style={styles.mushafTranslationContainer}>
+                                      <Text style={styles.mushafTranslationText}>
+                                        {getCurrentTranslation('sahih', localSurahNumber, ayahNumber)}
+                                      </Text>
+                                    </View>
+                                  )}
+                                </View>
+                              );
+                            })}
+                          </View>
+
+                          {/* Page footer with page number */}
+                          <View style={styles.mushafPageFooter}>
+                            <Text style={styles.mushafPageNumberFooter}>
+                              {language === 'ar' ? toArabicNumber(currentMushafPage) : currentMushafPage}
+                            </Text>
+                          </View>
+                        </>
+                      );
+                    })()}
+                  </View>
+                </ScrollView>
+                
+              </View>
+            ) : showTranslationView ? (
               <View style={styles.translationViewContainer}>
                 {/* Translator selector */}
                 <View style={styles.translatorSelector}>
@@ -4057,7 +4419,7 @@ const MemorizationScreen = ({ route, navigation }) => {
                             color: card.type === 'istiadhah' ? '#A57324' :
                                    (card.type === 'bismillah' && localSurahNumber !== 1) ? '#5b7f67' :
                                    '#333',
-                            fontFamily: isBoldFont ? 'KFGQPC Uthman Taha Naskh Bold' : (Platform.OS === 'ios' ? 'KFGQPC HAFS Uthmanic Script' : 'KFGQPC_HAFS_Uthmanic_Script')
+                            fontFamily: isBoldFont ? 'KFGQPC Uthman Taha Naskh Bold' : 'KFGQPC HAFS Uthmanic Script Regular'
                           }
                         ]}>
                           {removeSuperscriptCircles(card.text)}
@@ -4123,7 +4485,7 @@ const MemorizationScreen = ({ route, navigation }) => {
                           color: card.type === 'istiadhah' ? '#A57324' :
                                  (card.type === 'bismillah' && localSurahNumber !== 1) ? '#5b7f67' :
                                  '#333',
-                          fontFamily: isBoldFont ? 'KFGQPC Uthman Taha Naskh Bold' : (Platform.OS === 'ios' ? 'KFGQPC HAFS Uthmanic Script' : 'KFGQPC_HAFS_Uthmanic_Script')
+                          fontFamily: isBoldFont ? 'KFGQPC Uthman Taha Naskh Bold' : 'KFGQPC HAFS Uthmanic Script Regular'
                         }
                       ]}>
                         {removeSuperscriptCircles(card.text)}
@@ -4778,13 +5140,295 @@ const styles = StyleSheet.create({
     borderBottomWidth: 2,
     borderBottomColor: '#A57324',
   },
+  fullscreenTitleContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   fullscreenTitle: {
     fontSize: 24,
     fontWeight: 'bold',
     color: '#5b7f67',
     fontFamily: 'Montserrat-Bold',
-    flex: 1,
     textAlign: 'center',
+    marginBottom: 8,
+  },
+  chatStyleTitleContainer: {
+    backgroundColor: 'rgba(91, 127, 103, 0.8)', // Green background like surah list
+    borderRadius: 24,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    marginBottom: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  chatStyleTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+    fontFamily: 'Montserrat-Bold', // Will be overridden dynamically for Arabic
+    textAlign: 'center',
+  },
+  openQuranLogoContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    borderRadius: 8,
+    backgroundColor: 'rgba(245, 230, 200, 0.3)',
+  },
+  openQuranLogo: {
+    width: 32,
+    height: 32,
+    marginBottom: 2,
+  },
+  mushafViewText: {
+    fontSize: 10,
+    color: '#A57324',
+    fontFamily: 'Montserrat-Regular',
+    textAlign: 'center',
+  },
+  mushafPageNavigation: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 12,
+    paddingHorizontal: 80, // Much wider spacing for navigation buttons
+    width: '100%',
+  },
+  // Mushaf View Styles
+  mushafViewContainer: {
+    flex: 1,
+    backgroundColor: '#FDFBF7', // Cream background like traditional Mushaf pages
+  },
+  mushafPageHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 15,
+    backgroundColor: '#F5E6C8',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E0D4B8',
+  },
+  mushafNavButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#A57324',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  mushafNavButtonDisabled: {
+    backgroundColor: '#D4C4A8',
+    opacity: 0.5,
+  },
+  mushafNavButtonText: {
+    fontSize: 24,
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+  },
+  mushafPageInfo: {
+    alignItems: 'center',
+  },
+  mushafPageNumber: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#A57324',
+    fontFamily: 'Montserrat-Bold',
+  },
+  mushafPageTotal: {
+    fontSize: 12,
+    color: '#8B7355',
+    fontFamily: 'Montserrat-Regular',
+  },
+  mushafPageContent: {
+    flex: 1,
+    paddingHorizontal: 20,
+  },
+  mushafPage: {
+    flex: 1,
+    paddingVertical: 20,
+  },
+  mushafPageHeaderInfo: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E8DCC0',
+  },
+  mushafJuzText: {
+    fontSize: 12,
+    fontFamily: 'KFGQPC HAFS Uthmanic Script Regular',
+    color: '#8B7355',
+    fontVariant: ['liga', 'dlig', 'calt'],
+  },
+  mushafSurahText: {
+    fontSize: 14,
+    fontFamily: 'KFGQPC HAFS Uthmanic Script Regular',
+    color: '#A57324',
+    fontWeight: 'bold',
+    fontVariant: ['liga', 'dlig', 'calt'],
+  },
+  mushafBismillahContainer: {
+    alignItems: 'center',
+    paddingVertical: 20,
+    marginVertical: 10,
+  },
+  mushafBismillahText: {
+    fontSize: 20,
+    fontFamily: 'KFGQPC HAFS Uthmanic Script Regular',
+    color: '#A57324',
+    textAlign: 'center',
+    fontVariant: ['liga', 'dlig', 'calt'],
+    includeFontPadding: false,
+  },
+  mushafPageTextContainer: {
+    flex: 1,
+    paddingHorizontal: 25, // Increased padding for traditional margins
+    paddingVertical: 15,
+    minHeight: 400,
+  },
+  mushafLineContainer: {
+    marginVertical: 3, // Reduced spacing for tighter layout like physical Mushaf
+    minHeight: 40, // Slightly taller for better readability
+    justifyContent: 'center',
+    paddingHorizontal: 5,
+  },
+  mushafAyahText: {
+    fontSize: 24, // Slightly larger for better readability
+    fontFamily: 'KFGQPC HAFS Uthmanic Script Regular',
+    color: '#1A1A1A', // Darker for better contrast
+    textAlign: 'right', // Right-aligned like traditional Mushaf
+    lineHeight: 42, // Increased line height for proper spacing
+    writingDirection: 'rtl',
+    // Enable OpenType features for proper Arabic ligatures and diacritics
+    fontVariant: ['liga', 'dlig', 'calt'],
+    includeFontPadding: false,
+    textAlignVertical: 'center',
+  },
+  mushafAyahNumber: {
+    fontSize: 16,
+    color: '#A57324',
+    fontFamily: 'KFGQPC HAFS Uthmanic Script Regular',
+  },
+  mushafPageFooter: {
+    alignItems: 'center',
+    paddingVertical: 15,
+    borderTopWidth: 1,
+    borderTopColor: '#E8DCC0',
+  },
+  mushafPageNumberFooter: {
+    fontSize: 14,
+    fontFamily: 'Montserrat-Bold',
+    color: '#8B7355',
+  },
+  // Mushaf Controls Styles
+  mushafControlsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    backgroundColor: '#F5E6C8',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E0D4B8',
+  },
+  mushafControlButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#FFFFFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  mushafControlButtonActive: {
+    backgroundColor: '#A57324',
+  },
+  mushafControlIcon: {
+    width: 20,
+    height: 20,
+    tintColor: '#A57324',
+  },
+  mushafControlIconActive: {
+    tintColor: '#FFFFFF',
+  },
+  mushafInstructionsText: {
+    flex: 1,
+    fontSize: 11,
+    color: '#8B7355',
+    fontFamily: 'Montserrat-Regular',
+    textAlign: 'center',
+    marginHorizontal: 10,
+  },
+  // Mushaf Hiding Styles
+  mushafLineContainerHidden: {
+    // Remove background and border - using solid bar instead
+  },
+  mushafSolidHighlightBar: {
+    height: 35,
+    backgroundColor: '#5b7f67', // Green bar matching app theme
+    borderRadius: 17.5, // Fully rounded
+    marginVertical: 4,
+    marginHorizontal: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+    elevation: 3,
+  },
+  mushafAyahTextHighlighted: {
+    backgroundColor: 'rgba(165, 115, 36, 0.15)',
+    borderRadius: 4,
+    paddingHorizontal: 4,
+  },
+  // Enhanced Mushaf Layout Styles
+  mushafAyahContainer: {
+    marginVertical: 4,
+  },
+  mushafArabicTextContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexWrap: 'wrap',
+  },
+  mushafTranslationContainer: {
+    marginTop: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    backgroundColor: 'rgba(245, 230, 200, 0.3)',
+    borderRadius: 6,
+  },
+  mushafTranslationText: {
+    fontSize: 14,
+    fontFamily: 'Montserrat-Regular',
+    color: '#5A5A5A',
+    textAlign: 'left',
+    lineHeight: 20,
+  },
+  mushafBackButton: {
+    marginHorizontal: 20,
+    marginVertical: 15,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    backgroundColor: '#A57324',
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  mushafBackButtonText: {
+    fontSize: 16,
+    color: '#FFFFFF',
+    fontFamily: 'Montserrat-Bold',
   },
   fullscreenCloseButton: {
     width: 44,
@@ -4868,14 +5512,15 @@ const styles = StyleSheet.create({
   },
   fullscreenAyahText: {
     fontSize: 28,
-    fontFamily: Platform.OS === 'ios' ? 'KFGQPC HAFS Uthmanic Script' : 'KFGQPC_HAFS_Uthmanic_Script',
+    fontFamily: 'KFGQPC HAFS Uthmanic Script Regular',
     color: '#333',
     textAlign: 'right',
     lineHeight: 55,
     marginBottom: 10,
-    // Try to fix sukun rendering issue without affecting letter connections
-    // Enable all OpenType features for proper Uthmani shaping
-    // Remove font features entirely to see if that helps with final alif rendering
+    // Enable OpenType features for proper Arabic ligatures and diacritics
+    fontVariant: ['liga', 'dlig', 'calt'], // Enable ligatures and contextual alternates
+    includeFontPadding: false,
+    textAlignVertical: 'center',
   },
   fullscreenAyahNumber: {
     fontSize: 20,

@@ -53,6 +53,9 @@ const HighlightedArabicText = ({
       marginVertical: fontSize * 0.1,
       textAlign: 'center',
       includeFontPadding: false,
+      // Enable OpenType features for proper Arabic ligatures and diacritics
+      fontVariant: ['liga', 'dlig', 'calt'], // Enable ligatures and contextual alternates
+      textAlignVertical: 'center',
     };
     
     return style;

@@ -234,6 +234,8 @@ export const LanguageProvider = ({ children }) => {
       'audio_only_for_ayahs': 'Audio is only available for Quranic ayahs.',
       'choose_reciter': 'Choose Reciter',
       'reciter_selection': 'Reciter Selection',
+      'mushaf_view': 'Mushaf View',
+      'mushaf_instructions': 'Long press to hide ayah',
       
       // Surah names in English
       'surah_1': 'Al-Fatihah',
@@ -499,6 +501,8 @@ export const LanguageProvider = ({ children }) => {
       'audio_only_for_ayahs': 'الصوت متاح فقط لآيات القرآن.',
       'choose_reciter': 'اختر القارئ',
       'reciter_selection': 'اختيار القارئ',
+      'mushaf_view': 'عرض المصحف',
+      'mushaf_instructions': 'اضغط مطولاً لإخفاء الآية',
       
       // Surah names in Arabic
       'surah_1': 'الفاتحة',
