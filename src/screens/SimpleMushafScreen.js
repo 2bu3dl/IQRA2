@@ -485,8 +485,9 @@ export default function SimpleMushafScreen({ navigation, route }) {
 
   // Handle pinch zoom
   const handlePinch = (event) => {
-    console.log('Pinch gesture detected:', event.nativeEvent.scale);
+    console.log('🔥 PINCH DETECTED! Scale:', event.nativeEvent.scale, 'baseScale:', baseScale);
     const newScale = baseScale * event.nativeEvent.scale;
+    console.log('🔥 Setting scale to:', newScale);
     setScale(newScale);
   };
 
@@ -496,8 +497,8 @@ export default function SimpleMushafScreen({ navigation, route }) {
     setBaseScale(newScale);
     setLastScale(newScale);
     
-    // Limit zoom range
-    const clampedScale = Math.max(0.5, Math.min(3.0, newScale));
+    // Limit zoom range - minimum is 1.0 (default), maximum is 3.0
+    const clampedScale = Math.max(1.0, Math.min(3.0, newScale));
     setScale(clampedScale);
     setBaseScale(clampedScale);
     setLastScale(clampedScale);
@@ -617,24 +618,25 @@ export default function SimpleMushafScreen({ navigation, route }) {
       </View>
 
       {/* Page image - edge to edge */}
-      <View style={styles.imageContainer}>
-        <PinchGestureHandler
-          onGestureEvent={handlePinch}
-          onHandlerStateChange={({ nativeEvent }) => {
-            if (nativeEvent.state === State.END) {
-              handlePinchEnd({ nativeEvent });
-            }
-          }}
-          simultaneousHandlers={[]}
-          shouldCancelWhenOutside={false}
-        >
+      <PinchGestureHandler
+        onGestureEvent={handlePinch}
+        onHandlerStateChange={({ nativeEvent }) => {
+          console.log('Pinch state change:', nativeEvent.state);
+          if (nativeEvent.state === State.END) {
+            handlePinchEnd({ nativeEvent });
+          }
+        }}
+        minPointers={2}
+        maxPointers={2}
+      >
+        <View style={styles.imageContainer}>
           <ImageBackground
             source={getPageImage(page)}
             style={[styles.pageImage, { transform: [{ scale }] }]}
             resizeMode="contain"
           >
-          {/* Sliding block */}
-          {isHideMode && (
+        {/* Sliding block */}
+        {isHideMode && (
             <>
               <Animated.View
                 style={[
@@ -662,7 +664,6 @@ export default function SimpleMushafScreen({ navigation, route }) {
                       handleBlockDragEnd({ nativeEvent });
                     }
                   }}
-                  simultaneousHandlers={[]}
                   shouldCancelWhenOutside={false}
                 >
                   <Animated.View style={styles.blockContent}>
@@ -678,7 +679,6 @@ export default function SimpleMushafScreen({ navigation, route }) {
                       handleResizeDragEnd({ nativeEvent });
                     }
                   }}
-                  simultaneousHandlers={[]}
                   shouldCancelWhenOutside={false}
                 >
                   <View 
@@ -704,8 +704,8 @@ export default function SimpleMushafScreen({ navigation, route }) {
             </>
           )}
           </ImageBackground>
-        </PinchGestureHandler>
-      </View>
+        </View>
+      </PinchGestureHandler>
 
       {/* Bottom controls */}
       <View style={styles.bottomControls}>
