@@ -609,7 +609,9 @@ const pages = [
 ];
 
 export default function getPageImage(pageNumber) {
-  const idx = (pageNumber | 0) - 1;
+  // Account for image files being offset by one (page 293 file contains page 292 content)
+  const idx = (pageNumber | 0);
+  console.log(`getPageImage(${pageNumber}) -> idx: ${idx} -> pages[${idx}] (offset by +1)`);
   return pages[idx] || pages[0];
 }
 

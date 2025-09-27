@@ -2425,6 +2425,8 @@ const MemorizationScreen = ({ route, navigation }) => {
   const [isAtBottom, setIsAtBottom] = useState(false);
   const [showTranslationView, setShowTranslationView] = useState(false);
   const [currentTranslator, setCurrentTranslator] = useState('sahih');
+  const [isMushafButtonPressed, setIsMushafButtonPressed] = useState(false);
+  const [isHomeButtonPressed, setIsHomeButtonPressed] = useState(false);
 
   const fontCandidates = ['UthmanTN_v2-0', 'UthmanTN', 'KFGQPC HAFS Uthmanic Script Regular', 'HAFS Uthmanic Script'];
   const fontFamily = fontCandidates[currentAyahIndex % fontCandidates.length];
@@ -2679,9 +2681,12 @@ const MemorizationScreen = ({ route, navigation }) => {
         <SafeAreaView style={[styles.container, { backgroundColor: 'transparent' }]}>
       <View style={styles.headerWithHome}>
         <View style={styles.homeIconColumn}>
-          <Animated.View style={[styles.homeIconContainer]}>
+          <Animated.View style={[styles.homeIconContainer, isHomeButtonPressed && styles.homeButtonActive]}>
             <TouchableOpacity
               style={styles.homeButton}
+              onPressIn={() => setIsHomeButtonPressed(true)}
+              onPressOut={() => setIsHomeButtonPressed(false)}
+              activeOpacity={1.0}
                 onPress={async () => {
                   // Explicitly save current position
                   try {
@@ -2703,11 +2708,13 @@ const MemorizationScreen = ({ route, navigation }) => {
         </Animated.View>
         {/* Open Quran (Mushaf) quick access under app icon */}
         <View style={styles.mushafQuickAccessContainer}>
-          <Animated.View style={[styles.homeIconContainer]}>
+          <Animated.View style={[styles.homeIconContainer, isMushafButtonPressed && styles.mushafQuickButtonActive]}>
             <TouchableOpacity
               style={styles.mushafQuickButton}
               onPress={() => navigation.navigate('Mushaf', { pageNumber: 1 })}
-              activeOpacity={0.8}
+              onPressIn={() => setIsMushafButtonPressed(true)}
+              onPressOut={() => setIsMushafButtonPressed(false)}
+              activeOpacity={1.0}
             >
               <Image 
                 source={require('../assets/openQuran.png')} 
@@ -3237,7 +3244,7 @@ const MemorizationScreen = ({ route, navigation }) => {
                       minHeight: 40,
                       alignItems: 'center',
                       justifyContent: 'center',
-                      borderRadius: 12,
+                      borderRadius: 25, // Further increased for more rounded appearance
                       borderWidth: 2,
                       borderColor: isCurrentBatchHidden ? '#5b7f67' : 'rgba(165,115,36,0.8)', // Green outline when hidden, Orange outline when uncovered
                       borderLeftWidth: 0,
@@ -3268,7 +3275,7 @@ const MemorizationScreen = ({ route, navigation }) => {
                     minHeight: 40,
                     alignItems: 'center',
                     justifyContent: 'center',
-                    borderRadius: 12,
+                    borderRadius: 25, // Further increased for more rounded appearance
                     borderWidth: 2,
                     borderColor: isTextHidden ? 'rgba(165,115,36,0.8)' : '#5b7f67',
                     marginHorizontal: 20,
@@ -5005,14 +5012,26 @@ const styles = StyleSheet.create({
     padding: SIZES.large,
   },
   homeButton: {
-    marginRight: SIZES.medium,
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: 'transparent',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   homeIconContainer: {
     shadowColor: '#fae29f',
     shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.5,
-    shadowRadius: 15,
-    elevation: 10,
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  homeButtonActive: {
+    shadowColor: '#fae29f',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.8,
+    shadowRadius: 18,
+    elevation: 12,
   },
   homeIcon: {
     width: 64,
@@ -5024,12 +5043,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginLeft: 0,
+    width: 64, // Fixed width to match button size
   },
   mushafQuickAccessContainer: {
-    marginTop: 8,
+    marginTop: 2, // Reduced from 8 to bring closer to app icon
     alignItems: 'center',
     justifyContent: 'center',
     marginLeft: 0,
+    width: 64, // Same width as homeIconColumn
   },
   mushafQuickButton: {
     padding: 0,
@@ -5039,6 +5060,13 @@ const styles = StyleSheet.create({
     height: 64,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  mushafQuickButtonActive: {
+    shadowColor: '#fae29f',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 1.0,
+    shadowRadius: 15,
+    elevation: 10,
   },
   mushafQuickIcon: {
     width: 48,
@@ -5051,28 +5079,36 @@ const styles = StyleSheet.create({
     paddingRight: 20,
   },
   progressContainer: {
-    marginTop: SIZES.small,
+    marginTop: 0, // Removed top margin to bring progress bar closer to header
     width: '80%',
+    marginBottom: 0, // Reset to normal margin
   },
   content: {
     flex: 1,
-    padding: SIZES.medium,
-    justifyContent: 'center',
-    paddingBottom: SIZES.extraLarge * 3,
+    padding: 0, // Removed all padding to maximize card space
+    justifyContent: 'flex-start',
+    paddingTop: 0,
+    paddingBottom: 0, // Removed bottom padding to extend card further
+    marginTop: 0, // Reset to normal margin
   },
   flashcard: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
+    paddingTop: 0, // Removed top padding to maximize space
   },
   card: {
-    padding: SIZES.extraLarge * 1.5,
+    padding: SIZES.small, // Further reduced padding to extend card
+    paddingTop: 0, // Removed top padding to bring content closer to top
+    paddingBottom: SIZES.small, // Minimal bottom padding
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
     backgroundColor: '#F5E6C8',
     borderColor: COLORS.accent,
     borderWidth: 1,
     width: '100%',
-    maxHeight: '85%',
+    flex: 1, // Uses all available space
+    minHeight: '75%', // Increased minimum height to extend card further
+    marginTop: -SIZES.medium, // Negative margin to shift card up toward progress bar
   },
   arabicText: {
     lineHeight: 140,
@@ -5093,6 +5129,7 @@ const styles = StyleSheet.create({
   navButton: {
     flex: 1,
     marginHorizontal: SIZES.small,
+    paddingVertical: SIZES.small, // Reduced vertical padding
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
@@ -5253,7 +5290,7 @@ const styles = StyleSheet.create({
   },
   revealButtonNew: {
     backgroundColor: '#F5E6C8',
-    borderRadius: 20,
+    borderRadius: 30, // Further increased for more rounded appearance
     padding: SIZES.small,
     borderWidth: 3,
     borderColor: 'rgba(51, 105, 78, 0.7)',
@@ -5386,7 +5423,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: SIZES.large,
+    marginTop: SIZES.small, // Added small gap between card and navigation buttons
     paddingHorizontal: SIZES.large,
   },
   bookmarkButton: {
