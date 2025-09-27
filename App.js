@@ -24,6 +24,9 @@ console.log('✅ SurahListScreen imported successfully');
 import MemorizationScreen from './src/screens/MemorizationScreen';
 console.log('✅ MemorizationScreen imported successfully');
 
+import SimpleMushafScreen from './src/screens/SimpleMushafScreen';
+console.log('✅ SimpleMushafScreen imported successfully');
+
 import AuthScreen from './src/screens/AuthScreen';
 console.log('✅ AuthScreen imported successfully');
 
@@ -122,6 +125,7 @@ function App() {
             <Stack.Screen name="Home" component={HomeScreen} />
             <Stack.Screen name="SurahList" component={SurahListScreen} />
             <Stack.Screen name="Memorization" component={MemorizationScreen} />
+            <Stack.Screen name="Mushaf" component={SimpleMushafScreen} />
             <Stack.Screen name="Auth" component={AuthScreen} />
             <Stack.Screen name="ProfileDashboard" component={ProfileDashboard} />
             <Stack.Screen name="Profile" component={ProfileScreen} />

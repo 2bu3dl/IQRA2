@@ -1,5 +1,6 @@
 import React, { useState, useRef, memo, useMemo, useEffect, useCallback } from 'react';
-import { View, StyleSheet, SafeAreaView, TouchableOpacity, Modal, Animated, Image, ScrollView, TextInput, ImageBackground, TouchableWithoutFeedback, Alert, Pressable, Easing, Platform } from 'react-native';
+import { Dimensions, ImageBackground } from 'react-native';
+import { View, StyleSheet, SafeAreaView, TouchableOpacity, Modal, Animated, Image, ScrollView, TextInput, TouchableWithoutFeedback, Alert, Pressable, Easing, Platform } from 'react-native';
 import { COLORS as BASE_COLORS, SIZES, FONTS } from '../utils/theme';
 import quranTransliterations from '../assets/quran_transliterations.json';
 import { 
@@ -88,6 +89,7 @@ const MemorizationScreen = ({ route, navigation }) => {
     
     // Only remove specific Unicode characters that create unwanted superscript circles
     // PRESERVE essential diacritics like hamzeh (madda), waw, yeh that are needed for proper ligatures
+    // ALSO remove ayah end markers since we add our own custom ones
     return text
       .replace(/\u06E1/g, '') // ARABIC SMALL HIGH DOTLESS HEAD OF KHAH
       .replace(/\u06DF/g, '') // ARABIC SMALL HIGH ROUNDED ZERO  
@@ -104,7 +106,14 @@ const MemorizationScreen = ({ route, navigation }) => {
       .replace(/\u06EA/g, '') // ARABIC EMPTY CENTRE LOW STOP
       .replace(/\u06EB/g, '') // ARABIC EMPTY CENTRE HIGH STOP
       .replace(/\u06EC/g, '') // ARABIC ROUNDED HIGH STOP WITH FILLED CENTRE
-      .replace(/\u06ED/g, ''); // ARABIC SMALL LOW MEEM
+      .replace(/\u06ED/g, '') // ARABIC SMALL LOW MEEM
+      .replace(/\u06DD/g, '') // ARABIC END OF AYAH - remove existing ayah markers since we add our own
+      .replace(/\u06DE/g, '') // ARABIC START OF RUB EL HIZB
+      .replace(/\u06D6/g, '') // ARABIC SMALL HIGH LIGATURE SAD WITH LAM WITH ALEF MAKSURA
+      .replace(/\u06D7/g, '') // ARABIC SMALL HIGH LIGATURE QAF WITH LAM WITH ALEF MAKSURA
+      .replace(/\u06D8/g, '') // ARABIC SMALL HIGH MEEM INITIAL FORM
+      .replace(/\u06D9/g, '') // ARABIC SMALL HIGH LAM ALEF
+      .replace(/\u06DC/g, ''); // ARABIC SMALL HIGH SEEN
   }; // Assume font is loaded by default
   
   const { surah, resumeFromIndex, targetAyah, isFullscreen: shouldStartFullscreen } = route.params || {};
@@ -1335,11 +1344,259 @@ const MemorizationScreen = ({ route, navigation }) => {
     hapticSelection();
     setShowMushafView(!showMushafView);
     
-    // Calculate which page the current ayah is on
+    // Ensure only one mushaf view is active at a time
     if (!showMushafView) {
+      setShowMushaf2View(false);
       const pageNumber = calculatePageForAyah(localSurahNumber, currentAyahIndex + 1);
       setCurrentMushafPage(pageNumber);
     }
+  };
+
+  // Toggle Mushaf 2 (coordinate-based) view
+  const handleMushaf2ViewToggle = () => {
+    hapticSelection();
+    setShowMushaf2View(!showMushaf2View);
+    
+    // Ensure only one mushaf view is active at a time
+    if (!showMushaf2View) {
+      setShowMushafView(false);
+      const pageNumber = calculatePageForAyah(localSurahNumber, currentAyahIndex + 1);
+      setCurrentMushaf2Page(pageNumber);
+    }
+  };
+
+  // Load coordinate data for a specific page
+  const loadPageCoordinates = async (pageNumber) => {
+    try {
+      const getCoords = require('../assets/quran-ayah-coords-main/glyph_coords/index.js').default;
+      const coordData = getCoords(pageNumber);
+      return Array.isArray(coordData) ? coordData : [];
+    } catch (error) {
+      console.error(`Error loading coordinates for page ${pageNumber}:`, error);
+      return [];
+    }
+  };
+
+  // Get ayahs for current page using coordinate data
+  const getAyahsForMushaf2Page = async (pageNumber) => {
+    try {
+      const coordData = await loadPageCoordinates(pageNumber);
+      
+      // Group coordinates by line number for proper rendering
+      const lineGroups = {};
+      coordData.forEach(coord => {
+        if (!lineGroups[coord.line_number]) {
+          lineGroups[coord.line_number] = [];
+        }
+        lineGroups[coord.line_number].push(coord);
+      });
+
+      // Sort lines and positions within each line
+      const sortedLines = Object.keys(lineGroups)
+        .sort((a, b) => parseInt(a) - parseInt(b))
+        .map(lineNum => {
+          const line = lineGroups[lineNum];
+          line.sort((a, b) => a.position - b.position);
+          return {
+            lineNumber: parseInt(lineNum),
+            ayahs: line
+          };
+        });
+
+      return sortedLines;
+    } catch (error) {
+      console.error('Error processing coordinate data:', error);
+      return [];
+    }
+  };
+
+  // Get ayah text by surah and ayah number
+  const getAyahText = (surahNumber, ayahNumber) => {
+    try {
+      // Find the ayah in our current flashcards or use a lookup
+      const ayahCard = flashcards.find(card => 
+        card.type === 'ayah' && 
+        card.surah === surahNumber && 
+        card.ayah === ayahNumber
+      );
+      
+      if (ayahCard) {
+        return ayahCard.text;
+      }
+      
+      // Fallback: if not in current surah, return placeholder
+      return `[${surahNumber}:${ayahNumber}]`;
+    } catch (error) {
+      console.error(`Error getting text for ayah ${surahNumber}:${ayahNumber}`, error);
+      return `[${surahNumber}:${ayahNumber}]`;
+    }
+  };
+
+  // Mushaf Coordinate Renderer Component
+  const MushafCoordinateRenderer = ({ 
+    pageNumber, 
+    getAyahsForPage, 
+    getAyahText, 
+    removeSuperscriptCircles,
+    toUthmanicNumber,
+    language,
+    hiddenAyahs,
+    hideAll,
+    showTranslation,
+    getCurrentTranslation,
+    onAyahHide 
+  }) => {
+    const [coords, setCoords] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [bounds, setBounds] = useState({ minX: 0, maxX: 1, minY: 0, maxY: 1 });
+    const [canvas, setCanvas] = useState({ width: 0, height: 0 });
+
+    useEffect(() => {
+      const loadPageData = async () => {
+        setLoading(true);
+        try {
+          const data = await loadPageCoordinates(pageNumber);
+          setCoords(Array.isArray(data) ? data : []);
+
+          if (Array.isArray(data) && data.length > 0) {
+            let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+            for (const c of data) {
+              if (typeof c.min_x === 'number' && typeof c.max_x === 'number' && typeof c.min_y === 'number' && typeof c.max_y === 'number') {
+                if (c.min_x < minX) minX = c.min_x;
+                if (c.max_x > maxX) maxX = c.max_x;
+                if (c.min_y < minY) minY = c.min_y;
+                if (c.max_y > maxY) maxY = c.max_y;
+              }
+            }
+            if (!isFinite(minX) || !isFinite(minY) || !isFinite(maxX) || !isFinite(maxY)) {
+              setBounds({ minX: 0, maxX: 1, minY: 0, maxY: 1 });
+            } else {
+              setBounds({ minX, maxX, minY, maxY });
+            }
+          } else {
+            setBounds({ minX: 0, maxX: 1, minY: 0, maxY: 1 });
+          }
+        } catch (error) {
+          console.error('Error loading page data:', error);
+          setCoords([]);
+          setBounds({ minX: 0, maxX: 1, minY: 0, maxY: 1 });
+        }
+        setLoading(false);
+      };
+
+      loadPageData();
+    }, [pageNumber]);
+
+    const onLayout = useCallback((e) => {
+      let width = e?.nativeEvent?.layout?.width || 0;
+      if (!width || width < 10) {
+        // Fallback to screen width minus padding
+        const screenW = Dimensions.get('window').width;
+        width = Math.max(320, screenW - 40);
+      }
+      const pageW = Math.max(1, bounds.maxX - bounds.minX);
+      const pageH = Math.max(1, bounds.maxY - bounds.minY);
+      // Maintain page aspect ratio
+      const height = width * (pageH / pageW);
+      const finalHeight = Math.max(200, height);
+      setCanvas({ width, height: finalHeight });
+    }, [bounds]);
+
+    if (loading) {
+      return (
+        <View style={styles.mushaf2LoadingContainer}>
+          <Text style={styles.mushaf2LoadingText}>
+            {language === 'ar' ? 'جاري التحميل...' : 'Loading...'}
+          </Text>
+        </View>
+      );
+    }
+
+    if (!coords || coords.length === 0) {
+      return (
+        <View style={styles.mushaf2ErrorContainer}>
+          <Text style={styles.mushaf2ErrorText}>
+            {language === 'ar' 
+              ? `لا توجد بيانات للصفحة ${toArabicNumber(pageNumber)}`
+              : `No data available for page ${pageNumber}`
+            }
+          </Text>
+        </View>
+      );
+    }
+
+    const pageW = Math.max(1, bounds.maxX - bounds.minX);
+    const pageH = Math.max(1, bounds.maxY - bounds.minY);
+    const scaleX = canvas.width > 0 ? (canvas.width / pageW) : 1;
+    const scaleY = canvas.height > 0 ? (canvas.height / pageH) : 1;
+
+    return (
+      <View style={styles.mushaf2CoordinateContainer}>
+        <View style={styles.mushaf2TextContainer} onLayout={onLayout}>
+          <View
+            style={[styles.mushaf2Canvas, { height: Math.max(600, canvas.height) }]}
+          >
+            {coords.map((c, idx) => {
+              const ayahKey = `${c.surah_number}-${c.ayah_number}`;
+              const isHidden = hideAll || hiddenAyahs[ayahKey];
+              const left = Math.round((c.min_x - bounds.minX) * scaleX);
+              const top = Math.round((c.min_y - bounds.minY) * scaleY);
+              const width = Math.max(2, Math.round((c.max_x - c.min_x) * scaleX));
+              const height = Math.max(2, Math.round((c.max_y - c.min_y) * scaleY));
+              
+              // Get ayah text for this coordinate
+              const ayahText = getAyahText(c.surah_number, c.ayah_number);
+              
+              return (
+                <TouchableOpacity
+                  key={`ayah-${idx}`}
+                  style={[
+                    styles.mushaf2AyahOverlay,
+                    { left, top, width, height },
+                    isHidden && styles.mushaf2AyahSegmentHidden
+                  ]}
+                  activeOpacity={0.7}
+                  onLongPress={() => onAyahHide(ayahKey)}
+                >
+                  {isHidden ? (
+                    <View style={styles.mushaf2HiddenBar} />
+                  ) : (
+                    <Text style={styles.mushaf2AyahTextOverlay}>
+                      {removeSuperscriptCircles(ayahText)}
+                      {c.position === 1 && (
+                        <Text style={styles.mushaf2AyahNumberOverlay}>
+                          {' '}{toUthmanicNumber(c.ayah_number)}
+                        </Text>
+                      )}
+                    </Text>
+                  )}
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </View>
+
+        {showTranslation && (
+          <View style={styles.mushaf2TranslationSection}>
+            {coords
+              .filter((c, i, arr) => arr.findIndex(a => a.surah_number === c.surah_number && a.ayah_number === c.ayah_number) === i)
+              .map(c => {
+                const ayahKey = `${c.surah_number}-${c.ayah_number}`;
+                const isHidden = hideAll || hiddenAyahs[ayahKey];
+                if (isHidden) return null;
+                return (
+                  <Text key={ayahKey} style={styles.mushaf2TranslationText}>
+                    <Text style={styles.mushaf2TranslationNumber}>
+                      {c.surah_number}:{c.ayah_number}.
+                    </Text>
+                    {' '}{getCurrentTranslation('sahih', c.surah_number, c.ayah_number)}
+                  </Text>
+                );
+              })}
+          </View>
+        )}
+      </View>
+    );
   };
 
   // Navigate to previous page in Mushaf view with animation
@@ -2140,6 +2397,13 @@ const MemorizationScreen = ({ route, navigation }) => {
   const [mushafAudioPlaying, setMushafAudioPlaying] = useState(false);
   const [mushafCurrentAyahIndex, setMushafCurrentAyahIndex] = useState(0);
   const [mushafShowTranslation, setMushafShowTranslation] = useState(false);
+
+  // Mushaf 2 view state (coordinate-based)
+  const [showMushaf2View, setShowMushaf2View] = useState(false);
+  const [currentMushaf2Page, setCurrentMushaf2Page] = useState(1);
+  const [mushaf2HiddenAyahs, setMushaf2HiddenAyahs] = useState({});
+  const [mushaf2HideAll, setMushaf2HideAll] = useState(false);
+  const [mushaf2ShowTranslation, setMushaf2ShowTranslation] = useState(false);
   
   // Handle fullscreen state from navigation params
   useEffect(() => {
@@ -2414,9 +2678,10 @@ const MemorizationScreen = ({ route, navigation }) => {
       >
         <SafeAreaView style={[styles.container, { backgroundColor: 'transparent' }]}>
       <View style={styles.headerWithHome}>
-        <Animated.View style={[styles.homeIconContainer]}>
-          <TouchableOpacity
-            style={styles.homeButton}
+        <View style={styles.homeIconColumn}>
+          <Animated.View style={[styles.homeIconContainer]}>
+            <TouchableOpacity
+              style={styles.homeButton}
                 onPress={async () => {
                   // Explicitly save current position
                   try {
@@ -2436,6 +2701,23 @@ const MemorizationScreen = ({ route, navigation }) => {
                 <Image source={language === 'ar' ? require('../assets/IQRA2iconArabicoctagon.png') : require('../assets/IQRA2iconoctagon.png')} style={[styles.homeIcon]} resizeMode="contain" />
           </TouchableOpacity>
         </Animated.View>
+        {/* Open Quran (Mushaf) quick access under app icon */}
+        <View style={styles.mushafQuickAccessContainer}>
+          <Animated.View style={[styles.homeIconContainer]}>
+            <TouchableOpacity
+              style={styles.mushafQuickButton}
+              onPress={() => navigation.navigate('Mushaf', { pageNumber: 1 })}
+              activeOpacity={0.8}
+            >
+              <Image 
+                source={require('../assets/openQuran.png')} 
+                style={styles.mushafQuickIcon}
+                resizeMode="contain"
+              />
+            </TouchableOpacity>
+          </Animated.View>
+        </View>
+        </View>
         <View style={styles.headerTextContainer}>
               <Text variant="h2" style={{ textAlign: 'center', width: '100%', color: '#5b7f67' }}>
                 {language === 'ar' ? t(`surah_${localSurahNumber}`) : (getDisplaySurahName(localSurahNumber) || 'Surah')}
@@ -4176,53 +4458,25 @@ const MemorizationScreen = ({ route, navigation }) => {
                   </Text>
                 </View>
                 
-                {/* OpenQuran Logo - Mushaf View Toggle */}
-                <TouchableOpacity
-                  style={styles.openQuranLogoContainer}
-                  onPress={handleMushafViewToggle}
-                  activeOpacity={0.7}
-                >
-                  <Image 
-                    source={require('../assets/openQuran.png')} 
-                    style={styles.openQuranLogo}
-                    resizeMode="contain"
-                  />
-                  <Text style={styles.mushafViewText}>
-                    {t('mushaf_view')}
-                  </Text>
-                </TouchableOpacity>
+                {/* Mushaf View Buttons Container */}
+                <View style={styles.mushafButtonsContainer}>
+                  {/* Page View (formerly Mushaf View) */}
+                  <TouchableOpacity
+                    style={[styles.mushafToggleButton, showMushafView && styles.mushafToggleButtonActive]}
+                    onPress={handleMushafViewToggle}
+                    activeOpacity={0.7}
+                  >
+                    <Image 
+                      source={require('../assets/openQuran.png')} 
+                      style={styles.mushafToggleLogo}
+                      resizeMode="contain"
+                    />
+                    <Text style={[styles.mushafToggleText, showMushafView && styles.mushafToggleTextActive]}>
+                      Page view
+                    </Text>
+                  </TouchableOpacity>
+                </View>
 
-                {/* Page navigation for Mushaf view - shown under logo */}
-                {showMushafView && (
-                  <View style={styles.mushafPageNavigation}>
-                    <TouchableOpacity
-                      style={[styles.mushafNavButton, currentMushafPage <= 1 && styles.mushafNavButtonDisabled]}
-                      onPress={handlePreviousPage}
-                      disabled={currentMushafPage <= 1}
-                      activeOpacity={0.7}
-                    >
-                      <Text style={styles.mushafNavButtonText}>‹</Text>
-                    </TouchableOpacity>
-                    
-                    <View style={styles.mushafPageInfo}>
-                      <Text style={styles.mushafPageNumber}>
-                        {language === 'ar' ? `صفحة ${toArabicNumber(currentMushafPage)}` : `Page ${currentMushafPage}`}
-                      </Text>
-                      <Text style={styles.mushafPageTotal}>
-                        {language === 'ar' ? `من ${toArabicNumber(604)}` : `of 604`}
-                      </Text>
-                    </View>
-                    
-                    <TouchableOpacity
-                      style={[styles.mushafNavButton, currentMushafPage >= 604 && styles.mushafNavButtonDisabled]}
-                      onPress={handleNextPage}
-                      disabled={currentMushafPage >= 604}
-                      activeOpacity={0.7}
-                    >
-                      <Text style={styles.mushafNavButtonText}>›</Text>
-                    </TouchableOpacity>
-                  </View>
-                )}
               </View>
               
               <TouchableOpacity
@@ -4282,11 +4536,11 @@ const MemorizationScreen = ({ route, navigation }) => {
             </View>
             
             {/* Top border for ayah list */}
-            {!showTranslationView && !showMushafView && (
+            {!showTranslationView && !showMushafView && !showMushaf2View && (
               <View style={styles.fullscreenListTopBorder} />
             )}
             
-            {/* Translation view, Mushaf view, or ayah list */}
+            {/* Translation view, Mushaf view, Mushaf 2 view, or ayah list */}
             {showMushafView ? (
               <View style={styles.mushafViewContainer}>
                 
@@ -4301,69 +4555,115 @@ const MemorizationScreen = ({ route, navigation }) => {
                       return (
                         <>
 
-                          {/* Ayah text container with 15-line layout */}
-                          <View style={styles.mushafPageTextContainer}>
-                            {pageData.ayahs.map((ayah, index) => {
-                              const ayahNumber = index + 1;
-                              const isHidden = mushafHideAll || mushafHiddenAyahs[index];
-                              
-                              return (
-                                <View key={`mushaf-line-${index}`} style={styles.mushafAyahContainer}>
-                                  <TouchableOpacity
-                                    style={[
-                                      styles.mushafLineContainer,
-                                      isHidden && styles.mushafLineContainerHidden
-                                    ]}
-                                    onLongPress={() => handleMushafAyahHide(index)}
-                                    onPress={() => isHidden && handleMushafAyahHide(index)}
-                                    activeOpacity={0.7}
-                                    delayLongPress={500}
-                                  >
-                                    {isHidden ? (
-                                      <View style={styles.mushafSolidHighlightBar}>
-                                        {/* Solid rounded highlight bar - no text */}
-                                      </View>
-                                    ) : (
-                                      <View style={styles.mushafArabicTextContainer}>
-                                        {/* Physical Mushaf style: continuous text flow with embedded ayah numbers */}
-                                        <Text style={[
-                                          styles.mushafAyahText,
-                                          mushafAudioPlaying && mushafCurrentAyahIndex === index && styles.mushafAyahTextHighlighted
-                                        ]}>
-                                          {removeSuperscriptCircles(ayah.text)}
-                                          <Text style={styles.mushafAyahNumber}>
-                                            {' '}{toUthmanicNumber(ayahNumber)}{' '}
-                                          </Text>
-                                        </Text>
-                                      </View>
-                                    )}
-                                  </TouchableOpacity>
-                                  
-                                  {/* Translation section under Arabic text */}
-                                  {mushafShowTranslation && !isHidden && (
-                                    <View style={styles.mushafTranslationContainer}>
-                                      <Text style={styles.mushafTranslationText}>
-                                        {getCurrentTranslation('sahih', localSurahNumber, ayahNumber)}
-                                      </Text>
-                                    </View>
-                                  )}
-                                </View>
-                              );
-                            })}
-                          </View>
-
-                          {/* Page footer with page number */}
-                          <View style={styles.mushafPageFooter}>
-                            <Text style={styles.mushafPageNumberFooter}>
-                              {language === 'ar' ? toArabicNumber(currentMushafPage) : currentMushafPage}
+                          {/* Mushaf-style continuous text container */}
+                          <TouchableOpacity 
+                            style={styles.mushafPageTextContainer}
+                            activeOpacity={1}
+                          >
+                            <Text style={styles.mushafContinuousText}>
+                              {pageData.ayahs.map((ayah, index) => {
+                                const ayahNumber = index + 1;
+                                const isHidden = mushafHideAll || mushafHiddenAyahs[index];
+                                
+                                if (isHidden) {
+                                  return (
+                                    <Text key={`hidden-${index}`} style={styles.mushafHiddenText}>
+                                      {'●'.repeat(Math.min(ayah.text.length / 10, 20))} {/* Placeholder dots for hidden ayah */}
+                                    </Text>
+                                  );
+                                }
+                                
+                                return (
+                                  <Text key={`ayah-${index}`}>
+                                    <Text 
+                                      style={[
+                                        styles.mushafAyahTextInline,
+                                        mushafAudioPlaying && mushafCurrentAyahIndex === index && styles.mushafAyahTextHighlighted
+                                      ]}
+                                      onLongPress={() => handleMushafAyahHide(index)}
+                                    >
+                                      {removeSuperscriptCircles(ayah.text)}
+                                    </Text>
+                                    <Text style={styles.mushafAyahNumberInline}>
+                                      {toUthmanicNumber(ayahNumber)}
+                                    </Text>
+                                    {index < pageData.ayahs.length - 1 && ' '} {/* Space between ayahs */}
+                                  </Text>
+                                );
+                              }).reduce((acc, curr, index) => {
+                                // Join ayahs with proper spacing, similar to physical mushaf
+                                if (index === 0) return [curr];
+                                return [...acc, ' ', curr];
+                              }, [])}
                             </Text>
-                          </View>
+                            
+                            {/* Translation section - shown below the continuous Arabic text */}
+                            {mushafShowTranslation && (
+                              <View style={styles.mushafTranslationContainer}>
+                                {pageData.ayahs.map((ayah, index) => {
+                                  const ayahNumber = index + 1;
+                                  const isHidden = mushafHideAll || mushafHiddenAyahs[index];
+                                  
+                                  if (isHidden) return null;
+                                  
+                                  return (
+                                    <Text key={`translation-${index}`} style={styles.mushafTranslationText}>
+                                      <Text style={styles.mushafTranslationAyahNumber}>
+                                        {ayahNumber}.
+                                      </Text>
+                                      {' '}{getCurrentTranslation('sahih', localSurahNumber, ayahNumber)}
+                                    </Text>
+                                  );
+                                })}
+                              </View>
+                            )}
+                          </TouchableOpacity>
+
                         </>
                       );
                     })()}
                   </View>
                 </ScrollView>
                 
+              </View>
+            ) : showMushaf2View ? (
+              <View style={styles.mushaf2ViewContainer}>
+                {/* Mushaf 2 page content - coordinate-based rendering */}
+                <ScrollView 
+                  style={styles.mushaf2PageContent}
+                  showsVerticalScrollIndicator={false}
+                >
+                  <View style={styles.mushaf2Page}>
+                    {/* Page header */}
+                    <View style={styles.mushaf2PageHeader}>
+                      <Text style={styles.mushaf2PageNumber}>
+                        {language === 'ar' ? `صفحة ${toArabicNumber(currentMushaf2Page)}` : `Page ${currentMushaf2Page}`}
+                      </Text>
+                    </View>
+
+                    {/* Coordinate-based ayah rendering */}
+                    <View style={styles.mushaf2TextContainer}>
+                      <MushafCoordinateRenderer 
+                        pageNumber={currentMushaf2Page}
+                        getAyahsForPage={getAyahsForMushaf2Page}
+                        getAyahText={getAyahText}
+                        removeSuperscriptCircles={removeSuperscriptCircles}
+                        toUthmanicNumber={toUthmanicNumber}
+                        language={language}
+                        hiddenAyahs={mushaf2HiddenAyahs}
+                        hideAll={mushaf2HideAll}
+                        showTranslation={mushaf2ShowTranslation}
+                        getCurrentTranslation={getCurrentTranslation}
+                        onAyahHide={(ayahKey) => {
+                          setMushaf2HiddenAyahs(prev => ({
+                            ...prev,
+                            [ayahKey]: !prev[ayahKey]
+                          }));
+                        }}
+                      />
+                    </View>
+                  </View>
+                </ScrollView>
               </View>
             ) : showTranslationView ? (
               <View style={styles.translationViewContainer}>
@@ -4718,6 +5018,31 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: 80,
+  },
+  homeIconColumn: {
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: 0,
+  },
+  mushafQuickAccessContainer: {
+    marginTop: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: 0,
+  },
+  mushafQuickButton: {
+    padding: 0,
+    borderRadius: 32,
+    backgroundColor: 'transparent',
+    width: 64,
+    height: 64,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  mushafQuickIcon: {
+    width: 48,
+    height: 48,
   },
   headerTextContainer: {
     flex: 1,
@@ -5191,6 +5516,43 @@ const styles = StyleSheet.create({
     fontFamily: 'Montserrat-Regular',
     textAlign: 'center',
   },
+  // New Mushaf Toggle Buttons Styles
+  mushafButtonsContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 15,
+    paddingVertical: 8,
+  },
+  mushafToggleButton: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    backgroundColor: 'rgba(139, 115, 85, 0.1)',
+    borderWidth: 1,
+    borderColor: 'rgba(139, 115, 85, 0.3)',
+  },
+  mushafToggleButtonActive: {
+    backgroundColor: '#8B7355',
+    borderColor: '#8B7355',
+  },
+  mushafToggleLogo: {
+    width: 24,
+    height: 24,
+    marginBottom: 2,
+  },
+  mushafToggleText: {
+    fontSize: 10,
+    color: '#8B7355',
+    fontFamily: 'Montserrat-Medium',
+    textAlign: 'center',
+  },
+  mushafToggleTextActive: {
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+  },
   mushafPageNavigation: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -5311,6 +5673,217 @@ const styles = StyleSheet.create({
     fontVariant: ['liga', 'dlig', 'calt'],
     includeFontPadding: false,
     textAlignVertical: 'center',
+  },
+  // New continuous text styles for improved mushaf layout
+  mushafContinuousText: {
+    fontSize: 24,
+    fontFamily: 'KFGQPC HAFS Uthmanic Script Regular',
+    color: '#1A1A1A',
+    textAlign: 'right',
+    lineHeight: 42,
+    writingDirection: 'rtl',
+    fontVariant: ['liga', 'dlig', 'calt'],
+    includeFontPadding: false,
+    flexWrap: 'wrap', // Allow text to wrap naturally like in a physical mushaf
+  },
+  mushafAyahTextInline: {
+    fontSize: 24,
+    fontFamily: 'KFGQPC HAFS Uthmanic Script Regular',
+    color: '#1A1A1A',
+    writingDirection: 'rtl',
+    fontVariant: ['liga', 'dlig', 'calt'],
+    includeFontPadding: false,
+  },
+  mushafAyahNumberInline: {
+    fontSize: 16,
+    color: '#A57324',
+    fontFamily: 'KFGQPC HAFS Uthmanic Script Regular',
+    writingDirection: 'rtl',
+  },
+  mushafHiddenText: {
+    fontSize: 24,
+    color: '#D0D0D0',
+    fontFamily: 'KFGQPC HAFS Uthmanic Script Regular',
+    writingDirection: 'rtl',
+  },
+  mushafTranslationAyahNumber: {
+    fontWeight: 'bold',
+    color: '#A57324',
+  },
+  // Mushaf 2 View Styles (coordinate-based)
+  mushaf2ViewContainer: {
+    flex: 1,
+    backgroundColor: '#F8F5F0', // Slightly different cream background
+  },
+  mushaf2PageContent: {
+    flex: 1,
+    paddingHorizontal: 20,
+  },
+  mushaf2Page: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 50,
+  },
+  mushaf2PlaceholderText: {
+    fontSize: 24,
+    fontFamily: 'Montserrat-Bold',
+    color: '#8B7355',
+    textAlign: 'center',
+    marginBottom: 20,
+    lineHeight: 32,
+  },
+  mushaf2InfoText: {
+    fontSize: 16,
+    fontFamily: 'Montserrat-Regular',
+    color: '#A57324',
+    textAlign: 'center',
+    lineHeight: 24,
+    paddingHorizontal: 20,
+  },
+  // Mushaf 2 Coordinate Renderer Styles
+  mushaf2PageHeader: {
+    alignItems: 'center',
+    paddingVertical: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E8DCC0',
+  },
+  mushaf2PageNumber: {
+    fontSize: 18,
+    fontFamily: 'Montserrat-Bold',
+    color: '#5b7f67',
+  },
+  mushaf2TextContainer: {
+    flex: 1,
+    paddingHorizontal: 20,
+    paddingVertical: 20,
+  },
+  mushaf2LoadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  mushaf2LoadingText: {
+    fontSize: 18,
+    fontFamily: 'Montserrat-Medium',
+    color: '#8B7355',
+  },
+  mushaf2ErrorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+  },
+  mushaf2ErrorText: {
+    fontSize: 16,
+    fontFamily: 'Montserrat-Regular',
+    color: '#A57324',
+    textAlign: 'center',
+  },
+  mushaf2CoordinateContainer: {
+    flex: 1,
+  },
+  mushaf2Canvas: {
+    width: '100%',
+    position: 'relative',
+    backgroundColor: 'rgba(91,127,103,0.08)',
+    borderRadius: 8,
+    overflow: 'hidden',
+  },
+  mushaf2AyahOverlay: {
+    position: 'absolute',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 2,
+    paddingVertical: 1,
+  },
+  mushaf2AyahTextOverlay: {
+    fontSize: 16,
+    fontFamily: 'KFGQPC HAFS Uthmanic Script Regular',
+    color: '#1A1A1A',
+    textAlign: 'center',
+    writingDirection: 'rtl',
+    fontVariant: ['liga', 'dlig', 'calt'],
+    includeFontPadding: false,
+    lineHeight: 20,
+  },
+  mushaf2AyahNumberOverlay: {
+    fontSize: 12,
+    color: '#A57324',
+    fontFamily: 'KFGQPC HAFS Uthmanic Script Regular',
+    writingDirection: 'rtl',
+  },
+  mushaf2Box: {
+    position: 'absolute',
+    borderWidth: 1,
+    borderColor: 'rgba(165, 115, 36, 0.7)',
+    backgroundColor: 'rgba(165, 115, 36, 0.12)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  mushaf2BoxLabel: {
+    fontSize: 12,
+    color: '#A57324',
+    fontFamily: 'KFGQPC HAFS Uthmanic Script Regular',
+  },
+  mushaf2LineContainer: {
+    marginVertical: 2,
+    position: 'relative',
+    minHeight: 60,
+  },
+  mushaf2LineContent: {
+    position: 'relative',
+    width: '100%',
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  mushaf2AyahSegment: {
+    position: 'absolute',
+    justifyContent: 'center',
+    alignItems: 'center',
+    minHeight: 50,
+  },
+  mushaf2AyahSegmentHidden: {
+    opacity: 0.3,
+  },
+  mushaf2AyahText: {
+    fontSize: 20,
+    fontFamily: 'KFGQPC HAFS Uthmanic Script Regular',
+    color: '#1A1A1A',
+    textAlign: 'center',
+    writingDirection: 'rtl',
+    fontVariant: ['liga', 'dlig', 'calt'],
+    includeFontPadding: false,
+  },
+  mushaf2AyahNumber: {
+    fontSize: 14,
+    color: '#A57324',
+    fontFamily: 'KFGQPC HAFS Uthmanic Script Regular',
+    writingDirection: 'rtl',
+  },
+  mushaf2HiddenBar: {
+    width: '100%',
+    height: 20,
+    backgroundColor: '#D0D0D0',
+    borderRadius: 10,
+  },
+  mushaf2TranslationSection: {
+    marginTop: 30,
+    paddingTop: 20,
+    borderTopWidth: 1,
+    borderTopColor: '#E8DCC0',
+  },
+  mushaf2TranslationText: {
+    fontSize: 14,
+    fontFamily: 'Montserrat-Regular',
+    color: '#5A5A5A',
+    lineHeight: 20,
+    marginBottom: 8,
+    textAlign: 'left',
+  },
+  mushaf2TranslationNumber: {
+    fontWeight: 'bold',
+    color: '#A57324',
   },
   mushafAyahNumber: {
     fontSize: 16,

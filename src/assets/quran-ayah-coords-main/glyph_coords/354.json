@@ -1,0 +1,200 @@
+[
+  {
+    "page_number": 354,
+    "line_number": 1,
+    "surah_number": 24,
+    "ayah_number": 32,
+    "position": 1,
+    "min_x": 47,
+    "max_x": 993,
+    "min_y": 26,
+    "max_y": 118
+  },
+  {
+    "page_number": 354,
+    "line_number": 2,
+    "surah_number": 24,
+    "ayah_number": 32,
+    "position": 2,
+    "min_x": 47,
+    "max_x": 993,
+    "min_y": 142,
+    "max_y": 230
+  },
+  {
+    "page_number": 354,
+    "line_number": 3,
+    "surah_number": 24,
+    "ayah_number": 33,
+    "position": 1,
+    "min_x": 47,
+    "max_x": 993,
+    "min_y": 243,
+    "max_y": 331
+  },
+  {
+    "page_number": 354,
+    "line_number": 4,
+    "surah_number": 24,
+    "ayah_number": 33,
+    "position": 2,
+    "min_x": 47,
+    "max_x": 993,
+    "min_y": 351,
+    "max_y": 441
+  },
+  {
+    "page_number": 354,
+    "line_number": 5,
+    "surah_number": 24,
+    "ayah_number": 33,
+    "position": 3,
+    "min_x": 47,
+    "max_x": 993,
+    "min_y": 449,
+    "max_y": 551
+  },
+  {
+    "page_number": 354,
+    "line_number": 6,
+    "surah_number": 24,
+    "ayah_number": 33,
+    "position": 4,
+    "min_x": 47,
+    "max_x": 993,
+    "min_y": 568,
+    "max_y": 658
+  },
+  {
+    "page_number": 354,
+    "line_number": 7,
+    "surah_number": 24,
+    "ayah_number": 33,
+    "position": 5,
+    "min_x": 47,
+    "max_x": 993,
+    "min_y": 663,
+    "max_y": 759
+  },
+  {
+    "page_number": 354,
+    "line_number": 8,
+    "surah_number": 24,
+    "ayah_number": 33,
+    "position": 6,
+    "min_x": 900,
+    "max_x": 993,
+    "min_y": 778,
+    "max_y": 866
+  },
+  {
+    "page_number": 354,
+    "line_number": 8,
+    "surah_number": 24,
+    "ayah_number": 34,
+    "position": 1,
+    "min_x": 47,
+    "max_x": 900,
+    "min_y": 778,
+    "max_y": 866
+  },
+  {
+    "page_number": 354,
+    "line_number": 9,
+    "surah_number": 24,
+    "ayah_number": 34,
+    "position": 2,
+    "min_x": 435,
+    "max_x": 993,
+    "min_y": 889,
+    "max_y": 967
+  },
+  {
+    "page_number": 354,
+    "line_number": 9,
+    "surah_number": 24,
+    "ayah_number": 35,
+    "position": 1,
+    "min_x": 47,
+    "max_x": 435,
+    "min_y": 889,
+    "max_y": 967
+  },
+  {
+    "page_number": 354,
+    "line_number": 10,
+    "surah_number": 24,
+    "ayah_number": 35,
+    "position": 2,
+    "min_x": 47,
+    "max_x": 993,
+    "min_y": 984,
+    "max_y": 1079
+  },
+  {
+    "page_number": 354,
+    "line_number": 11,
+    "surah_number": 24,
+    "ayah_number": 35,
+    "position": 3,
+    "min_x": 47,
+    "max_x": 993,
+    "min_y": 1101,
+    "max_y": 1186
+  },
+  {
+    "page_number": 354,
+    "line_number": 12,
+    "surah_number": 24,
+    "ayah_number": 35,
+    "position": 4,
+    "min_x": 47,
+    "max_x": 993,
+    "min_y": 1198,
+    "max_y": 1296
+  },
+  {
+    "page_number": 354,
+    "line_number": 13,
+    "surah_number": 24,
+    "ayah_number": 35,
+    "position": 5,
+    "min_x": 47,
+    "max_x": 993,
+    "min_y": 1310,
+    "max_y": 1407
+  },
+  {
+    "page_number": 354,
+    "line_number": 14,
+    "surah_number": 24,
+    "ayah_number": 35,
+    "position": 6,
+    "min_x": 437,
+    "max_x": 993,
+    "min_y": 1426,
+    "max_y": 1513
+  },
+  {
+    "page_number": 354,
+    "line_number": 14,
+    "surah_number": 24,
+    "ayah_number": 36,
+    "position": 1,
+    "min_x": 47,
+    "max_x": 437,
+    "min_y": 1426,
+    "max_y": 1513
+  },
+  {
+    "page_number": 354,
+    "line_number": 15,
+    "surah_number": 24,
+    "ayah_number": 36,
+    "position": 2,
+    "min_x": 47,
+    "max_x": 993,
+    "min_y": 1535,
+    "max_y": 1618
+  }
+]
