@@ -21,6 +21,7 @@ import Card from '../components/Card';
 import { loadData, resetProgress, checkStreakBroken, getCustomLists, getListSurahs } from '../utils/store';
 import { syncProgressData, saveProgressToCloud, replaceCloudData, backupCloudData, getOfflineQueueStatus, manualSync, isOnline } from '../utils/cloudStore';
 import { makeSupabaseRequest } from '../utils/supabase';
+import { loadCustomLists as loadUserCustomLists, loadListAyahs as loadUserListAyahs, isUserLoggedIn } from '../utils/userStorage';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useLanguage } from '../utils/languageContext';
@@ -40,35 +41,30 @@ import { LEADERBOARD_TYPES, syncUserStatsToLeaderboard, testLeaderboardConnectio
 const COLORS = { ...BASE_COLORS, primary: '#6BA368', accent: '#FFD700' };
 
 const formatLargeNumber = (num) => {
-  if (num >= 1000000000) {
+  if (num >= 1000000000000) {
+    return {
+      text: (num / 1000000000000).toFixed(1).replace(/\.0$/, '') + 'T',
+      fontSize: getResponsiveFontSize(16)
+    };
+  } else if (num >= 1000000000) {
     return {
       text: (num / 1000000000).toFixed(1).replace(/\.0$/, '') + 'B',
       fontSize: getResponsiveFontSize(18)
     };
-  } else if (num >= 10000000) {
+  } else if (num >= 1000000) {
     return {
       text: (num / 1000000).toFixed(1).replace(/\.0$/, '') + 'M',
       fontSize: getResponsiveFontSize(20)
     };
-  } else if (num >= 1000000) {
+  } else if (num >= 1000) {
     return {
-      text: (num / 1000000).toFixed(1).replace(/\.0$/, '') + 'M',
+      text: (num / 1000).toFixed(1).replace(/\.0$/, '') + 'K',
       fontSize: getResponsiveFontSize(22)
-    };
-  } else if (num >= 100000) {
-    return {
-      text: num.toLocaleString(),
-      fontSize: getResponsiveFontSize(24)
-    };
-  } else if (num >= 10000) {
-    return {
-      text: num.toLocaleString(),
-      fontSize: getResponsiveFontSize(26)
     };
   } else {
     return {
       text: num.toLocaleString(),
-      fontSize: getResponsiveFontSize(28)
+      fontSize: getResponsiveFontSize(24)
     };
   }
 };
@@ -76,8 +72,8 @@ const formatLargeNumber = (num) => {
 const formatStreakNumber = (num) => {
   if (num >= 1000) {
     return {
-      text: num.toLocaleString(),
-      fontSize: getResponsiveFontSize(28)
+      text: (num / 1000).toFixed(1).replace(/\.0$/, '') + 'K',
+      fontSize: getResponsiveFontSize(26)
     };
   } else if (num >= 100) {
     return {
@@ -432,7 +428,8 @@ const HomeScreen = ({ navigation, route }) => {
   // Functions for Saved Ayaat modal
   const loadCustomLists = async () => {
     try {
-      const lists = await getCustomLists();
+      // Use user-scoped custom lists
+      const lists = await loadUserCustomLists();
       setCustomLists(lists);
       if (lists.length > 0) {
         setSelectedCustomList(lists[0]);
@@ -860,9 +857,20 @@ const HomeScreen = ({ navigation, route }) => {
       const wasOffline = !networkStatus;
       const nowOnline = await isOnline();
       
-      // If we just came back online, trigger sync
+      // If we just came back online, trigger sync silently (no alert)
       if (wasOffline && nowOnline) {
-        handleManualSync();
+        try {
+          setIsSyncing(true);
+          await manualSync();
+          // Refresh offline queue status silently
+          const queueStatus = await getOfflineQueueStatus();
+          setOfflineQueueStatus(queueStatus);
+          await checkProgressSyncStatus();
+          setIsSyncing(false);
+        } catch (error) {
+          console.error('[HomeScreen] Auto-sync error:', error);
+          setIsSyncing(false);
+        }
       }
       
       setNetworkStatus(nowOnline);

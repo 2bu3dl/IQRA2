@@ -38,6 +38,7 @@ import { addHasanat, updateMemorizedAyahs, updateStreak, getCurrentStreak, loadD
 import { getSurahAyaatWithTransliteration, getAllSurahs, getSurahName } from '../utils/quranData';
 import { getCurrentTranslation, getTranslationSources, getTranslation } from '../utils/translations';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getNoteKey, isUserLoggedIn } from '../utils/userStorage';
 import { useLanguage } from '../utils/languageContext';
 import audioPlayer from '../utils/audioPlayer';
 import audioRecorder from '../utils/audioRecorder';
@@ -1122,6 +1123,16 @@ const MemorizationScreen = ({ route, navigation }) => {
           return;
         }
         
+        // Check if user is logged in before recording
+        const loggedIn = await isUserLoggedIn();
+        if (!loggedIn) {
+          Alert.alert(
+            'Login Required',
+            'You need to be logged in to save recordings. Your recordings will not be saved to the cloud without an account.',
+            [{ text: 'OK' }]
+          );
+        }
+        
         // Start recording only if no recordings exist
         if (flashcards && flashcards[currentAyahIndex]?.type === 'ayah') {
           // Hide text if it's revealed before starting recording
@@ -1171,9 +1182,19 @@ const MemorizationScreen = ({ route, navigation }) => {
   const handleNoteIconPress = async (ayahIndex, ayahNumber) => {
     setCurrentNoteAyah({ index: ayahIndex, number: ayahNumber });
     
+    // Check if user is logged in
+    const loggedIn = await isUserLoggedIn();
+    if (!loggedIn) {
+      Alert.alert(
+        'Login Required',
+        'You need to be logged in to save notes. Your notes will not be saved to the cloud without an account.',
+        [{ text: 'OK' }]
+      );
+    }
+    
     // Load existing note if any
     try {
-      const noteKey = `note_${surahNumber}_${ayahNumber}`;
+      const noteKey = await getNoteKey(surahNumber, ayahNumber);
       const existingNote = await AsyncStorage.getItem(noteKey);
       if (existingNote) {
         setNoteText(existingNote);
@@ -1194,8 +1215,8 @@ const MemorizationScreen = ({ route, navigation }) => {
   const handleNoteSave = async () => {
     if (currentNoteAyah && noteText.trim()) {
       try {
-        // Save note to AsyncStorage
-        const noteKey = `note_${surahNumber}_${currentNoteAyah.number}`;
+        // Save note to AsyncStorage with user-scoped key
+        const noteKey = await getNoteKey(surahNumber, currentNoteAyah.number);
         await AsyncStorage.setItem(noteKey, noteText.trim());
         
         // Update local state
@@ -2428,8 +2449,8 @@ const MemorizationScreen = ({ route, navigation }) => {
   const [isMushafButtonPressed, setIsMushafButtonPressed] = useState(false);
   const [isHomeButtonPressed, setIsHomeButtonPressed] = useState(false);
 
-  const fontCandidates = ['UthmanTN_v2-0', 'UthmanTN', 'KFGQPC HAFS Uthmanic Script Regular', 'HAFS Uthmanic Script'];
-  const fontFamily = fontCandidates[currentAyahIndex % fontCandidates.length];
+  // Use consistent font instead of rotating through candidates
+  const fontFamily = 'KFGQPC HAFS Uthmanic Script Regular';
 
   // Monitor recording status to reset button state when recording ends
   useEffect(() => {
@@ -2679,6 +2700,7 @@ const MemorizationScreen = ({ route, navigation }) => {
         imageStyle={{ opacity: 0.2 }}
       >
         <SafeAreaView style={[styles.container, { backgroundColor: 'transparent' }]}>
+      
       <View style={styles.headerWithHome}>
         <View style={styles.homeIconColumn}>
           <Animated.View style={[styles.homeIconContainer, isHomeButtonPressed && styles.homeButtonActive]}>
@@ -2703,33 +2725,46 @@ const MemorizationScreen = ({ route, navigation }) => {
               navigation.navigate('Home', { refresh: true });
             }}
           >
-                <Image source={language === 'ar' ? require('../assets/IQRA2iconArabicoctagon.png') : require('../assets/IQRA2iconoctagon.png')} style={[styles.homeIcon]} resizeMode="contain" />
+                <Image source={require('../assets/IQRA2iconArabicoctagon.png')} style={[styles.homeIcon]} resizeMode="contain" />
           </TouchableOpacity>
         </Animated.View>
-        {/* Open Quran (Mushaf) quick access under app icon */}
+        {/* Translation button (moved from right side) - Orange outline with cream icon */}
         <View style={styles.mushafQuickAccessContainer}>
-          <Animated.View style={[styles.homeIconContainer, isMushafButtonPressed && styles.mushafQuickButtonActive]}>
-            <TouchableOpacity
-              style={styles.mushafQuickButton}
-              onPress={() => navigation.navigate('Mushaf', { pageNumber: 1 })}
-              onPressIn={() => setIsMushafButtonPressed(true)}
-              onPressOut={() => setIsMushafButtonPressed(false)}
-              activeOpacity={1.0}
-            >
-              <Image 
-                source={require('../assets/openQuran.png')} 
-                style={styles.mushafQuickIcon}
-                resizeMode="contain"
-              />
-            </TouchableOpacity>
-          </Animated.View>
+          <TouchableOpacity
+            onPress={openTranslationModal}
+            onPressIn={() => setIsTranslationPressed(true)}
+            onPressOut={() => setIsTranslationPressed(false)}
+            activeOpacity={1}
+            style={{
+              borderWidth: 2,
+              borderColor: '#A57324',
+              borderRadius: 12,
+              padding: 6,
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.1,
+              shadowRadius: 4,
+              elevation: 3,
+              backgroundColor: isTranslationPressed ? '#A57324' : 'rgba(165,115,36,0.2)',
+              width: 48,
+              height: 48,
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}
+          >
+            <Image 
+              source={require('../assets/app_icons/translation.png')} 
+              style={{ width: 28, height: 28, tintColor: '#F5E6C8' }}
+              resizeMode="contain"
+            />
+          </TouchableOpacity>
         </View>
         </View>
         <View style={styles.headerTextContainer}>
-              <Text variant="h2" style={{ textAlign: 'center', width: '100%', color: '#5b7f67' }}>
+              <Text variant="h2" style={{ textAlign: 'center', width: '100%', color: '#5b7f67', fontFamily: 'Montserrat-Bold' }}>
                 {language === 'ar' ? t(`surah_${localSurahNumber}`) : (getDisplaySurahName(localSurahNumber) || 'Surah')}
               </Text>
-          <Text variant="body1" style={{ textAlign: 'center', width: '100%', color: '#F5E6C8' }}>
+          <Text variant="body1" style={{ textAlign: 'center', width: '100%', color: '#F5E6C8', fontFamily: 'Montserrat-Regular' }}>
                 {flashcards && flashcards[currentAyahIndex]?.type === 'ayah'
                   ? (language === 'ar' ? 
                       <Text style={{ textAlign: 'center' }}>
@@ -2756,6 +2791,7 @@ const MemorizationScreen = ({ route, navigation }) => {
           </View>
         </View>
             <View style={styles.headerButtons}>
+        {/* Navigation button (keep on top) - Green theme */}
         <TouchableOpacity
           style={styles.headerButton}
           onPress={() => setShowGoToModal(true)}
@@ -2765,7 +2801,7 @@ const MemorizationScreen = ({ route, navigation }) => {
         >
           <View style={{
             borderWidth: 2,
-            borderColor: 'rgba(165,115,36,0.8)',
+            borderColor: '#6BA368',
             borderRadius: 12,
             padding: 6,
             shadowColor: '#000',
@@ -2773,7 +2809,11 @@ const MemorizationScreen = ({ route, navigation }) => {
             shadowOpacity: 0.1,
             shadowRadius: 4,
             elevation: 3,
-            backgroundColor: showGoToModal ? 'rgba(165,115,36,0.8)' : (isNavigationPressed ? 'rgba(165,115,36,0.8)' : 'rgba(165,115,36,0.2)'),
+            backgroundColor: showGoToModal ? '#6BA368' : (isNavigationPressed ? '#6BA368' : 'rgba(107,163,104,0.2)'),
+            width: 48,
+            height: 48,
+            justifyContent: 'center',
+            alignItems: 'center',
           }}>
             <Image 
               source={require('../assets/app_icons/navigation.png')} 
@@ -2782,56 +2822,32 @@ const MemorizationScreen = ({ route, navigation }) => {
             />
           </View>
         </TouchableOpacity>
-              {/* Hide translation button for first two cards of every surah except for 1st and 9th surah. For 1st and 9th surah, only hide for first card. */}
-              {!(
-                (localSurahNumber !== 1 && localSurahNumber !== 9 && (currentAyahIndex === 0 || currentAyahIndex === 1)) ||
-                ((localSurahNumber === 1 || localSurahNumber === 9) && currentAyahIndex === 0)
-              ) && (
-                <TouchableOpacity
-                  style={[styles.headerButton, { marginTop: 8 }]}
-                  onPress={openTranslationModal}
-                  onPressIn={() => setIsTranslationPressed(true)}
-                  onPressOut={() => setIsTranslationPressed(false)}
-                  activeOpacity={1}
-                >
-                  <View style={{
-                    borderWidth: 2,
-                    borderColor: '#5b7f67',
-                    borderRadius: 12,
-                    padding: 6,
-                    shadowColor: '#000',
-                    shadowOffset: { width: 0, height: 2 },
-                    shadowOpacity: 0.1,
-                    shadowRadius: 4,
-                    elevation: 3,
-                    backgroundColor: showTranslationView ? '#5b7f67' : (isTranslationPressed ? '#5b7f67' : 'rgba(91,127,103,0.2)'),
-                  }}>
+              {/* OpenQuran/Mushaf button (moved from under app icon) - Orange theme with persistent glow */}
+              <View style={[styles.headerButton, { marginTop: 4 }]}>
+                <Animated.View style={[
+                  styles.homeIconContainer, 
+                  styles.mushafQuickButtonActive,
+                  isMushafButtonPressed && styles.mushafQuickButtonPressedBright
+                ]}>
+                  <TouchableOpacity
+                    style={styles.mushafQuickButton}
+                    onPress={() => navigation.navigate('Mushaf', { pageNumber: 1 })}
+                    onPressIn={() => setIsMushafButtonPressed(true)}
+                    onPressOut={() => setIsMushafButtonPressed(false)}
+                    activeOpacity={1.0}
+                  >
                     <Image 
-                      source={require('../assets/app_icons/translation.png')} 
-                      style={{ width: 28, height: 28, tintColor: '#F5E6C8' }}
+                      source={require('../assets/openQuran.png')} 
+                      style={styles.mushafQuickIcon}
                       resizeMode="contain"
                     />
-                  </View>
-                </TouchableOpacity>
-              )}
+                  </TouchableOpacity>
+                </Animated.View>
+              </View>
             </View>
       </View>
 
-          <View style={{ flex: 1, flexDirection: 'column' }}>
-            {/*
-            <View style={{ alignItems: 'center', marginTop: 16 }}>
-              <Text
-                variant="h2"
-                style={[
-                  language === 'ar'
-                    ? { fontFamily: 'KFGQPC HAFS Uthmanic Script Regular', fontSize: 28, color: '#5b7f67', textAlign: 'center', marginBottom: 8 }
-                    : [FONTS.h2.getFont(language), { color: '#5b7f67', textAlign: 'center', marginBottom: 8 }],
-                ]}
-              >
-                {language === 'ar' ? t(`surah_${localSurahNumber}`) : getDisplaySurahName(localSurahNumber)}
-              </Text>
-            </View>
-            */}
+          <View style={styles.content}>
         <Animated.View style={[styles.flashcard, { 
           opacity: isAudioPlaying ? 1 : fadeAnim, 
           transform: [{ scale: isAudioPlaying ? 1 : scaleAnim }] 
@@ -5009,12 +5025,15 @@ const styles = StyleSheet.create({
   headerWithHome: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: SIZES.large,
+    justifyContent: 'space-between',
+    paddingHorizontal: SIZES.large,
+    paddingTop: SIZES.small,
+    paddingBottom: 0,
   },
   homeButton: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
+    width: 52,
+    height: 52,
+    borderRadius: 26,
     backgroundColor: 'transparent',
     justifyContent: 'center',
     alignItems: 'center',
@@ -5029,67 +5048,77 @@ const styles = StyleSheet.create({
   homeButtonActive: {
     shadowColor: '#fae29f',
     shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.8,
-    shadowRadius: 18,
-    elevation: 12,
+    shadowOpacity: 1.0,
+    shadowRadius: 20,
+    elevation: 15,
+    transform: [{ scale: 1.15 }],
   },
   homeIcon: {
-    width: 64,
-    height: 64,
-    borderRadius: 80,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
   },
   homeIconColumn: {
     flexDirection: 'column',
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
     marginLeft: 0,
-    width: 64, // Fixed width to match button size
+    marginTop: -18,
+    width: 52, // Match button size with border
   },
   mushafQuickAccessContainer: {
-    marginTop: 2, // Reduced from 8 to bring closer to app icon
+    marginTop: 8,
+    marginBottom: 8,
     alignItems: 'center',
     justifyContent: 'center',
     marginLeft: 0,
-    width: 64, // Same width as homeIconColumn
+    width: 52, // Match button size with border
   },
   mushafQuickButton: {
     padding: 0,
-    borderRadius: 32,
+    borderRadius: 26,
     backgroundColor: 'transparent',
-    width: 64,
-    height: 64,
+    width: 52,
+    height: 52,
     justifyContent: 'center',
     alignItems: 'center',
   },
   mushafQuickButtonActive: {
+    shadowColor: '#A57324',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.8,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  mushafQuickButtonPressedBright: {
     shadowColor: '#fae29f',
     shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 1.0,
-    shadowRadius: 15,
-    elevation: 10,
+    shadowOpacity: 1.2,
+    shadowRadius: 20,
+    elevation: 15,
   },
   mushafQuickIcon: {
-    width: 48,
-    height: 48,
+    width: 52,
+    height: 52,
   },
   headerTextContainer: {
     flex: 1,
     alignItems: 'center',
-    justifyContent: 'center',
-    paddingRight: 20,
+    justifyContent: 'flex-start',
+    paddingHorizontal: 12,
+    marginTop: -16,
   },
   progressContainer: {
     marginTop: 0, // Removed top margin to bring progress bar closer to header
     width: '80%',
-    marginBottom: 0, // Reset to normal margin
+    marginBottom: 0, // Reset to normal  margin
   },
   content: {
     flex: 1,
     padding: 0, // Removed all padding to maximize card space
     justifyContent: 'flex-start',
-    paddingTop: 0,
+    paddingTop: SIZES.medium, // Gap between header and card
     paddingBottom: 0, // Removed bottom padding to extend card further
-    marginTop: 0, // Reset to normal margin
   },
   flashcard: {
     flex: 1,
@@ -5409,9 +5438,13 @@ const styles = StyleSheet.create({
   headerButtons: {
     flexDirection: 'column',
     alignItems: 'center',
+    justifyContent: 'flex-start',
+    width: 52,
+    marginTop: 3,
+    marginBottom: 8,
   },
   headerButton: {
-    marginLeft: SIZES.medium,
+    marginLeft: 0,
   },
   backgroundImage: {
     flex: 1,
@@ -5567,13 +5600,27 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     paddingHorizontal: 12,
     borderRadius: 8,
-    backgroundColor: 'rgba(139, 115, 85, 0.1)',
-    borderWidth: 1,
-    borderColor: 'rgba(139, 115, 85, 0.3)',
+    backgroundColor: 'rgba(165, 115, 36, 0.1)',
+    borderWidth: 2,
+    borderColor: '#A57324',
   },
   mushafToggleButtonActive: {
-    backgroundColor: '#8B7355',
-    borderColor: '#8B7355',
+    backgroundColor: '#A57324',
+    borderColor: '#A57324',
+  },
+  translationToggleButton: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    backgroundColor: 'rgba(107, 163, 104, 0.1)',
+    borderWidth: 2,
+    borderColor: '#6BA368',
+  },
+  translationToggleButtonActive: {
+    backgroundColor: '#6BA368',
+    borderColor: '#6BA368',
   },
   mushafToggleLogo: {
     width: 24,
@@ -5582,7 +5629,13 @@ const styles = StyleSheet.create({
   },
   mushafToggleText: {
     fontSize: 10,
-    color: '#8B7355',
+    color: '#A57324',
+    fontFamily: 'Montserrat-Medium',
+    textAlign: 'center',
+  },
+  translationToggleText: {
+    fontSize: 10,
+    color: '#6BA368',
     fontFamily: 'Montserrat-Medium',
     textAlign: 'center',
   },
@@ -6056,7 +6109,7 @@ const styles = StyleSheet.create({
   fullscreenTranslationButton: {
     width: 44,
     height: 44,
-    backgroundColor: '#F5E6C8',
+    backgroundColor: '#A57324',
     borderRadius: 22,
     justifyContent: 'center',
     alignItems: 'center',
@@ -6069,13 +6122,13 @@ const styles = StyleSheet.create({
   fullscreenTranslationIcon: {
     width: 24,
     height: 24,
-    tintColor: '#A57324',
+    tintColor: '#F5E6C8',
   },
   fullscreenTranslationButtonToggled: {
-    backgroundColor: '#A57324',
+    backgroundColor: '#F5E6C8',
   },
   fullscreenTranslationIconToggled: {
-    tintColor: '#F5E6C8',
+    tintColor: '#A57324',
   },
   fullscreenScrollView: {
     flex: 1,
@@ -6370,7 +6423,7 @@ const styles = StyleSheet.create({
   },
   // Navigation button styles
   fullscreenNavButton: {
-    backgroundColor: '#A57324',
+    backgroundColor: '#6BA368',
   },
   fullscreenParchmentButton: {
     backgroundColor: '#F5E6C8',

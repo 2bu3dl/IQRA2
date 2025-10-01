@@ -52,9 +52,23 @@ export const AuthProvider = ({ children }) => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(onAuthStateChange);
     console.log('🔐 AuthProvider: Auth state listener set up');
 
+    // Set up session refresh interval to prevent auto-logout
+    const refreshInterval = setInterval(async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+          console.log('🔐 AuthProvider: Session refresh check - user still authenticated');
+          // The session will be automatically refreshed by Supabase if needed
+        }
+      } catch (error) {
+        console.log('🔐 AuthProvider: Session refresh check failed:', error);
+      }
+    }, 5 * 60 * 1000); // Check every 5 minutes
+
     return () => {
-      console.log('🧹 AuthProvider: Cleaning up auth subscription');
+      console.log('🧹 AuthProvider: Cleaning up auth subscription and refresh interval');
       subscription.unsubscribe();
+      clearInterval(refreshInterval);
     };
   }, []);
 

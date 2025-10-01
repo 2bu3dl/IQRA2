@@ -2,6 +2,7 @@ import { NativeModules, Platform } from 'react-native';
 import RNFS from 'react-native-fs';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import logger from './logger';
+import { getRecordingPrefix } from './userStorage';
 
 // Import native module (iOS only for now)
 const { AudioRecorderModule } = NativeModules;
@@ -42,16 +43,19 @@ class AudioRecorder {
       // Store the surah name for naming recordings
       this.currentSurahName = surahName;
       
+      // Get user-scoped recording prefix
+      const userPrefix = await getRecordingPrefix();
+      
       if (Platform.OS === 'ios' && AudioRecorderModule) {
-        // Use native iOS module
-        const result = await AudioRecorderModule.startRecording(surahName, ayahNumber.toString());
+        // Use native iOS module with user-scoped prefix
+        const result = await AudioRecorderModule.startRecording(`${userPrefix}_${surahName}`, ayahNumber.toString());
         
         this.isRecording = true;
         this.recordingStartTime = Date.now();
         return { success: true, filePath: result.filePath };
       } else {
         // Fallback to mock for Android or if module not available
-        const mockUri = `mock://recording_${Date.now()}.m4a`;
+        const mockUri = `mock://${userPrefix}_recording_${Date.now()}.m4a`;
         this.isRecording = true;
         this.recordingStartTime = Date.now();
         return { success: true, uri: mockUri };

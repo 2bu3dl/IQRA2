@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useRef, useEffect, useMemo, useCallback, useLayoutEffect } from 'react';
 import {
   View,
   Text as RNText,
@@ -886,6 +886,7 @@ const AllSurahsTab = ({ navigation, route, searchText, isJuzMode, juzData, isSea
   const [contentHeight, setContentHeight] = useState(1);
   const [visibleHeight, setVisibleHeight] = useState(1);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [isDataLoaded, setIsDataLoaded] = useState(false);
 
   const flatListRef = useRef(null);
   const scrollBarRef = useRef(null);
@@ -1194,13 +1195,14 @@ const AllSurahsTab = ({ navigation, route, searchText, isJuzMode, juzData, isSea
       setData(loadedData);
       setRefreshKey(prev => prev + 1); // Force re-render
       console.log('[SurahListScreen] Data state updated, refresh key incremented');
+      setIsDataLoaded(true);
     } catch (error) {
       console.error('[SurahListScreen] Error loading data:', error);
     }
   };
 
-  useEffect(() => {
-    // Load data only once on mount for instant rendering
+  // Hydrate progress before first paint to avoid 0% flash
+  useLayoutEffect(() => {
     loadScreenData();
   }, []);
 
@@ -1287,6 +1289,9 @@ const AllSurahsTab = ({ navigation, route, searchText, isJuzMode, juzData, isSea
 
   // Use offline Quran data for surah list - memoized to prevent re-creation on every render
   const surahs = useMemo(() => {
+    if (!isDataLoaded) {
+      return [];
+    }
     console.log('[SurahListScreen] Recalculating surahs, memorizedAyahs:', data.memorizedAyahs);
     
           let allSurahs = getAllSurahs().map(({ surah, name, ayaat }) => {
@@ -1333,7 +1338,7 @@ const AllSurahsTab = ({ navigation, route, searchText, isJuzMode, juzData, isSea
 
     console.log('[SurahListScreen] Calculated surahs:', allSurahs.slice(0, 3).map(s => ({ id: s.id, name: s.name, memorized: s.memorizedAyahs, total: s.totalAyahs })));
     return allSurahs;
-  }, [data.memorizedAyahs, isJuzMode, juzData]); // Only recreate when memorized data changes or Juz mode changes
+  }, [isDataLoaded, data.memorizedAyahs, isJuzMode, juzData]); // Only recreate when hydrated or deps change
 
   // Filter surahs based on search text - memoized to prevent unnecessary re-renders
   const filteredSurahs = useMemo(() => {
@@ -1463,14 +1468,15 @@ const AllSurahsTab = ({ navigation, route, searchText, isJuzMode, juzData, isSea
               )}
             </RNText>
         <View style={styles.progressContainer}>
-          <ProgressBar 
-                key={`progress-${item.id}`}
-            progress={item.memorizedAyahs} 
-            total={item.totalAyahs} 
-                height={8}
-                completed={isCompleted}
-              />
-            </View>
+          {isDataLoaded && (
+            <ProgressBar 
+              progress={item.memorizedAyahs} 
+              total={item.totalAyahs} 
+              height={8}
+              completed={isCompleted}
+            />
+          )}
+        </View>
             {/* Removed Memorize label to prevent box expansion while keeping green highlighting */}
           </View>
         </TouchableOpacity>
