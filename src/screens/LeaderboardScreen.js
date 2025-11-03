@@ -453,7 +453,7 @@ const LeaderboardScreen = ({ navigation }) => {
               <Text style={styles.errorText}>
                 {language === 'ar' ? 'لا يمكن تحميل البيانات حالياً' : 'Cannot load leaderboard data'}
               </Text>
-              <TouchableOpacity style={styles.retryButton} onPress={() => loadLeaderboardData()}>
+              <TouchableOpacity style={styles.retryButton} onPress={() => { hapticSelection(); loadLeaderboardData(); }}>
                 <Text style={styles.retryText}>
                   {language === 'ar' ? 'إعادة المحاولة' : 'Retry'}
                 </Text>

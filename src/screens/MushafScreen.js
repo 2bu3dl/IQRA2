@@ -2,6 +2,7 @@ import React, { useState, useMemo, useCallback } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ImageBackground, SafeAreaView, Image, Alert, ScrollView } from 'react-native';
 import { PanGestureHandler, State, GestureHandlerRootView } from 'react-native-gesture-handler';
 import Svg, { Rect, Defs, Mask, Circle, G } from 'react-native-svg';
+import { hapticSelection } from '../utils/hapticFeedback';
 
 // Static index that returns the required image for a given page number
 const getPageImage = require('../assets/mushaf_pages/index.js').default;
@@ -455,7 +456,10 @@ export default function MushafScreen({ navigation, route }) {
             styles.actionButton,
             isHideMode && styles.actionButtonActive
           ]}
-          onPress={handleHideToggle}
+          onPress={() => {
+            hapticSelection();
+            handleHideToggle();
+          }}
           activeOpacity={0.7}
         >
           <Image 
@@ -473,7 +477,10 @@ export default function MushafScreen({ navigation, route }) {
             styles.actionButton,
             isAudioPlaying && styles.actionButtonActive
           ]}
-          onPress={handleAudioToggle}
+          onPress={() => {
+            hapticSelection();
+            handleAudioToggle();
+          }}
           activeOpacity={0.7}
         >
           <Image 
@@ -491,7 +498,10 @@ export default function MushafScreen({ navigation, route }) {
             styles.actionButton,
             isRecording && styles.actionButtonActive
           ]}
-          onPress={handleRecordToggle}
+          onPress={() => {
+            hapticSelection();
+            handleRecordToggle();
+          }}
           activeOpacity={0.7}
         >
           <Image 
@@ -507,12 +517,12 @@ export default function MushafScreen({ navigation, route }) {
 
         {/* Page controls */}
         <View style={styles.controls}>
-          <TouchableOpacity onPress={goPrev} disabled={page <= 1} style={[styles.navBtn, page <= 1 && styles.navBtnDisabled]} activeOpacity={0.7}>
+          <TouchableOpacity onPress={() => { hapticSelection(); goPrev(); }} disabled={page <= 1} style={[styles.navBtn, page <= 1 && styles.navBtnDisabled]} activeOpacity={0.7}>
             <Text style={styles.navBtnText}>Prev</Text>
           </TouchableOpacity>
           
           <View style={styles.pageLabelContainer}>
-            <TouchableOpacity onPress={handlePageNumberPress} style={styles.pageLabelButton} activeOpacity={0.7}>
+            <TouchableOpacity onPress={() => { hapticSelection(); handlePageNumberPress(); }} style={styles.pageLabelButton} activeOpacity={0.7}>
               <Text style={styles.pageLabel}>Page {String(page)}</Text>
               <Text style={styles.surahLabel}>{getCurrentSurah().name}</Text>
             </TouchableOpacity>
@@ -528,7 +538,10 @@ export default function MushafScreen({ navigation, route }) {
                           styles.dropdownItem,
                           page >= surah.startPage && page < (surahs.find(s => s.number === surah.number + 1)?.startPage || 605) && styles.dropdownItemActive
                         ]}
-                        onPress={() => handleSurahSelect(surah)}
+                        onPress={() => {
+                          hapticSelection();
+                          handleSurahSelect(surah);
+                        }}
                         activeOpacity={0.7}
                       >
                         <Text style={styles.dropdownItemNumber}>{surah.number}</Text>
@@ -545,7 +558,7 @@ export default function MushafScreen({ navigation, route }) {
             )}
           </View>
           
-          <TouchableOpacity onPress={goNext} disabled={page >= 604} style={[styles.navBtn, page >= 604 && styles.navBtnDisabled]} activeOpacity={0.7}>
+          <TouchableOpacity onPress={() => { hapticSelection(); goNext(); }} disabled={page >= 604} style={[styles.navBtn, page >= 604 && styles.navBtnDisabled]} activeOpacity={0.7}>
             <Text style={styles.navBtnText}>Next</Text>
           </TouchableOpacity>
         </View>

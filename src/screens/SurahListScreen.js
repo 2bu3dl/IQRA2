@@ -452,11 +452,11 @@ const SurahListScreen = ({ navigation, route }) => {
               setActiveTab(tab.id);
               animateTabs(tab.id);
             }}
-            onPress={() => {
-              console.log('Tab pressed:', tab.id, 'Current activeTab:', activeTab);
-              // haptic feedback removed;
-              
-              // Handle Juz mode logic
+          onPress={() => {
+            console.log('Tab pressed:', tab.id, 'Current activeTab:', activeTab);
+            hapticSelection();
+            
+            // Handle Juz mode logic
               if (isJuzMode) {
                 // Handle special actions when in Juz mode
                 if (tab.id === 0) {
@@ -1398,7 +1398,10 @@ const AllSurahsTab = ({ navigation, route, searchText, isJuzMode, juzData, isSea
           ]}
           onPressIn={() => setPressedSurahId(item.id)}
           onPressOut={() => setPressedSurahId(null)}
-          onPress={() => navigation.navigate('Memorization', { surah: item })}
+          onPress={() => {
+            hapticSelection();
+            navigation.navigate('Memorization', { surah: item });
+          }}
           activeOpacity={0.6}
         >
       <View style={styles.surahInfo}>
@@ -2133,7 +2136,7 @@ const ListsTab = ({ navigation, route, searchText }) => {
     <TouchableOpacity
       style={styles.ayahCard}
       onPress={() => {
-        // haptic feedback removed;
+        hapticSelection();
         // Navigate to specific ayah
         navigation.navigate('Memorization', {
           surah: { id: item.surahNumber, name: item.surahName },

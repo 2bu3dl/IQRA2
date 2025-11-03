@@ -6,8 +6,22 @@ import { LanguageProvider } from './src/utils/languageContext';
 import { AuthProvider } from './src/utils/authContext';
 import { Linking, LogBox, Platform } from 'react-native';
 import { supabase } from './src/utils/supabase';
+import logger from './src/utils/logger';
+import ErrorBoundary from './src/components/ErrorBoundary';
+import { navigationRef, navigate } from './src/utils/navigation';
 
 // Debug logging
+if (!__DEV__) {
+  // Reduce noisy logs in production while keeping warnings/errors
+  // eslint-disable-next-line no-console
+  console.log = () => {};
+  // eslint-disable-next-line no-console
+  console.debug = () => {};
+}
+
+logger.setEnabled(__DEV__);
+logger.setDebugMode(__DEV__);
+
 console.log('🚀 App.js: Starting app initialization...');
 console.log('📱 Platform:', Platform.OS, Platform.Version);
 console.log('🎨 COLORS loaded:', Object.keys(COLORS).length, 'colors');
@@ -70,6 +84,7 @@ function App() {
         supabase.auth.onAuthStateChange((event, session) => {
           if (event === 'SIGNED_IN') {
             console.log('✅ App: User signed in via email confirmation');
+            navigate('Home');
           }
         });
       }
@@ -102,40 +117,42 @@ function App() {
   console.log('🎨 App: Starting to render UI...');
   
   return (
-    <AuthProvider>
-      {console.log('🔐 App: AuthProvider rendered')}
-      <LanguageProvider>
-        {console.log('🌐 App: LanguageProvider rendered')}
-        <NavigationContainer>
-          {console.log('🧭 App: NavigationContainer rendered')}
-          <Stack.Navigator
-            initialRouteName="Home"
-            screenOptions={{
-              headerStyle: {
-                backgroundColor: COLORS.primary,
-              },
-              headerTintColor: COLORS.white,
-              headerTitleStyle: {
-                fontWeight: 'bold',
-              },
-              headerShown: false,
-              animation: 'none',
-            }}>
-            {console.log('📱 App: Stack.Navigator created with screens')}
-            <Stack.Screen name="Home" component={HomeScreen} />
-            <Stack.Screen name="SurahList" component={SurahListScreen} />
-            <Stack.Screen name="Memorization" component={MemorizationScreen} />
-            <Stack.Screen name="Mushaf" component={SimpleMushafScreen} />
-            <Stack.Screen name="Auth" component={AuthScreen} />
-            <Stack.Screen name="ProfileDashboard" component={ProfileDashboard} />
-            <Stack.Screen name="Profile" component={ProfileScreen} />
-            <Stack.Screen name="Leaderboard" component={LeaderboardScreen} />
-            <Stack.Screen name="Recordings" component={RecordingsScreen} />
-            <Stack.Screen name="NotesBoard" component={NotesBoardScreen} />
-          </Stack.Navigator>
-        </NavigationContainer>
-      </LanguageProvider>
-    </AuthProvider>
+    <ErrorBoundary>
+      <AuthProvider>
+        {console.log('🔐 App: AuthProvider rendered')}
+        <LanguageProvider>
+          {console.log('🌐 App: LanguageProvider rendered')}
+          <NavigationContainer ref={navigationRef}>
+            {console.log('🧭 App: NavigationContainer rendered')}
+            <Stack.Navigator
+              initialRouteName="Home"
+              screenOptions={{
+                headerStyle: {
+                  backgroundColor: COLORS.primary,
+                },
+                headerTintColor: COLORS.white,
+                headerTitleStyle: {
+                  fontWeight: 'bold',
+                },
+                headerShown: false,
+                animation: 'none',
+              }}>
+              {console.log('📱 App: Stack.Navigator created with screens')}
+              <Stack.Screen name="Home" component={HomeScreen} />
+              <Stack.Screen name="SurahList" component={SurahListScreen} />
+              <Stack.Screen name="Memorization" component={MemorizationScreen} />
+              <Stack.Screen name="Mushaf" component={SimpleMushafScreen} />
+              <Stack.Screen name="Auth" component={AuthScreen} />
+              <Stack.Screen name="ProfileDashboard" component={ProfileDashboard} />
+              <Stack.Screen name="Profile" component={ProfileScreen} />
+              <Stack.Screen name="Leaderboard" component={LeaderboardScreen} />
+              <Stack.Screen name="Recordings" component={RecordingsScreen} />
+              <Stack.Screen name="NotesBoard" component={NotesBoardScreen} />
+            </Stack.Navigator>
+          </NavigationContainer>
+        </LanguageProvider>
+      </AuthProvider>
+    </ErrorBoundary>
   );
 }
 

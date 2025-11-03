@@ -8,7 +8,7 @@ import { useLanguage } from '../utils/languageContext';
 import audioRecorder from '../utils/audioRecorder';
 import audioPlayer from '../utils/audioPlayer';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
+import { hapticSelection } from '../utils/hapticFeedback';
 
 const COLORS = { ...BASE_COLORS, primary: '#6BA368', accent: '#FFD700' };
 
@@ -36,7 +36,7 @@ const RecordingsScreen = ({ navigation }) => {
 
   const handlePlayRecording = async (recording) => {
     try {
-      ReactNativeHapticFeedback.trigger('selection');
+      hapticSelection();
       
       // Stop current playing recording if any
       if (playingRecording) {
@@ -64,7 +64,7 @@ const RecordingsScreen = ({ navigation }) => {
   };
 
   const handleDeleteRecording = async (recording) => {
-    ReactNativeHapticFeedback.trigger('selection');
+    hapticSelection();
     
     Alert.alert(
       'Delete Recording',
@@ -150,7 +150,7 @@ const RecordingsScreen = ({ navigation }) => {
             <TouchableOpacity 
               style={styles.backButton}
               onPress={() => {
-                ReactNativeHapticFeedback.trigger('selection');
+                hapticSelection();
                 navigation.goBack();
               }}
             >
@@ -185,7 +185,7 @@ const RecordingsScreen = ({ navigation }) => {
                 <Button
                   title="Start Memorizing"
                   onPress={() => {
-                    ReactNativeHapticFeedback.trigger('selection');
+                    hapticSelection();
                     navigation.navigate('SurahList');
                   }}
                   style={styles.startButton}

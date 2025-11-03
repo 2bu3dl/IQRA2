@@ -1,7 +1,7 @@
-import React, { Component } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import React from 'react';
+import { View, Text, Pressable } from 'react-native';
 
-class ErrorBoundary extends Component {
+class ErrorBoundary extends React.Component {
   constructor(props) {
     super(props);
     this.state = { hasError: false, error: null };
@@ -11,47 +11,40 @@ class ErrorBoundary extends Component {
     return { hasError: true, error };
   }
 
-  componentDidCatch(error, errorInfo) {
-    console.error('ErrorBoundary caught an error:', error, errorInfo);
+  componentDidCatch(error, info) {
+    // eslint-disable-next-line no-console
+    console.error('[ErrorBoundary] Caught error', error, info);
+    if (this.props.onError) {
+      this.props.onError(error, info);
+    }
   }
+
+  handleRetry = () => {
+    this.setState({ hasError: false, error: null });
+    if (this.props.onRetry) {
+      this.props.onRetry();
+    }
+  };
 
   render() {
     if (this.state.hasError) {
       return (
-        <View style={styles.errorContainer}>
-          <Text style={styles.errorTitle}>Something went wrong</Text>
-          <Text style={styles.errorMessage}>
-            {this.state.error ? this.state.error.toString() : 'An unexpected error occurred'}
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+          <Text style={{ fontSize: 18, fontWeight: '600', marginBottom: 8 }}>Something went wrong</Text>
+          <Text style={{ fontSize: 14, color: '#666', textAlign: 'center', marginBottom: 16 }}>
+            An unexpected error occurred. You can try again.
           </Text>
+          <Pressable
+            onPress={this.handleRetry}
+            style={{ backgroundColor: '#2e7d32', paddingHorizontal: 16, paddingVertical: 10, borderRadius: 8 }}
+          >
+            <Text style={{ color: '#fff', fontWeight: '600' }}>Try Again</Text>
+          </Pressable>
         </View>
       );
     }
-
     return this.props.children;
   }
 }
-
-const styles = StyleSheet.create({
-  errorContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#f5f5f5',
-    padding: 20,
-  },
-  errorTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#e74c3c',
-    marginBottom: 10,
-    textAlign: 'center',
-  },
-  errorMessage: {
-    fontSize: 16,
-    color: '#2c3e50',
-    textAlign: 'center',
-    lineHeight: 24,
-  },
-});
 
 export default ErrorBoundary;

@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { View, StyleSheet, SafeAreaView, Image, ImageBackground, Modal, TouchableOpacity, Dimensions, Alert, TextInput, Animated, ScrollView, FlatList, Platform, PanResponder } from 'react-native';
+import { View, StyleSheet, SafeAreaView, Image, ImageBackground, Modal, TouchableOpacity, Dimensions, Alert, TextInput, Animated, ScrollView, FlatList, Platform, PanResponder, PixelRatio } from 'react-native';
+import Svg, { Circle, RadialGradient, Defs, Stop } from 'react-native-svg';
 import { useAuth } from '../utils/authContext';
 import { COLORS as BASE_COLORS, SIZES, FONTS } from '../utils/theme';
 
@@ -497,30 +498,30 @@ const HomeScreen = ({ navigation, route }) => {
     // Icon container glow
     iconContainer: {
       shadowRadius: {
-        android: { normal: 6, pressed: 10 },
+        android: { normal: 20, pressed: 30 },
         ios: { normal: 35, pressed: 30 }
       },
       shadowOpacity: {
-        android: { normal: 0.8, pressed: 1.5 },
+        android: { normal: 0.9, pressed: 1.0 },
         ios: { normal: 3.5, pressed: 8.0 }
       },
       elevation: {
-        android: { normal: 4, pressed: 6 },
+        android: { normal: 12, pressed: 18 },
         ios: { normal: 12, pressed: 18 }
       },
     },
     // Text button glow
     textButton: {
       shadowOpacity: {
-        android: { normal: 0.15, pressed: 0.3 },
+        android: { normal: 0.3, pressed: 0.5 },
         ios: { normal: 0.4, pressed: 0.7 }
       },
       shadowRadius: {
-        android: { normal: 3, pressed: 6 },
+        android: { normal: 12, pressed: 18 },
         ios: { normal: 8, pressed: 18 }
       },
       elevation: {
-        android: { normal: 2, pressed: 4 },
+        android: { normal: 6, pressed: 10 },
         ios: { normal: 6, pressed: 15 }
       },
     },
@@ -1004,39 +1005,633 @@ const HomeScreen = ({ navigation, route }) => {
         imageStyle={{ opacity: 0.2 }}
     >
       <SafeAreaView style={[styles.container, { backgroundColor: 'transparent' }]}>
-        <View style={styles.header}>
-
-          
-          <View style={styles.logoContainer}>
-            <TouchableOpacity 
-              style={styles.introButton} 
-              onPress={() => setInfoVisible(true)} 
-              onPressIn={() => {
-                hapticSelection();
-                setIsInfoPressed(true);
-              }}
-              onPressOut={() => setIsInfoPressed(false)}
-              activeOpacity={1}
-            >
-              <View style={{
-                borderWidth: 2,
-                borderColor: '#5b7f67',
-                borderRadius: 12,
-                padding: 6,
-                shadowColor: '#000',
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.3,
-                shadowRadius: 4,
-                elevation: 5,
-                backgroundColor: infoVisible ? '#5b7f67' : (isInfoPressed ? '#5b7f67' : 'rgba(91,127,103,0.2)'),
-              }}>
+        {Platform.OS === 'android' ? (
+          <ScrollView 
+            style={{ flex: 1 }}
+            contentContainerStyle={{ paddingBottom: 24 }}
+            showsVerticalScrollIndicator={false}
+          >
+            {/* Modern Android Header - 2025 Design Trends */}
+            <View style={{
+              paddingHorizontal: 24,
+              paddingTop: 20,
+              paddingBottom: 24,
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+            }}>
+              <TouchableOpacity 
+                onPress={() => setInfoVisible(true)} 
+                onPressIn={() => {
+                  hapticSelection();
+                  setIsInfoPressed(true);
+                }}
+                onPressOut={() => setIsInfoPressed(false)}
+                activeOpacity={0.8}
+                style={{
+                  width: 56,
+                  height: 56,
+                  borderRadius: 28,
+                  backgroundColor: 'rgba(91,127,103,0.08)',
+                  borderWidth: 1,
+                  borderColor: 'rgba(91,127,103,0.2)',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  elevation: 0,
+                  shadowColor: '#000',
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.08,
+                  shadowRadius: 8,
+                }}
+              >
                 <Image 
                   source={require('../assets/app_icons/information.png')} 
-                  style={{ width: 28, height: 28, tintColor: '#F5E6C8' }}
+                  style={{ width: 26, height: 26, tintColor: '#F5E6C8' }}
                   resizeMode="contain"
                 />
-              </View>
+              </TouchableOpacity>
+              
+              {/* Logo - centered with glassmorphism */}
+              <TouchableOpacity
+                onPress={() => {
+                  telemetryService.trackUserInteraction('button_click', { 
+                    button: 'Logo - Intro Modal',
+                    screen: 'Home'
+                  });
+                  hapticSelection();
+                  setIntroVisible(!introVisible);
+                }}
+                activeOpacity={0.85}
+                style={{
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <View style={{
+                  width: 112,
+                  height: 112,
+                  borderRadius: 28,
+                  backgroundColor: 'rgba(250, 226, 159, 0.08)',
+                  borderWidth: 1.5,
+                  borderColor: 'rgba(250, 226, 159, 0.25)',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  elevation: 0,
+                  shadowColor: '#000',
+                  shadowOffset: { width: 0, height: 4 },
+                  shadowOpacity: 0.12,
+                  shadowRadius: 12,
+                }}>
+                  <Image 
+                    source={language === 'ar' ? require('../assets/IQRA2iconArabicoctagon.png') : require('../assets/IQRA2iconoctagon.png')} 
+                    style={{ width: 88, height: 88 }}
+                    resizeMode="contain"
+                  />
+                </View>
+              </TouchableOpacity>
+
+              <TouchableOpacity 
+                onPress={() => setSettingsVisible(true)} 
+                onPressIn={() => {
+                  hapticSelection();
+                  setIsSettingsPressed(true);
+                }}
+                onPressOut={() => setIsSettingsPressed(false)}
+                activeOpacity={0.8}
+                style={{
+                  width: 56,
+                  height: 56,
+                  borderRadius: 28,
+                  backgroundColor: 'rgba(165,115,36,0.08)',
+                  borderWidth: 1,
+                  borderColor: 'rgba(165,115,36,0.2)',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  elevation: 0,
+                  shadowColor: '#000',
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.08,
+                  shadowRadius: 8,
+                }}
+              >
+                <Image 
+                  source={require('../assets/app_icons/settings.png')} 
+                  style={{ width: 26, height: 26, tintColor: '#F5E6C8' }}
+                  resizeMode="contain"
+                />
+              </TouchableOpacity>
+            </View>
+
+            {/* Dua Text - Glassmorphism Card */}
+            <TouchableOpacity
+              onPress={() => {
+                telemetryService.trackUserInteraction('button_click', { 
+                  button: 'Dua Text - Duas Modal',
+                  screen: 'Home'
+                });
+                hapticSelection();
+                setDuaVisible(true);
+              }}
+              activeOpacity={0.85}
+              style={{
+                marginHorizontal: 24,
+                marginBottom: 32,
+                backgroundColor: 'rgba(250, 226, 159, 0.06)',
+                borderRadius: 28,
+                paddingVertical: 20,
+                paddingHorizontal: 24,
+                borderWidth: 1,
+                borderColor: 'rgba(250, 226, 159, 0.2)',
+                elevation: 0,
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.1,
+                shadowRadius: 12,
+              }}
+            >
+              <Text style={[styles.arabicText, {
+                color: '#F0D8A0',
+                textAlign: 'center',
+                textShadowColor: 'rgba(250, 226, 159, 0.3)',
+                textShadowOffset: { width: 0, height: 0 },
+                textShadowRadius: 4,
+                fontSize: getResponsiveFontSize(18),
+              }]} allowFontScaling={false} lang="ar">اللَّهُمَّ اجْعَلْنَا مِنْ أَهْلِ الْقُرْآن</Text>
             </TouchableOpacity>
+
+            {/* Main CTA Button - Floating Design 2025 */}
+            {(() => {
+              const [pressed, setPressed] = useState(false);
+              const openQuranImage = Image.resolveAssetSource(require('../assets/openQuran.png'));
+              
+              return (
+                <View style={{
+                  marginHorizontal: 24,
+                  marginBottom: 40,
+                }}>
+                  <TouchableOpacity
+                    style={{
+                      backgroundColor: memorizeButtonHeld ? 'rgba(250, 226, 159, 0.16)' : 'rgba(250, 226, 159, 0.12)',
+                      borderRadius: 32,
+                      borderWidth: 1.5,
+                      borderColor: memorizeButtonHeld ? 'rgba(250, 226, 159, 0.5)' : 'rgba(250, 226, 159, 0.3)',
+                      paddingVertical: 28,
+                      paddingHorizontal: 28,
+                      elevation: 0,
+                      shadowColor: '#000',
+                      shadowOffset: { width: 0, height: memorizeButtonHeld ? 8 : 6 },
+                      shadowOpacity: memorizeButtonHeld ? 0.2 : 0.15,
+                      shadowRadius: memorizeButtonHeld ? 16 : 12,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                    onPress={() => {
+                      telemetryService.trackUserInteraction('button_click', { 
+                        button: 'Start Memorization',
+                        screen: 'Home'
+                      });
+                      navigation.navigate('SurahList');
+                    }}
+                    onPressIn={() => { 
+                      setPressed(true); 
+                      setMemorizeButtonHeld(true);
+                      hapticSelection(); 
+                    }}
+                    onPressOut={() => { 
+                      setPressed(false); 
+                      setTimeout(() => {
+                        if (navigation.isFocused()) {
+                          setMemorizeButtonHeld(false);
+                        }
+                      }, 50);
+                    }}
+                    activeOpacity={0.95}
+                  >
+                    <View style={{
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      marginBottom: 16,
+                    }}>
+                      <Image 
+                        source={openQuranImage} 
+                        style={{ 
+                          width: PixelRatio.roundToNearestPixel(isMediumScreen ? 70 : 80), 
+                          height: PixelRatio.roundToNearestPixel(isMediumScreen ? 70 : 80),
+                        }} 
+                        resizeMode="contain"
+                        defaultSource={openQuranImage}
+                      />
+                    </View>
+                    <Text style={{
+                      textAlign: 'center',
+                      color: '#fae29f', 
+                      fontWeight: '700', 
+                      fontSize: getResponsiveFontSize(isMediumScreen ? 24 : 26), 
+                      letterSpacing: 0.5,
+                      textShadowColor: 'rgba(250, 226, 159, 0.4)', 
+                      textShadowOffset: { width: 0, height: 0 }, 
+                      textShadowRadius: 4,
+                      fontFamily: 'Montserrat-Bold'
+                    }}>{memorizeButtonHeld ? t('b2ithnAllah') : t('quran_memorize')}</Text>
+                  </TouchableOpacity>
+                </View>
+              );
+            })()}
+
+            {/* Stats Section - Glassmorphism Cards */}
+            <View style={{
+              marginHorizontal: 24,
+              marginBottom: 32,
+            }}>
+              {/* Progress Card */}
+              <TouchableOpacity
+                onPress={() => {
+                  hapticSelection();
+                  setProgressModalVisible(true);
+                }}
+                activeOpacity={0.9}
+                style={{
+                  backgroundColor: 'rgba(91,127,103,0.08)',
+                  borderRadius: 28,
+                  borderWidth: 1,
+                  borderColor: 'rgba(165,115,36,0.25)',
+                  padding: 24,
+                  marginBottom: 20,
+                  elevation: 0,
+                  shadowColor: '#000',
+                  shadowOffset: { width: 0, height: 4 },
+                  shadowOpacity: 0.1,
+                  shadowRadius: 12,
+                }}
+              >
+                <Text style={{
+                  color: '#5b7f67',
+                  fontWeight: '700',
+                  fontSize: 20,
+                  marginBottom: 16,
+                  textAlign: 'center',
+                  letterSpacing: 0.3,
+                }}>{t('memorization_progress')}</Text>
+                
+                <Text style={{ 
+                  marginBottom: 12, 
+                  textAlign: 'center',
+                  fontSize: 14,
+                  color: '#F5E6C8',
+                }}>
+                  <Text style={{ color: '#f5c860', fontWeight: 'bold' }}>{toArabicNumber(data.memorizedAyaat)}</Text>
+                  <Text style={{ color: '#CCCCCC' }}> {t('out_of_ayaat')} </Text>
+                  <Text style={{ color: '#F5E6C8', fontWeight: 'bold' }}>{toArabicNumber(data.totalAyaat)}</Text>
+                  <Text style={{ color: '#CCCCCC' }}> {t('ayaat_memorized')}</Text>
+                </Text>
+                
+                <View style={[styles.progressBar, { marginBottom: 12 }]}>
+                  <View style={[styles.progressFill, { 
+                    width: `${progressPercentage}%`,
+                    backgroundColor: progressPercentage === 100 ? '#fae29f' : '#33694e',
+                  }]} />
+                </View>
+                
+                <Text style={{
+                  textAlign: 'center',
+                  color: '#F5E6C8',
+                  fontSize: 22,
+                  fontWeight: '600',
+                  letterSpacing: 0.5,
+                }}>
+                  {progressPercentage === 100 ? (
+                    <Text style={{ fontWeight: '700', color: '#fae29f', fontSize: 28, letterSpacing: 1 }}>100%</Text>
+                  ) : (
+                    <Text style={{ fontWeight: '700', color: '#fae29f', fontSize: 26, letterSpacing: 1 }}>{toArabicNumber(progressPercentage)}%</Text>
+                  )}
+                  <Text style={{ fontSize: 18 }}> {progressPercentage === 100 ? t('completed') : t('complete')}</Text>
+                </Text>
+              </TouchableOpacity>
+
+              {/* Stats Grid */}
+              <View style={{
+                flexDirection: 'row',
+                gap: 16,
+              }}>
+                {/* Hasanat Card */}
+                <TouchableOpacity
+                  onPress={() => {
+                    hapticSelection();
+                    setHasanatModalVisible(true);
+                  }}
+                  activeOpacity={0.9}
+                  style={{
+                    flex: 1,
+                    backgroundColor: 'rgba(91,127,103,0.08)',
+                    borderRadius: 24,
+                    borderWidth: 1,
+                    borderColor: 'rgba(165,115,36,0.25)',
+                    padding: 20,
+                    alignItems: 'center',
+                    elevation: 0,
+                    shadowColor: '#000',
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.08,
+                    shadowRadius: 8,
+                  }}
+                >
+                  <Text style={{
+                    color: 'rgba(165,115,36,0.9)',
+                    fontWeight: '700',
+                    fontSize: 15,
+                    marginBottom: 16,
+                    letterSpacing: 0.3,
+                  }}>{t('hasanat_gains')}</Text>
+                  <View style={{
+                    backgroundColor: 'rgba(0,0,0,0.3)',
+                    borderRadius: 16,
+                    paddingHorizontal: 18,
+                    paddingVertical: 16,
+                    paddingTop: 18,
+                    marginBottom: 12,
+                    overflow: 'visible',
+                  }}>
+                    <Text style={{
+                      color: 'rgba(245,200,96,0.95)',
+                      fontWeight: '700',
+                      fontSize: Platform.OS === 'android' ? (formatStreakNumber(data.totalHasanat).fontSize * 1.15) : formatStreakNumber(data.totalHasanat).fontSize,
+                      textAlign: 'center',
+                      letterSpacing: 0.5,
+                      lineHeight: Platform.OS === 'android' ? (formatStreakNumber(data.totalHasanat).fontSize * 1.15 * 1.3) : (formatStreakNumber(data.totalHasanat).fontSize * 1.2),
+                      includeFontPadding: false,
+                    }}>{toArabicNumber(formatStreakNumber(data.totalHasanat).text)}</Text>
+                  </View>
+                  <Text style={{ color: '#CCCCCC', fontSize: 13, textAlign: 'center', fontWeight: '500' }}>
+                    +{toArabicNumber(formatLargeNumber(data.todayHasanat).text)} {t('today_hasanat')}
+                  </Text>
+                </TouchableOpacity>
+
+                {/* Streak Card */}
+                <TouchableOpacity
+                  onPress={() => {
+                    hapticSelection();
+                    setStreakModalVisible(true);
+                  }}
+                  activeOpacity={0.9}
+                  style={{
+                    flex: 1,
+                    backgroundColor: 'rgba(91,127,103,0.08)',
+                    borderRadius: 24,
+                    borderWidth: 1,
+                    borderColor: 'rgba(165,115,36,0.25)',
+                    padding: 20,
+                    alignItems: 'center',
+                    elevation: 0,
+                    shadowColor: '#000',
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.08,
+                    shadowRadius: 8,
+                  }}
+                >
+                  <Text style={{
+                    color: 'rgba(165,115,36,0.9)',
+                    fontWeight: '700',
+                    fontSize: 15,
+                    marginBottom: 16,
+                    letterSpacing: 0.3,
+                  }}>{t('streak')}</Text>
+                  <View style={{
+                    backgroundColor: 'rgba(0,0,0,0.3)',
+                    borderRadius: 16,
+                    paddingHorizontal: 18,
+                    paddingVertical: 16,
+                    paddingTop: 18,
+                    marginBottom: 12,
+                    overflow: 'visible',
+                  }}>
+                    <Text style={{
+                      color: hasProgressToday ? '#5b7f67' : 'rgba(128,128,128,0.8)',
+                      fontWeight: '700',
+                      fontSize: Platform.OS === 'android' ? (formatStreakNumber(data.streak).fontSize * 1.15) : formatStreakNumber(data.streak).fontSize,
+                      textAlign: 'center',
+                      letterSpacing: 0.5,
+                      lineHeight: Platform.OS === 'android' ? (formatStreakNumber(data.streak).fontSize * 1.15 * 1.3) : (formatStreakNumber(data.streak).fontSize * 1.2),
+                      includeFontPadding: false,
+                    }}>{toArabicNumber(formatStreakNumber(data.streak).text)}</Text>
+                  </View>
+                  <Text style={{ color: '#CCCCCC', fontSize: 13, textAlign: 'center', fontWeight: '500' }}>{t('days')}</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            {/* Saved Content Section */}
+            <View style={{
+              marginHorizontal: 24,
+              marginBottom: 32,
+            }}>
+              <Text style={{
+                color: '#5b7f67',
+                fontWeight: '700',
+                fontSize: 20,
+                marginBottom: 20,
+                textAlign: 'center',
+                letterSpacing: 0.5,
+              }}>Saved Content</Text>
+              
+              <View style={{
+                flexDirection: 'row',
+                gap: 16,
+                marginBottom: 16,
+              }}>
+                <TouchableOpacity
+                  onPress={() => {
+                    hapticSelection();
+                    setShowSavedAyaatModal(true);
+                  }}
+                  activeOpacity={0.9}
+                  style={{
+                    flex: 1,
+                    backgroundColor: 'rgba(91,127,103,0.08)',
+                    borderRadius: 24,
+                    borderWidth: 1,
+                    borderColor: 'rgba(165,115,36,0.25)',
+                    padding: 20,
+                    alignItems: 'center',
+                    elevation: 0,
+                    shadowColor: '#000',
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.08,
+                    shadowRadius: 8,
+                  }}
+                >
+                  <Text style={{
+                    color: 'rgba(165,115,36,0.9)',
+                    fontWeight: '700',
+                    fontSize: 15,
+                    marginBottom: 12,
+                    letterSpacing: 0.3,
+                  }}>Saved Ayaat</Text>
+                  <Text style={{
+                    color: '#F5E6C8',
+                    fontSize: 20,
+                    fontWeight: '700',
+                    letterSpacing: 0.5,
+                  }}>12</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  onPress={() => {
+                    hapticSelection();
+                    setShowSavedNotesModal(true);
+                  }}
+                  activeOpacity={0.9}
+                  style={{
+                    flex: 1,
+                    backgroundColor: 'rgba(91,127,103,0.08)',
+                    borderRadius: 24,
+                    borderWidth: 1,
+                    borderColor: 'rgba(165,115,36,0.25)',
+                    padding: 20,
+                    alignItems: 'center',
+                    elevation: 0,
+                    shadowColor: '#000',
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.08,
+                    shadowRadius: 8,
+                  }}
+                >
+                  <Text style={{
+                    color: 'rgba(165,115,36,0.9)',
+                    fontWeight: '700',
+                    fontSize: 15,
+                    marginBottom: 12,
+                    letterSpacing: 0.3,
+                  }}>Saved Notes</Text>
+                  <Text style={{
+                    color: '#F5E6C8',
+                    fontSize: 20,
+                    fontWeight: '700',
+                    letterSpacing: 0.5,
+                  }}>{savedNotes.length}</Text>
+                </TouchableOpacity>
+              </View>
+
+              <TouchableOpacity
+                onPress={() => {
+                  hapticSelection();
+                  setRecordingsModalVisible(true);
+                }}
+                activeOpacity={0.9}
+                style={{
+                  backgroundColor: 'rgba(91,127,103,0.08)',
+                  borderRadius: 24,
+                  borderWidth: 1,
+                  borderColor: 'rgba(165,115,36,0.25)',
+                  padding: 20,
+                  alignItems: 'center',
+                  elevation: 0,
+                  shadowColor: '#000',
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.08,
+                  shadowRadius: 8,
+                }}
+              >
+                <Text style={{
+                  color: 'rgba(165,115,36,0.9)',
+                  fontWeight: '700',
+                  fontSize: 15,
+                  marginBottom: 12,
+                  letterSpacing: 0.3,
+                }}>Recitation Recordings</Text>
+                <Text style={{
+                  color: '#F5E6C8',
+                  fontSize: 20,
+                  fontWeight: '700',
+                  letterSpacing: 0.5,
+                }}>8</Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Leaderboard Section */}
+            <View style={{
+              marginHorizontal: 24,
+              marginBottom: 32,
+            }}>
+              <Text style={{
+                color: '#5b7f67',
+                fontWeight: '700',
+                fontSize: 20,
+                marginBottom: 20,
+                textAlign: 'center',
+                letterSpacing: 0.5,
+              }}>Leaderboards</Text>
+              
+              <View style={{
+                flexDirection: 'row',
+                gap: 16,
+              }}>
+                <View style={{ flex: 1 }}>
+                  <LeaderboardCard
+                    type={LEADERBOARD_TYPES.MEMORIZATION}
+                    title="Top Memorizers"
+                    onPress={() => {
+                      hapticSelection();
+                      navigation.navigate('Leaderboard');
+                    }}
+                    onPressIn={() => setPressedMemorizationLeaderboard(true)}
+                    onPressOut={() => setPressedMemorizationLeaderboard(false)}
+                    isPressed={pressedMemorizationLeaderboard}
+                    limit={3}
+                  />
+                </View>
+
+                <View style={{ flex: 1 }}>
+                  <LeaderboardCard
+                    type={LEADERBOARD_TYPES.STREAK}
+                    title="Top Streaks"
+                    onPress={() => {
+                      hapticSelection();
+                      navigation.navigate('Leaderboard');
+                    }}
+                    onPressIn={() => setPressedStreakLeaderboard(true)}
+                    onPressOut={() => setPressedStreakLeaderboard(false)}
+                    isPressed={pressedStreakLeaderboard}
+                    limit={3}
+                  />
+                </View>
+              </View>
+            </View>
+          </ScrollView>
+        ) : (
+          <>
+          <View style={styles.header}>
+
+            
+            <View style={styles.logoContainer}>
+              <TouchableOpacity 
+                style={styles.introButton} 
+                onPress={() => setInfoVisible(true)} 
+                onPressIn={() => {
+                  hapticSelection();
+                  setIsInfoPressed(true);
+                }}
+                onPressOut={() => setIsInfoPressed(false)}
+                activeOpacity={1}
+              >
+                <View style={{
+                  borderWidth: Platform.OS === 'android' ? 1.5 : 2,
+                  borderColor: '#5b7f67',
+                  borderRadius: Platform.OS === 'android' ? 16 : 12,
+                  padding: Platform.OS === 'android' ? 10 : 6,
+                  shadowColor: '#000',
+                  shadowOffset: { width: 0, height: Platform.OS === 'android' ? 2 : 2 },
+                  shadowOpacity: Platform.OS === 'android' ? 0.2 : 0.3,
+                  shadowRadius: Platform.OS === 'android' ? 3 : 4,
+                  elevation: Platform.OS === 'android' ? 4 : 5,
+                  backgroundColor: infoVisible ? '#5b7f67' : (isInfoPressed ? '#5b7f67' : 'rgba(91,127,103,0.25)'),
+                }}>
+                  <Image 
+                    source={require('../assets/app_icons/information.png')} 
+                    style={{ width: Platform.OS === 'android' ? 24 : 28, height: Platform.OS === 'android' ? 24 : 28, tintColor: '#F5E6C8' }}
+                    resizeMode="contain"
+                  />
+                </View>
+              </TouchableOpacity>
             {(() => {
               const [logoPressed, setLogoPressed] = useState(false);
   const [showArabicIcon, setShowArabicIcon] = useState(false);
@@ -1049,11 +1644,31 @@ const HomeScreen = ({ navigation, route }) => {
                   shadowRadius: logoPressed ? GLOW_CONFIG.iconContainer.shadowRadius[Platform.OS].pressed : GLOW_CONFIG.iconContainer.shadowRadius[Platform.OS].normal,
                   elevation: logoPressed ? GLOW_CONFIG.iconContainer.elevation[Platform.OS].pressed : GLOW_CONFIG.iconContainer.elevation[Platform.OS].normal,
                 }]}>
+                  {Platform.OS === 'android' && (
+                    <View style={{
+                      position: 'absolute',
+                      width: 120,
+                      height: 120,
+                      borderRadius: 20,
+                      backgroundColor: logoPressed ? 'rgba(250, 226, 159, 0.12)' : 'rgba(250, 226, 159, 0.08)',
+                      borderWidth: 1,
+                      borderColor: logoPressed ? 'rgba(250, 226, 159, 0.4)' : 'rgba(250, 226, 159, 0.3)',
+                      alignSelf: 'center',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      elevation: logoPressed ? 8 : 4,
+                      shadowColor: '#000000',
+                      shadowOffset: { width: 4, height: 4 },
+                      shadowOpacity: 0.3,
+                      shadowRadius: 6,
+                    }} />
+                  )}
                   <TouchableOpacity
                     style={{
                       alignItems: 'center',
                       justifyContent: 'center',
                       padding: 10,
+                      zIndex: 1,
                     }}
                     onPress={() => {
                       telemetryService.trackUserInteraction('button_click', { 
@@ -1076,7 +1691,8 @@ const HomeScreen = ({ navigation, route }) => {
                   >
               <Image 
                 source={showArabicIcon ? require('../assets/IQRA2iconArabicoctagon.png') : (language === 'ar' ? require('../assets/IQRA2iconArabicoctagon.png') : require('../assets/IQRA2iconoctagon.png'))} 
-                style={[styles.logo]} 
+                style={[styles.logo, { zIndex: 2 }]} 
+                resizeMode="contain"
               />
                   </TouchableOpacity>
                 </Animated.View>
@@ -1095,20 +1711,20 @@ const HomeScreen = ({ navigation, route }) => {
               activeOpacity={1}
             >
               <View style={{
-                borderWidth: 2,
+                borderWidth: Platform.OS === 'android' ? 1.5 : 2,
                 borderColor: 'rgba(165,115,36,0.8)',
-                borderRadius: 12,
-                padding: 6,
+                borderRadius: Platform.OS === 'android' ? 16 : 12,
+                padding: Platform.OS === 'android' ? 10 : 6,
                 shadowColor: '#000',
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.3,
-                shadowRadius: 4,
-                elevation: 5,
-                backgroundColor: settingsVisible ? 'rgba(165,115,36,0.8)' : (isSettingsPressed ? 'rgba(165,115,36,0.8)' : 'rgba(165,115,36,0.2)'),
+                shadowOffset: { width: 0, height: Platform.OS === 'android' ? 2 : 2 },
+                shadowOpacity: Platform.OS === 'android' ? 0.2 : 0.3,
+                shadowRadius: Platform.OS === 'android' ? 3 : 4,
+                elevation: Platform.OS === 'android' ? 4 : 5,
+                backgroundColor: settingsVisible ? 'rgba(165,115,36,0.8)' : (isSettingsPressed ? 'rgba(165,115,36,0.8)' : 'rgba(165,115,36,0.25)'),
               }}>
                 <Image 
                   source={require('../assets/app_icons/settings.png')} 
-                  style={{ width: 28, height: 28, tintColor: '#F5E6C8' }}
+                  style={{ width: Platform.OS === 'android' ? 24 : 28, height: Platform.OS === 'android' ? 24 : 28, tintColor: '#F5E6C8' }}
                   resizeMode="contain"
                 />
               </View>
@@ -1178,6 +1794,10 @@ const HomeScreen = ({ navigation, route }) => {
             {(() => {
               const [pressed, setPressed] = useState(false);
               const glowAnimation = useRef(new Animated.Value(0)).current;
+              // Resolve asset source to get proper high-resolution image
+              const openQuranImage = Platform.OS === 'android' 
+                ? Image.resolveAssetSource(require('../assets/openQuran.png'))
+                : require('../assets/openQuran.png');
               
               // Glow animation for iOS only
               useEffect(() => {
@@ -1242,80 +1862,157 @@ const HomeScreen = ({ navigation, route }) => {
                     height: Platform.OS === 'android' ? 180 : (isMediumScreen ? 110 : 120)
                   }}
                 >
-                                                        <TouchableOpacity
-                    style={{
-                      flex: 1,
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      backgroundColor: 'transparent',
-                      borderRadius: SIZES.base * 2,
-                      flexDirection: 'column',
-                      width: '100%',
-                      height: '100%',
-                      marginTop: isMediumScreen ? 70 : 80 // Responsive margin to shift button down
-                    }}
-                  onPress={() => {
-                    telemetryService.trackUserInteraction('button_click', { 
-                      button: 'Start Memorization',
-                      screen: 'Home'
-                    });
-                    navigation.navigate('SurahList');
-                  }}
-                  onPressIn={() => { 
-                    setPressed(true); 
-                    setMemorizeButtonHeld(true);
-                    hapticSelection(); 
-                  }}
-                  onPressOut={() => { 
-                    setPressed(false); 
-                    // Reset the text change if the press wasn't completed
-                    // We'll use a small delay to check if navigation happened
-                    setTimeout(() => {
-                      // If we're still on the home screen, the press wasn't completed
-                      if (navigation.isFocused()) {
-                        setMemorizeButtonHeld(false);
-                      }
-                    }, 50);
-                  }}
-                  activeOpacity={1}
-                >
-                  <View style={[styles.buttonIconContainer, {
-                    shadowRadius: memorizeButtonHeld ? GLOW_CONFIG.iconContainer.shadowRadius[Platform.OS].pressed : GLOW_CONFIG.iconContainer.shadowRadius[Platform.OS].normal,
-                    shadowOpacity: memorizeButtonHeld ? GLOW_CONFIG.iconContainer.shadowOpacity[Platform.OS].pressed : GLOW_CONFIG.iconContainer.shadowOpacity[Platform.OS].normal,
-                    elevation: memorizeButtonHeld ? GLOW_CONFIG.iconContainer.elevation[Platform.OS].pressed : GLOW_CONFIG.iconContainer.elevation[Platform.OS].normal,
-                  }]}>
-                    <Image source={require('../assets/openQuran.png')} style={[styles.buttonIcon, { width: isMediumScreen ? (RESPONSIVE_ICON_SIZES.button * 0.95) : RESPONSIVE_ICON_SIZES.button, height: isMediumScreen ? (RESPONSIVE_ICON_SIZES.button * 0.95) : RESPONSIVE_ICON_SIZES.button }]} resizeMode="contain" />
-                  </View>
-                  <View style={{ 
-                    backgroundColor: 'rgba(0,0,0,0.8)', 
-                    borderRadius: 20, 
-                    paddingHorizontal: 20, 
-                    paddingTop: language === 'ar' ? 12 : 16,
-                    paddingBottom: language === 'ar' ? 16 : 12,
-                    alignItems: 'center', 
-                    justifyContent: 'center', 
-                    shadowColor: '#fae29f', 
-                    shadowOffset: { width: 0, height: 0 }, 
-                    shadowOpacity: pressed ? GLOW_CONFIG.textButton.shadowOpacity[Platform.OS].pressed : GLOW_CONFIG.textButton.shadowOpacity[Platform.OS].normal, 
-                    shadowRadius: pressed ? GLOW_CONFIG.textButton.shadowRadius[Platform.OS].pressed : GLOW_CONFIG.textButton.shadowRadius[Platform.OS].normal, 
-                    elevation: pressed ? GLOW_CONFIG.textButton.elevation[Platform.OS].pressed : GLOW_CONFIG.textButton.elevation[Platform.OS].normal,
-                    minHeight: language === 'ar' ? (isMediumScreen ? 90 : 100) : (isMediumScreen ? 70 : 80)
-                  }}>
-                    <Text style={[{
-                      marginTop: language === 'ar' ? 4 : 0,
-                      textAlign: 'center',
-                      color: '#fae29f', 
-                      width: '100%', 
-                      fontWeight: 'bold', 
-                                              fontSize: memorizeButtonHeld ? getResponsiveFontSize(isMediumScreen ? 25 : 26) : getResponsiveFontSize(isMediumScreen ? 21 : 22), 
-                      textShadowColor: '#fae29f', 
-                      textShadowOffset: { width: 0, height: 0 }, 
-                      textShadowRadius: GLOW_CONFIG.text.shadowRadius,
-                                              lineHeight: memorizeButtonHeld ? (language === 'ar' ? (isMediumScreen ? 38 : 40) : (isMediumScreen ? 29 : 30)) : (language === 'ar' ? (isMediumScreen ? 35 : 36) : (isMediumScreen ? 25 : 26)),
-                      fontFamily: 'Montserrat-Bold'
-                    }]}>{memorizeButtonHeld ? t('b2ithnAllah') : t('quran_memorize')}</Text>
-                  </View>
-                </TouchableOpacity>
+                  {Platform.OS === 'android' ? (
+                    <TouchableOpacity
+                      style={{
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        backgroundColor: memorizeButtonHeld ? 'rgba(250, 226, 159, 0.15)' : 'rgba(250, 226, 159, 0.1)',
+                        borderRadius: 24,
+                        borderWidth: 1.5,
+                        borderColor: memorizeButtonHeld ? 'rgba(250, 226, 159, 0.5)' : 'rgba(250, 226, 159, 0.35)',
+                        paddingVertical: 20,
+                        paddingHorizontal: 32,
+                        elevation: memorizeButtonHeld ? 8 : 6,
+                        shadowColor: '#000000',
+                        shadowOffset: { width: 0, height: 4 },
+                        shadowOpacity: 0.3,
+                        shadowRadius: 8,
+                        width: '85%',
+                        minHeight: isMediumScreen ? 140 : 160,
+                      }}
+                      onPress={() => {
+                        telemetryService.trackUserInteraction('button_click', { 
+                          button: 'Start Memorization',
+                          screen: 'Home'
+                        });
+                        navigation.navigate('SurahList');
+                      }}
+                      onPressIn={() => { 
+                        setPressed(true); 
+                        setMemorizeButtonHeld(true);
+                        hapticSelection(); 
+                      }}
+                      onPressOut={() => { 
+                        setPressed(false); 
+                        setTimeout(() => {
+                          if (navigation.isFocused()) {
+                            setMemorizeButtonHeld(false);
+                          }
+                        }, 50);
+                      }}
+                      activeOpacity={0.95}
+                    >
+                      <View style={{
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        marginBottom: 12,
+                      }}>
+                        <Image 
+                          source={openQuranImage} 
+                          style={{ 
+                            width: Platform.OS === 'android' 
+                              ? PixelRatio.roundToNearestPixel(isMediumScreen ? 70 : 80) 
+                              : (isMediumScreen ? (RESPONSIVE_ICON_SIZES.button * 1.1) : (RESPONSIVE_ICON_SIZES.button * 1.2)), 
+                            height: Platform.OS === 'android' 
+                              ? PixelRatio.roundToNearestPixel(isMediumScreen ? 70 : 80) 
+                              : (isMediumScreen ? (RESPONSIVE_ICON_SIZES.button * 1.1) : (RESPONSIVE_ICON_SIZES.button * 1.2)),
+                          }} 
+                          resizeMode="contain"
+                          defaultSource={openQuranImage}
+                        />
+                      </View>
+                      <Text style={{
+                        textAlign: 'center',
+                        color: '#fae29f', 
+                        fontWeight: 'bold', 
+                        fontSize: memorizeButtonHeld ? getResponsiveFontSize(isMediumScreen ? 24 : 26) : getResponsiveFontSize(isMediumScreen ? 22 : 24), 
+                        textShadowColor: '#fae29f', 
+                        textShadowOffset: { width: 0, height: 0 }, 
+                        textShadowRadius: GLOW_CONFIG.text.shadowRadius,
+                        lineHeight: memorizeButtonHeld ? (language === 'ar' ? (isMediumScreen ? 36 : 40) : (isMediumScreen ? 28 : 30)) : (language === 'ar' ? (isMediumScreen ? 34 : 38) : (isMediumScreen ? 26 : 28)),
+                        fontFamily: 'Montserrat-Bold'
+                      }}>{memorizeButtonHeld ? t('b2ithnAllah') : t('quran_memorize')}</Text>
+                    </TouchableOpacity>
+                  ) : (
+                    <TouchableOpacity
+                      style={{
+                        flex: 1,
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        backgroundColor: 'transparent',
+                        borderRadius: SIZES.base * 2,
+                        flexDirection: 'column',
+                        width: '100%',
+                        height: '100%',
+                        marginTop: isMediumScreen ? 70 : 80
+                      }}
+                      onPress={() => {
+                        telemetryService.trackUserInteraction('button_click', { 
+                          button: 'Start Memorization',
+                          screen: 'Home'
+                        });
+                        navigation.navigate('SurahList');
+                      }}
+                      onPressIn={() => { 
+                        setPressed(true); 
+                        setMemorizeButtonHeld(true);
+                        hapticSelection(); 
+                      }}
+                      onPressOut={() => { 
+                        setPressed(false); 
+                        setTimeout(() => {
+                          if (navigation.isFocused()) {
+                            setMemorizeButtonHeld(false);
+                          }
+                        }, 50);
+                      }}
+                      activeOpacity={1}
+                    >
+                      <View style={[styles.buttonIconContainer, {
+                        shadowColor: '#fae29f',
+                        shadowOffset: { width: 0, height: 0 },
+                        shadowRadius: memorizeButtonHeld ? GLOW_CONFIG.iconContainer.shadowRadius[Platform.OS].pressed : GLOW_CONFIG.iconContainer.shadowRadius[Platform.OS].normal,
+                        shadowOpacity: memorizeButtonHeld ? GLOW_CONFIG.iconContainer.shadowOpacity[Platform.OS].pressed : GLOW_CONFIG.iconContainer.shadowOpacity[Platform.OS].normal,
+                        elevation: memorizeButtonHeld ? GLOW_CONFIG.iconContainer.elevation[Platform.OS].pressed : GLOW_CONFIG.iconContainer.elevation[Platform.OS].normal,
+                        marginBottom: language === 'ar' ? (isMediumScreen ? 8 : 10) : (isMediumScreen ? 6 : 8),
+                      }]}>
+                        <Image 
+                          source={require('../assets/openQuran.png')} 
+                          style={[styles.buttonIcon, { 
+                            width: isMediumScreen ? (RESPONSIVE_ICON_SIZES.button * 0.95) : RESPONSIVE_ICON_SIZES.button, 
+                            height: isMediumScreen ? (RESPONSIVE_ICON_SIZES.button * 0.95) : RESPONSIVE_ICON_SIZES.button,
+                          }]} 
+                          resizeMode="contain"
+                          defaultSource={require('../assets/openQuran.png')}
+                        />
+                      </View>
+                      <View style={{ 
+                        backgroundColor: 'transparent',
+                        borderRadius: 20, 
+                        paddingHorizontal: 20, 
+                        paddingTop: language === 'ar' ? 4 : 6,
+                        paddingBottom: language === 'ar' ? 8 : 10,
+                        alignItems: 'center', 
+                        justifyContent: 'center', 
+                        minHeight: language === 'ar' ? (isMediumScreen ? 70 : 80) : (isMediumScreen ? 60 : 70)
+                      }}>
+                        <Text style={[{
+                          marginTop: language === 'ar' ? 4 : 0,
+                          textAlign: 'center',
+                          color: '#fae29f', 
+                          width: '100%', 
+                          fontWeight: 'bold', 
+                          fontSize: memorizeButtonHeld ? getResponsiveFontSize(isMediumScreen ? 25 : 26) : getResponsiveFontSize(isMediumScreen ? 21 : 22), 
+                          textShadowColor: '#fae29f', 
+                          textShadowOffset: { width: 0, height: 0 }, 
+                          textShadowRadius: GLOW_CONFIG.text.shadowRadius,
+                          lineHeight: memorizeButtonHeld ? (language === 'ar' ? (isMediumScreen ? 38 : 40) : (isMediumScreen ? 29 : 30)) : (language === 'ar' ? (isMediumScreen ? 35 : 36) : (isMediumScreen ? 25 : 26)),
+                          fontFamily: 'Montserrat-Bold'
+                        }]}>{memorizeButtonHeld ? t('b2ithnAllah') : t('quran_memorize')}</Text>
+                      </View>
+                    </TouchableOpacity>
+                  )}
                 </Animated.View>
               );
             })()}
@@ -1361,8 +2058,8 @@ const HomeScreen = ({ navigation, route }) => {
                     <View style={{
                       flexDirection: 'row',
                       justifyContent: 'space-between',
-                      gap: 8,
-                      width: '90%',
+                      gap: Platform.OS === 'android' ? 12 : 8,
+                      width: Platform.OS === 'android' ? '92%' : '90%',
                       alignSelf: 'center',
                     }}>
                                               {/* Saved Ayaat */}
@@ -1371,14 +2068,14 @@ const HomeScreen = ({ navigation, route }) => {
                           flex: 0.48,
                           backgroundColor: pressedSavedAyaat ? 'rgba(91,127,103,0.4)' : 'rgba(91,127,103,0.2)',
                           borderColor: pressedSavedAyaat ? '#5b7f67' : 'rgba(165,115,36,0.8)',
-                          borderWidth: 2,
+                          borderWidth: Platform.OS === 'android' ? 1.5 : 2,
                           borderRadius: 20,
-                          padding: SIZES.small,
+                          padding: Platform.OS === 'android' ? 16 : SIZES.small,
                           shadowColor: '#000000',
-                          shadowOffset: { width: 4, height: 4 },
-                          shadowOpacity: 0.6,
-                          shadowRadius: 6,
-                          elevation: 8,
+                          shadowOffset: { width: 0, height: Platform.OS === 'android' ? 2 : 4 },
+                          shadowOpacity: Platform.OS === 'android' ? 0.25 : 0.6,
+                          shadowRadius: Platform.OS === 'android' ? 4 : 6,
+                          elevation: Platform.OS === 'android' ? 6 : 8,
                           alignItems: 'center',
                           justifyContent: 'center',
                           minHeight: isSmallScreen ? 100 : 120,
@@ -1427,14 +2124,14 @@ const HomeScreen = ({ navigation, route }) => {
                           flex: 0.48,
                           backgroundColor: pressedSavedNotes ? 'rgba(91,127,103,0.4)' : 'rgba(91,127,103,0.2)',
                           borderColor: pressedSavedNotes ? '#5b7f67' : 'rgba(165,115,36,0.8)',
-                          borderWidth: 2,
+                          borderWidth: Platform.OS === 'android' ? 1.5 : 2,
                           borderRadius: 20,
-                          padding: SIZES.small,
+                          padding: Platform.OS === 'android' ? 16 : SIZES.small,
                           shadowColor: '#000000',
-                          shadowOffset: { width: 4, height: 4 },
-                          shadowOpacity: 0.6,
-                          shadowRadius: 6,
-                          elevation: 8,
+                          shadowOffset: { width: 0, height: Platform.OS === 'android' ? 2 : 4 },
+                          shadowOpacity: Platform.OS === 'android' ? 0.25 : 0.6,
+                          shadowRadius: Platform.OS === 'android' ? 4 : 6,
+                          elevation: Platform.OS === 'android' ? 6 : 8,
                           alignItems: 'center',
                           justifyContent: 'center',
                           minHeight: isSmallScreen ? 100 : 120,
@@ -1486,20 +2183,21 @@ const HomeScreen = ({ navigation, route }) => {
                     }}>
                       <TouchableOpacity
                         style={{
-                          flex: 0.48,
+                          width: Platform.OS === 'android' ? '92%' : '100%',
                           backgroundColor: pressedRecordings ? 'rgba(91,127,103,0.4)' : 'rgba(91,127,103,0.2)',
                           borderColor: pressedRecordings ? '#5b7f67' : 'rgba(165,115,36,0.8)',
-                          borderWidth: 2,
+                          borderWidth: Platform.OS === 'android' ? 1.5 : 2,
                           borderRadius: 20,
-                          padding: SIZES.small,
+                          padding: Platform.OS === 'android' ? 16 : SIZES.small,
                           shadowColor: '#000000',
-                          shadowOffset: { width: 4, height: 4 },
-                          shadowOpacity: 0.6,
-                          shadowRadius: 6,
-                          elevation: 8,
+                          shadowOffset: { width: 0, height: Platform.OS === 'android' ? 2 : 4 },
+                          shadowOpacity: Platform.OS === 'android' ? 0.25 : 0.6,
+                          shadowRadius: Platform.OS === 'android' ? 4 : 6,
+                          elevation: Platform.OS === 'android' ? 6 : 8,
                           alignItems: 'center',
                           justifyContent: 'center',
                           minHeight: isSmallScreen ? 100 : 120,
+                          alignSelf: 'center',
                         }}
                         onPress={() => {
                           hapticSelection();
@@ -1566,16 +2264,16 @@ const HomeScreen = ({ navigation, route }) => {
                         marginBottom: 0,
                         backgroundColor: pressedStatBox === 'progress' ? 'rgba(91,127,103,0.4)' : 'rgba(91,127,103,0.2)',
                         borderColor: pressedStatBox === 'progress' ? '#5b7f67' : 'rgba(165,115,36,0.8)',
-                        borderWidth: 2,
-                        padding: SIZES.small,
+                        borderWidth: Platform.OS === 'android' ? 1.5 : 2,
+                        padding: Platform.OS === 'android' ? 20 : SIZES.small,
                         shadowColor: '#000000',
-                        shadowOffset: { width: 4, height: 4 },
-                        shadowOpacity: 0.6,
-                        shadowRadius: 6,
-                        elevation: 8,
+                        shadowOffset: { width: 0, height: Platform.OS === 'android' ? 3 : 4 },
+                        shadowOpacity: Platform.OS === 'android' ? 0.3 : 0.6,
+                        shadowRadius: Platform.OS === 'android' ? 6 : 6,
+                        elevation: Platform.OS === 'android' ? 6 : 8,
                         height: isSmallScreen ? 125 : 165,
                         alignSelf: 'center',
-                        width: '80%'
+                        width: Platform.OS === 'android' ? '85%' : '80%'
                       }}>
                         <View style={{ alignItems: 'center' }}>
                           <View style={{ borderBottomWidth: 2, borderBottomColor: 'rgba(51,51,51,0.6)', paddingBottom: 4, marginBottom: 12 }}>
@@ -1637,10 +2335,11 @@ const HomeScreen = ({ navigation, route }) => {
                           ]} />
                         </View>
                                                   <Text variant="body2" color="textSecondary" style={{
-                            marginTop: 4,
+                            marginTop: Platform.OS === 'android' ? 8 : 4,
                             textAlign: 'center',
                             color: '#F5E6C8',
-                            fontSize: progressPercentage === 100 ? 18 : 16,
+                            fontSize: Platform.OS === 'android' ? (progressPercentage === 100 ? 20 : 18) : (progressPercentage === 100 ? 18 : 16),
+                            fontWeight: Platform.OS === 'android' ? '600' : 'normal',
                             ...(progressPercentage === 100 && {
                               textShadowColor: '#fae29f',
                               textShadowOffset: { width: 0, height: 0 },
@@ -1656,6 +2355,7 @@ const HomeScreen = ({ navigation, route }) => {
                                 textShadowColor: '#fae29f',
                                 textShadowOffset: { width: 0, height: 0 },
                                 textShadowRadius: 8,
+                                fontSize: Platform.OS === 'android' ? 24 : 20,
                               }}>100%</Text> {t('completed')}
                             </>
                           ) : (
@@ -1666,6 +2366,7 @@ const HomeScreen = ({ navigation, route }) => {
                                 textShadowColor: '#fae29f',
                                 textShadowOffset: { width: 0, height: 0 },
                                 textShadowRadius: 2,
+                                fontSize: Platform.OS === 'android' ? 22 : 18,
                               }}>{toArabicNumber(progressPercentage)}%</Text> {t('complete')}
                             </>
                           )}
@@ -1680,23 +2381,24 @@ const HomeScreen = ({ navigation, route }) => {
                       alignItems: 'center',
                       position: 'relative',
                       zIndex: 1,
-                      width: isMediumScreen ? '79%' : '80%',
-                      marginTop: Platform.OS === 'android' ? SIZES.extraSmall : 0
+                      width: Platform.OS === 'android' ? '90%' : (isMediumScreen ? '79%' : '80%'),
+                      marginTop: Platform.OS === 'android' ? SIZES.extraSmall : 0,
+                      gap: Platform.OS === 'android' ? 12 : 0,
                     }}>
                       <Card style={{
                         flex: 0.50,
-                        padding: SIZES.small,
+                        padding: Platform.OS === 'android' ? 16 : SIZES.small,
                         backgroundColor: pressedStatBox === 'hasanat' ? 'rgba(91,127,103,0.4)' : 'rgba(91,127,103,0.2)',
                         borderColor: pressedStatBox === 'hasanat' ? '#5b7f67' : 'rgba(165,115,36,0.8)',
-                        borderWidth: 2,
+                        borderWidth: Platform.OS === 'android' ? 1.5 : 2,
                         borderRadius: 20,
                         alignItems: 'center',
                         justifyContent: 'center',
                         shadowColor: '#000000',
-                        shadowOffset: { width: 4, height: 4 },
-                        shadowOpacity: 0.6,
-                        shadowRadius: 6,
-                        elevation: 8,
+                        shadowOffset: { width: 0, height: Platform.OS === 'android' ? 2 : 4 },
+                        shadowOpacity: Platform.OS === 'android' ? 0.25 : 0.6,
+                        shadowRadius: Platform.OS === 'android' ? 4 : 6,
+                        elevation: Platform.OS === 'android' ? 6 : 8,
                         height: isMediumScreen ? 160 : 180,
                         marginHorizontal: 0
                       }}>
@@ -1727,13 +2429,13 @@ const HomeScreen = ({ navigation, route }) => {
                                 transform: [{ translateY: pressedStatBox === 'hasanat' ? 3 : 0 }],
                               }]}>{t('hasanat_gains')}</Text>
                             </View>
-                          <View style={{ backgroundColor: 'rgba(0,0,0,0.75)', borderRadius: 8, paddingHorizontal: 16, paddingVertical: 8, alignSelf: 'center', marginVertical: 8 }}>
+                          <View style={{ backgroundColor: 'rgba(0,0,0,0.75)', borderRadius: Platform.OS === 'android' ? 12 : 8, paddingHorizontal: Platform.OS === 'android' ? 20 : 16, paddingVertical: Platform.OS === 'android' ? 12 : 8, alignSelf: 'center', marginVertical: Platform.OS === 'android' ? 10 : 8 }}>
                             <Text variant="h1" style={{ 
                               color: 'rgba(245,200,96,0.8)', 
                               fontWeight: 'bold', 
                               textAlign: 'center', 
-                              fontSize: formatStreakNumber(data.totalHasanat).fontSize,
-                              lineHeight: formatStreakNumber(data.totalHasanat).fontSize * 1.2,
+                              fontSize: Platform.OS === 'android' ? (formatStreakNumber(data.totalHasanat).fontSize * 1.1) : formatStreakNumber(data.totalHasanat).fontSize,
+                              lineHeight: Platform.OS === 'android' ? (formatStreakNumber(data.totalHasanat).fontSize * 1.3) : (formatStreakNumber(data.totalHasanat).fontSize * 1.2),
                               textShadowColor: '#fae29f',
                               textShadowOffset: { width: 0, height: 0 },
                               textShadowRadius: 2,
@@ -1746,18 +2448,18 @@ const HomeScreen = ({ navigation, route }) => {
                       </Card>
                       <Card style={{
                         flex: 0.50,
-                        padding: SIZES.small,
+                        padding: Platform.OS === 'android' ? 16 : SIZES.small,
                         backgroundColor: pressedStatBox === 'streak' ? 'rgba(91,127,103,0.4)' : 'rgba(91,127,103,0.2)',
                         borderColor: pressedStatBox === 'streak' ? '#5b7f67' : 'rgba(165,115,36,0.8)',
-                        borderWidth: 2,
+                        borderWidth: Platform.OS === 'android' ? 1.5 : 2,
                         borderRadius: 20,
                         alignItems: 'center',
                         justifyContent: 'center',
                         shadowColor: '#000000',
-                        shadowOffset: { width: 4, height: 4 },
-                        shadowOpacity: 0.6,
-                        shadowRadius: 6,
-                        elevation: 8,
+                        shadowOffset: { width: 0, height: Platform.OS === 'android' ? 2 : 4 },
+                        shadowOpacity: Platform.OS === 'android' ? 0.25 : 0.6,
+                        shadowRadius: Platform.OS === 'android' ? 4 : 6,
+                        elevation: Platform.OS === 'android' ? 6 : 8,
                         height: isMediumScreen ? 160 : 180,
                         marginHorizontal: 0
                       }}>
@@ -1788,8 +2490,8 @@ const HomeScreen = ({ navigation, route }) => {
                                 marginTop: pressedStatBox === 'streak' ? 8 : 4,
                               }]}>{t('streak')}</Text>
                             </View>
-                              <View style={{ backgroundColor: 'rgba(0,0,0,0.75)', borderRadius: 8, paddingHorizontal: 16, paddingVertical: 8, alignSelf: 'center', marginVertical: 8, alignItems: 'center', justifyContent: 'center' }}>
-                                <Text variant="h1" style={{ color: hasProgressToday ? '#5b7f67' : 'rgba(128,128,128,0.8)', textAlign: 'center', fontWeight: 'bold', fontSize: formatStreakNumber(data.streak).fontSize, lineHeight: formatStreakNumber(data.streak).fontSize * 1.2 }} numberOfLines={1} ellipsizeMode="tail">{toArabicNumber(formatStreakNumber(data.streak).text)}</Text>
+                              <View style={{ backgroundColor: 'rgba(0,0,0,0.75)', borderRadius: Platform.OS === 'android' ? 12 : 8, paddingHorizontal: Platform.OS === 'android' ? 20 : 16, paddingVertical: Platform.OS === 'android' ? 12 : 8, alignSelf: 'center', marginVertical: Platform.OS === 'android' ? 10 : 8, alignItems: 'center', justifyContent: 'center' }}>
+                                <Text variant="h1" style={{ color: hasProgressToday ? '#5b7f67' : 'rgba(128,128,128,0.8)', textAlign: 'center', fontWeight: 'bold', fontSize: Platform.OS === 'android' ? (formatStreakNumber(data.streak).fontSize * 1.1) : formatStreakNumber(data.streak).fontSize, lineHeight: Platform.OS === 'android' ? (formatStreakNumber(data.streak).fontSize * 1.3) : (formatStreakNumber(data.streak).fontSize * 1.2) }} numberOfLines={1} ellipsizeMode="tail">{toArabicNumber(formatStreakNumber(data.streak).text)}</Text>
                               </View>
                                                               <Text variant="body2" color="textSecondary" style={{ textAlign: 'center', marginTop: -4 }}>{t('days')}</Text>
                                                              <Text variant="body2" style={{ textAlign: 'center', color: '#F5E6C8', marginTop: 1, marginBottom: 10 }}>{t('masha2allah')}</Text>
@@ -1991,7 +2693,10 @@ const HomeScreen = ({ navigation, route }) => {
              />
            </View>
         </View>
-
+        </>
+        )}
+        
+          {/* Modals - Shared for both platforms */}
           <Modal
             visible={introVisible}
             transparent
@@ -2014,9 +2719,9 @@ const HomeScreen = ({ navigation, route }) => {
                     <View style={[styles.logoTextContainer, {
                       shadowColor: '#fae29f',
                       shadowOffset: { width: 0, height: 0 },
-                      shadowOpacity: introLogoPressed ? 0.6 : 0.3,
-                      shadowRadius: introLogoPressed ? 16 : 8,
-                      elevation: introLogoPressed ? 12 : 6,
+                      shadowOpacity: introLogoPressed ? GLOW_CONFIG.iconContainer.shadowOpacity[Platform.OS].pressed : GLOW_CONFIG.iconContainer.shadowOpacity[Platform.OS].normal,
+                      shadowRadius: introLogoPressed ? GLOW_CONFIG.iconContainer.shadowRadius[Platform.OS].pressed : GLOW_CONFIG.iconContainer.shadowRadius[Platform.OS].normal,
+                      elevation: introLogoPressed ? GLOW_CONFIG.iconContainer.elevation[Platform.OS].pressed : GLOW_CONFIG.iconContainer.elevation[Platform.OS].normal,
                       marginBottom: 20,
                       position: 'absolute',
                       top: 10,
@@ -2026,12 +2731,32 @@ const HomeScreen = ({ navigation, route }) => {
                       justifyContent: 'center',
                       zIndex: 1000,
                     }]}>
+                      {Platform.OS === 'android' && (
+                        <View style={{
+                          position: 'absolute',
+                          width: 140,
+                          height: 140,
+                          borderRadius: 20,
+                          backgroundColor: introLogoPressed ? 'rgba(250, 226, 159, 0.12)' : 'rgba(250, 226, 159, 0.08)',
+                          borderWidth: 1,
+                          borderColor: introLogoPressed ? 'rgba(250, 226, 159, 0.4)' : 'rgba(250, 226, 159, 0.3)',
+                          alignSelf: 'center',
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                          elevation: introLogoPressed ? 8 : 4,
+                          shadowColor: '#000000',
+                          shadowOffset: { width: 4, height: 4 },
+                          shadowOpacity: 0.3,
+                          shadowRadius: 6,
+                        }} />
+                      )}
                       <TouchableOpacity
                         style={{
                           alignItems: 'center',
                           justifyContent: 'center',
                           width: 140,
                           height: 140,
+                          zIndex: 1,
                         }}
                         onPress={() => setIntroVisible(false)}
                         onPressIn={() => {
@@ -2046,7 +2771,7 @@ const HomeScreen = ({ navigation, route }) => {
                       >
                         <Image 
                           source={introShowArabicIcon ? require('../assets/IQRA2iconArabicoctagon.png') : (language === 'ar' ? require('../assets/IQRA2iconArabicoctagon.png') : require('../assets/IQRA2iconoctagon.png'))} 
-                          style={styles.logo} 
+                          style={[styles.logo, { zIndex: 2 }]} 
                           resizeMode="contain" 
                         />
                       </TouchableOpacity>
@@ -5280,9 +6005,7 @@ const HomeScreen = ({ navigation, route }) => {
           </TouchableOpacity>
         </Modal>
 
-
-
-              </SafeAreaView>
+      </SafeAreaView>
       </ImageBackground>
       
 
@@ -5298,7 +6021,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
-    padding: SIZES.large,
+    padding: Platform.OS === 'android' ? 16 : SIZES.large,
     alignItems: 'center',
   },
   logoContainer: {
@@ -5310,6 +6033,7 @@ const styles = StyleSheet.create({
   logoTextContainer: {
     flexDirection: 'column',
     alignItems: 'center',
+    overflow: 'visible', // Allow glow layers to extend beyond container
     // Use negative margins to create shadow space without shifting components
     marginHorizontal: Platform.OS === 'ios' ? -15 : -10,
     marginVertical: Platform.OS === 'ios' ? -10 : -8,
@@ -5400,11 +6124,18 @@ const styles = StyleSheet.create({
   buttonIconContainer: {
     padding: Platform.OS === 'android' ? SIZES.small : SIZES.small,
     marginTop: 5,
-    ...(Platform.OS === 'ios' && {
-      shadowColor: '#fae29f',
-      shadowOffset: { width: 0, height: 0 },
+    shadowColor: '#fae29f',
+    shadowOffset: { width: 0, height: 0 },
+    overflow: 'visible', // Allow glow layers to extend beyond container
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...(Platform.OS === 'ios' ? {
       shadowOpacity: 1.0,
       shadowRadius: 15,
+      elevation: 12,
+    } : {
+      shadowOpacity: 0.9,
+      shadowRadius: 20,
       elevation: 12,
     }),
   },

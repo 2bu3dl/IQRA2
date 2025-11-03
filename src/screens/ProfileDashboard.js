@@ -273,7 +273,7 @@ const ProfileDashboard = ({ navigation, onClose }) => {
       <ScrollView contentContainerStyle={styles.scrollContent}>
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+          <TouchableOpacity onPress={() => { hapticSelection(); onClose(); }} style={styles.closeButton}>
             <Ionicons name="close" size={24} color="#F5E6C8" />
           </TouchableOpacity>
           <Text variant="h1" style={styles.title}>

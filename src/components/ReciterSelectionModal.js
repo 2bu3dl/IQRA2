@@ -3,6 +3,7 @@ import { View, Modal, StyleSheet, TouchableOpacity, ScrollView } from 'react-nat
 import Text from './Text';
 import { COLORS, SIZES, FONTS } from '../utils/theme';
 import { useLanguage } from '../utils/languageContext';
+import { hapticSelection } from '../utils/hapticFeedback';
 
 const ReciterSelectionModal = ({ 
   visible, 
@@ -28,7 +29,7 @@ const ReciterSelectionModal = ({
       <TouchableOpacity 
         style={styles.overlay}
         activeOpacity={1}
-        onPress={onClose}
+        onPress={() => { hapticSelection(); onClose(); }}
       >
         <TouchableOpacity 
           style={styles.modalContainer}
@@ -39,7 +40,7 @@ const ReciterSelectionModal = ({
             <Text variant="h3" style={styles.title}>
               {language === 'ar' ? 'اختر القارئ' : 'Choose Reciter'}
             </Text>
-            <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+            <TouchableOpacity onPress={() => { hapticSelection(); onClose(); }} style={styles.closeButton}>
               <Text style={styles.closeText}>×</Text>
             </TouchableOpacity>
           </View>
@@ -52,7 +53,10 @@ const ReciterSelectionModal = ({
                   styles.reciterItem,
                   currentReciter === reciter && styles.selectedReciter
                 ]}
-                onPress={() => handleReciterSelect(reciter)}
+                onPress={() => {
+                  hapticSelection();
+                  handleReciterSelect(reciter);
+                }}
               >
                 <View style={styles.reciterInfo}>
                   <Text 

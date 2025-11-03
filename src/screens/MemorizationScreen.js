@@ -2704,8 +2704,28 @@ const MemorizationScreen = ({ route, navigation }) => {
       <View style={styles.headerWithHome}>
         <View style={styles.homeIconColumn}>
           <Animated.View style={[styles.homeIconContainer, isHomeButtonPressed && styles.homeButtonActive]}>
+            {Platform.OS === 'android' && (
+              <View style={{
+                position: 'absolute',
+                width: 65,
+                height: 65,
+                borderRadius: 20,
+                backgroundColor: isHomeButtonPressed ? 'rgba(250, 226, 159, 0.12)' : 'rgba(250, 226, 159, 0.08)',
+                borderWidth: 1,
+                borderColor: isHomeButtonPressed ? 'rgba(250, 226, 159, 0.4)' : 'rgba(250, 226, 159, 0.3)',
+                alignSelf: 'center',
+                justifyContent: 'center',
+                alignItems: 'center',
+                top: 2.5,
+                elevation: isHomeButtonPressed ? 8 : 4,
+                shadowColor: '#000000',
+                shadowOffset: { width: 4, height: 4 },
+                shadowOpacity: 0.3,
+                shadowRadius: 6,
+              }} />
+            )}
             <TouchableOpacity
-              style={styles.homeButton}
+              style={[styles.homeButton, { zIndex: 1 }]}
               onPressIn={() => setIsHomeButtonPressed(true)}
               onPressOut={() => setIsHomeButtonPressed(false)}
               activeOpacity={1.0}
@@ -2725,7 +2745,11 @@ const MemorizationScreen = ({ route, navigation }) => {
               navigation.navigate('Home', { refresh: true });
             }}
           >
-                <Image source={require('../assets/IQRA2iconArabicoctagon.png')} style={[styles.homeIcon]} resizeMode="contain" />
+                <Image 
+                  source={require('../assets/IQRA2iconArabicoctagon.png')} 
+                  style={[styles.homeIcon, { zIndex: 2 }]} 
+                  resizeMode="contain"
+                />
           </TouchableOpacity>
         </Animated.View>
         {/* Translation button (moved from right side) - Orange outline with cream icon */}
@@ -3106,7 +3130,10 @@ const MemorizationScreen = ({ route, navigation }) => {
                 {/* Settings Button */}
                 <TouchableOpacity
                   style={styles.settingsButton}
-                  onPress={() => setShowSettingsModal(true)}
+                  onPress={() => {
+                    hapticSelection();
+                    setShowSettingsModal(true);
+                  }}
                   onPressIn={() => setIsFontSettingsPressed(true)}
                   onPressOut={() => setIsFontSettingsPressed(false)}
                   activeOpacity={1}
@@ -5041,16 +5068,19 @@ const styles = StyleSheet.create({
   homeIconContainer: {
     shadowColor: '#fae29f',
     shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.3,
-    shadowRadius: 12,
-    elevation: 8,
+    shadowOpacity: Platform.OS === 'android' ? 0.9 : 0.3,
+    shadowRadius: Platform.OS === 'android' ? 20 : 12,
+    elevation: Platform.OS === 'android' ? 12 : 8,
+    overflow: 'visible', // Allow glow layers to extend beyond container
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   homeButtonActive: {
     shadowColor: '#fae29f',
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 1.0,
-    shadowRadius: 20,
-    elevation: 15,
+    shadowRadius: Platform.OS === 'android' ? 30 : 20,
+    elevation: Platform.OS === 'android' ? 18 : 15,
     transform: [{ scale: 1.15 }],
   },
   homeIcon: {

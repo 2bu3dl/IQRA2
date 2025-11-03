@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet, ImageBackground, SafeAreaView
 import { PanGestureHandler, PinchGestureHandler, State, GestureHandlerRootView } from 'react-native-gesture-handler';
 import RecordingsModal from '../components/RecordingsModal';
 import audioPlayer from '../utils/audioPlayer';
+import { hapticSelection } from '../utils/hapticFeedback';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
@@ -583,13 +584,13 @@ export default function SimpleMushafScreen({ navigation, route }) {
       <SafeAreaView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-            <TouchableOpacity onPress={handleHome} style={styles.homeButton}>
+            <TouchableOpacity onPress={() => { hapticSelection(); handleHome(); }} style={styles.homeButton}>
               <Image source={require('../assets/IQRA2iconArabicoctagon.png')} style={styles.homeIcon} />
             </TouchableOpacity>
         
         <TouchableOpacity
           style={styles.navButton}
-          onPress={handlePreviousPage}
+          onPress={() => { hapticSelection(); handlePreviousPage(); }}
           disabled={page <= 1}
         >
           <Text style={[styles.navButtonText, page <= 1 && styles.disabledButton]}>
@@ -604,7 +605,7 @@ export default function SimpleMushafScreen({ navigation, route }) {
         
         <TouchableOpacity
           style={styles.navButton}
-          onPress={handleNextPage}
+          onPress={() => { hapticSelection(); handleNextPage(); }}
           disabled={page >= 604}
         >
           <Text style={[styles.navButtonText, page >= 604 && styles.disabledButton]}>
@@ -612,7 +613,7 @@ export default function SimpleMushafScreen({ navigation, route }) {
           </Text>
         </TouchableOpacity>
         
-        <TouchableOpacity onPress={handleSearch} style={styles.searchButton}>
+        <TouchableOpacity onPress={() => { hapticSelection(); handleSearch(); }} style={styles.searchButton}>
           <Image source={require('../assets/app_icons/search.png')} style={styles.searchIcon} />
         </TouchableOpacity>
       </View>
@@ -778,7 +779,7 @@ export default function SimpleMushafScreen({ navigation, route }) {
           <>
             <TouchableOpacity
               style={[styles.controlButton, isRecording && styles.controlButtonActive]}
-              onPress={handleRecordingToggle}
+              onPress={() => { hapticSelection(); handleRecordingToggle(); }}
             >
               <Image 
                 source={isRecording ? require('../assets/app_icons/mic-on.png') : require('../assets/app_icons/mic-off.png')} 
@@ -791,7 +792,7 @@ export default function SimpleMushafScreen({ navigation, route }) {
                     styles.controlButton, 
                     isHideMode && styles.controlButtonActive
                   ]}
-                  onPress={handleHideToggle}
+                  onPress={() => { hapticSelection(); handleHideToggle(); }}
                 >
                   <Text style={[
                     styles.controlButtonText, 
@@ -801,7 +802,7 @@ export default function SimpleMushafScreen({ navigation, route }) {
             
             <TouchableOpacity
               style={[styles.controlButton, isAudioPlaying && styles.controlButtonActive]}
-              onPress={handleAudioToggle}
+              onPress={() => { hapticSelection(); handleAudioToggle(); }}
             >
               <Image 
                 source={require('../assets/app_icons/audio.png')} 
@@ -828,7 +829,7 @@ export default function SimpleMushafScreen({ navigation, route }) {
               <Text style={styles.searchTitle}>Search Mushaf</Text>
               <TouchableOpacity
                 style={styles.closeButton}
-                onPress={() => setShowSearchModal(false)}
+                onPress={() => { hapticSelection(); setShowSearchModal(false); }}
               >
                 <Text style={styles.closeButtonText}>✕</Text>
               </TouchableOpacity>
@@ -850,7 +851,7 @@ export default function SimpleMushafScreen({ navigation, route }) {
                 <TouchableOpacity
                   key={index}
                   style={styles.searchResultItem}
-                  onPress={() => handleSearchResult(result)}
+                  onPress={() => { hapticSelection(); handleSearchResult(result); }}
                 >
                   <Text style={styles.searchResultTitle}>{result.title}</Text>
                   <Text style={styles.searchResultSubtitle}>{result.subtitle}</Text>
@@ -884,7 +885,7 @@ export default function SimpleMushafScreen({ navigation, route }) {
               <Text style={styles.searchTitle}>Select Audio Range</Text>
               <TouchableOpacity
                 style={styles.closeButton}
-                onPress={() => setShowAudioModal(false)}
+                onPress={() => { hapticSelection(); setShowAudioModal(false); }}
               >
                 <Text style={styles.closeButtonText}>✕</Text>
               </TouchableOpacity>
@@ -932,7 +933,7 @@ export default function SimpleMushafScreen({ navigation, route }) {
               
               <TouchableOpacity
                 style={styles.playButton}
-                onPress={handleAudioPlay}
+                onPress={() => { hapticSelection(); handleAudioPlay(); }}
               >
                 <Text style={styles.playButtonText}>Play Audio</Text>
               </TouchableOpacity>
