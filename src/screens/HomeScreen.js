@@ -3793,42 +3793,46 @@ const HomeScreen = ({ navigation, route }) => {
         >
           {(() => {
             const [modalData, setModalData] = useState(data);
+            const [weeklyExpanded, setWeeklyExpanded] = useState(false);
+            const [yearlyExpanded, setYearlyExpanded] = useState(false);
             
-            // Load fresh data when modal opens
+            // Update modal data when modal opens or when main data changes
             useEffect(() => {
               if (streakModalVisible) {
-                loadData().then(setModalData);
+                setModalData(data);
               }
-            }, [streakModalVisible]);
+            }, [streakModalVisible, data]);
+            
+            // Use fresh data
+            const currentData = modalData;
             
             return (
-          <TouchableOpacity 
+          <View 
             style={[styles.modalOverlay, { justifyContent: 'center', paddingVertical: 20 }]}
-            activeOpacity={1}
-            onPress={() => setStreakModalVisible(false)}
           >
-            <TouchableOpacity 
+            <View 
               style={[styles.modalContent, { 
-                maxHeight: '95%',
-                minHeight: 700,
+                height: '80%',
                 justifyContent: 'flex-start',
-                paddingVertical: 30,
+                paddingVertical: 20,
                 marginTop: 17,
                 backgroundColor: 'rgba(64,64,64,0.95)',
                 borderColor: 'rgba(165,115,36,0.8)',
                 borderWidth: 2,
                 width: '90%',
-                maxWidth: 400,
+                maxWidth: 420,
               }]}
-              activeOpacity={1}
-              onPress={() => {}}
             >
-                            <ScrollView 
+              <ScrollView 
                 style={{ flex: 1 }}
-                showsVerticalScrollIndicator={false}
-                contentContainerStyle={{ paddingBottom: 10 }}
+                showsVerticalScrollIndicator={true}
+                nestedScrollEnabled={true}
+                keyboardShouldPersistTaps="handled"
+                bounces={true}
+                scrollEnabled={true}
+                contentContainerStyle={{ paddingBottom: 100 }}
               >
-                <Text variant="h2" style={{ 
+                <Text style={{ 
                   marginBottom: 20, 
                   marginTop: 0, 
                   color: '#F5E6C8',
@@ -3862,11 +3866,13 @@ const HomeScreen = ({ navigation, route }) => {
                   <Text style={{ 
                     color: '#5b7f67', 
                     fontSize: 32, 
+                    lineHeight: 40,
+                    marginTop: 2,
                     fontWeight: 'bold',
                     textShadowColor: '#fae29f',
                     textShadowOffset: { width: 0, height: 0 },
                     textShadowRadius: 4,
-                  }}>{toArabicNumber(formatStreakNumber(modalData.streak).text)}</Text>
+                  }}>{toArabicNumber(formatStreakNumber(currentData.streak).text)}</Text>
                   <Text style={{ color: '#CCCCCC', fontSize: 16, marginTop: 4 }}>Days</Text>
                 </View>
                 <View style={{ 
@@ -3882,7 +3888,7 @@ const HomeScreen = ({ navigation, route }) => {
                         color: '#5b7f67', 
                         fontSize: 16, 
                         fontWeight: 'bold',
-                      }}>{toArabicNumber(Math.max(modalData.streak || 0, 15))}</Text>
+                      }}>{toArabicNumber(Math.max(currentData.streak || 0, 15))}</Text>
                     </View>
                     <View style={{ alignItems: 'center' }}>
                       <Text style={{ color: '#CCCCCC', fontSize: 12 }}>Avg/Day</Text>
@@ -3890,12 +3896,73 @@ const HomeScreen = ({ navigation, route }) => {
                         color: '#5b7f67', 
                         fontSize: 16, 
                         fontWeight: 'bold',
-                      }}>{toArabicNumber(Math.floor((modalData.memorizedAyaat || 0) / Math.max(modalData.streak || 1, 1)))}</Text>
+                      }}>{toArabicNumber(Math.floor((currentData.memorizedAyaat || 0) / Math.max(currentData.streak || 1, 1)))}</Text>
                     </View>
                   </View>
                 </View>
               </View>
-              
+
+              {/* Streak Goals */}
+              {(() => {
+                const milestones = [3, 5, 10, 20, 30, 50, 100, 200, 365];
+                const currentStreak = Number(currentData?.streak || 0);
+                const nextGoal = milestones.find(m => m > currentStreak) || milestones[milestones.length - 1];
+                const prevGoal = milestones.reduce((acc, m) => (m <= currentStreak ? m : acc), 0);
+                const span = Math.max(1, nextGoal - prevGoal);
+                const rawProgress = (currentStreak - prevGoal) / span;
+                const progress = Math.max(0, Math.min(1, rawProgress));
+                const progressPercent = `${Math.round(progress * 100)}%`;
+                return (
+                  <View style={{ marginBottom: 16 }}>
+                    <Text style={{
+                      color: '#5b7f67',
+                      fontSize: 18,
+                      fontWeight: 'bold',
+                      marginBottom: 12,
+                      textAlign: 'center'
+                    }}>
+                      Streak Goals
+                    </Text>
+                    <View style={{
+                      backgroundColor: 'rgba(128,128,128,0.3)',
+                      borderRadius: 12,
+                      padding: 16,
+                      borderColor: 'rgba(165,115,36,0.8)',
+                      borderWidth: 1,
+                    }}>
+                      <View style={{ marginBottom: 10, alignItems: 'center' }}>
+                        <Text style={{ color: '#F5E6C8', fontSize: 14 }}>
+                          Current: {toArabicNumber(currentStreak)} days
+                        </Text>
+                        <Text style={{ color: '#CCCCCC', fontSize: 13, marginTop: 4 }}>
+                          Next goal: {toArabicNumber(nextGoal)} days
+                        </Text>
+                      </View>
+                      <View
+                        style={{
+                          height: 14,
+                          borderRadius: 8,
+                          backgroundColor: 'rgba(165,115,36,0.4)',
+                          overflow: 'hidden',
+                        }}
+                      >
+                        <View
+                          style={{
+                            height: '100%',
+                            width: progressPercent,
+                            backgroundColor: '#5b7f67',
+                          }}
+                        />
+                      </View>
+                      <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 8 }}>
+                        <Text style={{ color: '#CCCCCC', fontSize: 12 }}>{toArabicNumber(prevGoal)}</Text>
+                        <Text style={{ color: '#CCCCCC', fontSize: 12 }}>{toArabicNumber(nextGoal)}</Text>
+                      </View>
+                    </View>
+                  </View>
+                );
+              })()}
+
               {/* Weekly Streak */}
               <View style={{ marginBottom: 16 }}>
                 <View style={{ 
@@ -3955,7 +4022,7 @@ const HomeScreen = ({ navigation, route }) => {
                   }}>
                     {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day, index) => {
                       // Calculate if day was completed based on streak
-                      const isCompleted = index < (modalData.streak || 0) % 7;
+                      const isCompleted = index < (currentData.streak || 0) % 7;
                       const isToday = index === new Date().getDay() - 1; // Adjust for Monday start
                       
                       let backgroundColor = 'rgba(128,128,128,0.5)';
@@ -4070,7 +4137,61 @@ const HomeScreen = ({ navigation, route }) => {
                 </View>
               </View>
 
-              {/* Yearly Stats */}
+              {/* Yearly Overview (collapsible) */}
+              <View style={{ marginBottom: 16 }}>
+                <TouchableOpacity
+                  onPress={() => setYearlyExpanded(!yearlyExpanded)}
+                  style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}
+                >
+                  <Text style={{
+                    color: '#5b7f67',
+                    fontSize: 18,
+                    fontWeight: 'bold',
+                    textAlign: 'center'
+                  }}>
+                    Yearly Overview
+                  </Text>
+                  <Text style={{ color: '#F5E6C8', fontSize: 16 }}>{yearlyExpanded ? '−' : '+'}</Text>
+                </TouchableOpacity>
+                {yearlyExpanded && (
+                  <View style={{
+                    backgroundColor: 'rgba(128,128,128,0.3)',
+                    borderRadius: 12,
+                    padding: 16,
+                    borderColor: 'rgba(165,115,36,0.8)',
+                    borderWidth: 1,
+                  }}>
+                    <View style={{
+                      flexDirection: 'row',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      marginBottom: 8,
+                    }}>
+                      <Text style={{ color: '#F5E6C8', fontSize: 14 }}>Current Streak:</Text>
+                      <Text style={{ color: '#5b7f67', fontSize: 16, fontWeight: 'bold' }}>{toArabicNumber(currentData.streak || 0)} days</Text>
+                    </View>
+                    <View style={{
+                      flexDirection: 'row',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      marginBottom: 8,
+                    }}>
+                      <Text style={{ color: '#F5E6C8', fontSize: 14 }}>Longest Streak:</Text>
+                      <Text style={{ color: '#5b7f67', fontSize: 16, fontWeight: 'bold' }}>{toArabicNumber(Math.max(currentData.streak || 0, 15))} days</Text>
+                    </View>
+                    <View style={{
+                      flexDirection: 'row',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                    }}>
+                      <Text style={{ color: '#F5E6C8', fontSize: 14 }}>Total Active Days:</Text>
+                      <Text style={{ color: '#5b7f67', fontSize: 16, fontWeight: 'bold' }}>{toArabicNumber(Math.floor((currentData.streak || 0) * 1.2))} days</Text>
+                    </View>
+                  </View>
+                )}
+              </View>
+
+              {/* Streak Goals */}
               <View style={{ marginBottom: 16 }}>
                 <Text style={{
                   color: '#5b7f67',
@@ -4079,42 +4200,56 @@ const HomeScreen = ({ navigation, route }) => {
                   marginBottom: 12,
                   textAlign: 'center'
                 }}>
-                  Yearly Overview
+                  Streak Goals
                 </Text>
-                <View style={{
-                  backgroundColor: 'rgba(128,128,128,0.3)',
-                  borderRadius: 12,
-                  padding: 16,
-                  borderColor: 'rgba(165,115,36,0.8)',
-                  borderWidth: 1,
-                }}>
-                  <View style={{
-                    flexDirection: 'row',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    marginBottom: 8,
-                  }}>
-                    <Text style={{ color: '#F5E6C8', fontSize: 14 }}>Current Streak:</Text>
-                    <Text style={{ color: '#5b7f67', fontSize: 16, fontWeight: 'bold' }}>{toArabicNumber(modalData.streak || 0)} days</Text>
-                  </View>
-                  <View style={{
-                    flexDirection: 'row',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    marginBottom: 8,
-                  }}>
-                    <Text style={{ color: '#F5E6C8', fontSize: 14 }}>Longest Streak:</Text>
-                    <Text style={{ color: '#5b7f67', fontSize: 16, fontWeight: 'bold' }}>{toArabicNumber(Math.max(modalData.streak || 0, 15))} days</Text>
-                  </View>
-                  <View style={{
-                    flexDirection: 'row',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                  }}>
-                    <Text style={{ color: '#F5E6C8', fontSize: 14 }}>Total Active Days:</Text>
-                    <Text style={{ color: '#5b7f67', fontSize: 16, fontWeight: 'bold' }}>{toArabicNumber(Math.floor((modalData.streak || 0) * 1.2))} days</Text>
-                  </View>
-                </View>
+                {(() => {
+                  const milestones = [3, 5, 10, 20, 30, 50, 100, 200, 365];
+                  const currentStreak = Number(currentData?.streak || 0);
+                  const nextGoal = milestones.find(m => m > currentStreak) || milestones[milestones.length - 1];
+                  const prevGoal = milestones.reduce((acc, m) => (m <= currentStreak ? m : acc), 0);
+                  const span = Math.max(1, nextGoal - prevGoal);
+                  const rawProgress = (currentStreak - prevGoal) / span;
+                  const progress = Math.max(0, Math.min(1, rawProgress));
+                  const progressPercent = `${Math.round(progress * 100)}%`;
+                  return (
+                    <View style={{
+                      backgroundColor: 'rgba(128,128,128,0.3)',
+                      borderRadius: 12,
+                      padding: 16,
+                      borderColor: 'rgba(165,115,36,0.8)',
+                      borderWidth: 1,
+                    }}>
+                      <View style={{ marginBottom: 10, alignItems: 'center' }}>
+                        <Text style={{ color: '#F5E6C8', fontSize: 14 }}>
+                          Current: {toArabicNumber(currentStreak)} days
+                        </Text>
+                        <Text style={{ color: '#CCCCCC', fontSize: 13, marginTop: 4 }}>
+                          Next goal: {toArabicNumber(nextGoal)} days
+                        </Text>
+                      </View>
+                      <View
+                        style={{
+                          height: 14,
+                          borderRadius: 8,
+                          backgroundColor: 'rgba(165,115,36,0.4)', // orange track
+                          overflow: 'hidden',
+                        }}
+                      >
+                        <View
+                          style={{
+                            height: '100%',
+                            width: progressPercent,
+                            backgroundColor: '#5b7f67', // green fill
+                          }}
+                        />
+                      </View>
+                      <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 8 }}>
+                        <Text style={{ color: '#CCCCCC', fontSize: 12 }}>{toArabicNumber(prevGoal)}</Text>
+                        <Text style={{ color: '#CCCCCC', fontSize: 12 }}>{toArabicNumber(nextGoal)}</Text>
+                      </View>
+                    </View>
+                  );
+                })()}
               </View>
 
               {/* Streak Milestones */}
@@ -4138,54 +4273,55 @@ const HomeScreen = ({ navigation, route }) => {
                   <View style={{ marginBottom: 12 }}>
                     <Text style={{ color: '#F5E6C8', fontSize: 16, fontWeight: 'bold' }}>7 Days</Text>
                     <Text style={{ color: '#CCCCCC', fontSize: 14 }}>
-                      {modalData.streak >= 7 ? '✅ Completed' : 'Complete a week of memorization'}
+                      {currentData.streak >= 7 ? '✅ Completed' : 'Complete a week of memorization'}
                     </Text>
                   </View>
                   <View style={{ marginBottom: 12 }}>
                     <Text style={{ color: '#F5E6C8', fontSize: 16, fontWeight: 'bold' }}>30 Days</Text>
                     <Text style={{ color: '#CCCCCC', fontSize: 14 }}>
-                      {modalData.streak >= 30 ? '✅ Completed' : 'Maintain a month-long streak'}
+                      {currentData.streak >= 30 ? '✅ Completed' : 'Maintain a month-long streak'}
                     </Text>
                   </View>
                   <View>
                     <Text style={{ color: '#F5E6C8', fontSize: 16, fontWeight: 'bold' }}>100 Days</Text>
                     <Text style={{ color: '#CCCCCC', fontSize: 14 }}>
-                      {modalData.streak >= 100 ? '✅ Completed' : 'Achieve a century of memorization days'}
+                      {currentData.streak >= 100 ? '✅ Completed' : 'Achieve a century of memorization days'}
                     </Text>
                   </View>
                 </View>
               </View>
-
-              {/* Close Button */}
-              <TouchableOpacity
-                style={{
-                  backgroundColor: '#5b7f67',
-                  paddingVertical: 12,
-                  paddingHorizontal: 24,
-                  borderRadius: 8,
-                  alignItems: 'center',
-                  shadowColor: '#000',
-                  shadowOffset: { width: 0, height: 4 },
-                  shadowOpacity: 0.5,
-                  shadowRadius: 6,
-                  elevation: 8,
-                }}
-                onPress={() => {
-                  hapticSelection();
-                  setStreakModalVisible(false);
-                }}
-              >
-                <Text style={{
-                  color: '#FFFFFF',
-                  fontSize: 16,
-                  fontWeight: 'bold',
-                }}>
-                  Close
-                </Text>
-              </TouchableOpacity>
               </ScrollView>
-            </TouchableOpacity>
-          </TouchableOpacity>
+              {/* Close Button */}
+              <View style={{ paddingHorizontal: 20, paddingBottom: 16, paddingTop: 8 }}>
+                <TouchableOpacity
+                  style={{
+                    backgroundColor: '#5b7f67',
+                    paddingVertical: 12,
+                    paddingHorizontal: 24,
+                    borderRadius: 8,
+                    alignItems: 'center',
+                    shadowColor: '#000',
+                    shadowOffset: { width: 0, height: 4 },
+                    shadowOpacity: 0.5,
+                    shadowRadius: 6,
+                    elevation: 8,
+                  }}
+                  onPress={() => {
+                    hapticSelection();
+                    setStreakModalVisible(false);
+                  }}
+                >
+                  <Text style={{
+                    color: '#FFFFFF',
+                    fontSize: 16,
+                    fontWeight: 'bold',
+                  }}>
+                    Close
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
             );
           })()}
         </Modal>
